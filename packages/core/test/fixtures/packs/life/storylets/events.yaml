@@ -1,0 +1,112 @@
+- id: a-chance
+  trigger: event
+  chance: 100%
+  when: quality.chaos
+  text: "Chance A at {age} with {money}."
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: b-chance
+  trigger: event
+  chance: 100%
+  when: quality.chaos
+  text: Chance B.
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: flavour-one
+  trigger: event
+  weight: 5
+  when: quality.chaos
+  text: Flavour one.
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: flavour-two
+  trigger: event
+  weight: 3
+  when: quality.chaos
+  text: Flavour two.
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: flavour-three
+  trigger: event
+  weight: 1
+  when: quality.chaos
+  text: Flavour three.
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: loan-note
+  trigger: event
+  scope: loan
+  chance: 100%
+  when: loan.missed > 0
+  text: "Overdue: {loan.payment} of {loan.balance}, missed {loan.missed}."
+  outcomes:
+    - effects:
+        - stat.happiness -= 5
+
+- id: npc-news
+  trigger: event
+  scope: person
+  chance: 100%
+  when: quality.chaos
+  once: true
+  text: "{person.first_name} has news."
+  outcomes:
+    - effects:
+        - stat.happiness += 0
+
+- id: mortality
+  trigger: event
+  chance: 100%
+  when: quality.mortal
+  text: The end is near.
+  outcomes:
+    - effects:
+        - die("old age at {age}")
+
+- id: chain-1
+  trigger: event
+  chance: 100%
+  when: quality.chain
+  once: true
+  text: Step one.
+  choices:
+    - label: Go on
+      outcomes:
+        - text: One done.
+          next: chain-2
+    - label: Never offered
+      when: false
+      outcomes:
+        - text: unreachable
+- id: chain-2
+  trigger: action
+  menu: activities
+  when: false
+  text: Step two.
+  choices:
+    - label: Go on
+      outcomes:
+        - weight: 1
+          text: Two done.
+          next: chain-3
+- id: chain-3
+  trigger: action
+  menu: activities
+  when: false
+  text: Step three.
+  choices:
+    - label: Finish
+      outcomes:
+        - text: Three done.
+          effects:
+            - quality.lucky += 7

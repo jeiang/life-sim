@@ -1,0 +1,5 @@
+- id: auto-loan
+  label: Auto loan
+  rate: 5%
+  term_years: 4
+  secured: true

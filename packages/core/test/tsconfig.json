@@ -1,0 +1,10 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "typeRoots": ["../../pack-tools/node_modules/@types"],
+    "erasableSyntaxOnly": true
+  },
+  "include": ["../src", "."]
+}

@@ -1,0 +1,38 @@
+language js
+
+or {
+  `Math.random` as $x where {
+    register_diagnostic(span=$x, message="Math.random is banned in Core: use the seeded RNG (ADR 0001).", severity="error")
+  },
+  `Date.now` as $x where {
+    register_diagnostic(span=$x, message="Date.now is banned in Core: Core is pure and clock-free (ADR 0001).", severity="error")
+  },
+  `Math.$fn` as $x where {
+    $fn <: or {
+      "sin",
+      "cos",
+      "tan",
+      "asin",
+      "acos",
+      "atan",
+      "atan2",
+      "sinh",
+      "cosh",
+      "tanh",
+      "asinh",
+      "acosh",
+      "atanh",
+      "exp",
+      "expm1",
+      "log",
+      "log2",
+      "log10",
+      "log1p",
+      "pow",
+      "sqrt",
+      "cbrt",
+      "hypot"
+    },
+    register_diagnostic(span=$x, message="Transcendental Math functions are banned in Core: use integer math (ADR 0001).", severity="error")
+  }
+}

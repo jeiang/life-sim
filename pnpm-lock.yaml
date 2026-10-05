@@ -77,6 +77,13 @@ importers:
       '@life/core':
         specifier: workspace:*
         version: link:../core
+      '@life/pack-tools':
+        specifier: workspace:*
+        version: link:../pack-tools
+    devDependencies:
+      '@types/node':
+        specifier: 24.12.0
+        version: 24.12.0
 
   packages/pack-tools:
     dependencies:

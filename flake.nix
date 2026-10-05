@@ -95,6 +95,7 @@
               pnpm exec vitest run
               pnpm --filter @life/core exec tsc --noEmit
               pnpm --filter @life/pack-tools exec tsc --noEmit
+              pnpm --filter @life/harness exec tsc --noEmit
             '';
             installPhase = "touch $out";
           };
@@ -110,6 +111,19 @@
               node --experimental-strip-types packages/pack-tools/src/cli.ts build packages/pack-tools/test/fixtures/valid $TMPDIR/packs-out
             '';
             installPhase = "touch $out";
+          };
+          # 1,000 fixed seeds across the simulated profiles (docs/spec/harness.md). Fails only on engine faults; the report lands in $out.
+          harness = pkgs.stdenvNoCC.mkDerivation {
+            name = "life-sim-check-harness";
+            inherit src pnpmDeps;
+            nativeBuildInputs = [ pkgs.nodejs_24 pkgs.pnpm_10 pkgs.pnpmConfigHook ];
+            dontBuild = true;
+            doCheck = true;
+            checkPhase = ''
+              mkdir -p $TMPDIR/report
+              node --experimental-strip-types packages/harness/src/cli.ts --lives 1000 --profile all --seed 20260101 --out $TMPDIR/report
+            '';
+            installPhase = "cp -r $TMPDIR/report $out";
           };
           versions = pkgs.runCommand "check-versions" { } ''
             pw=$(grep -m1 -A2 "'@playwright/test':" ${./pnpm-lock.yaml} | grep -m1 'version:' | sed -E "s/.*version: *([0-9.]+).*/\1/")

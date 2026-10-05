@@ -232,6 +232,18 @@ function advance(
 }
 
 /**
+ * Roll-site counters are keyed `<age>/<purpose>` and only the current age is ever read again,
+ * so earlier ages are dropped; otherwise every roll copies a table that grows all life long.
+ */
+function pruneCounters(world: World): World {
+  const now = clockAge(world);
+  const kept: Record<string, number> = {};
+  for (const [k, n] of Object.entries(world.rngCounters))
+    if (Number.parseInt(k, 10) >= now) kept[k] = n;
+  return { ...world, rngCounters: kept };
+}
+
+/**
  * Advance the world one year (ADR 0003): age everyone; settlement; the player's events
  * (chance, then flavour, under the cap); the NPC pass. A storylet with choices stops the year
  * as `world.pending`; `choose` resumes it. Throws if the life ended or a storylet is pending.
@@ -244,6 +256,7 @@ export function ageUp(world: World, bundles: readonly PackBundle[]): SimResult {
   for (const p of personsInIdOrder(w)) {
     if (p.alive) w = updatePerson(w, p.id, (x) => ({ ...x, age: x.age + 1 }));
   }
+  w = pruneCounters(w);
   w = settle(w, idx);
   const [w2, events] = drawEvents(w, idx);
   return result(world, advance(w2, idx, events, true));

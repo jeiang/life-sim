@@ -1,0 +1,12 @@
+- id: dead-end
+  trigger: event
+  chance: 100%
+  when: age == 3
+  once: true
+  text: Every door is closed.
+  choices:
+    - label: Impossible
+      when: age < 0
+      outcomes:
+        - effects:
+            - stat.happiness += 1

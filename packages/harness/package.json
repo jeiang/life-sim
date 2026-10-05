@@ -3,7 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "harness": "node --experimental-strip-types src/cli.ts"
+  },
   "dependencies": {
-    "@life/core": "workspace:*"
+    "@life/core": "workspace:*",
+    "@life/pack-tools": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.0"
   }
 }

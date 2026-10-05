@@ -1,0 +1,7 @@
+- id: calm-year
+  trigger: event
+  weight: 10 / (age - 3)
+  text: A quiet year.
+  outcomes:
+    - effects:
+        - stat.happiness += 1

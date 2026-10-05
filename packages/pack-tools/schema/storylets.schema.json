@@ -1,0 +1,243 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Storylets (list)",
+  "type": "array",
+  "items": {
+    "additionalProperties": false,
+    "title": "Storylet",
+    "type": "object",
+    "required": ["id", "trigger"],
+    "properties": {
+      "id": {
+        "pattern": "^[a-z][a-z0-9_-]*$",
+        "description": "Content id",
+        "type": "string"
+      },
+      "icon": {
+        "description": "A literal emoji (Twemoji subset) or `gameicons/<author>/<name>`",
+        "type": "string"
+      },
+      "tags": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "trigger": {
+        "anyOf": [
+          {
+            "const": "event",
+            "type": "string"
+          },
+          {
+            "const": "action",
+            "type": "string"
+          }
+        ]
+      },
+      "menu": {
+        "pattern": "^(occupation|assets|relationships|activities)(/[a-z][a-z0-9_-]*)?$",
+        "description": "Actions only: `<top>` or `<top>/<submenu>`",
+        "type": "string"
+      },
+      "scope": {
+        "anyOf": [
+          {
+            "const": "loan",
+            "type": "string"
+          },
+          {
+            "const": "person",
+            "type": "string"
+          }
+        ]
+      },
+      "when": {
+        "description": "Expression in the Pack expression language (ADR 0004)",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      },
+      "chance": {
+        "description": "Expression in the Pack expression language (ADR 0004)",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      },
+      "weight": {
+        "description": "Expression in the Pack expression language (ADR 0004)",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      },
+      "once": {
+        "type": "boolean"
+      },
+      "cooldown": {
+        "minimum": 1,
+        "type": "integer"
+      },
+      "max_per_life": {
+        "minimum": 1,
+        "type": "integer"
+      },
+      "text": {
+        "type": "string"
+      },
+      "choices": {
+        "type": "array",
+        "items": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": ["label"],
+          "properties": {
+            "label": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "when": {
+              "description": "Expression in the Pack expression language (ADR 0004)",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "outcomes": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "weight": {
+                    "description": "Expression in the Pack expression language (ADR 0004)",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
+                  },
+                  "when": {
+                    "description": "Expression in the Pack expression language (ADR 0004)",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "effects": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "next": {
+                    "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+                    "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "outcomes": {
+        "type": "array",
+        "items": {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "weight": {
+              "description": "Expression in the Pack expression language (ADR 0004)",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "when": {
+              "description": "Expression in the Pack expression language (ADR 0004)",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "text": {
+              "type": "string"
+            },
+            "effects": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "next": {
+              "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+              "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=../../../../../schema/storylets.schema.json
+- id: first-job-offer
+  icon: 💼
+  trigger: event
+  chance: 4%
+  when: age >= 16 and not has_occupation(cashier) and stat.smarts >= 30
+  once: true
+  text: "{player.first_name}, a local shop offers you a part-time job as a cashier."
+  choices:
+    - label: Accept
+      outcomes:
+        - weight: 80 + stat.smarts / 5
+          text: You start next week.
+          effects:
+            - start_occupation(cashier)
+            - stat.happiness += 5
+        - weight: 20
+          text: The offer falls through.
+          next: job-hunt-tips
+    - label: Decline
+
+- id: job-hunt-tips
+  trigger: action
+  menu: activities/job-board
+  text: A librarian shares some tips.
+  outcomes:
+    - weight: 1
+      effects:
+        - quality.years_worked += 1
+        - journal("Read about job hunting at {age}.")
+
+- id: missed-payment
+  trigger: event
+  scope: loan
+  weight: 10
+  when: loan.missed > 0
+  text: "A payment of {loan.payment} is overdue (balance {loan.balance})."
+  outcomes:
+    - effects:
+        - stat.happiness -= 5
+
+- id: meet-neighbour
+  icon: gameicons/lorc/spy
+  trigger: event
+  weight: 3
+  text: Someone moves in next door.
+  outcomes:
+    - effects:
+        - spawn_person(neighbour, local) as n
+        - relationship(n).closeness += 10
+        - journal("Met {n.first_name} {n.last_name}.")
+      text: "You meet {n.first_name}, aged {n.age}."
+
+- id: parent-illness
+  trigger: event
+  scope: person
+  chance: 1.5%
+  when: person.age > 50 and person.stat.smarts > 10
+  text: "{person.first_name} falls ill."

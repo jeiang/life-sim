@@ -27,7 +27,7 @@
             src = depsSrc;
             pnpm = pkgs.pnpm_10;
             fetcherVersion = 4;
-            hash = "sha256-fDjXvVacNDypOM9rbHPNwAHxVQF3fGuPpEDycKIuJsA=";
+            hash = "sha256-0GJGxfHm43n1LBei1poDInFyV88Blae6ZBn7TI2IZTo=";
           };
 
           # The deployed app: $out/dist is served as-is by Caddy (docs/spec/deploy.md).
@@ -94,6 +94,20 @@
             checkPhase = ''
               pnpm exec vitest run
               pnpm --filter @life/core exec tsc --noEmit
+              pnpm --filter @life/pack-tools exec tsc --noEmit
+            '';
+            installPhase = "touch $out";
+          };
+          # Compile every Pack under packs/ (a directory without pack.yaml is skipped) and the fixture Packs.
+          packs = pkgs.stdenvNoCC.mkDerivation {
+            name = "life-sim-check-packs";
+            inherit src pnpmDeps;
+            nativeBuildInputs = [ pkgs.nodejs_24 pkgs.pnpm_10 pkgs.pnpmConfigHook ];
+            dontBuild = true;
+            doCheck = true;
+            checkPhase = ''
+              node --experimental-strip-types packages/pack-tools/src/cli.ts validate packs
+              node --experimental-strip-types packages/pack-tools/src/cli.ts build packages/pack-tools/test/fixtures/valid $TMPDIR/packs-out
             '';
             installPhase = "touch $out";
           };

@@ -64,8 +64,10 @@ type Checked = [Type, Expr] | null;
 
 export class Checker {
   readonly errors: ExprError[] = [];
+  private readonly env: CheckEnv;
   private readonly fns: Readonly<Record<string, Signature>>;
-  constructor(private readonly env: CheckEnv) {
+  constructor(env: CheckEnv) {
+    this.env = env;
     this.fns = env.functions ?? FUNCTIONS;
   }
 

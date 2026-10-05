@@ -3,7 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "packs": "node --experimental-strip-types src/cli.ts"
+  },
   "dependencies": {
-    "@life/core": "workspace:*"
+    "@life/core": "workspace:*",
+    "@sinclair/typebox": "0.34.52",
+    "@twemoji/svg": "15.0.0",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.0"
   }
 }

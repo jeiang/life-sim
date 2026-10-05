@@ -1,0 +1,22 @@
+- id: cashier
+  label: Cashier
+  icon: 🛒
+  group: full-time
+  ladder: retail
+  requires: age >= 14
+  pay: 1200000 + quality.years_worked * 50000
+  promotes_to: shift-lead
+  promotion_years: 2
+- id: shift-lead
+  label: Shift lead
+  group: full-time
+  ladder: retail
+  requires: age >= 18
+  pay: 2000000
+- id: university
+  label: University
+  group: school
+  requires: age >= 18 and stat.smarts >= 40
+  pay: -1500000
+  duration_years: 4
+  loan: student-loan

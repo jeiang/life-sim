@@ -1,0 +1,12 @@
+- id: used-car
+  label: Used car
+  icon: 🚗
+  category: vehicles
+  price: 800000
+  value: max(asset.value - asset.purchase_price / 8, 0)
+  loan: auto-loan
+- id: phone
+  label: Phone
+  category: stuff
+  price: 50000
+  value: asset.value * 60 / 100

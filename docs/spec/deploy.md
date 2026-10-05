@@ -33,6 +33,8 @@ Cache headers in the site block:
 
 The service worker is registered with `updateViaCache: 'none'` and stays at `/sw.js`; its URL never changes.
 
+Observed after the first deploy: Cloudflare's Browser Cache TTL rewrites `/sw.js` (a `.js` file) to `cache-control: max-age=14400` at the edge, although Caddy sends `no-cache`. The edge itself revalidates with the origin (`cf-cache-status: EXPIRED`, not `HIT`), and `updateViaCache: 'none'` makes browsers skip the HTTP cache on service-worker update checks, so updates are not delayed in practice. To make the served header match this table, add a Cloudflare Cache Rule for `life-sim.jeiang.dev` paths `/sw.js`, `/index.html`, `/manifest.webmanifest`, `/registerSW.js`: Browser TTL "respect origin" (or bypass cache). This is a dashboard setting outside both repos.
+
 ## Release flow
 
 1. A change merges to life-sim `main`. buildbot builds it and pushes the outputs to garret within about 5 minutes ([CI](ci.md)).

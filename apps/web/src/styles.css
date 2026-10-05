@@ -63,3 +63,25 @@ body {
   color: var(--c-text);
   font-family: var(--font-sans);
 }
+
+/* Motion (docs/spec/visual.md): only when the user has not asked for reduced motion. */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .journal-line {
+    animation: slide-in 250ms ease-out;
+  }
+  .modal-card {
+    animation: pop-in 200ms ease-out;
+  }
+}

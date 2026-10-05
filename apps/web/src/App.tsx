@@ -1,14 +1,31 @@
+import { BottomBar } from "./components/BottomBar.tsx";
+import { Feed } from "./components/Feed.tsx";
+import { Header } from "./components/Header.tsx";
+import { PendingNotice } from "./components/PendingNotice.tsx";
+import { StatPanel } from "./components/StatPanel.tsx";
 import { UpdateBanner } from "./components/UpdateBanner.tsx";
+import { page } from "./nav.ts";
+import { Placeholder } from "./pages/Placeholder.tsx";
 
-/** Placeholder shell; the real Classic layout arrives with the UI issues. */
+/** Classic layout (docs/spec/screens.md): header, journal feed, stat panel, bottom bar. */
 export function App() {
+  const open = page.value;
   return (
-    <div class="flex min-h-screen flex-col">
-      <UpdateBanner />
-      <header class="bg-primary px-4 py-3 text-on-primary">
-        <h1 class="text-lg font-semibold">Life Sim</h1>
-      </header>
-      <main class="flex-1 p-4" aria-label="Life feed" />
+    <div class="@container mx-auto max-w-md bg-surface text-text">
+      <div class="flex h-dvh @max-xs:h-auto @max-xs:min-h-dvh flex-col">
+        <UpdateBanner />
+        {open ? (
+          <Placeholder id={open} />
+        ) : (
+          <>
+            <Header />
+            <Feed />
+            <StatPanel />
+            <BottomBar />
+          </>
+        )}
+        <PendingNotice />
+      </div>
     </div>
   );
 }

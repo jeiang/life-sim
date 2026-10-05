@@ -65,6 +65,7 @@ packs/<pack-id>/
 | `id`, `icon`, `tags` | Identity; optional icon (see Icons); free tags for grouping. |
 | `trigger` | `event` (drawn at age-up) or `action` (offered in a menu). |
 | `menu` | For actions: the menu path, `<top>` or `<top>/<submenu>`, where the top is one of `occupation`, `assets`, `relationships`, `activities` (see [screens](screens.md#menu-ids)). |
+| `scope` | Optional. `loan` makes the storylet eligible once per loan the player holds, with `loan` bound (for example a missed-payment event). |
 | `when` | Eligibility condition (boolean expression). |
 | `chance` | Event that rolls independently each year at this probability. |
 | `weight` | Event that competes for a flavour slot with this weight. An event has exactly one of `chance` or `weight`. |
@@ -88,7 +89,7 @@ One small custom language is used for `when`, `weight`, `chance`, and effect sta
 
 - Literals: integers, percents (`2.5%`, compiled to basis points out of 10,000), strings, booleans, and content ids (`job/cashier`).
 - Operators: `+ - * /`, `mod` (modulo; `%` is used only by percent literals), comparisons, `and or not`, `in`, and the ternary `a ? b : c`.
-- Names: `age`, `money`, `stat.<id>`, `quality.<id>`, and scoped references inside storylets (for example `person.<field>` for a spawned person).
+- Names: `age`, `money`, `stat.<id>`, `quality.<id>`, `loan.<field>` (`balance`, `payment`, `missed`) in storylets with `scope: loan`, and other scoped references inside storylets (for example `person.<field>` for a spawned person).
 - Functions: a fixed whitelist (for example `min`, `max`, `clamp`, `has`, `has_occupation`, `owns`, `years_in`). No user-defined functions and no loops.
 - Integer-only. `/` truncates toward zero. A constant zero divisor is a build error. At runtime, division by zero gives 0 and overflow clamps to the safe-integer range. Dev builds and the balance harness assert on both.
 - No randomness inside expressions. Rolls happen only for `chance` and `weight`, and each roll site's RNG purpose key comes from the content id.

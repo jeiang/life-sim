@@ -61,7 +61,9 @@ About 10 item kinds, bought through the purchase dialog:
 ## Loans
 
 - Kinds: student loan, auto loan, mortgage. Each kind has a fixed rate and term; the payment is a fixed yearly amount deducted at settlement.
-- When cash is short, the player pays what they can. A "missed payment" storylet lowers happiness and adds the shortfall to the balance. After 3 misses in a row, the asset is repossessed: it is sold at current value against the debt.
+- A loan can be secured by the asset it bought (auto loan, mortgage); a student loan is unsecured.
+- Settlement (Core) handles default. When cash is short, it takes what cash there is, adds the shortfall to the balance, and increments the loan's consecutive-miss count, which expressions read as `loan.missed`. A full payment resets it to 0. At 3 consecutive misses, settlement repossesses the secured asset: it removes the asset, applies its current value to the balance, and writes a journal line. Any remaining balance stays as debt. An unsecured loan keeps accruing misses.
+- The Pack's "missed payment" event (`when: loan.missed > 0`) supplies the story and the happiness penalty. Repossession itself is Core behaviour, not a storylet effect, so the closed effect set (ADR 0002) needs no new effect.
 
 ## Activities (`activities`)
 

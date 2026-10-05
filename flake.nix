@@ -80,10 +80,13 @@
             nativeBuildInputs = [ pkgs.nodejs_24 pkgs.pnpm_10 pkgs.pnpmConfigHook ];
             PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
             PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
+            DEBUG = "pw:browser*";
+            FONTCONFIG_FILE = pkgs.makeFontsConf { fontDirectories = [ pkgs.dejavu_fonts ]; };
             dontBuild = true;
             doCheck = true;
             checkPhase = ''
               export HOME=$TMPDIR
+              export XDG_RUNTIME_DIR=$TMPDIR/xdg && mkdir -p -m 700 $XDG_RUNTIME_DIR
               cd e2e && pnpm exec playwright test
             '';
             installPhase = "touch $out";

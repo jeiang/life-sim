@@ -65,7 +65,8 @@ packs/<pack-id>/
 | `id`, `icon`, `tags` | Identity; optional icon (see Icons); free tags for grouping. |
 | `trigger` | `event` (drawn at age-up) or `action` (offered in a menu). |
 | `menu` | For actions: the menu path, `<top>` or `<top>/<submenu>`, where the top is one of `occupation`, `assets`, `relationships`, `activities` (see [screens](screens.md#menu-ids)). |
-| `scope` | Optional binding, evaluated once per bound item. `loan`: once per loan the player holds, with `loan` bound (for example a missed-payment event). `person`: once per non-player person during the NPC yearly pass, with `person` bound (NPC storylets). Without `scope`, only the player and storylet-local names are in scope. |
+| `scope` | Optional binding, evaluated once per bound item. `loan` (events only): once per loan the player holds, with `loan` bound (for example a missed-payment event). `person`: once per non-player person during the NPC yearly pass, with `person` bound (NPC storylets); on an action, the UI offers it for a chosen person. `die(...)` kills the bound person, and `relationship(person).closeness += n` changes the tie to them. Without `scope`, only the player and storylet-local names are in scope. |
+| `target` | With `scope: person`: role ids the person must hold toward the player (for example `[core-loop/parent]`). `person.role`, `person.alive` and `person.age` are readable. |
 | `when` | Eligibility condition (boolean expression). |
 | `chance` | Event that rolls independently each year at this probability. |
 | `weight` | Event that competes for a flavour slot with this weight. An event has exactly one of `chance` or `weight`. |
@@ -89,7 +90,7 @@ One small custom language is used for `when`, `weight`, `chance`, and effect sta
 
 - Literals: integers, percents (`2.5%`, compiled to basis points out of 10,000), strings, booleans, and content ids (`job/cashier`).
 - Operators: `+ - * /`, `mod` (modulo; `%` is used only by percent literals), comparisons, `and or not`, `in`, and the ternary `a ? b : c`.
-- Names: `age`, `money`, `stat.<id>`, `quality.<id>`, `loan.<field>` (`balance`, `payment`, `missed`) in storylets with `scope: loan`, and other scoped references inside storylets (for example `person.<field>` for a spawned person).
+- Names (scope `person` also has `person.role` as a content id, `person.alive`): `age`, `money`, `stat.<id>`, `quality.<id>`, `loan.<field>` (`balance`, `payment`, `missed`) in storylets with `scope: loan`, and other scoped references inside storylets (for example `person.<field>` for a spawned person).
 - Functions: a fixed whitelist (for example `min`, `max`, `clamp`, `has`, `has_occupation`, `owns`, `years_in`). No user-defined functions and no loops.
 - Integer-only. `/` truncates toward zero. A constant zero divisor is a build error. At runtime, division by zero gives 0 and overflow clamps to the safe-integer range. Dev builds and the balance harness assert on both.
 - No randomness inside expressions. Rolls happen only for `chance` and `weight`, and each roll site's RNG purpose key comes from the content id.
@@ -100,7 +101,7 @@ Each statement maps to one effect in the closed Core set (ADR 0002):
 
 ```
 stat.<id> += n | -= n | = n          quality.<id> += n | = v
-money += n | -= n                    take_loan(principal, rate, years)
+money += n | -= n                    take_loan(loan-kind, principal)
 grant_asset(item-kind) | remove_asset(item-kind)
 start_occupation(kind) | end_occupation(kind)
 spawn_person(role, generator) as <name>

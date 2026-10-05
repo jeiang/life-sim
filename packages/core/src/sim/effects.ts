@@ -119,14 +119,15 @@ function applyEffect(
       const args = e.slice(2) as Expr[];
       switch (e[1]) {
         case "take_loan": {
-          const [principal, rate, years] = args.map((a) =>
-            evalInt(a, w, idx, scope),
-          ) as [number, number, number];
+          const kind = idx.loans.get(str(args[0], w, idx, scope));
+          if (!kind) throw new RangeError("unknown loan kind");
+          const principal = evalInt(args[1] as Expr, w, idx, scope);
+          if (principal <= 0) return w;
           return openLoan(w, who, {
-            kindId: "loan",
-            principal: Math.max(0, principal),
-            rateBp: Math.max(0, rate),
-            termYears: Math.max(1, years),
+            kindId: kind.id,
+            principal,
+            rateBp: kind.rateBp,
+            termYears: kind.termYears,
           })[0];
         }
         case "grant_asset":

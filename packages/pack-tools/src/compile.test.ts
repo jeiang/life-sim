@@ -69,6 +69,10 @@ function expectError(
   }
 }
 
+const subIn = (src: string, a: string, b: string): string => {
+  expect(src).toContain(a);
+  return src.replace(a, b);
+};
 const sub = (a: string, b: string) => (t: string) => {
   expect(t).toContain(a);
   return t.replace(a, b);
@@ -493,7 +497,7 @@ describe("build checks fail", () => {
   menu: relationships
   scope: person
   target: [neighbour]
-  when: person.role == neighbour and person.alive and person.age >= 3
+  when: person.role == base/neighbour and person.alive and person.age >= 3
   outcomes:
     - effects:
         - relationship(person).closeness += 5
@@ -514,7 +518,7 @@ describe("build checks fail", () => {
   test("action scope and target mistakes are reported", () => {
     expectError(
       {
-        "base/storylets/targeted.yaml": sub(
+        "base/storylets/targeted.yaml": subIn(
           PERSON_ACTION,
           "  scope: person\n",
           "  scope: loan\n",
@@ -524,7 +528,7 @@ describe("build checks fail", () => {
     );
     expectError(
       {
-        "base/storylets/targeted.yaml": sub(
+        "base/storylets/targeted.yaml": subIn(
           PERSON_ACTION,
           "  scope: person\n",
           "",
@@ -534,7 +538,7 @@ describe("build checks fail", () => {
     );
     expectError(
       {
-        "base/storylets/targeted.yaml": sub(
+        "base/storylets/targeted.yaml": subIn(
           PERSON_ACTION,
           "target: [neighbour]",
           "target: [local]",

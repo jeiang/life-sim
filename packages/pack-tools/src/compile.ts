@@ -119,6 +119,7 @@ const CALL_KINDS: Record<string, Kind[][] | undefined> = {
   owns: [["item"]],
   start_occupation: [["occupation"]],
   end_occupation: [["occupation"]],
+  take_loan: [["loan"]],
   grant_asset: [["item"]],
   remove_asset: [["item"]],
   spawn_person: [["role"], ["generator"]],

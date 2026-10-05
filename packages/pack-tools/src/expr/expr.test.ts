@@ -124,7 +124,10 @@ describe("effect statements", () => {
     ["stat.smarts = 50", ["set", "stat.smarts", 50]],
     ["quality.licensed = true", ["set", "quality.licensed", true]],
     ["money += 100", ["add", "money", 100]],
-    ["take_loan(1000, 5%, 4)", ["do", "take_loan", 1000, 500, 4]],
+    [
+      "take_loan(bank/auto-loan, 1000)",
+      ["do", "take_loan", ["id", "bank/auto-loan"], 1000],
+    ],
     [
       "start_occupation(job/cashier)",
       ["do", "start_occupation", ["id", "job/cashier"]],
@@ -156,7 +159,7 @@ describe("effect statements", () => {
     ["relationship(friend).closeness = 1", "only allows '+='"],
     ["relationship(friend).trust += 1", "only 'closeness'"],
     ["explode()", "unknown effect 'explode'"],
-    ["take_loan(1, 2)", "takes 3 argument(s), got 2"],
+    ["take_loan(bank/auto-loan)", "takes 2 argument(s), got 1"],
     ["quality.title += 1", "needs an integer target"],
   ])("rejects %s", (src, msg) => {
     const r = eff(src);

@@ -4,6 +4,7 @@
 # who hold one of the listed roles toward the player. The two "make a friend" verbs meet
 # someone new, so they bind no person and spawn one instead.
 - id: spend-time-with-loved-ones
+  label: Spend time together
   icon: 🫶
   trigger: action
   menu: relationships
@@ -30,6 +31,7 @@
         - relationship(person).closeness += -3
 
 - id: have-a-conversation
+  label: Have a conversation
   icon: 💬
   trigger: action
   menu: relationships
@@ -57,6 +59,7 @@
         - relationship(person).closeness += -2
 
 - id: ask-parents-for-money
+  label: Ask for money
   icon: 💵
   trigger: action
   menu: relationships
@@ -85,6 +88,7 @@
         - relationship(person).closeness += -2
 
 - id: befriend
+  label: Become friends
   icon: 🤝
   trigger: action
   menu: relationships
@@ -106,6 +110,7 @@
         - relationship(person).closeness += 2
 
 - id: make-a-friend-classmate
+  label: Make a friend at school
   icon: 🤝
   trigger: action
   menu: relationships
@@ -127,6 +132,7 @@
         - stat.happiness -= 1
 
 - id: make-a-friend-coworker
+  label: Make a friend at work
   icon: 🤝
   trigger: action
   menu: relationships

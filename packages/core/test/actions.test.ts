@@ -332,3 +332,32 @@ describe("choice log and replay", () => {
     expect(worldHash(w1)).not.toBe(worldHash(a));
   });
 });
+
+describe("the core-loop starting family and labels", () => {
+  const rb = real.bundles;
+  const toPlayer = (w: World) =>
+    w.relationships.filter((r) => r.from === w.playerId);
+
+  test("every life has 2 parents and 0-2 siblings, with relationships", () => {
+    const sibs = new Set<number>();
+    for (let seed = 1; seed <= 40; seed++) {
+      const w = newLife(rb, seed);
+      const roles = toPlayer(w).map((r) => r.role);
+      const parents = roles.filter((r) => r === "core-loop/parent").length;
+      const siblings = roles.filter((r) => r === "core-loop/sibling").length;
+      expect(parents).toBe(2);
+      expect(siblings).toBeLessThanOrEqual(2);
+      expect(people(w)).toHaveLength(parents + siblings);
+      sibs.add(siblings);
+    }
+    expect([...sibs].sort()).toEqual([0, 1, 2]);
+  });
+
+  test("every action row has an explicit label", () => {
+    const labelled = real.bundles
+      .flatMap((b) => b.storylets)
+      .filter((s) => s.trigger === "action");
+    expect(labelled.length).toBeGreaterThan(0);
+    for (const s of labelled) expect(s.label, s.id).toBeTruthy();
+  });
+});

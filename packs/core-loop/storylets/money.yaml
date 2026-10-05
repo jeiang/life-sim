@@ -16,6 +16,7 @@
         - journal("Missed a loan payment. The shortfall was added to the balance.")
 
 - id: driving-test
+  label: Take the driving test
   icon: 🪪
   trigger: action
   menu: activities

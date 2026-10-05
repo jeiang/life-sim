@@ -114,6 +114,7 @@
         - journal("Graduated with a arts degree at age {age}.")
 
 - id: enrol-business
+  label: Study business
   icon: 🎓
   trigger: action
   menu: occupation/education
@@ -142,6 +143,7 @@
             - journal("Enrolled in business at university with a student loan at age {age}.")
 
 - id: enrol-engineering
+  label: Study engineering
   icon: 🎓
   trigger: action
   menu: occupation/education
@@ -170,6 +172,7 @@
             - journal("Enrolled in engineering at university with a student loan at age {age}.")
 
 - id: enrol-nursing
+  label: Study nursing
   icon: 🎓
   trigger: action
   menu: occupation/education
@@ -198,6 +201,7 @@
             - journal("Enrolled in nursing at university with a student loan at age {age}.")
 
 - id: enrol-arts
+  label: Study arts
   icon: 🎓
   trigger: action
   menu: occupation/education
@@ -226,6 +230,7 @@
             - journal("Enrolled in arts at university with a student loan at age {age}.")
 
 - id: study-harder
+  label: Study harder
   icon: 📚
   trigger: action
   menu: occupation
@@ -246,6 +251,7 @@
         - stat.happiness -= 2
 
 - id: drop-out-of-university
+  label: Drop out of university
   icon: 🚪
   trigger: action
   menu: occupation

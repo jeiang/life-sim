@@ -51,6 +51,8 @@ export interface CompiledChoice {
 
 export interface CompiledStorylet {
   readonly id: string;
+  /** Actions: the menu label; absent: derived from the id. */
+  readonly label?: string;
   readonly icon?: IconRef;
   readonly tags: readonly string[];
   readonly trigger: "event" | "action";
@@ -151,6 +153,23 @@ export interface PackMigrations {
   readonly removed: Readonly<Record<string, string | null>>;
 }
 
+/** Which Pack people data builds the starting family. */
+export interface FamilyDecl {
+  /** Generator for the player's name; absent: the first generator's names. */
+  readonly player?: string;
+  readonly parent: {
+    readonly role: string;
+    readonly generator: string;
+    readonly count: number;
+  };
+  readonly sibling: {
+    readonly role: string;
+    readonly generator: string;
+    /** Inclusive count range. */
+    readonly count: readonly [number, number];
+  };
+}
+
 export interface PackBundle {
   readonly format: typeof PACK_BUNDLE_FORMAT;
   readonly id: string;
@@ -164,6 +183,8 @@ export interface PackBundle {
     readonly slots: readonly [number, number];
     readonly cap: number;
   };
+  /** Starting family; ids are full. The first Pack that declares one wins. */
+  readonly family?: FamilyDecl;
   readonly migrations: PackMigrations;
   /** All content below is sorted by id. */
   readonly storylets: readonly CompiledStorylet[];

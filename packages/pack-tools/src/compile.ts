@@ -12,6 +12,7 @@ import type {
   Effect,
   Expr,
   Type as ExprType,
+  FamilyDecl,
   PackBundle,
   PackMigrations,
   QualityDecl,
@@ -473,12 +474,36 @@ class PackCompiler {
       ...(m.year
         ? { year: { slots: m.year.slots as [number, number], cap: m.year.cap } }
         : {}),
+      ...(m.family ? { family: this.family(m.family) } : {}),
       migrations,
       ...bundle,
     };
   }
 
   // ---- manifest -----------------------------------------------------------
+
+  private family(f: NonNullable<Manifest["family"]>): FamilyDecl {
+    const at = (key: string, sub: string, raw: string, kind: Kind) =>
+      this.ref(raw, [kind], ["family", key, sub].filter(Boolean)) ?? raw;
+    if (f.sibling.count[0] > f.sibling.count[1])
+      this.err(
+        ["family", "sibling", "count"],
+        "count range minimum exceeds maximum",
+      );
+    return {
+      ...(f.player ? { player: at("player", "", f.player, "generator") } : {}),
+      parent: {
+        role: at("parent", "role", f.parent.role, "role"),
+        generator: at("parent", "generator", f.parent.generator, "generator"),
+        count: f.parent.count,
+      },
+      sibling: {
+        role: at("sibling", "role", f.sibling.role, "role"),
+        generator: at("sibling", "generator", f.sibling.generator, "generator"),
+        count: f.sibling.count as [number, number],
+      },
+    };
+  }
 
   private checkDeclarations(m: Manifest): void {
     const seen = new Set<string>();
@@ -719,6 +744,11 @@ class PackCompiler {
       outcomes: [],
     };
     if (s.icon) Object.assign(out, this.iconField(s.icon, ["icon"]));
+    if (s.label !== undefined) {
+      if (s.trigger !== "action")
+        this.err(["label"], "'label' is only valid on action storylets");
+      else out.label = s.label;
+    }
     if (s.scope) out.scope = s.scope;
     if (s.trigger === "event") {
       if (s.menu !== undefined)

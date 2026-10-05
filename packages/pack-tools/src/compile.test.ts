@@ -515,6 +515,68 @@ describe("build checks fail", () => {
     expect(chat).toMatchObject({ scope: "person", target: ["base/neighbour"] });
   });
 
+  const FAMILY = `family:
+  player: local
+  parent: { role: neighbour, generator: local, count: 2 }
+  sibling: { role: neighbour, generator: local, count: [0, 2] }
+`;
+
+  test("manifest family resolves to full ids; dangling or inverted ranges fail", () => {
+    const withFamily = (f: string) => ({
+      "base/pack.yaml": (t: string) =>
+        t.replace("migrations:", `${f}migrations:`),
+    });
+    const r = compilePacks(fixture(withFamily(FAMILY)));
+    expect(r.ok).toBe(true);
+    if (r.ok)
+      expect(r.bundles.find((b) => b.id === "base")?.family).toEqual({
+        player: "base/local",
+        parent: { role: "base/neighbour", generator: "base/local", count: 2 },
+        sibling: {
+          role: "base/neighbour",
+          generator: "base/local",
+          count: [0, 2],
+        },
+      });
+    expectError(
+      withFamily(
+        FAMILY.replace(
+          "generator: local, count: 2",
+          "generator: nobody, count: 2",
+        ),
+      ),
+      "dangling reference 'nobody'",
+    );
+    expectError(
+      withFamily(FAMILY.replace("[0, 2]", "[2, 0]")),
+      "count range minimum exceeds maximum",
+    );
+  });
+
+  test("a storylet label is kept on actions and rejected on events", () => {
+    const r = compilePacks(
+      fixture({
+        "base/storylets/targeted.yaml": PERSON_ACTION.replace(
+          "- id: chat\n",
+          "- id: chat\n  label: Chat up\n",
+        ),
+      }),
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok)
+      expect(
+        r.bundles.flatMap((b) => b.storylets).find((s) => s.id === "base/chat")
+          ?.label,
+      ).toBe("Chat up");
+    expectError(
+      {
+        "base/storylets/work.yaml": (t) =>
+          t.replace("trigger: event", "label: Nope\n  trigger: event"),
+      },
+      "'label' is only valid on action storylets",
+    );
+  });
+
   test("action scope and target mistakes are reported", () => {
     expectError(
       {

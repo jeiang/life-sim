@@ -162,6 +162,72 @@
         }
       }
     },
+    "family": {
+      "additionalProperties": false,
+      "title": "Starting family",
+      "type": "object",
+      "required": ["parent", "sibling"],
+      "properties": {
+        "player": {
+          "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+          "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+          "type": "string"
+        },
+        "parent": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": ["role", "generator", "count"],
+          "properties": {
+            "role": {
+              "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+              "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+              "type": "string"
+            },
+            "generator": {
+              "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+              "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+              "type": "string"
+            },
+            "count": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        },
+        "sibling": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": ["role", "generator", "count"],
+          "properties": {
+            "role": {
+              "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+              "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+              "type": "string"
+            },
+            "generator": {
+              "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+              "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+              "type": "string"
+            },
+            "count": {
+              "description": "Inclusive [min, max]",
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "additionalItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        }
+      }
+    },
     "migrations": {
       "additionalProperties": false,
       "type": "object",

@@ -9,6 +9,8 @@ const TITLES: Record<PageId, string> = {
   assets: "Assets",
   relationships: "Relationships",
   activities: "Activities",
+  graveyard: "Graveyard",
+  credits: "Credits",
 };
 
 /** Stand-in full page with Back; each menu issue replaces its own page. */

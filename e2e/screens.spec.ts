@@ -1,0 +1,177 @@
+import { readFile } from "node:fs/promises";
+import AxeBuilder from "@axe-core/playwright";
+import { expect, type Page, test } from "@playwright/test";
+
+const ageButton = (page: Page) =>
+  page.getByRole("button", { name: "Age", exact: true });
+
+async function resolvePending(page: Page): Promise<void> {
+  const dialog = page.getByRole("dialog");
+  for (let i = 0; i < 20 && (await dialog.isVisible()); i++) {
+    await dialog
+      .getByRole("button")
+      .and(page.locator(":enabled"))
+      .first()
+      .click();
+  }
+  await expect(dialog).toBeHidden();
+}
+
+async function openSettings(page: Page): Promise<void> {
+  await page.getByRole("button", { name: "Settings" }).click();
+  await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+}
+
+async function switchLife(page: Page): Promise<void> {
+  await openSettings(page);
+  await page.getByRole("button", { name: "Switch life" }).click();
+  await expect(page.getByRole("heading", { name: "Your lives" })).toBeVisible();
+}
+
+const lifeButtons = (page: Page) => page.getByRole("list").getByRole("button");
+
+test("a new life is added to the list and the old one stays", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(ageButton(page)).toBeVisible();
+  await ageButton(page).click();
+  await resolvePending(page);
+  await switchLife(page);
+  await expect(lifeButtons(page)).toHaveCount(1);
+  await page.getByRole("button", { name: "Start a new life" }).click();
+  await expect(ageButton(page)).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /^Age 0 years/i }),
+  ).toBeVisible();
+  await switchLife(page);
+  await expect(lifeButtons(page)).toHaveCount(2);
+  // The aged life continues where it left off.
+  await page.getByRole("list").getByRole("button", { name: /Age 1/ }).click();
+  await expect(
+    page.getByRole("heading", { name: /^Age 1 year/i }),
+  ).toBeVisible();
+});
+
+test("lives survive a reload", async ({ page }) => {
+  await page.goto("/");
+  await ageButton(page).click();
+  await resolvePending(page);
+  // autosave is queued; wait for the store to settle before reloading
+  await page.waitForTimeout(500);
+  await page.reload();
+  // One life: continued directly.
+  await expect(
+    page.getByRole("heading", { name: /^Age 1 year/i }),
+  ).toBeVisible();
+});
+
+test("export downloads a file; import round-trips into a fresh browser profile", async ({
+  page,
+  browser,
+}) => {
+  // WebKit offers a share sheet that never answers in automation; exercise the download path.
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "canShare", { value: undefined });
+  });
+  await page.goto("/");
+  await ageButton(page).click();
+  await resolvePending(page);
+  await openSettings(page);
+  const exportButton = page.getByRole("button", { name: "Export lives" });
+  await expect(exportButton).toBeEnabled();
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    exportButton.click(),
+  ]);
+  expect(download.suggestedFilename()).toMatch(
+    /^life-sim-backup-\d{4}-\d{2}-\d{2}\.json$/,
+  );
+  const path = await download.path();
+  const saved = JSON.parse(await readFile(path, "utf8"));
+  expect(saved.lives).toHaveLength(1);
+
+  const fresh = await browser.newContext();
+  const other = await fresh.newPage();
+  await other.goto("/");
+  await expect(ageButton(other)).toBeVisible();
+  await openSettings(other);
+  await other.locator('input[type="file"]').setInputFiles(path);
+  await expect(
+    other.getByRole("status").filter({ hasText: "Imported" }),
+  ).toBeVisible();
+  await other.getByRole("button", { name: "Switch life" }).click();
+  // The fresh profile's own first life plus the imported one.
+  await expect(lifeButtons(other)).toHaveCount(2);
+  await expect(
+    other.getByRole("list").getByRole("button", { name: /Age 1/ }),
+  ).toBeVisible();
+  await fresh.close();
+});
+
+test("import shows validation errors", async ({ page }) => {
+  await page.goto("/");
+  await openSettings(page);
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "bad.json",
+    mimeType: "application/json",
+    buffer: Buffer.from("this is not a save"),
+  });
+  await expect(
+    page.getByRole("alert").filter({ hasText: /./ }).first(),
+  ).toBeVisible();
+});
+
+test("credits list every icon source and license", async ({ page }) => {
+  await page.goto("/");
+  await openSettings(page);
+  await page.getByRole("button", { name: "Credits" }).click();
+  await expect(page.getByRole("heading", { name: "Credits" })).toBeVisible();
+  for (const name of ["Twemoji", "Lucide", "Feather"])
+    await expect(
+      page.getByRole("heading", { name, exact: true }),
+    ).toBeVisible();
+  await expect(page.getByText("CC BY 4.0").first()).toBeAttached();
+  await expect(page.getByText(/ISC/).first()).toBeAttached();
+  await expect(page.getByText("MIT").first()).toBeAttached();
+  await page.getByRole("button", { name: "Back" }).click();
+  await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+});
+
+test("death shows the obituary, then the life list; the life is in the graveyard", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  await page.goto("/");
+  const obituary = page.getByRole("heading", { name: "Obituary" });
+  for (let i = 0; i < 130; i++) {
+    if (await obituary.isVisible()) break;
+    await ageButton(page).click();
+    await resolvePending(page);
+  }
+  await expect(obituary).toBeVisible();
+  await expect(page.getByText("Age at death")).toBeVisible();
+  await expect(page.getByText("Net worth")).toBeVisible();
+  await page.getByRole("button", { name: "Back to your lives" }).click();
+  await expect(page.getByRole("heading", { name: "Your lives" })).toBeVisible();
+  await expect(page.getByText("No life in progress.")).toBeVisible();
+  await page.getByRole("button", { name: "Graveyard" }).click();
+  await expect(lifeButtons(page)).toHaveCount(1);
+  await lifeButtons(page).first().click();
+  await expect(page.getByText("Age at death")).toBeVisible();
+});
+
+for (const scheme of ["light", "dark"] as const) {
+  test(`no axe violations on the app screens (${scheme})`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme, reducedMotion: "reduce" });
+    await page.goto("/");
+    await expect(ageButton(page)).toBeVisible();
+    await openSettings(page);
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    await page.getByRole("button", { name: "Credits" }).click();
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    await page.getByRole("button", { name: "Back" }).click();
+    await page.getByRole("button", { name: "Switch life" }).click();
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  });
+}

@@ -5,21 +5,32 @@ import {
   canAgeUp,
   choose,
   describePending,
+  type GraveyardEntry,
   indexBundles,
   listShop,
   type NetWorthPoint,
   newLife,
+  type Obituary,
   type PackIndex,
   type PendingView,
   purchase,
   recordNetWorth,
   runAction,
+  type SavedLife,
   type ShopRow,
   sell,
   type World,
 } from "@life/core";
-import { computed, signal } from "@preact/signals";
+import { computed, effect, signal } from "@preact/signals";
 import { amountDemo } from "../components/AmountPickerDemo.tsx";
+import {
+  type Autosaver,
+  createAutosaver,
+  type LifeStore,
+  type LoadProblem,
+  openLifeStore,
+  requestPersistence,
+} from "../persistence/index.ts";
 
 /** UI-layer seed: the only place the web app draws randomness (ADR 0002). */
 function randomSeed(): number {
@@ -60,6 +71,119 @@ export const canAge = computed(() => canAgeUp(world.value));
 
 /** Outcome lines of the finished steps of the open `next:` chain, shown above the current step. */
 export const chainLines = signal<readonly string[]>([]);
+// ---- Lives, graveyard, autosave (ADR 0003) ----
+
+/** True once the stored lives have been read; render nothing before that. */
+export const ready = signal(false);
+/** Ongoing lives, newest first (refreshed on startup, import and when leaving a life). */
+export const lives = signal<readonly SavedLife[]>([]);
+/** Finished lives, newest first. */
+export const graveyard = signal<readonly GraveyardEntry[]>([]);
+/** The id of the life in `world`, or null while the life list is showing. */
+export const currentLifeId = signal<string | null>(null);
+/** Set when the current life ends: the obituary screen shows until acknowledged. */
+export const deathObituary = signal<Obituary | null>(null);
+/** Rows that could not be loaded (damaged or from a newer build). */
+export const loadProblems = signal<readonly LoadProblem[]>([]);
+/** Why saving is unavailable (storage could not open), or null. */
+export const storageError = signal<string | null>(null);
+
+let store: LifeStore | null = null;
+let autosaver: Autosaver | null = null;
+let lastSaved: World | null = null;
+let persistRequested = false;
+
+/** The open store, for Settings (export, import); null when storage is unavailable. */
+export const getLifeStore = (): LifeStore | null => store;
+
+/** Last autosave failure (quota, blocked), or null. */
+export const saveError = computed(
+  () => storageError.value ?? autosaver?.lastError.value ?? null,
+);
+
+/** Resolves when every queued autosave has been written. */
+export const flushSaves = (): Promise<void> =>
+  autosaver?.flush() ?? Promise.resolve();
+
+const lifeName = (w: World): string => {
+  const p = w.persons.get(w.playerId);
+  return p ? `${p.givenName} ${p.familyName}` : "Unnamed";
+};
+
+/** Reload both lists from storage. */
+export async function refreshLists(): Promise<void> {
+  if (!store) return;
+  const [l, g] = await Promise.all([
+    store.loadLives(bundles),
+    store.loadGraveyard(bundles),
+  ]);
+  lives.value = l.items;
+  graveyard.value = g.items;
+  loadProblems.value = [...l.problems, ...g.problems];
+}
+
+function saveWorld(id: string, w: World): void {
+  if (!autosaver) return;
+  lastSaved = w;
+  if (w.ended) deathObituary.value = w.ended;
+  void autosaver
+    .save(id, lifeName(w), w)
+    .then(() => {
+      if (!persistRequested) {
+        persistRequested = true;
+        void requestPersistence();
+      }
+      if (w.ended) return refreshLists();
+    })
+    .catch(() => {
+      // surfaced through `saveError`
+    });
+}
+
+// Autosave after every change to the world: age-up, choice, action (any code that sets `world`).
+effect(() => {
+  const w = world.value;
+  const id = currentLifeId.peek();
+  if (id !== null && w !== lastSaved) saveWorld(id, w);
+});
+
+function enter(id: string, w: World): void {
+  lastSaved = w; // loading is not a change: do not re-save
+  currentLifeId.value = id;
+  world.value = w;
+  latestLines.value = [];
+  netWorthHistory.value = recordNetWorth([], w);
+  chainLines.value = [];
+  purchasing.value = null;
+}
+
+/** Read the stored lives and decide the first screen. Call once before rendering. */
+export async function initGame(): Promise<void> {
+  try {
+    store = await openLifeStore();
+    autosaver = createAutosaver(store);
+    await refreshLists();
+    const ongoing = lives.value;
+    const first = ongoing[0];
+    if (
+      ongoing.length === 0 &&
+      graveyard.value.length === 0 &&
+      loadProblems.value.length === 0
+    ) {
+      // Very first launch: start the first life straight away.
+      const id = crypto.randomUUID();
+      currentLifeId.value = id;
+      saveWorld(id, world.peek());
+    } else if (ongoing.length === 1 && first) {
+      enter(first.id, first.world);
+    }
+    // Several lives, or none in progress: the life list shows.
+  } catch (e) {
+    storageError.value = e instanceof Error ? e.message : String(e);
+    currentLifeId.value = crypto.randomUUID();
+  }
+  ready.value = true;
+}
 
 export function ageUpOneYear(): void {
   if (!canAgeUp(world.value)) return;
@@ -113,8 +237,12 @@ export function confirmPurchase(mode: "cash" | "loan"): void {
   track();
 }
 
+/** Add a new life to the list and play it. The current life stays in the list. */
 export function startNewLife(): void {
-  world.value = newLife(bundles, randomSeed());
+  const w = newLife(bundles, randomSeed());
+  currentLifeId.value = crypto.randomUUID();
+  lastSaved = null;
+  world.value = w;
   latestLines.value = [];
   netWorthHistory.value = recordNetWorth([], world.value);
   chainLines.value = [];
@@ -202,4 +330,23 @@ export function runMenuAction(
 
 export function sellAsset(assetId: number): string | null {
   return apply(() => sell(world.value, bundles, assetId));
+}
+
+/** Play a life from the list. */
+export function continueLife(id: string): void {
+  const life = lives.value.find((l) => l.id === id);
+  if (life) enter(life.id, life.world);
+}
+
+/** Leave the current life (already saved) for the life list. */
+export async function showLifeList(): Promise<void> {
+  await flushSaves();
+  currentLifeId.value = null;
+  await refreshLists();
+}
+
+/** After the obituary: back to the life list. */
+export async function dismissObituary(): Promise<void> {
+  deathObituary.value = null;
+  await showLifeList();
 }

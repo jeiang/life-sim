@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "preact/hooks";
 import { latestLines, world } from "../game/store.ts";
 import { EmojiText } from "./Emoji.tsx";
+import { InstallCard } from "./InstallCard.tsx";
 
 /** Journal grouped by age, scrolled to the newest year. */
 export function Feed() {
@@ -17,6 +18,7 @@ export function Feed() {
       aria-label="Life journal"
       class="flex-1 space-y-3 @max-xs:h-[60dvh] @max-xs:flex-none overflow-y-auto px-4 py-3"
     >
+      <InstallCard />
       {journal.map((entry) => (
         <section key={entry.age} aria-label={`Age ${entry.age}`}>
           <h2 class="text-xs font-bold uppercase tracking-wide">

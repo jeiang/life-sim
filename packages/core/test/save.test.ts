@@ -102,6 +102,7 @@ describe("schema migrations", () => {
     delete j.pending;
     delete j.ended;
     delete j.storyletLog;
+    delete j.choiceLog;
     j.schemaVersion = 0;
     return {
       w,
@@ -119,6 +120,7 @@ describe("schema migrations", () => {
     expect(mig.pending).toBeNull();
     expect(mig.ended).toBeNull();
     expect(mig.storyletLog).toEqual({});
+    expect(mig.choiceLog).toEqual([]);
     expect(mig.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(mig.seed).toBe(w.seed);
     expect(getPerson(mig, mig.playerId).age).toBe(getPerson(w, w.playerId).age);

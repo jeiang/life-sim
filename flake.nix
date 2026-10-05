@@ -85,6 +85,13 @@
             dontBuild = true;
             doCheck = true;
             checkPhase = ''
+              ${pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isLinux ''
+                # WPE WebKit needs an EGL display; use Mesa software rendering on a surfaceless platform.
+                export EGL_PLATFORM=surfaceless LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe
+                export __EGL_VENDOR_LIBRARY_FILENAMES=${pkgs.mesa}/share/glvnd/egl_vendor.d/50_mesa.json
+                export LIBGL_DRIVERS_PATH=${pkgs.mesa}/lib/dri
+                export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath [ pkgs.libglvnd pkgs.mesa ]}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+              ''}
               export HOME=$TMPDIR
               export XDG_RUNTIME_DIR=$TMPDIR/xdg && mkdir -p -m 700 $XDG_RUNTIME_DIR
               cd e2e && pnpm exec playwright test

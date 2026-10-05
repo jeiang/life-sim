@@ -52,6 +52,16 @@
           }
         ]
       },
+      "target": {
+        "minItems": 1,
+        "description": "`scope: person` only: role ids the bound person must have toward the player",
+        "type": "array",
+        "items": {
+          "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+          "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+          "type": "string"
+        }
+      },
       "when": {
         "description": "Expression in the Pack expression language (ADR 0004)",
         "anyOf": [

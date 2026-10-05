@@ -28,7 +28,7 @@ function mapWorlds(raw: Json, f: (w: Json) => Json): Json {
 
 /**
  * Version 0 was the prototype layout: no file-level `packVersions`, and worlds without
- * `pending`, `ended` or `storyletLog`. Version 1 adds them.
+ * `pending`, `ended`, `storyletLog` or `choiceLog`. Version 1 adds them.
  */
 const v0to1: Migration = (raw) => {
   const migrated = mapWorlds(raw, (w) => ({
@@ -37,6 +37,7 @@ const v0to1: Migration = (raw) => {
     pending: w.pending ?? null,
     ended: w.ended ?? null,
     storyletLog: w.storyletLog ?? {},
+    choiceLog: w.choiceLog ?? [],
     packVersions: w.packVersions ?? [],
   }));
   const seen = new Map<string, string>();

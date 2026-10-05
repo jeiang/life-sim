@@ -71,7 +71,9 @@ function applyEffect(
       const delta = evalInt(e[2], w, idx, scope);
       const sign = e[0] === "sub" ? -1 : 1;
       if (typeof target !== "string") {
-        const pid = bound.get(target[1]);
+        const pid =
+          bound.get(target[1]) ??
+          (target[1] === "person" ? scope.person : undefined);
         if (pid === undefined) return w;
         let out = w;
         for (const r of w.relationships) {
@@ -117,14 +119,15 @@ function applyEffect(
       const args = e.slice(2) as Expr[];
       switch (e[1]) {
         case "take_loan": {
-          const [principal, rate, years] = args.map((a) =>
-            evalInt(a, w, idx, scope),
-          ) as [number, number, number];
+          const kind = idx.loans.get(str(args[0], w, idx, scope));
+          if (!kind) throw new RangeError("unknown loan kind");
+          const principal = evalInt(args[1] as Expr, w, idx, scope);
+          if (principal <= 0) return w;
           return openLoan(w, who, {
-            kindId: "loan",
-            principal: Math.max(0, principal),
-            rateBp: Math.max(0, rate),
-            termYears: Math.max(1, years),
+            kindId: kind.id,
+            principal,
+            rateBp: kind.rateBp,
+            termYears: kind.termYears,
           })[0];
         }
         case "grant_asset":

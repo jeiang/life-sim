@@ -1,5 +1,11 @@
 import type { CompiledStorylet, PackBundle } from "../pack.ts";
-import type { QueuedEvent, ScopeRef, World } from "../state/types.ts";
+import type {
+  ChoiceEntry,
+  PersonId,
+  QueuedEvent,
+  ScopeRef,
+  World,
+} from "../state/types.ts";
 import {
   getPerson,
   nextStream,
@@ -42,6 +48,11 @@ function lineCount(w: World): number {
 function result(before: World, after: World): SimResult {
   const all = after.journal.flatMap((e) => e.lines);
   return { world: after, lines: all.slice(lineCount(before)) };
+}
+
+/** The world with one more player choice on its log. */
+export function appendChoice(world: World, entry: ChoiceEntry): World {
+  return { ...world, choiceLog: [...world.choiceLog, entry] };
 }
 
 /** True when the life can age up: not ended, nothing pending. */
@@ -229,7 +240,7 @@ export function ageUp(world: World, bundles: readonly PackBundle[]): SimResult {
   if (world.ended) throw new Error("the life has ended");
   if (world.pending) throw new Error("a storylet is pending; choose first");
   const idx = indexBundles(bundles);
-  let w = world;
+  let w = appendChoice(world, { t: "age" });
   for (const p of personsInIdOrder(w)) {
     if (p.alive) w = updatePerson(w, p.id, (x) => ({ ...x, age: x.age + 1 }));
   }
@@ -239,21 +250,33 @@ export function ageUp(world: World, bundles: readonly PackBundle[]): SimResult {
 }
 
 /**
- * Open an action storylet by id (from a menu). With choices it becomes `world.pending`;
- * otherwise it resolves now. Returns the world unchanged if the storylet is not eligible.
+ * Open an action storylet by id (from a menu), bound to `target` when it is `scope: person`.
+ * With choices it becomes `world.pending`; otherwise it resolves now. Returns the world
+ * unchanged (and logs nothing) if the storylet is not eligible. Logged as an `action` choice.
  */
 export function startStorylet(
   world: World,
   bundles: readonly PackBundle[],
   storyletId: string,
+  target?: PersonId,
 ): SimResult {
   if (world.ended) throw new Error("the life has ended");
   if (world.pending) throw new Error("a storylet is pending; choose first");
   const idx = indexBundles(bundles);
   const s = idx.storylets.get(storyletId);
   if (!s) throw new RangeError(`unknown storylet '${storyletId}'`);
-  if (!isEligible(world, idx, s, undefined)) return { world, lines: [] };
-  return result(world, advance(world, idx, [{ storyletId }], false));
+  const scope: ScopeRef | undefined =
+    target === undefined ? undefined : { kind: "person", id: target };
+  if (!isEligible(world, idx, s, scope)) return { world, lines: [] };
+  const logged = appendChoice(world, {
+    t: "action",
+    id: storyletId,
+    ...(target === undefined ? {} : { target }),
+  });
+  return result(
+    world,
+    advance(logged, idx, [{ storyletId, ...(scope ? { scope } : {}) }], false),
+  );
 }
 
 /**
@@ -271,7 +294,10 @@ export function choose(
   const idx = indexBundles(bundles);
   const s = idx.storylets.get(p.storyletId);
   if (!s) throw new RangeError(`unknown storylet '${p.storyletId}'`);
-  const cleared = { ...world, pending: null };
+  const cleared = {
+    ...appendChoice(world, { t: "choose", i: choiceIndex }),
+    pending: null,
+  };
   const w = resolveChoice(cleared, idx, s, p.scope, choiceIndex);
   if (w.ended) return result(world, w);
   if (w.pending) {

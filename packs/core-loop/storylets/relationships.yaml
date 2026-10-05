@@ -1,76 +1,109 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
-# Note: actions cannot yet bind a chosen person (`scope` is events-only, and
-# `relationship(p)` only accepts persons bound by `spawn_person ... as p`), so the
-# verbs below act on the player's wider circle through stats, and the befriend
-# verbs spawn a person and set closeness on them.
+# The first three verbs and `befriend` are person-targeted (`scope: person`): the relationships
+# UI offers them for a chosen person, with `person` bound. `target` limits them to people
+# who hold one of the listed roles toward the player. The two "make a friend" verbs meet
+# someone new, so they bind no person and spawn one instead.
 - id: spend-time-with-loved-ones
   icon: 🫶
   trigger: action
   menu: relationships
+  scope: person
   tags: [relationship, spend-time]
   cooldown: 1
-  text: "You set aside an afternoon for the people close to you."
+  text: "You set aside an afternoon for {person.first_name}."
   outcomes:
     - weight: 70
       text: "You share a meal and plenty of laughs."
       effects:
         - stat.happiness += 4
-        - journal("Spent quality time with loved ones at age {age}.")
+        - relationship(person).closeness += 6
+        - journal("Spent quality time with {person.first_name} at age {age}.")
     - weight: 20
       text: "The time together is pleasant if unremarkable."
       effects:
         - stat.happiness += 2
+        - relationship(person).closeness += 2
     - weight: 10
       text: "You end up arguing over something small."
       effects:
         - stat.happiness -= 2
+        - relationship(person).closeness += -3
 
 - id: have-a-conversation
   icon: 💬
   trigger: action
   menu: relationships
+  scope: person
   tags: [relationship, conversation]
-  when: age >= 3
+  when: age >= 3 and person.age >= 3
   cooldown: 1
-  text: "You strike up a conversation."
+  text: "You strike up a conversation with {person.first_name}."
   outcomes:
     - weight: 60
       text: "You have a warm, honest talk and learn something."
       effects:
         - stat.happiness += 2
         - stat.smarts += 1
+        - relationship(person).closeness += 4
     - weight: 30
       text: "Small talk, but friendly."
       effects:
         - stat.happiness += 1
+        - relationship(person).closeness += 1
     - weight: 10
       text: "The conversation goes sideways and leaves you drained."
       effects:
         - stat.happiness -= 2
+        - relationship(person).closeness += -2
 
 - id: ask-parents-for-money
   icon: 💵
   trigger: action
   menu: relationships
+  scope: person
+  target: [core-loop/parent]
   tags: [relationship, money, family]
   when: age >= 6 and age < 30
   cooldown: 2
-  text: "You ask your parents for some money."
+  text: "You ask {person.first_name} for some money."
   outcomes:
     - weight: 45
       text: "They hand over some cash with a gentle reminder to be responsible."
       effects:
         - money += 2000
-        - journal("Got some money from the folks at age {age}.")
+        - journal("Got some money from {person.first_name} at age {age}.")
     - weight: 30
       text: "They give you a little, along with a lecture about saving."
       effects:
         - money += 500
         - stat.happiness -= 1
+        - relationship(person).closeness += -1
     - weight: 25
       text: "They say no and suggest you earn it yourself."
       effects:
         - stat.happiness -= 3
+        - relationship(person).closeness += -2
+
+- id: befriend
+  icon: 🤝
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [core-loop/classmate, core-loop/coworker]
+  tags: [relationship, befriend]
+  when: age >= 6
+  cooldown: 1
+  text: "You make an effort to get closer to {person.first_name}."
+  outcomes:
+    - weight: 55 + stat.looks / 5
+      text: "{person.first_name} warms to you."
+      effects:
+        - relationship(person).closeness += 12
+        - stat.happiness += 2
+    - weight: 45
+      text: "The moment passes, but you part on good terms."
+      effects:
+        - relationship(person).closeness += 2
 
 - id: make-a-friend-classmate
   icon: 🤝

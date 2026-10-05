@@ -42,7 +42,7 @@
   menu: assets
   outcomes:
     - effects:
-        - take_loan(100000, 5%, 4)
+        - take_loan(life/auto-loan, 100000)
 
 - id: buy-car
   trigger: action

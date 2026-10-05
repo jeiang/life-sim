@@ -57,6 +57,8 @@ export interface CompiledStorylet {
   /** Actions only: `<top>` or `<top>/<submenu>`. */
   readonly menu?: string;
   readonly scope?: "loan" | "person";
+  /** `scope: person` only: role ids the bound person must hold toward the player. Empty/absent: any. */
+  readonly target?: readonly string[];
   readonly when?: Expr;
   /** Events only; exactly one of `chance` (basis points per year) or `weight`. */
   readonly chance?: Expr;
@@ -104,6 +106,8 @@ export interface CompiledItemKind {
    * `asset.years` (completed years owned).
    */
   readonly value: Expr;
+  /** Boolean expression over the player that must hold to buy it. */
+  readonly requires?: Expr;
   /** Loan kind that can finance it. */
   readonly loan?: string;
 }
@@ -115,6 +119,8 @@ export interface CompiledLoanKind {
   /** Yearly rate in basis points. */
   readonly rateBp: number;
   readonly termYears: number;
+  /** Share of the price paid in cash up front, basis points. */
+  readonly downPaymentBp: number;
   /** Secured by the asset it bought. */
   readonly secured: boolean;
 }

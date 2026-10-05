@@ -1,20 +1,15 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
 # NPC storylets (`scope: person`) run once per non-player person in the yearly NPC pass.
 #
-# Limits of the closed effect set that shape this file:
-#   - `die(...)` ends the PLAYER's life, not the bound person. It cannot be used here.
-#   - Expressions cannot read a person's role, so a storylet cannot tell a parent from a
-#     sibling or a coworker. Age windows approximate the role instead: parents (born
-#     22-40 years before the player) are the only people generated at 50+ early in a life;
-#     siblings and classmates share the 0-18 band.
-#   - Effects on stats, money and qualities apply to the player, as the player's reaction.
-# A parent's death is therefore recorded as the `parents_died` quality plus a journal line
-# and a happiness drop, capped at two per life.
+# `target: [core-loop/parent]` restricts a storylet to the player's parents; other storylets
+# use age windows. Effects on stats, money and qualities apply to the player, as the player's
+# reaction. `die(...)` in `scope: person` kills the bound person, not the player.
 
 - id: parent-illness
   icon: 🤒
   trigger: event
   scope: person
+  target: [core-loop/parent]
   chance: 4%
   when: person.age >= 50 and person.stat.health < 70
   cooldown: 3
@@ -29,6 +24,7 @@
   icon: 🌤️
   trigger: event
   scope: person
+  target: [core-loop/parent]
   chance: 5%
   when: person.age >= 50 and person.stat.health >= 50 and person.stat.health < 80
   text: "{person.first_name} {person.last_name} is back on their feet, much to everyone's relief."
@@ -41,21 +37,21 @@
   icon: 🕊️
   trigger: event
   scope: person
+  target: [core-loop/parent]
   chance: min(10000, (person.age * person.age * person.age * person.age / 68000) * (140 - person.stat.health) / 90)
-  when: person.age >= 60 and quality.parents_died < 2
-  max_per_life: 2
-  text: "{person.first_name} {person.last_name} passes away at {person.age}."
+  when: person.age >= 60
+  once: true
   outcomes:
     - weight: 1
       effects:
-        - quality.parents_died += 1
         - stat.happiness -= 20
-        - journal("{person.first_name} {person.last_name} died at {person.age}.")
+        - die("natural causes")
 
 - id: parent-gift
   icon: 🎁
   trigger: event
   scope: person
+  target: [core-loop/parent]
   chance: 3%
   when: person.age >= 45 and age >= 16
   text: "{person.first_name} {person.last_name} slips {player.first_name} a card with some cash inside."

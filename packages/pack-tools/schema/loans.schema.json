@@ -30,6 +30,11 @@
         "minimum": 1,
         "type": "integer"
       },
+      "down_payment": {
+        "pattern": "^\\d+(\\.\\d{1,2})?%$",
+        "description": "Share of the price paid in cash up front, as a percent literal, for example `20%`; default `0%`",
+        "type": "string"
+      },
       "secured": {
         "type": "boolean"
       }

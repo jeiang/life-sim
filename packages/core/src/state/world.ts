@@ -59,6 +59,7 @@ export function createWorld(opts: {
     pending: null,
     ended: null,
     storyletLog: {},
+    choiceLog: [],
     packVersions: [...(opts.packVersions ?? [])].sort((a, b) =>
       a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
     ),

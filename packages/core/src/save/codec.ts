@@ -77,6 +77,7 @@ function obituary(v: unknown, p: string): Obituary {
       pending: null,
       ended: v,
       storyletLog: {},
+      choiceLog: [],
       packVersions: [],
     },
     p,

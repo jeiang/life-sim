@@ -138,6 +138,21 @@ export interface Obituary {
   readonly education: readonly ObituaryOccupation[];
 }
 
+/**
+ * One player choice, in the order made (ADR 0003). With the life seed the list replays the
+ * life on the build that wrote it.
+ */
+export type ChoiceEntry =
+  | { readonly t: "age" }
+  | { readonly t: "choose"; readonly i: number }
+  | { readonly t: "action"; readonly id: string; readonly target?: PersonId }
+  | {
+      readonly t: "buy";
+      readonly kind: string;
+      readonly mode: "cash" | "loan";
+    }
+  | { readonly t: "sell"; readonly asset: number };
+
 export interface PackVersion {
   readonly id: string;
   readonly version: string;
@@ -165,6 +180,8 @@ export interface World {
   readonly ended: Obituary | null;
   /** Storylet firing counts, keyed by storylet id, plus `#<scope id>` when scoped. */
   readonly storyletLog: Readonly<Record<string, StoryletRecord>>;
+  /** Every player choice so far, in order; see `replay`. */
+  readonly choiceLog: readonly ChoiceEntry[];
   /** Packs (and versions) the save was made with, sorted by id. */
   readonly packVersions: readonly PackVersion[];
 }

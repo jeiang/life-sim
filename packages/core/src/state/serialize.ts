@@ -1,4 +1,5 @@
 import type {
+  ChoiceEntry,
   Obituary,
   ObituaryOccupation,
   Occupation,
@@ -219,6 +220,38 @@ function storyletLog(v: unknown, p: string): Record<string, StoryletRecord> {
   return out;
 }
 
+function choiceLog(v: unknown, p: string): ChoiceEntry[] {
+  return arr(v, p).map((x, i): ChoiceEntry => {
+    const q = `${p}[${i}]`;
+    const o = obj(x, q);
+    const t = str(o.t, `${q}.t`);
+    switch (t) {
+      case "age":
+        return { t };
+      case "choose":
+        return { t, i: int(o.i, `${q}.i`) };
+      case "action": {
+        const target = optInt(o.target, `${q}.target`);
+        return {
+          t,
+          id: str(o.id, `${q}.id`),
+          ...(target === undefined ? {} : { target }),
+        };
+      }
+      case "buy": {
+        const mode = str(o.mode, `${q}.mode`);
+        if (mode !== "cash" && mode !== "loan")
+          fail(`${q}.mode`, "cash or loan");
+        return { t, kind: str(o.kind, `${q}.kind`), mode };
+      }
+      case "sell":
+        return { t, asset: int(o.asset, `${q}.asset`) };
+      default:
+        return fail(`${q}.t`, "age, choose, action, buy or sell");
+    }
+  });
+}
+
 /** Parse and validate a serialized world. Throws TypeError on any shape or non-integer violation. Schema migrations are applied before this by the save layer. */
 export function deserializeWorld(text: string): World {
   const o = obj(JSON.parse(text), "$");
@@ -255,6 +288,7 @@ export function deserializeWorld(text: string): World {
     pending: o.pending === null ? null : pending(o.pending, "$.pending"),
     ended: o.ended === null ? null : obituary(o.ended, "$.ended"),
     storyletLog: storyletLog(o.storyletLog, "$.storyletLog"),
+    choiceLog: choiceLog(o.choiceLog, "$.choiceLog"),
     packVersions: arr(o.packVersions, "$.packVersions").map((x, i) => {
       const v = obj(x, `$.packVersions[${i}]`);
       return {

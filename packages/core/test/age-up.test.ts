@@ -394,6 +394,7 @@ describe("closed effects", () => {
     let w = startStorylet(life(), bundles, "life/borrow").world;
     expect(player(w).money).toBe(100000);
     expect(player(w).loans[0]).toMatchObject({
+      kindId: "life/auto-loan",
       principal: 100000,
       rateBp: 500,
       termYears: 4,

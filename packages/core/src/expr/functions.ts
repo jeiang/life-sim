@@ -23,7 +23,7 @@ export const FUNCTIONS = {
 
 /** Effect calls (statements with arguments). `spawn_person(...) as <name>` is parsed separately. */
 export const EFFECTS = {
-  take_loan: { params: ["int", "int", "int"], returns: "bool" },
+  take_loan: { params: ["id", "int"], returns: "bool" },
   grant_asset: { params: ["id"], returns: "bool" },
   remove_asset: { params: ["id"], returns: "bool" },
   start_occupation: { params: ["id"], returns: "bool" },

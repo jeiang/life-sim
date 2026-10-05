@@ -1,9 +1,11 @@
-import { netWorth } from "@life/core";
+import { bundles } from "virtual:packs";
+import { listActions, netWorth } from "@life/core";
 import { PackIcon } from "../components/Emoji.tsx";
+import { MenuList } from "../components/MenuList.tsx";
 import { PageFrame } from "../components/PageFrame.tsx";
 import { StatBars } from "../components/StatPanel.tsx";
 import { money } from "../game/format.ts";
-import { packIndex, world } from "../game/store.ts";
+import { packIndex, runMenuAction, world } from "../game/store.ts";
 import { openPage, profileTarget } from "../nav.ts";
 
 const Section = (props: {
@@ -153,7 +155,23 @@ export function Profile() {
 
       {!isPlayer && (
         <Section title="Interactions">
-          <p class="text-text-muted">No interactions yet</p>
+          {(() => {
+            const rows = listActions(w, bundles, "relationships", id);
+            return rows.length > 0 ? (
+              <MenuList
+                rows={rows.map((a) => ({
+                  key: a.id,
+                  icon: a.icon,
+                  label: a.label,
+                  locked: a.locked,
+                  reason: a.reason,
+                  onSelect: () => runMenuAction(a.id, id),
+                }))}
+              />
+            ) : (
+              <p class="text-text-muted">No interactions available</p>
+            );
+          })()}
         </Section>
       )}
     </PageFrame>

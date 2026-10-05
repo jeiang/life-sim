@@ -15,6 +15,7 @@ import {
   recordNetWorth,
   runAction,
   type ShopRow,
+  sell,
   type World,
 } from "@life/core";
 import { computed, signal } from "@preact/signals";
@@ -175,4 +176,30 @@ if (import.meta.env.VITE_E2E) {
     },
   };
   (window as unknown as { __life: typeof hook }).__life = hook;
+}
+
+/** Apply a sim result that may throw (rejected purchase); returns the error message or null. */
+function apply(
+  run: () => { world: World; lines: readonly string[] },
+): string | null {
+  try {
+    const r = run();
+    world.value = r.world;
+    latestLines.value = r.lines;
+    return null;
+  } catch (e) {
+    return e instanceof Error ? e.message : String(e);
+  }
+}
+
+/** Run a menu action (bound to `target` for person actions). Any open choice shows in the dialog. */
+export function runMenuAction(
+  actionId: string,
+  target?: number,
+): string | null {
+  return apply(() => runAction(world.value, bundles, actionId, target));
+}
+
+export function sellAsset(assetId: number): string | null {
+  return apply(() => sell(world.value, bundles, assetId));
 }

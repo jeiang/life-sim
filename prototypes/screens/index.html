@@ -1,0 +1,438 @@
+<!doctype html>
+<!--
+  PROTOTYPE, throwaway. Answers: "Which generic screen kinds does the Core render,
+  and how is the main play screen laid out on a phone?"
+  Three variants of the main play layout, switchable via ?variant=A|B|C.
+  Fake Core, in-memory state, native emoji stand in for Twemoji/Lucide.
+  Run: python3 -m http.server 8765 (in this folder), open http://localhost:8765/?variant=A
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>PROTOTYPE: screens</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style>
+  html, body { margin: 0; background: #0f172a; }
+  .frame { height: calc(100dvh - 48px); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script type="module">
+import { h, render } from "https://esm.sh/preact@10";
+import { useState, useEffect } from "https://esm.sh/preact@10/hooks";
+import htm from "https://esm.sh/htm@3";
+const html = htm.bind(h);
+
+/* ---------------- fake Core ---------------- */
+let seed = 42;
+const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 2 ** 32; };
+const money = (c) => (c < 0 ? "-$" : "$") + Math.abs(Math.round(c / 100)).toLocaleString("en-US");
+const clamp = (v) => Math.max(0, Math.min(100, v));
+
+const FLAVOUR = [
+  "I learned to ride a bike.", "My dad burned dinner again.", "I watched a documentary about whales.",
+  "A neighbour's dog bit me. 🐕", "I got a cold for a week.", "My mom took me to the zoo. 🦒",
+  "I read a book about space.", "It rained most of the summer.",
+];
+const STORYLETS = {
+  "found-wallet": { icon: "👛", minAge: 6, text: "You found a wallet with $40 on the sidewalk.",
+    choices: [
+      { label: "Keep it", outcome: { text: "You kept the $40.", money: 4000, stats: { happiness: 3 } } },
+      { label: "Turn it in", outcome: { text: "The owner is very grateful.", next: "wallet-reward" } },
+    ] },
+  "wallet-reward": { icon: "🤝", text: "The owner offers you a $10 reward.",
+    choices: [
+      { label: "Accept", outcome: { text: "You took the reward.", money: 1000, stats: { happiness: 2 } } },
+      { label: "Decline politely", outcome: { text: "You feel good about yourself.", stats: { happiness: 6 } } },
+    ] },
+  "job-offer": { icon: "💼", minAge: 16, noJob: true, text: "Alex, a local shop offers you a part-time job as a cashier.",
+    choices: [
+      { label: "Accept", outcome: { text: "You start next week as a Cashier.", job: { title: "Cashier", pay: 1200000 } } },
+      { label: "Decline", outcome: { text: "You turned down the job." } },
+    ] },
+};
+const SHOP = [
+  { id: "bike", icon: "🚲", name: "Used bicycle", price: 15000 },
+  { id: "sedan", icon: "🚗", name: "2015 Sedan", price: 900000 },
+  { id: "condo", icon: "🏢", name: "Studio condo", price: 18000000 },
+];
+const ACTIVITIES = [
+  { id: "gym", icon: "🏋️", label: "Gym", minAge: 12, run: (s) => act(s, "You worked out at the gym.", { health: 4, happiness: 1 }) },
+  { id: "library", icon: "📚", label: "Library", minAge: 6, run: (s) => act(s, "You read at the library.", { smarts: 4 }) },
+  { id: "doctor", icon: "🩺", label: "Doctor", minAge: 0, run: (s) => act(s, "The doctor says you're healthy.", { health: 2 }) },
+  { id: "casino", icon: "🎰", label: "Casino", minAge: 18, picker: true },
+  { id: "shop", icon: "🛍️", label: "Shopping", minAge: 16, shop: true },
+];
+const MENUS = [
+  { id: "occupation", icon: "🎓", label: "Occupation" },
+  { id: "assets", icon: "🏠", label: "Assets" },
+  { id: "relationships", icon: "👪", label: "Relationships" },
+  { id: "activities", icon: "🎲", label: "Activities" },
+];
+
+function newLife() {
+  return {
+    name: "Alex Rivera", age: 0, money: 0,
+    stats: { happiness: 92, health: 96, smarts: 61, looks: 55 },
+    journal: [{ age: 0, lines: ["I was born in Springfield. 👶", "My parents are Maria (nurse) and Tom (mechanic)."] }],
+    occupations: [], assets: [], loans: [], once: {},
+    people: [
+      { id: "mom", icon: "👩", name: "Maria Rivera", role: "Mother", age: 29, closeness: 88, stats: { happiness: 70, health: 90, smarts: 72, looks: 64 } },
+      { id: "dad", icon: "👨", name: "Tom Rivera", role: "Father", age: 31, closeness: 75, stats: { happiness: 60, health: 82, smarts: 55, looks: 58 } },
+    ],
+    netWorth: [{ age: 0, v: 0 }], pending: null, ended: false,
+  };
+}
+const log = (s, line) => { s.journal[s.journal.length - 1].lines.push(line); };
+function applyStats(s, d = {}) { for (const k in d) s.stats[k] = clamp(s.stats[k] + d[k]); }
+function act(s, text, stats) { log(s, text); applyStats(s, stats); return s; }
+const worth = (s) => s.money + s.assets.reduce((a, x) => a + x.value, 0) - s.loans.reduce((a, l) => a + l.balance, 0);
+
+function ageUp(s0) {
+  const s = structuredClone(s0);
+  s.age += 1; s.people.forEach((p) => (p.age += 1));
+  s.journal.push({ age: s.age, lines: [] });
+  // settlement
+  if (s.age === 5) { s.occupations.push({ title: "Elementary student", pay: 0 }); log(s, "I started elementary school. 🏫"); }
+  if (s.age === 11) { s.occupations = s.occupations.filter((o) => !o.title.includes("Elementary")); s.occupations.push({ title: "High school student", pay: 0 }); log(s, "I started high school."); }
+  if (s.age === 18) { s.occupations = s.occupations.filter((o) => !o.title.includes("High school")); log(s, "I graduated from high school. 🎓"); }
+  for (const o of s.occupations) if (o.pay) { s.money += o.pay; log(s, `I earned ${money(o.pay)} as a ${o.title}.`); }
+  for (const l of s.loans) if (l.balance > 0) { const p = Math.min(l.payment, l.balance); s.money -= p; l.balance -= p; log(s, `Loan payment for the ${l.what}: ${money(p)}.`); }
+  for (const a of s.assets) a.value = Math.round(a.value * 0.92);
+  // events: flavour slots + chance events
+  const n = 1 + Math.floor(rand() * 2);
+  for (let i = 0; i < n; i++) log(s, FLAVOUR[Math.floor(rand() * FLAVOUR.length)]);
+  for (const [id, st] of Object.entries(STORYLETS)) {
+    if (!st.minAge || s.age < st.minAge || s.once[id]) continue;
+    if (st.noJob && s.occupations.some((o) => o.pay)) continue;
+    if (rand() < 0.35) { s.pending = { id, steps: [] }; s.once[id] = true; break; }
+  }
+  applyStats(s, { happiness: Math.round(rand() * 6 - 3) });
+  s.netWorth.push({ age: s.age, v: worth(s) });
+  return s;
+}
+function choose(s0, choice) {
+  const s = structuredClone(s0);
+  const o = choice.outcome;
+  log(s, o.text);
+  if (o.money) s.money += o.money;
+  applyStats(s, o.stats);
+  if (o.job) s.occupations.push(o.job);
+  s.pending = o.next ? { id: o.next, steps: [...s0.pending.steps, o.text] } : null;
+  s.netWorth[s.netWorth.length - 1].v = worth(s);
+  return s;
+}
+function buy(s0, item, mode) {
+  const s = structuredClone(s0);
+  if (mode === "cash") s.money -= item.price;
+  if (mode === "loan") {
+    const down = Math.round(item.price * 0.2), principal = item.price - down, r = 0.06, n = 10;
+    s.money -= down;
+    s.loans.push({ what: item.name, balance: principal, payment: Math.round((principal * r) / (1 - (1 + r) ** -n)) });
+  }
+  s.assets.push({ icon: item.icon, name: item.name, value: item.price });
+  log(s, `I bought a ${item.name} ${mode === "loan" ? "with a loan" : "for cash"}.`);
+  s.netWorth[s.netWorth.length - 1].v = worth(s);
+  return s;
+}
+function bet(s0, amount) {
+  const s = structuredClone(s0);
+  const win = rand() < 0.47;
+  s.money += win ? amount : -amount;
+  log(s, win ? `I won ${money(amount)} at blackjack! 🎉` : `I lost ${money(amount)} at blackjack.`);
+  applyStats(s, { happiness: win ? 5 : -4 });
+  return s;
+}
+
+/* ---------------- screen kinds (the catalog under test) ---------------- */
+const STAT_LABEL = { happiness: "😊 Happiness", health: "❤️ Health", smarts: "🧠 Smarts", looks: "💅 Looks" };
+const barColor = (v) => (v > 66 ? "bg-emerald-500" : v > 33 ? "bg-amber-400" : "bg-rose-500");
+
+// 1. Feed
+function Feed({ journal, newestFirst = false, compact = false }) {
+  const years = newestFirst ? [...journal].reverse() : journal;
+  return html`<div class="space-y-3">${years.map((y) => html`
+    <div>
+      <div class="text-xs font-bold text-sky-700 uppercase tracking-wide">Age ${y.age} years</div>
+      ${y.lines.map((l) => html`<p class=${compact ? "text-sm" : "text-[15px]"} style="margin:2px 0">${l}</p>`)}
+    </div>`)}</div>`;
+}
+// 2. Stat panel
+function StatBars({ stats, small = false }) {
+  return html`<div class=${small ? "grid grid-cols-2 gap-x-3 gap-y-1" : "space-y-2"}>
+    ${Object.entries(stats).map(([k, v]) => html`<div>
+      <div class="flex justify-between text-xs"><span>${STAT_LABEL[k] ?? k}</span><span>${v}%</span></div>
+      <div class="h-2 rounded bg-slate-200"><div class=${"h-2 rounded " + barColor(v)} style=${`width:${v}%`}></div></div>
+    </div>`)}</div>`;
+}
+// 3. Menu list
+function MenuList({ items, age, onPick }) {
+  return html`<ul class="divide-y divide-slate-200">${items.map((it) => {
+    const locked = it.minAge != null && age < it.minAge;
+    return html`<li><button disabled=${locked} onClick=${() => onPick(it)}
+      class=${"w-full flex items-center gap-3 py-3 px-1 text-left " + (locked ? "opacity-40" : "active:bg-slate-100")}>
+      <span class="text-2xl">${it.icon}</span>
+      <span class="flex-1"><span class="font-medium">${it.label ?? it.name}</span>
+        ${it.sub ? html`<span class="block text-xs text-slate-500">${it.sub}</span>` : null}</span>
+      <span class="text-xs text-slate-400">${locked ? `Age ${it.minAge}+` : it.right ?? "›"}</span>
+    </button></li>`;
+  })}</ul>`;
+}
+// 4. Choice dialog (handles next: chains, shows breadcrumb of earlier steps)
+function ChoiceView({ pending, onChoose }) {
+  const st = STORYLETS[pending.id];
+  return html`<div>
+    ${pending.steps.map((t) => html`<p class="text-sm text-slate-500 italic">${t}</p>`)}
+    <div class="text-4xl text-center my-2">${st.icon}</div>
+    <p class="text-center font-medium mb-3">${st.text}</p>
+    <div class="space-y-2">${st.choices.map((c) => html`
+      <button onClick=${() => onChoose(c)} class="w-full rounded-xl bg-sky-600 text-white py-2.5 font-semibold active:bg-sky-700">${c.label}</button>`)}
+    </div></div>`;
+}
+// 5. Purchase dialog
+function PurchaseView({ item, cash, onBuy, onCancel }) {
+  const down = Math.round(item.price * 0.2);
+  return html`<div class="text-center">
+    <div class="text-5xl">${item.icon}</div>
+    <p class="font-semibold mt-1">${item.name}</p>
+    <p class="text-2xl font-bold my-1">${money(item.price)}</p>
+    <p class="text-xs text-slate-500 mb-3">You have ${money(cash)}</p>
+    <div class="space-y-2">
+      <button disabled=${cash < item.price} onClick=${() => onBuy("cash")} class="w-full rounded-xl bg-emerald-600 text-white py-2.5 font-semibold disabled:opacity-40">💵 Pay cash</button>
+      <button disabled=${cash < down} onClick=${() => onBuy("loan")} class="w-full rounded-xl bg-amber-500 text-white py-2.5 font-semibold disabled:opacity-40">🏦 Loan: ${money(down)} down, 10 yrs @ 6%</button>
+      <button onClick=${onCancel} class="w-full rounded-xl bg-slate-200 py-2.5 font-semibold">Cancel</button>
+    </div></div>`;
+}
+// 6. Amount picker
+function AmountPicker({ max, label, onConfirm, onCancel }) {
+  const [v, setV] = useState(Math.min(max, 10000));
+  return html`<div class="text-center">
+    <div class="text-5xl">🎰</div><p class="font-semibold">${label}</p>
+    <p class="text-3xl font-bold my-2">${money(v)}</p>
+    <input type="range" min="0" max=${max} step="500" value=${v} onInput=${(e) => setV(+e.target.value)} class="w-full" />
+    <div class="flex gap-2 mt-3">
+      <button onClick=${onCancel} class="flex-1 rounded-xl bg-slate-200 py-2.5 font-semibold">Cancel</button>
+      <button disabled=${v <= 0} onClick=${() => onConfirm(v)} class="flex-1 rounded-xl bg-rose-600 text-white py-2.5 font-semibold disabled:opacity-40">Bet</button>
+    </div></div>`;
+}
+// 7. Profile
+function ProfileView({ person, isPlayer, s }) {
+  return html`<div>
+    <div class="flex items-center gap-3 mb-3"><span class="text-5xl">${person.icon}</span>
+      <div><div class="font-bold text-lg">${person.name}</div>
+        <div class="text-sm text-slate-500">${person.role} · Age ${person.age}</div></div></div>
+    ${isPlayer ? null : html`<div class="mb-3"><div class="flex justify-between text-xs"><span>🤝 Relationship</span><span>${person.closeness}%</span></div>
+      <div class="h-2 rounded bg-slate-200"><div class="h-2 rounded bg-pink-500" style=${`width:${person.closeness}%`}></div></div></div>`}
+    <${StatBars} stats=${person.stats} />
+    ${isPlayer ? html`<div class="mt-3 text-sm space-y-1">
+      <div>💼 ${s.occupations.map((o) => o.title).join(", ") || "None"}</div>
+      <div>💰 ${money(s.money)} cash · Net worth ${money(worth(s))}</div>
+      ${s.loans.map((l) => html`<div>🏦 Loan (${l.what}): ${money(l.balance)} left, ${money(l.payment)}/yr</div>`)}
+    </div>` : html`<div class="grid grid-cols-3 gap-2 mt-3">${["Conversation", "Compliment", "Spend time"].map((a) => html`<button class="rounded-lg bg-slate-100 py-2 text-xs">${a}</button>`)}</div>`}
+  </div>`;
+}
+// 8. Chart
+function Chart({ series, title }) {
+  const W = 300, H = 140, P = 24;
+  const xs = series.map((p) => p.age), ys = series.map((p) => p.v);
+  const minY = Math.min(0, ...ys), maxY = Math.max(1, ...ys), maxX = Math.max(1, ...xs);
+  const pt = (p) => [P + ((W - 2 * P) * p.age) / maxX, H - P - ((H - 2 * P) * (p.v - minY)) / (maxY - minY)];
+  return html`<div><div class="text-sm font-semibold mb-1">${title}</div>
+    <svg viewBox=${`0 0 ${W} ${H}`} class="w-full bg-slate-50 rounded-lg">
+      <line x1=${P} y1=${H - P} x2=${W - P} y2=${H - P} stroke="#94a3b8" />
+      <line x1=${P} y1=${P} x2=${P} y2=${H - P} stroke="#94a3b8" />
+      <polyline fill="none" stroke="#0284c7" stroke-width="2" points=${series.map((p) => pt(p).join(",")).join(" ")} />
+      <text x=${P} y=${H - 6} font-size="9" fill="#64748b">age 0</text>
+      <text x=${W - P - 24} y=${H - 6} font-size="9" fill="#64748b">age ${maxX}</text>
+      <text x=${P + 2} y=${P - 6} font-size="9" fill="#64748b">${money(maxY)}</text>
+    </svg></div>`;
+}
+// 9. Install card + 10. Credits
+function InstallCard({ onClose }) {
+  return html`<div class="rounded-xl bg-sky-50 border border-sky-200 p-3 text-sm flex gap-2">
+    <span class="text-xl">📲</span><div class="flex-1"><b>Install to keep your lives safe.</b> Tap Share, then "Add to Home Screen". Saves in a browser tab can be erased after 7 days.</div>
+    <button onClick=${onClose} class="text-slate-400">✕</button></div>`;
+}
+function Credits() {
+  return html`<div class="text-sm space-y-2"><div class="font-bold">Credits</div>
+    <p>Emoji graphics: Twemoji, CC BY 4.0.</p><p>Game icons: game-icons.net authors, CC BY 3.0 (modified: recoloured).</p>
+    <p>UI icons: Lucide (ISC), Feather (MIT).</p><p class="text-slate-500">Generated from the build's credits manifest.</p></div>`;
+}
+
+/* shared controller: every variant gets the same state + intents */
+function useGame() {
+  const [s, set] = useState(newLife);
+  const [overlay, setOverlay] = useState(null); // {kind, ...}
+  const [installOpen, setInstall] = useState(true);
+  return {
+    s, overlay, installOpen,
+    closeInstall: () => setInstall(false),
+    open: (o) => setOverlay(o), close: () => setOverlay(null),
+    ageUp: () => !s.pending && set(ageUp(s)),
+    choose: (c) => set(choose(s, c)),
+    buy: (item, mode) => { set(buy(s, item, mode)); setOverlay(null); },
+    bet: (v) => { set(bet(s, v)); setOverlay(null); },
+    activity: (a) => {
+      if (a.picker) return setOverlay({ kind: "amount" });
+      if (a.shop) return setOverlay({ kind: "shop" });
+      set(a.run(structuredClone(s))); setOverlay(null);
+    },
+    reset: () => { set(newLife()); setOverlay(null); },
+  };
+}
+function OverlayBody({ g }) {
+  const { s, overlay: o } = g;
+  if (!o) return null;
+  if (o.kind === "occupation") return html`<div><div class="font-bold mb-2">🎓 Occupation</div>
+    ${s.occupations.length ? s.occupations.map((x) => html`<p>${x.title}${x.pay ? ` · ${money(x.pay)}/yr` : ""}</p>`) : html`<p class="text-slate-500">You have no occupation yet.</p>`}
+    <p class="text-xs text-slate-400 mt-2">Menu id: occupation · actions with menu: occupation appear here</p></div>`;
+  if (o.kind === "assets") return html`<div><div class="font-bold mb-2">🏠 Assets</div>
+    <${MenuList} age=${s.age} items=${[...s.assets.map((a) => ({ icon: a.icon, label: a.name, right: money(a.value) })), { icon: "📈", label: "Net worth", sub: "Chart screen" }, { icon: "🛍️", label: "Shopping", minAge: 16 }]}
+      onPick=${(it) => it.label === "Net worth" ? g.open({ kind: "chart" }) : it.label === "Shopping" ? g.open({ kind: "shop" }) : null} /></div>`;
+  if (o.kind === "relationships") return html`<div><div class="font-bold mb-2">👪 Relationships</div>
+    <${MenuList} age=${s.age} items=${s.people.map((p) => ({ ...p, label: p.name, sub: `${p.role} · ${p.closeness}%` }))} onPick=${(p) => g.open({ kind: "profile", person: p })} /></div>`;
+  if (o.kind === "activities") return html`<div><div class="font-bold mb-2">🎲 Activities</div>
+    <${MenuList} age=${s.age} items=${ACTIVITIES} onPick=${g.activity} /></div>`;
+  if (o.kind === "shop") return html`<div><div class="font-bold mb-2">🛍️ Shopping</div>
+    <${MenuList} age=${s.age} items=${SHOP.map((x) => ({ ...x, right: money(x.price) }))} onPick=${(it) => g.open({ kind: "purchase", item: it })} /></div>`;
+  if (o.kind === "purchase") return html`<${PurchaseView} item=${o.item} cash=${s.money} onBuy=${(m) => g.buy(o.item, m)} onCancel=${g.close} />`;
+  if (o.kind === "amount") return html`<${AmountPicker} max=${Math.max(0, s.money)} label="Blackjack: choose your bet" onConfirm=${g.bet} onCancel=${g.close} />`;
+  if (o.kind === "profile") return html`<${ProfileView} person=${o.person} isPlayer=${o.player} s=${s} />`;
+  if (o.kind === "chart") return html`<${Chart} series=${s.netWorth} title="📈 Net worth over age" />`;
+  if (o.kind === "settings") return html`<div class="space-y-3"><div class="font-bold">⚙️ Settings</div>
+    <button class="w-full rounded-lg bg-slate-100 py-2">📤 Export lives</button><button class="w-full rounded-lg bg-slate-100 py-2">📥 Import lives</button>
+    <button onClick=${g.reset} class="w-full rounded-lg bg-slate-100 py-2">🪦 New life (current goes to graveyard)</button><${Credits} /></div>`;
+  return null;
+}
+const player = (s) => ({ icon: "🧑", name: s.name, role: "You", age: s.age, stats: s.stats });
+
+/* ---------------- Variant A: Classic (BitLife-like) ---------------- */
+function VariantA() {
+  const g = useGame(); const { s } = g;
+  const modalKinds = ["purchase", "amount"];
+  const page = g.overlay && !modalKinds.includes(g.overlay.kind);
+  return html`<div class="frame max-w-[420px] mx-auto bg-white flex flex-col relative overflow-hidden">
+    <header class="flex items-center gap-3 px-4 py-3 bg-sky-700 text-white">
+      <button onClick=${() => g.open({ kind: "profile", person: player(s), player: true })} class="text-3xl">🧑</button>
+      <div class="flex-1"><div class="font-bold">${s.name}</div><div class="text-xs opacity-80">${s.occupations.map((o) => o.title).join(", ") || "No occupation"}</div></div>
+      <div class="text-right"><div class="font-bold">${money(s.money)}</div><div class="text-xs opacity-80">Bank balance</div></div>
+      <button onClick=${() => g.open({ kind: "settings" })}>⚙️</button>
+    </header>
+    <main ref=${(el) => el && setTimeout(() => (el.scrollTop = el.scrollHeight))} class="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+      ${g.installOpen ? html`<${InstallCard} onClose=${g.closeInstall} />` : null}
+      <${Feed} journal=${s.journal} /></main>
+    <section class="px-4 py-2 border-t border-slate-200"><${StatBars} stats=${s.stats} small /></section>
+    <nav class="grid grid-cols-5 items-end bg-slate-100 border-t border-slate-200 pb-2">
+      ${MENUS.slice(0, 2).map((m) => html`<button onClick=${() => g.open({ kind: m.id })} class="flex flex-col items-center text-xs py-2"><span class="text-2xl">${m.icon}</span>${m.label}</button>`)}
+      <button onClick=${g.ageUp} disabled=${!!s.pending} class="mx-auto -mt-6 w-20 h-20 rounded-full bg-emerald-500 text-white font-black text-lg shadow-lg disabled:opacity-50">＋<div class="text-xs">Age</div></button>
+      ${MENUS.slice(2).map((m) => html`<button onClick=${() => g.open({ kind: m.id })} class="flex flex-col items-center text-xs py-2"><span class="text-2xl">${m.icon}</span>${m.label}</button>`)}
+    </nav>
+    ${page ? html`<div class="absolute inset-0 bg-white flex flex-col">
+      <div class="flex items-center gap-2 px-3 py-3 border-b"><button onClick=${g.close} class="text-sky-700 font-semibold">‹ Back</button></div>
+      <div class="flex-1 overflow-y-auto p-4"><${OverlayBody} g=${g} /></div></div>` : null}
+    ${(g.overlay && modalKinds.includes(g.overlay.kind)) || s.pending ? html`<div class="absolute inset-0 bg-black/50 flex items-center justify-center p-6">
+      <div class="bg-white rounded-2xl p-5 w-full">${s.pending ? html`<${ChoiceView} pending=${s.pending} onChoose=${g.choose} />` : html`<${OverlayBody} g=${g} />`}</div></div>` : null}
+  </div>`;
+}
+
+/* ---------------- Variant B: Chat (inline events, bottom sheet menus) ---------------- */
+function VariantB() {
+  const g = useGame(); const { s } = g;
+  const [statsOpen, setStatsOpen] = useState(false);
+  useEffect(() => { const m = document.getElementById("feedB"); if (m) m.scrollTop = m.scrollHeight; });
+  const sections = [
+    { title: "You", items: [{ icon: "🧑", label: "Profile", go: { kind: "profile", person: player(s), player: true } }, { icon: "🎓", label: "Occupation", go: { kind: "occupation" } }, { icon: "📈", label: "Net worth", go: { kind: "chart" } }] },
+    { title: "Things", items: [{ icon: "🏠", label: "Assets", go: { kind: "assets" } }, { icon: "🛍️", label: "Shopping", minAge: 16, go: { kind: "shop" } }] },
+    { title: "People", items: s.people.map((p) => ({ icon: p.icon, label: p.name, sub: p.role, go: { kind: "profile", person: p } })) },
+    { title: "Do", items: ACTIVITIES.map((a) => ({ ...a, act: a })) },
+    { title: "App", items: [{ icon: "⚙️", label: "Settings & credits", go: { kind: "settings" } }] },
+  ];
+  return html`<div class="frame max-w-[420px] mx-auto bg-slate-100 flex flex-col relative overflow-hidden">
+    <button onClick=${() => setStatsOpen(!statsOpen)} class="bg-white px-4 py-2 text-left border-b">
+      <div class="flex justify-between text-sm"><b>${s.name}, ${s.age}</b><span>${money(s.money)} ${statsOpen ? "▴" : "▾"}</span></div>
+      <div class="flex gap-1 mt-1">${Object.values(s.stats).map((v) => html`<div class="flex-1 h-1.5 rounded bg-slate-200"><div class=${"h-1.5 rounded " + barColor(v)} style=${`width:${v}%`}></div></div>`)}</div>
+      ${statsOpen ? html`<div class="mt-2"><${StatBars} stats=${s.stats} small /></div>` : null}
+    </button>
+    <main id="feedB" class="flex-1 overflow-y-auto p-3 space-y-3">
+      ${g.installOpen ? html`<${InstallCard} onClose=${g.closeInstall} />` : null}
+      ${s.journal.map((y) => html`<div class="space-y-1">
+        <div class="text-center"><span class="text-xs bg-slate-300 rounded-full px-2 py-0.5">Age ${y.age}</span></div>
+        ${y.lines.map((l) => html`<div class="bg-white rounded-2xl rounded-tl-sm px-3 py-2 max-w-[85%] text-[15px] shadow-sm">${l}</div>`)}</div>`)}
+      ${s.pending ? html`<div class="bg-white rounded-2xl p-4 border-2 border-sky-500 shadow"><${ChoiceView} pending=${s.pending} onChoose=${g.choose} /></div>` : null}
+    </main>
+    <footer class="flex gap-2 p-3 bg-white border-t">
+      <button onClick=${() => g.open({ kind: "sheet" })} class="rounded-xl bg-slate-200 px-4 font-semibold">☰ Do</button>
+      <button onClick=${g.ageUp} disabled=${!!s.pending} class="flex-1 rounded-xl bg-emerald-500 text-white py-3 font-bold disabled:opacity-40">${s.pending ? "Answer above first" : `Age up → ${s.age + 1}`}</button>
+    </footer>
+    ${g.overlay ? html`<div class="absolute inset-0 bg-black/40 flex items-end" onClick=${(e) => e.target === e.currentTarget && g.close()}>
+      <div class="bg-white w-full rounded-t-2xl p-4 max-h-[80%] overflow-y-auto">
+        <div class="w-10 h-1 bg-slate-300 rounded mx-auto mb-3"></div>
+        ${g.overlay.kind === "sheet" ? sections.map((sec) => html`<div class="mb-2"><div class="text-xs font-bold text-slate-500 uppercase">${sec.title}</div>
+          <${MenuList} age=${s.age} items=${sec.items} onPick=${(it) => (it.act ? g.activity(it.act) : g.open(it.go))} /></div>`) : html`<${OverlayBody} g=${g} />`}
+      </div></div>` : null}
+  </div>`;
+}
+
+/* ---------------- Variant C: Tabs (dashboard, timeline, tiles) ---------------- */
+function VariantC() {
+  const g = useGame(); const { s } = g;
+  const [tab, setTab] = useState("life");
+  const tabs = [["life", "📖", "Life"], ["me", "🧑", "Me"], ["stuff", "🏠", "Stuff"], ["people", "👪", "People"], ["do", "🎲", "Do"]];
+  const ring = (k, v) => html`<div class="flex flex-col items-center text-[10px]">
+    <div class="w-12 h-12 rounded-full grid place-items-center" style=${`background:conic-gradient(${v > 66 ? "#10b981" : v > 33 ? "#fbbf24" : "#f43f5e"} ${v * 3.6}deg,#e2e8f0 0)`}>
+      <div class="w-9 h-9 rounded-full bg-white grid place-items-center font-bold">${v}</div></div>${STAT_LABEL[k].split(" ")[1]}</div>`;
+  return html`<div class="frame max-w-[420px] mx-auto bg-white flex flex-col relative overflow-hidden">
+    <header class="px-4 pt-3 pb-2 bg-indigo-700 text-white">
+      <div class="flex justify-between items-baseline"><b class="text-lg">${s.name}</b><span>${money(s.money)}</span></div>
+      <div class="text-xs opacity-80">Age ${s.age} · ${s.occupations.map((o) => o.title).join(", ") || "No occupation"}</div>
+      <nav class="flex mt-2 bg-indigo-800 rounded-lg p-0.5">${tabs.map(([id, ic, label]) => html`
+        <button onClick=${() => setTab(id)} class=${"flex-1 rounded-md py-1 text-xs " + (tab === id ? "bg-white text-indigo-700 font-bold" : "")}>${ic} ${label}</button>`)}</nav>
+    </header>
+    <main class="flex-1 overflow-y-auto p-4 space-y-3">
+      ${g.installOpen ? html`<${InstallCard} onClose=${g.closeInstall} />` : null}
+      ${tab === "life" ? html`<div class="flex justify-around">${Object.entries(s.stats).map(([k, v]) => ring(k, v))}</div>
+        ${[...s.journal].reverse().map((y, i) => html`<details open=${i < 3} class="border-l-4 border-indigo-300 pl-3">
+          <summary class="text-sm font-bold text-indigo-700">Age ${y.age} <span class="font-normal text-slate-400">(${y.lines.length})</span></summary>
+          ${y.lines.map((l) => html`<p class="text-[15px] my-1">${l}</p>`)}</details>`)}` : null}
+      ${tab === "me" ? html`<${ProfileView} person=${player(s)} isPlayer s=${s} /><${Chart} series=${s.netWorth} title="📈 Net worth over age" />
+        <button onClick=${() => g.open({ kind: "settings" })} class="w-full rounded-lg bg-slate-100 py-2">⚙️ Settings & credits</button>` : null}
+      ${tab === "stuff" ? html`<div class="font-bold">Assets</div>
+        <${MenuList} age=${s.age} items=${s.assets.length ? s.assets.map((a) => ({ icon: a.icon, label: a.name, right: money(a.value) })) : [{ icon: "📦", label: "Nothing yet", right: "" }]} onPick=${() => {}} />
+        <div class="font-bold pt-2">Shop</div>
+        <${MenuList} age=${s.age} items=${SHOP.map((x) => ({ ...x, minAge: 16, right: money(x.price) }))} onPick=${(it) => g.open({ kind: "purchase", item: it })} />` : null}
+      ${tab === "people" ? html`<${MenuList} age=${s.age} items=${s.people.map((p) => ({ ...p, label: p.name, sub: `${p.role} · ${p.closeness}%` }))} onPick=${(p) => g.open({ kind: "profile", person: p })} />` : null}
+      ${tab === "do" ? html`<div class="grid grid-cols-3 gap-3">${ACTIVITIES.map((a) => {
+        const locked = s.age < a.minAge;
+        return html`<button disabled=${locked} onClick=${() => g.activity(a)} class=${"aspect-square rounded-2xl bg-slate-100 flex flex-col items-center justify-center " + (locked ? "opacity-40" : "active:bg-slate-200")}>
+          <span class="text-3xl">${a.icon}</span><span class="text-xs mt-1">${a.label}</span>${locked ? html`<span class="text-[10px] text-slate-500">Age ${a.minAge}+</span>` : null}</button>`;
+      })}</div>` : null}
+    </main>
+    <button onClick=${() => { setTab("life"); g.ageUp(); }} disabled=${!!s.pending} class="absolute right-4 bottom-4 w-16 h-16 rounded-full bg-emerald-500 text-white font-black shadow-xl disabled:opacity-40">+1<div class="text-[10px]">year</div></button>
+    ${g.overlay || s.pending ? html`<div class="absolute inset-0 bg-black/40 flex items-end" onClick=${(e) => e.target === e.currentTarget && !s.pending && g.close()}>
+      <div class="bg-white w-full rounded-t-2xl p-4 max-h-[80%] overflow-y-auto"><div class="w-10 h-1 bg-slate-300 rounded mx-auto mb-3"></div>
+        ${s.pending ? html`<${ChoiceView} pending=${s.pending} onChoose=${g.choose} />` : html`<${OverlayBody} g=${g} />`}</div></div>` : null}
+  </div>`;
+}
+
+/* ---------------- prototype switcher ---------------- */
+const VARIANTS = [["A", "Classic", VariantA], ["B", "Chat", VariantB], ["C", "Tabs", VariantC]];
+function App() {
+  const read = () => new URLSearchParams(location.search).get("variant") ?? "A";
+  const [v, setV] = useState(read);
+  const idx = Math.max(0, VARIANTS.findIndex((x) => x[0] === v));
+  const go = (d) => { const next = VARIANTS[(idx + d + VARIANTS.length) % VARIANTS.length][0]; history.replaceState(null, "", `?variant=${next}`); setV(next); };
+  useEffect(() => {
+    const onKey = (e) => { if (e.target.closest?.("input,textarea,[contenteditable]")) return; if (e.key === "ArrowLeft") go(-1); if (e.key === "ArrowRight") go(1); };
+    addEventListener("keydown", onKey); return () => removeEventListener("keydown", onKey);
+  });
+  const [key, label, C] = VARIANTS[idx];
+  return html`<${C} key=${key} />
+    <div class="fixed bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-black text-white rounded-full px-4 py-1.5 text-xs whitespace-nowrap shadow-xl ring-2 ring-fuchsia-500 z-50">
+      <button onClick=${() => go(-1)}>◀</button><span>${key} (${label})</span><button onClick=${() => go(1)}>▶</button></div>`;
+}
+render(html`<${App} />`, document.getElementById("app"));
+</script>
+</body>
+</html>

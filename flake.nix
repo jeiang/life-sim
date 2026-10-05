@@ -72,6 +72,22 @@
             test "$pw" = "${pkgs.playwright-driver.version}"
             touch $out
           '';
+        } // pkgs.lib.optionalAttrs (builtins.elem system [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ]) {
+          # Chromium + WebKit from nixpkgs; only systems where nixpkgs ships the browsers.
+          e2e = pkgs.stdenvNoCC.mkDerivation {
+            name = "life-sim-check-e2e";
+            inherit src pnpmDeps;
+            nativeBuildInputs = [ pkgs.nodejs_24 pkgs.pnpm_10 pkgs.pnpmConfigHook ];
+            PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
+            PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
+            dontBuild = true;
+            doCheck = true;
+            checkPhase = ''
+              export HOME=$TMPDIR
+              cd e2e && pnpm exec playwright test
+            '';
+            installPhase = "touch $out";
+          };
         });
     };
 }

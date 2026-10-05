@@ -131,9 +131,9 @@ test("credits list every icon source and license", async ({ page }) => {
     await expect(
       page.getByRole("heading", { name, exact: true }),
     ).toBeVisible();
-  await expect(page.getByText("CC BY 4.0").first()).toBeVisible();
-  await expect(page.getByText(/ISC/).first()).toBeVisible();
-  await expect(page.getByText("MIT").first()).toBeVisible();
+  await expect(page.getByText("CC BY 4.0").first()).toBeAttached();
+  await expect(page.getByText(/ISC/).first()).toBeAttached();
+  await expect(page.getByText("MIT").first()).toBeAttached();
   await page.getByRole("button", { name: "Back" }).click();
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
 });

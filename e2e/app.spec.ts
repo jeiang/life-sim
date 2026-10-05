@@ -66,7 +66,7 @@ test("Age is disabled while a choice is open and menus open a page with Back", a
 
 for (const scheme of ["light", "dark"] as const) {
   test(`no axe violations on the main layout (${scheme})`, async ({ page }) => {
-    await page.emulateMedia({ colorScheme: scheme });
+    await page.emulateMedia({ colorScheme: scheme, reducedMotion: "reduce" });
     await page.goto("/");
     await expect(ageButton(page)).toBeVisible();
     const results = await new AxeBuilder({ page }).analyze();

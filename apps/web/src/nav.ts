@@ -7,7 +7,9 @@ export type PageId =
   | "occupation"
   | "assets"
   | "relationships"
-  | "activities";
+  | "activities"
+  | "graveyard"
+  | "credits";
 
 /** The full-page screen on top of the play layout, or null. Menu pages replace the placeholder. */
 export const page = signal<PageId | null>(null);
@@ -67,4 +69,11 @@ export const closePage = (): void => {
   page.value = prev?.page ?? null;
   profileTarget.value = prev?.target ?? null;
   sub.value = prev?.sub ?? null;
+};
+
+/** Drop every open page (back to the play layout or the life list). */
+export const closeAllPages = (): void => {
+  stack.length = 0;
+  page.value = null;
+  profileTarget.value = null;
 };

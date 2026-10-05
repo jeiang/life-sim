@@ -5,6 +5,7 @@ import {
   canAgeUp,
   choose,
   describePending,
+  endLife,
   type GraveyardEntry,
   indexBundles,
   listShop,
@@ -13,6 +14,7 @@ import {
   type Obituary,
   type PackIndex,
   type PendingView,
+  playFixedLife,
   purchase,
   recordNetWorth,
   runAction,
@@ -293,6 +295,14 @@ if (import.meta.env.VITE_E2E) {
       for (const f of [mk(1, "e2e-chain-2"), mk(2, "e2e-chain-3"), mk(3, null)])
         storylets.set(f.id, f as CompiledStorylet);
       world.value = { ...world.value, pending: { storyletId: "e2e-chain-1" } };
+    },
+    /** End the player's life now (the obituary shows and the life moves to the graveyard). */
+    die(): void {
+      world.value = endLife(world.value, world.value.playerId, "an e2e test");
+    },
+    /** Final world hashes of fixed-policy lives, one per seed (determinism comparison). */
+    playFixedLives(seeds: readonly number[]): string[] {
+      return seeds.map((s) => playFixedLife(bundles, s));
     },
     /** Set the player's cash, minor units. */
     setMoney(n: number): void {

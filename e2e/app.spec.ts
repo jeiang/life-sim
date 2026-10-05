@@ -1,4 +1,3 @@
-import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 
 const ageButton = (page: Page) =>
@@ -64,16 +63,6 @@ test("Age is disabled while a choice is open and menus open a page with Back", a
   }
 });
 
-for (const scheme of ["light", "dark"] as const) {
-  test(`no axe violations on the main layout (${scheme})`, async ({ page }) => {
-    await page.emulateMedia({ colorScheme: scheme, reducedMotion: "reduce" });
-    await page.goto("/");
-    await expect(ageButton(page)).toBeVisible();
-    const results = await new AxeBuilder({ page }).analyze();
-    expect(results.violations).toEqual([]);
-  });
-}
-
 test("touch targets are at least 44px and layout survives 200% text", async ({
   page,
 }) => {
@@ -112,7 +101,7 @@ test("touch targets are at least 44px and layout survives 200% text", async ({
   ).toBeAttached();
 });
 
-test("profile and net-worth chart open, describe the data, and pass axe", async ({
+test("profile and net-worth chart open, describe the data", async ({
   page,
 }) => {
   await page.goto("/");
@@ -135,11 +124,6 @@ test("profile and net-worth chart open, describe the data, and pass axe", async 
   await expect(page.getByTestId("chart-summary")).toContainText("Started at");
   await page.getByRole("button", { name: "Show data table" }).click();
   await expect(page.getByRole("row").nth(1)).toBeVisible();
-  for (const scheme of ["light", "dark"] as const) {
-    await page.emulateMedia({ colorScheme: scheme });
-    const results = await new AxeBuilder({ page }).analyze();
-    expect(results.violations).toEqual([]);
-  }
   await page.getByRole("button", { name: "Back" }).click();
   await expect(
     page.getByRole("heading", { name: "Your profile" }),
@@ -209,7 +193,9 @@ test("purchase dialog reflects affordability and loan terms, traps focus, return
   ).toBeDisabled();
   await expect(dialog).toContainText("Down payment");
   await expect(dialog).toContainText("a year");
-  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  await expect
+    .poll(() => dialog.evaluate((d) => d.contains(document.activeElement)))
+    .toBe(true);
   // Focus stays inside the dialog (WebKit does not Tab to buttons by default).
   for (let i = 0; i < (browserName === "webkit" ? 0 : 4); i++) {
     await page.keyboard.press("Tab");

@@ -1,1 +1,7 @@
 .worktrees/
+node_modules/
+dist/
+result
+.direnv/
+test-results/
+playwright-report/

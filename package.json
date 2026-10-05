@@ -1,0 +1,19 @@
+{
+  "name": "life-sim",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "build": "pnpm --filter @life/web build",
+    "harness": "echo 'harness: not implemented yet (see packages/harness)'"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@axe-core/playwright": "4.13.0",
+    "typescript": "7.0.2",
+    "vitest": "5.0.3",
+    "fast-check": "4.10.2",
+    "@sinclair/typebox": "0.34.52",
+    "yaml": "2.9.1"
+  }
+}

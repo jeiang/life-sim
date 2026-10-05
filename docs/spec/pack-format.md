@@ -45,7 +45,7 @@ packs/<pack-id>/
   chance: 4%                  # life event: absolute yearly roll
   when: age >= 16 and not has_occupation(job) and stat.smarts >= 30
   once: true
-  text: "{employer.name} offers you a part-time job as a cashier."
+  text: "{player.first_name}, a local shop offers you a part-time job as a cashier."
   choices:
     - label: Accept
       outcomes:
@@ -87,7 +87,7 @@ At each age-up, after settlement (ADR 0003):
 One small custom language is used for `when`, `weight`, `chance`, and effect statements (ADR 0004).
 
 - Literals: integers, percents (`2.5%`, compiled to basis points out of 10,000), strings, booleans, and content ids (`job/cashier`).
-- Operators: `+ - * / %`, comparisons, `and or not`, `in`, and the ternary `a ? b : c`.
+- Operators: `+ - * /`, `mod` (modulo; `%` is used only by percent literals), comparisons, `and or not`, `in`, and the ternary `a ? b : c`.
 - Names: `age`, `money`, `stat.<id>`, `quality.<id>`, and scoped references inside storylets (for example `person.<field>` for a spawned person).
 - Functions: a fixed whitelist (for example `min`, `max`, `clamp`, `has`, `has_occupation`, `owns`, `years_in`). No user-defined functions and no loops.
 - Integer-only. `/` truncates toward zero. A constant zero divisor is a build error. At runtime, division by zero gives 0 and overflow clamps to the safe-integer range. Dev builds and the balance harness assert on both.
@@ -109,7 +109,7 @@ journal("text")                      die("cause")
 
 ## Text
 
-- Inline English. Placeholders (`{employer.name}`, `{money}`) are checked at build time against what is in scope.
+- Inline English. Placeholders (`{player.first_name}`, `{money}`, or a person bound by `spawn_person(...) as <name>`) are checked at build time against what is in scope.
 - Localization later extracts strings keyed by content id and field path. Keyed text is not required now.
 
 ## Icons

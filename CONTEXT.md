@@ -120,6 +120,16 @@ _Avoid_: Log, history, timeline
 The end of a life, caused only by a storylet's death effect, which records a cause.
 _Avoid_: Game over
 
+### Presentation
+
+**Screen kind**:
+One of the fixed, generic screens the Core renders from Pack data, such as the feed, a menu list, or the purchase dialog.
+_Avoid_: View, page, widget
+
+**Menu**:
+One of the four Core-fixed places where actions are offered (occupation, assets, relationships, activities), with Pack-declared submenus beneath them.
+_Avoid_: Tab, section
+
 ### Persistence
 
 **Graveyard**:

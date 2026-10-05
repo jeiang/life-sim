@@ -4,16 +4,19 @@
   icon: 🎓
   rate: 4.5%
   term_years: 10
+  down_payment: 0%
   secured: false
 - id: auto-loan
   label: Auto loan
   icon: 🚗
   rate: 7%
   term_years: 5
+  down_payment: 10%
   secured: true
 - id: mortgage
   label: Mortgage
   icon: 🏠
   rate: 5.5%
   term_years: 25
+  down_payment: 20%
   secured: true

@@ -1,0 +1,67 @@
+- id: chat
+  trigger: action
+  menu: relationships
+  scope: person
+  when: person.age >= 3
+  text: You chat with {person.first_name}.
+  outcomes:
+    - effects:
+        - relationship(person).closeness += 10
+
+- id: ask-parent
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [parent]
+  text: You ask {person.first_name} for cash.
+  outcomes:
+    - effects:
+        - money += 100
+
+- id: parent-only-check
+  trigger: action
+  menu: relationships
+  scope: person
+  when: person.role == life/parent and person.alive
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: farewell
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [parent]
+  outcomes:
+    - effects:
+        - die("old age")
+
+- id: race
+  trigger: action
+  menu: activities/track
+  when: age >= 18 and age < 65
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: stroll
+  trigger: action
+  menu: activities
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: loner
+  trigger: action
+  menu: activities
+  once: true
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: windfall
+  trigger: action
+  menu: occupation
+  outcomes:
+    - effects:
+        - money += 10000

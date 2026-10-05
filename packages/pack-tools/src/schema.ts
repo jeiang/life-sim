@@ -132,6 +132,13 @@ export const StoryletSchema = obj(
     scope: Type.Optional(
       Type.Union([Type.Literal("loan"), Type.Literal("person")]),
     ),
+    target: Type.Optional(
+      Type.Array(Ref, {
+        minItems: 1,
+        description:
+          "`scope: person` only: role ids the bound person must have toward the player",
+      }),
+    ),
     when: Type.Optional(Src),
     chance: Type.Optional(Src),
     weight: Type.Optional(Src),
@@ -170,6 +177,7 @@ export const ItemSchema = obj(
     category: Type.String({ minLength: 1 }),
     price: Src,
     value: Src,
+    requires: Type.Optional(Src),
     loan: Type.Optional(Ref),
   },
   "Item kind",
@@ -185,6 +193,13 @@ export const LoanSchema = obj(
       description: "Yearly rate as a percent literal, for example `6.5%`",
     }),
     term_years: Type.Integer({ minimum: 1 }),
+    down_payment: Type.Optional(
+      Type.String({
+        pattern: "^\\d+(\\.\\d{1,2})?%$",
+        description:
+          "Share of the price paid in cash up front, as a percent literal, for example `20%`; default `0%`",
+      }),
+    ),
     secured: Type.Optional(Type.Boolean()),
   },
   "Loan kind",

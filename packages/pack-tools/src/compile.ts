@@ -695,6 +695,8 @@ class PackCompiler {
         "person.age": "int",
         "person.first_name": "string",
         "person.last_name": "string",
+        "person.role": "id",
+        "person.alive": "bool",
       };
       for (const s of this.statIds) n[`person.stat.${s}`] = "int";
       return n;
@@ -730,7 +732,18 @@ class PackCompiler {
         this.err(["chance"], "'chance' is only valid on events");
       if (s.weight !== undefined)
         this.err(["weight"], "'weight' is only valid on events");
-      if (s.scope) this.err(["scope"], "'scope' is only valid on events");
+      if (s.scope === "loan")
+        this.err(["scope"], "actions can only use 'scope: person'");
+    }
+    if (s.target !== undefined) {
+      if (s.scope !== "person")
+        this.err(["target"], "'target' needs 'scope: person'");
+      const roles: string[] = [];
+      for (const [i, r] of s.target.entries()) {
+        const full = this.ref(r, ["role"], ["target", i]);
+        if (full) roles.push(full);
+      }
+      out.target = roles;
     }
     if (s.menu) out.menu = s.menu;
     if (s.when !== undefined) {
@@ -805,7 +818,7 @@ class PackCompiler {
     }
     // Effects run in order; `spawn_person(...) as n` binds `n` for later effects and this outcome's text.
     const bound: Names = {};
-    const persons: string[] = [];
+    const persons: string[] = scopeNames["person.age"] ? ["person"] : [];
     let failed = false;
     const effects: Effect[] = [];
     for (const [ei, src] of (o.effects ?? []).entries()) {
@@ -964,6 +977,10 @@ class PackCompiler {
       "asset.years": "int",
     });
     if (value !== undefined) out.value = value;
+    if (i.requires !== undefined) {
+      const r = this.expr(i.requires, "bool", ["requires"]);
+      if (r !== undefined) out.requires = r;
+    }
     if (i.loan !== undefined) {
       const r = this.ref(i.loan, ["loan"], ["loan"]);
       if (r) out.loan = r;
@@ -979,12 +996,20 @@ class PackCompiler {
       label: l.label,
       rateBp: 0,
       termYears: l.term_years,
+      downPaymentBp: 0,
       secured: l.secured ?? false,
     };
     if (l.icon) Object.assign(out, this.iconField(l.icon, ["icon"]));
     const r = compileExpr(l.rate, { names: {} }, "int");
     if (r.ok && typeof r.ast === "number") out.rateBp = r.ast;
     else this.err(["rate"], `invalid rate '${l.rate}'`);
+    if (l.down_payment !== undefined) {
+      const d = compileExpr(l.down_payment, { names: {} }, "int");
+      if (d.ok && typeof d.ast === "number" && d.ast <= 10000)
+        out.downPaymentBp = d.ast;
+      else
+        this.err(["down_payment"], `invalid down payment '${l.down_payment}'`);
+    }
     return out;
   }
 

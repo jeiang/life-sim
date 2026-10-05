@@ -1,10 +1,12 @@
+import { evaluate } from "../expr/index.ts";
 import type { CompiledOutcome, CompiledStorylet } from "../pack.ts";
 import type { PersonId, QueuedEvent, ScopeRef, World } from "../state/types.ts";
 import { addJournalLine, getPerson, nextStream } from "../state/world.ts";
 import { applyEffects } from "./effects.ts";
-import type { Scope } from "./env.ts";
+import { makeEnv, rolesOf, type Scope } from "./env.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import type { PackIndex } from "./pack-index.ts";
+import { explainFalse } from "./reason.ts";
 import { renderText } from "./text.ts";
 
 /** A `next:` chain longer than this stops silently (guards against authored cycles). */
@@ -35,6 +37,49 @@ function bindingLive(world: World, scope: ScopeRef | undefined): boolean {
   return getPerson(world, world.playerId).loans.some((l) => l.id === scope.id);
 }
 
+/** The person holds one of the storylet's `target` roles toward the player (no filter: any). */
+export function hasTargetRole(
+  world: World,
+  s: CompiledStorylet,
+  person: PersonId,
+): boolean {
+  if (!s.target || s.target.length === 0) return true;
+  const roles = rolesOf(world, person);
+  return s.target.some((t) => roles.includes(t));
+}
+
+/**
+ * Why a storylet cannot open for this binding, in words a player can read; null when it can.
+ * `when`, `once`, `cooldown`, `max_per_life`, the binding and the `target` role all count.
+ */
+export function ineligibility(
+  world: World,
+  idx: PackIndex,
+  s: CompiledStorylet,
+  scope: ScopeRef | undefined,
+): string | null {
+  if ((s.scope ?? undefined) !== scope?.kind) return "Not available";
+  if (!bindingLive(world, scope)) return "Not available";
+  if (scope?.kind === "person" && !hasTargetRole(world, s, scope.id))
+    return "Not available";
+  const rec = world.storyletLog[logKey(s.id, scope)];
+  if (rec) {
+    if (s.once) return "Already done";
+    if (s.maxPerLife !== undefined && rec.count >= s.maxPerLife)
+      return "Done too often";
+    if (s.cooldown !== undefined && clockAge(world) - rec.lastAge < s.cooldown)
+      return `Again at age ${rec.lastAge + s.cooldown}`;
+  }
+  const env = scopeFor(world, scope);
+  return evalBool(s.when, world, idx, env)
+    ? null
+    : s.when === undefined
+      ? "Not available"
+      : explainFalse(s.when, (c) =>
+          Boolean(evaluate(c, makeEnv(world, idx, env))),
+        );
+}
+
 /** `when`, `once`, `cooldown` and `max_per_life` all pass for this storylet and binding. */
 export function isEligible(
   world: World,
@@ -42,16 +87,7 @@ export function isEligible(
   s: CompiledStorylet,
   scope: ScopeRef | undefined,
 ): boolean {
-  if ((s.scope ?? undefined) !== scope?.kind) return false;
-  if (!bindingLive(world, scope)) return false;
-  const rec = world.storyletLog[logKey(s.id, scope)];
-  if (rec) {
-    if (s.once) return false;
-    if (s.maxPerLife !== undefined && rec.count >= s.maxPerLife) return false;
-    if (s.cooldown !== undefined && clockAge(world) - rec.lastAge < s.cooldown)
-      return false;
-  }
-  return evalBool(s.when, world, idx, scopeFor(world, scope));
+  return ineligibility(world, idx, s, scope) === null;
 }
 
 function record(world: World, key: string): World {
@@ -120,7 +156,7 @@ function runOutcome(
 /**
  * Open a storylet. Without choices it resolves now (text, one weighted outcome, effects,
  * then `next`). With choices it becomes `world.pending` for the player, except in
- * `scope: person` where the first enabled choice is taken. Records the firing.
+ * `scope: person` where the first enabled choice is taken for events. Records the firing.
  */
 export function open(
   world: World,
@@ -133,7 +169,7 @@ export function open(
   if (!s) throw new RangeError(`unknown storylet '${ev.storyletId}'`);
   let w = record(world, logKey(s.id, ev.scope));
   if (s.choices.length > 0) {
-    if (ev.scope?.kind === "person") {
+    if (ev.scope?.kind === "person" && s.trigger === "event") {
       const scope = scopeFor(w, ev.scope);
       const c = s.choices.find((x) => evalBool(x.when, w, idx, scope));
       if (!c) return w;

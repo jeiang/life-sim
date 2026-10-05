@@ -14,7 +14,6 @@ qualities:
   - { id: times_promoted, type: int, min: 0, default: 0 }
   - { id: missed_payments, type: int, min: 0, default: 0 }
   - { id: has_drivers_license, type: flag, default: false }
-  - { id: parents_died, type: int, min: 0, default: 0 }
   - { id: has_degree_business, type: flag, default: false }
   - { id: has_degree_engineering, type: flag, default: false }
   - { id: has_degree_nursing, type: flag, default: false }

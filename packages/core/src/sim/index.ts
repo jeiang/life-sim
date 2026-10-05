@@ -1,4 +1,11 @@
 export {
+  type ActionRow,
+  actionLabel,
+  listActions,
+  listSubmenus,
+  runAction,
+} from "./actions.ts";
+export {
   ageUp,
   canAgeUp,
   choose,
@@ -26,5 +33,7 @@ export {
   startOccupation,
 } from "./ops.ts";
 export { indexBundles, type PackIndex } from "./pack-index.ts";
+export { listShop, purchase, type ShopRow, sell } from "./purchase.ts";
+export { replay } from "./replay.ts";
 export { REPOSSESSION_MISSES } from "./settle.ts";
 export { formatMoney, renderText } from "./text.ts";

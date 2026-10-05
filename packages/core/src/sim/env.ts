@@ -39,6 +39,20 @@ export function qualityOf(p: Person, idx: PackIndex, id: string): QualityValue {
   return d.default;
 }
 
+/** The player's relationship role toward a person (first by id order), if any. */
+export function roleOf(world: World, id: PersonId): string | undefined {
+  for (const r of world.relationships)
+    if (r.from === world.playerId && r.to === id) return r.role;
+  return undefined;
+}
+
+/** Every role the player holds toward a person. */
+export function rolesOf(world: World, id: PersonId): string[] {
+  return world.relationships
+    .filter((r) => r.from === world.playerId && r.to === id)
+    .map((r) => r.role);
+}
+
 function personField(
   world: World,
   idx: PackIndex,
@@ -50,6 +64,8 @@ function personField(
   if (field === "first_name") return p.givenName;
   if (field === "last_name") return p.familyName;
   if (field === "age") return p.age;
+  if (field === "alive") return p.alive;
+  if (field === "role") return roleOf(world, id) ?? "";
   if (field.startsWith("stat.")) return p.stats[field.slice(5)] ?? 0;
   if (field.startsWith("quality."))
     return qualityOf(p, idx, field.slice(8)) as Value;

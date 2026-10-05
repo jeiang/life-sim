@@ -488,6 +488,104 @@ describe("build checks fail", () => {
     );
   });
 
+  const PERSON_ACTION = `- id: chat
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [neighbour]
+  when: person.role == neighbour and person.alive and person.age >= 3
+  outcomes:
+    - effects:
+        - relationship(person).closeness += 5
+        - die("old age")
+`;
+
+  test("person-scoped actions: target roles, person.role/alive, relationship(person)", () => {
+    const r = compilePacks(
+      fixture({ "base/storylets/targeted.yaml": PERSON_ACTION }),
+    );
+    expect(r.ok, r.diagnostics.map(formatDiagnostic).join("\n")).toBe(true);
+    const chat = r.bundles
+      .flatMap((b) => b.storylets)
+      .find((x) => x.id === "base/chat");
+    expect(chat).toMatchObject({ scope: "person", target: ["base/neighbour"] });
+  });
+
+  test("action scope and target mistakes are reported", () => {
+    expectError(
+      {
+        "base/storylets/targeted.yaml": sub(
+          PERSON_ACTION,
+          "  scope: person\n",
+          "  scope: loan\n",
+        ),
+      },
+      "actions can only use 'scope: person'",
+    );
+    expectError(
+      {
+        "base/storylets/targeted.yaml": sub(
+          PERSON_ACTION,
+          "  scope: person\n",
+          "",
+        ),
+      },
+      "'target' needs 'scope: person'",
+    );
+    expectError(
+      {
+        "base/storylets/targeted.yaml": sub(
+          PERSON_ACTION,
+          "target: [neighbour]",
+          "target: [local]",
+        ),
+      },
+      "'local' is a generator, expected role",
+    );
+  });
+
+  test("item requires and loan down payment compile; bad ones are reported", () => {
+    const r = compilePacks(
+      fixture({
+        "base/items/stuff.yaml": sub(
+          "  loan: auto-loan\n",
+          "  requires: age >= 16 and quality.has_diploma\n  loan: auto-loan\n",
+        ),
+        "base/loans/kinds.yaml": sub(
+          "  term_years: 5\n",
+          "  term_years: 5\n  down_payment: 12.5%\n",
+        ),
+      }),
+    );
+    expect(r.ok, r.diagnostics.map(formatDiagnostic).join("\n")).toBe(true);
+    const base = r.bundles.find((b) => b.id === "base");
+    expect(base?.items.find((i) => i.id === "base/used-car")?.requires).toEqual(
+      expect.anything(),
+    );
+    expect(base?.loans.map((l) => [l.id, l.downPaymentBp])).toEqual([
+      ["base/auto-loan", 1250],
+      ["base/student-loan", 0],
+    ]);
+    expectError(
+      {
+        "base/items/stuff.yaml": sub(
+          "  loan: auto-loan\n",
+          "  requires: age >= 16 and quality.nope\n  loan: auto-loan\n",
+        ),
+      },
+      "quality.nope",
+    );
+    expectError(
+      {
+        "base/loans/kinds.yaml": sub(
+          "  term_years: 5\n",
+          "  term_years: 5\n  down_payment: 120%\n",
+        ),
+      },
+      "down payment",
+    );
+  });
+
   test("undeclared stat in a people generator", () => {
     expectError(
       {

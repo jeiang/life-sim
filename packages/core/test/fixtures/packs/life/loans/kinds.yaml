@@ -2,4 +2,5 @@
   label: Auto loan
   rate: 5%
   term_years: 4
+  down_payment: 10%
   secured: true

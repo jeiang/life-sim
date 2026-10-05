@@ -71,7 +71,9 @@ function applyEffect(
       const delta = evalInt(e[2], w, idx, scope);
       const sign = e[0] === "sub" ? -1 : 1;
       if (typeof target !== "string") {
-        const pid = bound.get(target[1]);
+        const pid =
+          bound.get(target[1]) ??
+          (target[1] === "person" ? scope.person : undefined);
         if (pid === undefined) return w;
         let out = w;
         for (const r of w.relationships) {

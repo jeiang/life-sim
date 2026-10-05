@@ -53,6 +53,20 @@
           }
         ]
       },
+      "requires": {
+        "description": "Expression in the Pack expression language (ADR 0004)",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      },
       "loan": {
         "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
         "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",

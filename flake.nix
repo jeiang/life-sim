@@ -29,6 +29,37 @@
             fetcherVersion = 4;
             hash = "sha256-fDjXvVacNDypOM9rbHPNwAHxVQF3fGuPpEDycKIuJsA=";
           };
+
+          # The deployed app: $out/dist is served as-is by Caddy (docs/spec/deploy.md).
+          default = pkgs.stdenvNoCC.mkDerivation {
+            pname = "life-sim";
+            version = "0";
+            src = fs.toSource {
+              root = ./.;
+              fileset = fs.unions [
+                ./package.json
+                ./pnpm-lock.yaml
+                ./pnpm-workspace.yaml
+                ./tsconfig.base.json
+                ./packages
+                ./apps
+                ./packs
+              ];
+            };
+            inherit (self.packages.${system}) pnpmDeps;
+            nativeBuildInputs = [ pkgs.nodejs_24 pkgs.pnpm_10 pkgs.pnpmConfigHook ];
+            buildPhase = ''
+              runHook preBuild
+              pnpm --filter @life/web build
+              runHook postBuild
+            '';
+            installPhase = ''
+              runHook preInstall
+              mkdir -p $out
+              cp -r apps/web/dist $out/dist
+              runHook postInstall
+            '';
+          };
         });
 
       devShells = forAll (system: pkgs: {

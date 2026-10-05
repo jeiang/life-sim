@@ -8,6 +8,7 @@ import { StatPanel } from "./components/StatPanel.tsx";
 import { UpdateBanner } from "./components/UpdateBanner.tsx";
 import { type PageId, page } from "./nav.ts";
 import { ChartPage } from "./pages/ChartPage.tsx";
+import { isMenuId, MenuPage } from "./pages/Menu.tsx";
 import { Placeholder } from "./pages/Placeholder.tsx";
 import { Profile } from "./pages/Profile.tsx";
 
@@ -39,5 +40,6 @@ export function App() {
 function Screen(props: { id: PageId }) {
   if (props.id === "profile") return <Profile />;
   if (props.id === "chart") return <ChartPage />;
+  if (isMenuId(props.id)) return <MenuPage id={props.id} />;
   return <Placeholder id={props.id} />;
 }

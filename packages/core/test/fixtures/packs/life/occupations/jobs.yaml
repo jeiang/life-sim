@@ -1,0 +1,13 @@
+- id: job
+  label: Shop job
+  group: full-time
+  pay: 500000
+- id: side_job
+  label: Other job
+  group: full-time
+  pay: 700000
+- id: school
+  label: University
+  group: school
+  pay: -100000
+  duration_years: 2

@@ -1,0 +1,6 @@
+- id: car
+  label: Car
+  category: vehicles
+  price: 1000000
+  value: max(asset.value - asset.purchase_price / 10, 0)
+  loan: auto-loan

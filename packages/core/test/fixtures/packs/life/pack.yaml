@@ -1,0 +1,17 @@
+id: life
+version: 1
+currency:
+  symbol: "$"
+  digits: 2
+stats:
+  - { id: happiness, label: Happiness, start: [50, 100] }
+  - { id: health, label: Health, start: [80, 100] }
+qualities:
+  - { id: chaos, type: flag, default: false }
+  - { id: chain, type: flag, default: false }
+  - { id: mortal, type: flag, default: false }
+  - { id: lucky, type: int, min: 0, max: 5, default: 0 }
+exclusivity: [school, full-time]
+year:
+  slots: [2, 2]
+  cap: 3

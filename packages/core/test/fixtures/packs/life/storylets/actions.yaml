@@ -1,0 +1,77 @@
+- id: meet
+  trigger: action
+  menu: relationships
+  text: You meet someone.
+  outcomes:
+    - text: "{n.first_name} is {n.age}."
+      effects:
+        - spawn_person(neighbour, local) as n
+        - relationship(n).closeness += 10
+        - journal("Met {n.first_name} {n.last_name}.")
+
+- id: get-job
+  trigger: action
+  menu: occupation
+  outcomes:
+    - effects:
+        - start_occupation(job)
+
+- id: get-side-job
+  trigger: action
+  menu: occupation
+  outcomes:
+    - effects:
+        - start_occupation(side_job)
+
+- id: enrol
+  trigger: action
+  menu: occupation
+  outcomes:
+    - effects:
+        - start_occupation(school)
+
+- id: quit
+  trigger: action
+  menu: occupation
+  outcomes:
+    - effects:
+        - end_occupation(job)
+
+- id: borrow
+  trigger: action
+  menu: assets
+  outcomes:
+    - effects:
+        - take_loan(100000, 5%, 4)
+
+- id: buy-car
+  trigger: action
+  menu: assets
+  outcomes:
+    - effects:
+        - grant_asset(car)
+
+- id: sell-car
+  trigger: action
+  menu: assets
+  outcomes:
+    - effects:
+        - remove_asset(car)
+
+- id: limited
+  trigger: action
+  menu: activities
+  max_per_life: 2
+  cooldown: 1
+  text: Limited fun, {money} left.
+  outcomes:
+    - effects:
+        - money += 100
+
+- id: lucky-test
+  trigger: action
+  menu: activities
+  outcomes:
+    - effects:
+        - quality.lucky += 99
+        - stat.happiness += 500

@@ -46,6 +46,8 @@ export interface Asset {
   readonly kindId: string;
   readonly purchasePrice: number;
   readonly value: number;
+  /** Player age when acquired; `asset.years` is the age gap. Absent means 0 years. */
+  readonly acquiredAge?: number;
   readonly qualities: Readonly<Record<string, QualityValue>>;
 }
 
@@ -84,6 +86,58 @@ export interface JournalEntry {
   readonly lines: readonly string[];
 }
 
+/** A storylet bound to one of the player's loans or to one non-player person. */
+export interface ScopeRef {
+  readonly kind: "loan" | "person";
+  /** Loan id or person id. */
+  readonly id: number;
+}
+
+/** An event drawn for this age-up and not yet opened. */
+export interface QueuedEvent {
+  readonly storyletId: string;
+  readonly scope?: ScopeRef;
+}
+
+/**
+ * An open storylet waiting for the player's choice. While set, the life cannot age up.
+ * `rest` is present when the storylet was drawn during an age-up: the events still to open
+ * (the NPC pass follows them); absent for actions.
+ */
+export interface Pending {
+  readonly storyletId: string;
+  readonly scope?: ScopeRef;
+  readonly rest?: { readonly events: readonly QueuedEvent[] };
+}
+
+/** How often a storylet (per scope binding) has fired, for `once`, `cooldown`, `max_per_life`. */
+export interface StoryletRecord {
+  readonly count: number;
+  readonly lastAge: number;
+}
+
+export interface ObituaryOccupation {
+  readonly kindId: string;
+  readonly startedAge: number;
+  readonly endedAge: number;
+  readonly years: number;
+}
+
+/** Record of a finished life, kept in the graveyard. */
+export interface Obituary {
+  readonly personId: PersonId;
+  readonly givenName: string;
+  readonly familyName: string;
+  readonly age: number;
+  readonly cause: string;
+  /** Cash plus asset values minus loan balances, minor units. */
+  readonly netWorth: number;
+  /** Occupations outside the `school` exclusivity group, oldest first. */
+  readonly career: readonly ObituaryOccupation[];
+  /** Occupations in the `school` exclusivity group, oldest first. */
+  readonly education: readonly ObituaryOccupation[];
+}
+
 export interface PackVersion {
   readonly id: string;
   readonly version: string;
@@ -105,6 +159,12 @@ export interface World {
   readonly journal: readonly JournalEntry[];
   /** Roll-site counters, keyed `"<age>/<purposeKey>"`. */
   readonly rngCounters: Readonly<Record<string, number>>;
+  /** Open storylet awaiting a choice; null when none. */
+  readonly pending: Pending | null;
+  /** Set when the player died; the life is over. */
+  readonly ended: Obituary | null;
+  /** Storylet firing counts, keyed by storylet id, plus `#<scope id>` when scoped. */
+  readonly storyletLog: Readonly<Record<string, StoryletRecord>>;
   /** Packs (and versions) the save was made with, sorted by id. */
   readonly packVersions: readonly PackVersion[];
 }

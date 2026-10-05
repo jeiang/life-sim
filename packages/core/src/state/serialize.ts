@@ -1,4 +1,15 @@
-import type { Occupation, Person, QualityValue, World } from "./types.ts";
+import type {
+  Obituary,
+  ObituaryOccupation,
+  Occupation,
+  Pending,
+  Person,
+  QualityValue,
+  QueuedEvent,
+  ScopeRef,
+  StoryletRecord,
+  World,
+} from "./types.ts";
 
 /**
  * Canonical JSON: every object's keys sorted by UTF-16 code unit order,
@@ -108,11 +119,13 @@ function person(v: unknown, p: string): Person {
     assets: arr(o.assets, `${p}.assets`).map((x, i) => {
       const a = obj(x, `${p}.assets[${i}]`);
       const q = `${p}.assets[${i}]`;
+      const acquiredAge = optInt(a.acquiredAge, `${q}.acquiredAge`);
       return {
         id: int(a.id, `${q}.id`),
         kindId: str(a.kindId, `${q}.kindId`),
         purchasePrice: int(a.purchasePrice, `${q}.purchasePrice`),
         value: int(a.value, `${q}.value`),
+        ...(acquiredAge === undefined ? {} : { acquiredAge }),
         qualities: qualities(a.qualities, `${q}.qualities`),
       };
     }),
@@ -133,6 +146,77 @@ function person(v: unknown, p: string): Person {
       };
     }),
   };
+}
+
+function scope(v: unknown, p: string): ScopeRef {
+  const o = obj(v, p);
+  const kind = str(o.kind, `${p}.kind`);
+  if (kind !== "loan" && kind !== "person") fail(`${p}.kind`, "loan or person");
+  return { kind, id: int(o.id, `${p}.id`) };
+}
+
+function queued(v: unknown, p: string): QueuedEvent {
+  const o = obj(v, p);
+  return {
+    storyletId: str(o.storyletId, `${p}.storyletId`),
+    ...(o.scope === undefined ? {} : { scope: scope(o.scope, `${p}.scope`) }),
+  };
+}
+
+function pending(v: unknown, p: string): Pending {
+  const o = obj(v, p);
+  return {
+    storyletId: str(o.storyletId, `${p}.storyletId`),
+    ...(o.scope === undefined ? {} : { scope: scope(o.scope, `${p}.scope`) }),
+    ...(o.rest === undefined
+      ? {}
+      : {
+          rest: {
+            events: arr(
+              obj(o.rest, `${p}.rest`).events,
+              `${p}.rest.events`,
+            ).map((x, i) => queued(x, `${p}.rest.events[${i}]`)),
+          },
+        }),
+  };
+}
+
+function obituaryOccupations(v: unknown, p: string): ObituaryOccupation[] {
+  return arr(v, p).map((x, i) => {
+    const o = obj(x, `${p}[${i}]`);
+    return {
+      kindId: str(o.kindId, `${p}[${i}].kindId`),
+      startedAge: int(o.startedAge, `${p}[${i}].startedAge`),
+      endedAge: int(o.endedAge, `${p}[${i}].endedAge`),
+      years: int(o.years, `${p}[${i}].years`),
+    };
+  });
+}
+
+function obituary(v: unknown, p: string): Obituary {
+  const o = obj(v, p);
+  return {
+    personId: int(o.personId, `${p}.personId`),
+    givenName: str(o.givenName, `${p}.givenName`),
+    familyName: str(o.familyName, `${p}.familyName`),
+    age: int(o.age, `${p}.age`),
+    cause: str(o.cause, `${p}.cause`),
+    netWorth: int(o.netWorth, `${p}.netWorth`),
+    career: obituaryOccupations(o.career, `${p}.career`),
+    education: obituaryOccupations(o.education, `${p}.education`),
+  };
+}
+
+function storyletLog(v: unknown, p: string): Record<string, StoryletRecord> {
+  const out: Record<string, StoryletRecord> = {};
+  for (const [k, x] of Object.entries(obj(v, p))) {
+    const o = obj(x, `${p}.${k}`);
+    out[k] = {
+      count: int(o.count, `${p}.${k}.count`),
+      lastAge: int(o.lastAge, `${p}.${k}.lastAge`),
+    };
+  }
+  return out;
 }
 
 /** Parse and validate a serialized world. Throws TypeError on any shape or non-integer violation. Schema migrations are applied before this by the save layer. */
@@ -168,6 +252,9 @@ export function deserializeWorld(text: string): World {
       };
     }),
     rngCounters: intRecord(o.rngCounters, "$.rngCounters"),
+    pending: o.pending === null ? null : pending(o.pending, "$.pending"),
+    ended: o.ended === null ? null : obituary(o.ended, "$.ended"),
+    storyletLog: storyletLog(o.storyletLog, "$.storyletLog"),
     packVersions: arr(o.packVersions, "$.packVersions").map((x, i) => {
       const v = obj(x, `$.packVersions[${i}]`);
       return {

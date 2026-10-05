@@ -6,6 +6,8 @@ Decided in [Deployment path to the cluster](https://github.com/jeiang/life-sim/i
 
 `jeiang/life-sim` becomes **public** before the first deploy. This is a build task, done with explicit approval at that time. As a result, the cluster flake input needs no credentials (same as the other static-site inputs), and the Mac, cornn-flaek CI, and buildbot need no tokens.
 
+Before the flip, review everything that becomes public: all branches (including `research/*` and `prototype/*`), all issues and comments, and the project board. The cluster details there (host names, edge layout, buildbot and garret endpoints, the garret OIDC client id) already appear in the public cluster repo `jeiang/.dotfiles`. Check anyway that no secret values or personal data were written down, and offer to delete throwaway branches or redact issue text before running `gh repo edit --visibility public`.
+
 ## Hosting
 
 - URL: `https://life-sim.jeiang.dev`, served by Caddy on the edge node `alda`. The existing `*.jeiang.dev` wildcard DNS record and DNS-01 certificate cover it; no DNS or TLS change is needed.

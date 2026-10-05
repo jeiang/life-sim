@@ -5,7 +5,7 @@ Decided in [CI runner and check placement](https://github.com/jeiang/life-sim/is
 ## Runner
 
 - buildbot-nix on `ricklent`, the existing cluster CI. It evaluates the flake and builds every check and package on x86_64-linux for each pull request and each push, and reports the results as GitHub status checks.
-- Setup (one time): install the buildbot GitHub App on `jeiang/life-sim` (the repo is private) and add the repo topic `build-with-buildbot`. buildbot's `userAllowlist` already includes `jeiang`.
+- Setup (one time): install the buildbot GitHub App on `jeiang/life-sim` (needed while the repo is private; it becomes public before the first deploy, see [deploy](deploy.md#visibility)) and add the repo topic `build-with-buildbot`. buildbot's `userAllowlist` already includes `jeiang`. Branch protection is available on the user's GitHub Pro plan.
 - After a merge, default-branch outputs are pushed to garret (`cache.jeiang.dev`) by a timer within about 5 minutes, so cluster deploys can download them. Pull-request outputs are not pushed.
 
 ## Checks

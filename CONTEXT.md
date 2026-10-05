@@ -57,7 +57,7 @@ The span of one person's existence from birth to death, as played or simulated.
 _Avoid_: Run, playthrough
 
 **Occupation**:
-A role a person holds, such as student at a school or employee in a job, with a ladder, yearly pay or tuition, and performance. Past occupations remain on record as history.
+A role a person holds, such as student at a school or employee in a job, with a ladder, yearly pay or tuition, and performance. A person can hold several at once, limited by the exclusivity groups their kinds declare (for example one school, one full-time job). Past occupations remain on record as history.
 _Avoid_: Job, enrollment, career (as a model term)
 
 **Money**:
@@ -73,6 +73,10 @@ _Avoid_: Debt, credit, negative cash
 **Age-up**:
 The single step that advances the world by exactly one year.
 _Avoid_: Turn, tick, next year
+
+**Settlement**:
+The fixed phase of an age-up, after aging and before events, in which occupations pay or charge, loans take payments, and assets change value.
+_Avoid_: Payday, upkeep
 
 **Storylet**:
 The single unit of authored content: conditions, choices, weighted outcomes, and effects. It is either offered in a menu (an action) or drawn at age-up (an event).
@@ -95,3 +99,13 @@ _Avoid_: Log, history, timeline
 **Death**:
 The end of a life, caused only by a storylet's death effect, which records a cause.
 _Avoid_: Game over
+
+### Persistence
+
+**Graveyard**:
+The archive of finished lives, kept as obituaries only.
+_Avoid_: Cemetery, history, finished saves
+
+**Choice log**:
+The ordered record of the seed and every player choice in a life, which replays that life on the build that made it.
+_Avoid_: Replay, event log, journal

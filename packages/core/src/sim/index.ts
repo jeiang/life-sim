@@ -14,6 +14,7 @@ export {
   type SimResult,
   startStorylet,
 } from "./flow.ts";
+export { type NetWorthPoint, recordNetWorth } from "./networth.ts";
 export {
   DEFAULT_FAMILY,
   type FamilySpec,

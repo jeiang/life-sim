@@ -5,9 +5,11 @@ import {
   choose,
   describePending,
   indexBundles,
+  type NetWorthPoint,
   newLife,
   type PackIndex,
   type PendingView,
+  recordNetWorth,
   type World,
 } from "@life/core";
 import { computed, signal } from "@preact/signals";
@@ -21,6 +23,18 @@ export const packIndex: PackIndex = indexBundles(bundles);
 
 /** The life being played. */
 export const world = signal<World>(newLife(bundles, randomSeed()));
+
+/**
+ * Player net worth per age for the chart. Session state, not part of the World, so it is not
+ * saved: a restored life starts a fresh series from its current age.
+ */
+export const netWorthHistory = signal<readonly NetWorthPoint[]>(
+  recordNetWorth([], world.value),
+);
+
+const track = (): void => {
+  netWorthHistory.value = recordNetWorth(netWorthHistory.value, world.value);
+};
 
 /** Journal lines written by the latest action, for the polite live region. */
 export const latestLines = signal<readonly string[]>([]);
@@ -42,6 +56,7 @@ export function ageUpOneYear(): void {
   const r = ageUp(world.value, bundles);
   world.value = r.world;
   latestLines.value = r.lines;
+  track();
 }
 
 export function chooseOption(index: number): void {
@@ -49,9 +64,11 @@ export function chooseOption(index: number): void {
   const r = choose(world.value, bundles, index);
   world.value = r.world;
   latestLines.value = r.lines;
+  track();
 }
 
 export function startNewLife(): void {
   world.value = newLife(bundles, randomSeed());
   latestLines.value = [];
+  netWorthHistory.value = recordNetWorth([], world.value);
 }

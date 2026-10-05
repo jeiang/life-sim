@@ -1,0 +1,707 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Job board -> two-question interview chain (`next:`) -> hire. Which job is being applied for is carried
+# in `quality.applying_for` (the index in the list below); `quality.interview_score` accumulates answers.
+# Promotion is data (`promotes_to`) plus the promote-* events below; raises are `quality.raise_bonus`.
+
+- id: apply-cashier
+  icon: 🛒
+  trigger: action
+  menu: activities/job-board
+  tags: [job, apply]
+  when: age >= 14 and not (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista)) and not has_occupation(core-loop/retired)
+  cooldown: 1
+  text: "The job board has an opening for a cashier."
+  outcomes:
+    - weight: 1
+      text: "You send in an application and get called in for an interview."
+      effects:
+        - quality.applying_for = 1
+        - quality.interview_score = 0
+      next: interview-question-1
+
+- id: apply-barista
+  icon: ☕
+  trigger: action
+  menu: activities/job-board
+  tags: [job, apply]
+  when: age >= 14 and not (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista)) and not has_occupation(core-loop/retired)
+  cooldown: 1
+  text: "The job board has an opening for a barista."
+  outcomes:
+    - weight: 1
+      text: "You send in an application and get called in for an interview."
+      effects:
+        - quality.applying_for = 2
+        - quality.interview_score = 0
+      next: interview-question-1
+
+- id: apply-server
+  icon: 🍽️
+  trigger: action
+  menu: activities/job-board
+  tags: [job, apply]
+  when: age >= 18 and not (has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)) and not has_occupation(core-loop/retired)
+  cooldown: 1
+  text: "The job board has an opening for a server."
+  outcomes:
+    - weight: 1
+      text: "You send in an application and get called in for an interview."
+      effects:
+        - quality.applying_for = 3
+        - quality.interview_score = 0
+      next: interview-question-1
+
+- id: apply-apprentice
+  icon: 🔧
+  trigger: action
+  menu: activities/job-board
+  tags: [job, apply]
+  when: age >= 18 and quality.graduated_high_school and not (has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)) and not has_occupation(core-loop/retired)
+  cooldown: 1
+  text: "The job board has an opening for a electrician's apprentice."
+  outcomes:
+    - weight: 1
+      text: "You send in an application and get called in for an interview."
+      effects:
+        - quality.applying_for = 4
+        - quality.interview_score = 0
+      next: interview-question-1
+
+- id: apply-junior-analyst
+  icon: 📈
+  trigger: action
+  menu: activities/job-board
+  tags: [job, apply]
+  when: age >= 18 and quality.has_degree_business and not (has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)) and not has_occupation(core-loop/retired)
+  cooldown: 1
+  text: "The job board has an opening for a junior analyst."
+  outcomes:
+    - weight: 1
+      text: "You send in an application and get called in for an interview."
+      effects:
+        - quality.applying_for = 5
+        - quality.interview_score = 0
+      next: interview-question-1
+
+- id: apply-junior-engineer
+  icon: 📐
+  trigger: action
+  menu: activities/job-board
+  tags: [job, apply]
+  when: age >= 18 and quality.has_degree_engineering and not (has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)) and not has_occupation(core-loop/retired)
+  cooldown: 1
+  text: "The job board has an opening for a junior engineer."
+  outcomes:
+    - weight: 1
+      text: "You send in an application and get called in for an interview."
+      effects:
+        - quality.applying_for = 6
+        - quality.interview_score = 0
+      next: interview-question-1
+
+- id: apply-staff-nurse
+  icon: 🩺
+  trigger: action
+  menu: activities/job-board
+  tags: [job, apply]
+  when: age >= 18 and quality.has_degree_nursing and not (has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)) and not has_occupation(core-loop/retired)
+  cooldown: 1
+  text: "The job board has an opening for a staff nurse."
+  outcomes:
+    - weight: 1
+      text: "You send in an application and get called in for an interview."
+      effects:
+        - quality.applying_for = 7
+        - quality.interview_score = 0
+      next: interview-question-1
+
+- id: apply-studio-assistant
+  icon: 🎨
+  trigger: action
+  menu: activities/job-board
+  tags: [job, apply]
+  when: age >= 18 and quality.has_degree_arts and not (has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)) and not has_occupation(core-loop/retired)
+  cooldown: 1
+  text: "The job board has an opening for a studio assistant."
+  outcomes:
+    - weight: 1
+      text: "You send in an application and get called in for an interview."
+      effects:
+        - quality.applying_for = 8
+        - quality.interview_score = 0
+      next: interview-question-1
+
+- id: interview-question-1
+  icon: 🗣️
+  trigger: event
+  chance: 0%
+  text: "The interviewer leans forward: \"Why do you want to work here?\""
+  choices:
+    - label: Talk about your skills
+      outcomes:
+        - weight: 30 + stat.smarts / 2
+          text: "Your answer is sharp and well prepared."
+          effects:
+            - quality.interview_score += 2
+          next: interview-question-2
+        - weight: 50
+          text: "Your answer is fine, if a little rehearsed."
+          effects:
+            - quality.interview_score += 1
+          next: interview-question-2
+        - weight: 20
+          text: "You ramble and lose the thread."
+          next: interview-question-2
+    - label: Be honest about needing the money
+      outcomes:
+        - weight: 40
+          text: "They appreciate the candour."
+          effects:
+            - quality.interview_score += 1
+          next: interview-question-2
+        - weight: 60
+          text: "It lands as a little desperate."
+          next: interview-question-2
+
+- id: interview-question-2
+  icon: 🗣️
+  trigger: event
+  chance: 0%
+  text: "\"Tell me about a time you handled a difficult situation.\""
+  choices:
+    - label: Stay calm and logical
+      outcomes:
+        - weight: 20 + stat.smarts / 2
+          text: "A clear, composed story."
+          effects:
+            - quality.interview_score += 2
+          next: interview-result
+        - weight: 40
+          text: "Your story is okay."
+          effects:
+            - quality.interview_score += 1
+          next: interview-result
+        - weight: 20
+          text: "You blank halfway through."
+          next: interview-result
+    - label: Lean on your charm
+      outcomes:
+        - weight: 15 + stat.looks / 2
+          text: "You have the room smiling."
+          effects:
+            - quality.interview_score += 2
+          next: interview-result
+        - weight: 40
+          text: "Pleasant, but short on substance."
+          effects:
+            - quality.interview_score += 1
+          next: interview-result
+        - weight: 25
+          text: "The charm comes across as glib."
+          next: interview-result
+
+- id: interview-result
+  icon: 💼
+  trigger: event
+  chance: 0%
+  text: "The interviewer thanks you and says they will be in touch."
+  outcomes:
+    - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      when: quality.applying_for == 1
+      text: "You got the job! You start as a cashier, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
+      effects:
+        - start_occupation(core-loop/cashier)
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c2
+        - relationship(c1).closeness += 10
+        - relationship(c2).closeness += 10
+        - stat.happiness += 4
+        - journal("Started work as a cashier at age {age}.")
+    - weight: 70 - quality.interview_score * 10
+      when: quality.applying_for == 1
+      text: "They went with another candidate."
+      effects:
+        - stat.happiness -= 2
+    - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      when: quality.applying_for == 2
+      text: "You got the job! You start as a barista, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
+      effects:
+        - start_occupation(core-loop/barista)
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c2
+        - relationship(c1).closeness += 10
+        - relationship(c2).closeness += 10
+        - stat.happiness += 4
+        - journal("Started work as a barista at age {age}.")
+    - weight: 70 - quality.interview_score * 10
+      when: quality.applying_for == 2
+      text: "They went with another candidate."
+      effects:
+        - stat.happiness -= 2
+    - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      when: quality.applying_for == 3
+      text: "You got the job! You start as a server, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
+      effects:
+        - start_occupation(core-loop/server)
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c2
+        - relationship(c1).closeness += 10
+        - relationship(c2).closeness += 10
+        - stat.happiness += 4
+        - journal("Started work as a server at age {age}.")
+    - weight: 70 - quality.interview_score * 10
+      when: quality.applying_for == 3
+      text: "They went with another candidate."
+      effects:
+        - stat.happiness -= 2
+    - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      when: quality.applying_for == 4
+      text: "You got the job! You start as a electrician's apprentice, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
+      effects:
+        - start_occupation(core-loop/apprentice)
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c2
+        - relationship(c1).closeness += 10
+        - relationship(c2).closeness += 10
+        - stat.happiness += 4
+        - journal("Started work as a electrician's apprentice at age {age}.")
+    - weight: 70 - quality.interview_score * 10
+      when: quality.applying_for == 4
+      text: "They went with another candidate."
+      effects:
+        - stat.happiness -= 2
+    - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      when: quality.applying_for == 5
+      text: "You got the job! You start as a junior analyst, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
+      effects:
+        - start_occupation(core-loop/junior-analyst)
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c2
+        - relationship(c1).closeness += 10
+        - relationship(c2).closeness += 10
+        - stat.happiness += 4
+        - journal("Started work as a junior analyst at age {age}.")
+    - weight: 70 - quality.interview_score * 10
+      when: quality.applying_for == 5
+      text: "They went with another candidate."
+      effects:
+        - stat.happiness -= 2
+    - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      when: quality.applying_for == 6
+      text: "You got the job! You start as a junior engineer, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
+      effects:
+        - start_occupation(core-loop/junior-engineer)
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c2
+        - relationship(c1).closeness += 10
+        - relationship(c2).closeness += 10
+        - stat.happiness += 4
+        - journal("Started work as a junior engineer at age {age}.")
+    - weight: 70 - quality.interview_score * 10
+      when: quality.applying_for == 6
+      text: "They went with another candidate."
+      effects:
+        - stat.happiness -= 2
+    - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      when: quality.applying_for == 7
+      text: "You got the job! You start as a staff nurse, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
+      effects:
+        - start_occupation(core-loop/staff-nurse)
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c2
+        - relationship(c1).closeness += 10
+        - relationship(c2).closeness += 10
+        - stat.happiness += 4
+        - journal("Started work as a staff nurse at age {age}.")
+    - weight: 70 - quality.interview_score * 10
+      when: quality.applying_for == 7
+      text: "They went with another candidate."
+      effects:
+        - stat.happiness -= 2
+    - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      when: quality.applying_for == 8
+      text: "You got the job! You start as a studio assistant, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
+      effects:
+        - start_occupation(core-loop/studio-assistant)
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1
+        - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c2
+        - relationship(c1).closeness += 10
+        - relationship(c2).closeness += 10
+        - stat.happiness += 4
+        - journal("Started work as a studio assistant at age {age}.")
+    - weight: 70 - quality.interview_score * 10
+      when: quality.applying_for == 8
+      text: "They went with another candidate."
+      effects:
+        - stat.happiness -= 2
+
+- id: promote-cashier
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 1000 + quality.work_effort * 600 + stat.smarts * 8
+  when: has_occupation(core-loop/cashier) and years_in(core-loop/cashier) >= 2 and (age >= 14)
+  text: "{player.first_name}'s manager calls a meeting."
+  outcomes:
+    - weight: 1
+      text: "You are promoted from cashier to barista."
+      effects:
+        - start_occupation(core-loop/barista)
+        - quality.times_promoted += 1
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 6
+        - journal("Promoted to barista at age {age}.")
+
+- id: promote-server
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 1000 + quality.work_effort * 600 + stat.smarts * 8
+  when: has_occupation(core-loop/server) and years_in(core-loop/server) >= 2 and (age >= 18)
+  text: "{player.first_name}'s manager calls a meeting."
+  outcomes:
+    - weight: 1
+      text: "You are promoted from server to shift lead."
+      effects:
+        - start_occupation(core-loop/shift-lead)
+        - quality.times_promoted += 1
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 6
+        - journal("Promoted to shift lead at age {age}.")
+
+- id: promote-shift-lead
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 1000 + quality.work_effort * 600 + stat.smarts * 8
+  when: has_occupation(core-loop/shift-lead) and years_in(core-loop/shift-lead) >= 3 and (age >= 18)
+  text: "{player.first_name}'s manager calls a meeting."
+  outcomes:
+    - weight: 1
+      text: "You are promoted from shift lead to restaurant manager."
+      effects:
+        - start_occupation(core-loop/restaurant-manager)
+        - quality.times_promoted += 1
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 6
+        - journal("Promoted to restaurant manager at age {age}.")
+
+- id: promote-apprentice
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 1000 + quality.work_effort * 600 + stat.smarts * 8
+  when: has_occupation(core-loop/apprentice) and years_in(core-loop/apprentice) >= 3 and (age >= 18 and quality.graduated_high_school)
+  text: "{player.first_name}'s manager calls a meeting."
+  outcomes:
+    - weight: 1
+      text: "You are promoted from electrician's apprentice to electrician."
+      effects:
+        - start_occupation(core-loop/electrician)
+        - quality.times_promoted += 1
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 6
+        - journal("Promoted to electrician at age {age}.")
+
+- id: promote-electrician
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 1000 + quality.work_effort * 600 + stat.smarts * 8
+  when: has_occupation(core-loop/electrician) and years_in(core-loop/electrician) >= 4 and (age >= 18 and quality.graduated_high_school)
+  text: "{player.first_name}'s manager calls a meeting."
+  outcomes:
+    - weight: 1
+      text: "You are promoted from electrician to master electrician."
+      effects:
+        - start_occupation(core-loop/master-electrician)
+        - quality.times_promoted += 1
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 6
+        - journal("Promoted to master electrician at age {age}.")
+
+- id: promote-junior-analyst
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 1000 + quality.work_effort * 600 + stat.smarts * 8
+  when: has_occupation(core-loop/junior-analyst) and years_in(core-loop/junior-analyst) >= 2 and (age >= 18 and quality.has_degree_business)
+  text: "{player.first_name}'s manager calls a meeting."
+  outcomes:
+    - weight: 1
+      text: "You are promoted from junior analyst to analyst."
+      effects:
+        - start_occupation(core-loop/analyst)
+        - quality.times_promoted += 1
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 6
+        - journal("Promoted to analyst at age {age}.")
+
+- id: promote-analyst
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 1000 + quality.work_effort * 600 + stat.smarts * 8
+  when: has_occupation(core-loop/analyst) and years_in(core-loop/analyst) >= 3 and (age >= 18 and quality.has_degree_business)
+  text: "{player.first_name}'s manager calls a meeting."
+  outcomes:
+    - weight: 1
+      text: "You are promoted from analyst to senior analyst."
+      effects:
+        - start_occupation(core-loop/senior-analyst)
+        - quality.times_promoted += 1
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 6
+        - journal("Promoted to senior analyst at age {age}.")
+
+- id: promote-junior-engineer
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 1000 + quality.work_effort * 600 + stat.smarts * 8
+  when: has_occupation(core-loop/junior-engineer) and years_in(core-loop/junior-engineer) >= 2 and (age >= 18 and quality.has_degree_engineering)
+  text: "{player.first_name}'s manager calls a meeting."
+  outcomes:
+    - weight: 1
+      text: "You are promoted from junior engineer to engineer."
+      effects:
+        - start_occupation(core-loop/engineer)
+        - quality.times_promoted += 1
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 6
+        - journal("Promoted to engineer at age {age}.")
+
+- id: promote-engineer
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 1000 + quality.work_effort * 600 + stat.smarts * 8
+  when: has_occupation(core-loop/engineer) and years_in(core-loop/engineer) >= 3 and (age >= 18 and quality.has_degree_engineering)
+  text: "{player.first_name}'s manager calls a meeting."
+  outcomes:
+    - weight: 1
+      text: "You are promoted from engineer to senior engineer."
+      effects:
+        - start_occupation(core-loop/senior-engineer)
+        - quality.times_promoted += 1
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 6
+        - journal("Promoted to senior engineer at age {age}.")
+
+- id: promote-staff-nurse
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 1000 + quality.work_effort * 600 + stat.smarts * 8
+  when: has_occupation(core-loop/staff-nurse) and years_in(core-loop/staff-nurse) >= 2 and (age >= 18 and quality.has_degree_nursing)
+  text: "{player.first_name}'s manager calls a meeting."
+  outcomes:
+    - weight: 1
+      text: "You are promoted from staff nurse to charge nurse."
+      effects:
+        - start_occupation(core-loop/charge-nurse)
+        - quality.times_promoted += 1
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 6
+        - journal("Promoted to charge nurse at age {age}.")
+
+- id: promote-charge-nurse
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 1000 + quality.work_effort * 600 + stat.smarts * 8
+  when: has_occupation(core-loop/charge-nurse) and years_in(core-loop/charge-nurse) >= 3 and (age >= 18 and quality.has_degree_nursing)
+  text: "{player.first_name}'s manager calls a meeting."
+  outcomes:
+    - weight: 1
+      text: "You are promoted from charge nurse to nurse manager."
+      effects:
+        - start_occupation(core-loop/nurse-manager)
+        - quality.times_promoted += 1
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 6
+        - journal("Promoted to nurse manager at age {age}.")
+
+- id: promote-studio-assistant
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 1000 + quality.work_effort * 600 + stat.smarts * 8
+  when: has_occupation(core-loop/studio-assistant) and years_in(core-loop/studio-assistant) >= 2 and (age >= 18 and quality.has_degree_arts)
+  text: "{player.first_name}'s manager calls a meeting."
+  outcomes:
+    - weight: 1
+      text: "You are promoted from studio assistant to designer."
+      effects:
+        - start_occupation(core-loop/designer)
+        - quality.times_promoted += 1
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 6
+        - journal("Promoted to designer at age {age}.")
+
+- id: promote-designer
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 1000 + quality.work_effort * 600 + stat.smarts * 8
+  when: has_occupation(core-loop/designer) and years_in(core-loop/designer) >= 3 and (age >= 18 and quality.has_degree_arts)
+  text: "{player.first_name}'s manager calls a meeting."
+  outcomes:
+    - weight: 1
+      text: "You are promoted from designer to art director."
+      effects:
+        - start_occupation(core-loop/art-director)
+        - quality.times_promoted += 1
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 6
+        - journal("Promoted to art director at age {age}.")
+
+- id: work-harder
+  icon: 💪
+  trigger: action
+  menu: occupation
+  tags: [job]
+  when: has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)
+  cooldown: 1
+  text: "You put in extra effort at work this year."
+  outcomes:
+    - weight: 80
+      text: "Your boss notices the extra hours."
+      effects:
+        - quality.work_effort = min(5, quality.work_effort + 1)
+        - stat.happiness -= 2
+        - stat.health -= 1
+    - weight: 20
+      text: "You burn out a little, but the effort still counts."
+      effects:
+        - quality.work_effort = min(5, quality.work_effort + 1)
+        - stat.happiness -= 4
+        - stat.health -= 3
+
+- id: ask-for-raise
+  icon: 💵
+  trigger: action
+  menu: occupation
+  tags: [job]
+  when: has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)
+  cooldown: 2
+  text: "You ask your boss for a raise."
+  outcomes:
+    - weight: 20 + quality.work_effort * 12 + stat.smarts / 5
+      text: "Your boss agrees to a raise."
+      effects:
+        - quality.raise_bonus += 150000
+        - stat.happiness += 4
+        - journal("Got a raise at age {age}.")
+    - weight: 60
+      text: "Not this year, your boss says."
+      effects:
+        - stat.happiness -= 2
+    - weight: 10
+      text: "The request goes over badly."
+      effects:
+        - stat.happiness -= 4
+        - quality.work_effort = 0
+
+- id: quit-job
+  icon: 🚪
+  trigger: action
+  menu: occupation
+  tags: [job]
+  when: has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)
+  text: "You hand in your notice."
+  outcomes:
+    - weight: 1
+      text: "You walk out with a box of your things."
+      effects:
+        - end_occupation(core-loop/cashier)
+        - end_occupation(core-loop/barista)
+        - end_occupation(core-loop/server)
+        - end_occupation(core-loop/shift-lead)
+        - end_occupation(core-loop/restaurant-manager)
+        - end_occupation(core-loop/apprentice)
+        - end_occupation(core-loop/electrician)
+        - end_occupation(core-loop/master-electrician)
+        - end_occupation(core-loop/junior-analyst)
+        - end_occupation(core-loop/analyst)
+        - end_occupation(core-loop/senior-analyst)
+        - end_occupation(core-loop/junior-engineer)
+        - end_occupation(core-loop/engineer)
+        - end_occupation(core-loop/senior-engineer)
+        - end_occupation(core-loop/staff-nurse)
+        - end_occupation(core-loop/charge-nurse)
+        - end_occupation(core-loop/nurse-manager)
+        - end_occupation(core-loop/studio-assistant)
+        - end_occupation(core-loop/designer)
+        - end_occupation(core-loop/art-director)
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness -= 1
+        - journal("Quit your job at age {age}.")
+
+- id: retire
+  icon: 🏖️
+  trigger: action
+  menu: occupation
+  tags: [job, retirement]
+  when: age >= 60 and not has_occupation(core-loop/retired)
+  text: "You consider retiring."
+  outcomes:
+    - weight: 1
+      text: "You retire and start collecting a pension."
+      effects:
+        - quality.years_worked = years_in(core-loop/cashier) + years_in(core-loop/barista) + years_in(core-loop/server) + years_in(core-loop/shift-lead) + years_in(core-loop/restaurant-manager) + years_in(core-loop/apprentice) + years_in(core-loop/electrician) + years_in(core-loop/master-electrician) + years_in(core-loop/junior-analyst) + years_in(core-loop/analyst) + years_in(core-loop/senior-analyst) + years_in(core-loop/junior-engineer) + years_in(core-loop/engineer) + years_in(core-loop/senior-engineer) + years_in(core-loop/staff-nurse) + years_in(core-loop/charge-nurse) + years_in(core-loop/nurse-manager) + years_in(core-loop/studio-assistant) + years_in(core-loop/designer) + years_in(core-loop/art-director)
+        - end_occupation(core-loop/cashier)
+        - end_occupation(core-loop/barista)
+        - end_occupation(core-loop/server)
+        - end_occupation(core-loop/shift-lead)
+        - end_occupation(core-loop/restaurant-manager)
+        - end_occupation(core-loop/apprentice)
+        - end_occupation(core-loop/electrician)
+        - end_occupation(core-loop/master-electrician)
+        - end_occupation(core-loop/junior-analyst)
+        - end_occupation(core-loop/analyst)
+        - end_occupation(core-loop/senior-analyst)
+        - end_occupation(core-loop/junior-engineer)
+        - end_occupation(core-loop/engineer)
+        - end_occupation(core-loop/senior-engineer)
+        - end_occupation(core-loop/staff-nurse)
+        - end_occupation(core-loop/charge-nurse)
+        - end_occupation(core-loop/nurse-manager)
+        - end_occupation(core-loop/studio-assistant)
+        - end_occupation(core-loop/designer)
+        - end_occupation(core-loop/art-director)
+        - start_occupation(core-loop/retired)
+        - quality.raise_bonus = 0
+        - quality.work_effort = 0
+        - stat.happiness += 5
+        - journal("Retired at age {age}.")

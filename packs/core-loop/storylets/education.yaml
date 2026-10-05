@@ -1,0 +1,267 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+- id: start-elementary-school
+  icon: 🏫
+  trigger: event
+  tags: [education, school]
+  chance: 100%
+  when: age >= 6 and age < 12 and years_in(core-loop/elementary-school) == 0 and not has_occupation(core-loop/elementary-school)
+  text: "It is time for {player.first_name} to start elementary school."
+  outcomes:
+    - weight: 1
+      text: "You meet {m1.first_name} {m1.last_name} and {m2.first_name} {m2.last_name}."
+      effects:
+        - start_occupation(core-loop/elementary-school)
+        - spawn_person(core-loop/classmate, core-loop/classmate-gen) as m1
+        - relationship(m1).closeness += 12
+        - spawn_person(core-loop/classmate, core-loop/classmate-gen) as m2
+        - relationship(m2).closeness += 12
+        - journal("Started elementary school at age {age}.")
+    - weight: 1
+      text: "You meet {m1.first_name} {m1.last_name}, {m2.first_name} {m2.last_name} and {m3.first_name} {m3.last_name}."
+      effects:
+        - start_occupation(core-loop/elementary-school)
+        - spawn_person(core-loop/classmate, core-loop/classmate-gen) as m1
+        - relationship(m1).closeness += 12
+        - spawn_person(core-loop/classmate, core-loop/classmate-gen) as m2
+        - relationship(m2).closeness += 12
+        - spawn_person(core-loop/classmate, core-loop/classmate-gen) as m3
+        - relationship(m3).closeness += 12
+        - journal("Started elementary school at age {age}.")
+
+- id: start-high-school
+  icon: 🎒
+  trigger: event
+  tags: [education, school]
+  chance: 100%
+  when: age >= 12 and age < 18 and years_in(core-loop/high-school) == 0 and not has_occupation(core-loop/high-school)
+  text: "{player.first_name} starts high school."
+  outcomes:
+    - weight: 1
+      text: "You meet {m1.first_name} {m1.last_name} and {m2.first_name} {m2.last_name}."
+      effects:
+        - start_occupation(core-loop/high-school)
+        - spawn_person(core-loop/classmate, core-loop/classmate-gen) as m1
+        - relationship(m1).closeness += 12
+        - spawn_person(core-loop/classmate, core-loop/classmate-gen) as m2
+        - relationship(m2).closeness += 12
+        - journal("Started high school at age {age}.")
+    - weight: 1
+      text: "You meet {m1.first_name} {m1.last_name}, {m2.first_name} {m2.last_name} and {m3.first_name} {m3.last_name}."
+      effects:
+        - start_occupation(core-loop/high-school)
+        - spawn_person(core-loop/classmate, core-loop/classmate-gen) as m1
+        - relationship(m1).closeness += 12
+        - spawn_person(core-loop/classmate, core-loop/classmate-gen) as m2
+        - relationship(m2).closeness += 12
+        - spawn_person(core-loop/classmate, core-loop/classmate-gen) as m3
+        - relationship(m3).closeness += 12
+        - journal("Started high school at age {age}.")
+
+- id: graduate-high-school
+  icon: 🎓
+  trigger: event
+  tags: [education, school]
+  chance: 100%
+  when: years_in(core-loop/high-school) >= 6 and not quality.graduated_high_school
+  text: "{player.first_name} walks across the stage and collects a diploma."
+  outcomes:
+    - weight: 1
+      text: "You graduate from high school."
+      effects:
+        - quality.graduated_high_school = true
+        - stat.happiness += 5
+        - journal("Graduated from high school at age {age}.")
+
+- id: graduate-university
+  icon: 🎓
+  trigger: event
+  tags: [education, school]
+  chance: 100%
+  when: (years_in(core-loop/university-business) >= 4 and not quality.has_degree_business) or (years_in(core-loop/university-engineering) >= 4 and not quality.has_degree_engineering) or (years_in(core-loop/university-nursing) >= 4 and not quality.has_degree_nursing) or (years_in(core-loop/university-arts) >= 4 and not quality.has_degree_arts)
+  text: "{player.first_name} graduates from university."
+  outcomes:
+    - weight: 1
+      when: years_in(core-loop/university-business) >= 4 and not quality.has_degree_business
+      text: "You earn a degree in business."
+      effects:
+        - quality.has_degree_business = true
+        - quality.tuition_by_loan = false
+        - stat.happiness += 8
+        - journal("Graduated with a business degree at age {age}.")
+    - weight: 1
+      when: years_in(core-loop/university-engineering) >= 4 and not quality.has_degree_engineering
+      text: "You earn a degree in engineering."
+      effects:
+        - quality.has_degree_engineering = true
+        - quality.tuition_by_loan = false
+        - stat.happiness += 8
+        - journal("Graduated with a engineering degree at age {age}.")
+    - weight: 1
+      when: years_in(core-loop/university-nursing) >= 4 and not quality.has_degree_nursing
+      text: "You earn a degree in nursing."
+      effects:
+        - quality.has_degree_nursing = true
+        - quality.tuition_by_loan = false
+        - stat.happiness += 8
+        - journal("Graduated with a nursing degree at age {age}.")
+    - weight: 1
+      when: years_in(core-loop/university-arts) >= 4 and not quality.has_degree_arts
+      text: "You earn a degree in arts."
+      effects:
+        - quality.has_degree_arts = true
+        - quality.tuition_by_loan = false
+        - stat.happiness += 8
+        - journal("Graduated with a arts degree at age {age}.")
+
+- id: enrol-business
+  icon: 🎓
+  trigger: action
+  menu: occupation/education
+  tags: [education, university]
+  when: age >= 18 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_business
+  cooldown: 1
+  text: "Enrol in a four-year business degree? Tuition is $12,000 a year."
+  choices:
+    - label: Pay tuition in cash each year
+      when: money >= 1200000
+      outcomes:
+        - weight: 1
+          text: "You enrol and plan to pay tuition from your own pocket."
+          effects:
+            - quality.tuition_by_loan = false
+            - start_occupation(core-loop/university-business)
+            - journal("Enrolled in business at university at age {age}.")
+    - label: Take out a student loan for all four years
+      outcomes:
+        - weight: 1
+          text: "You enrol and sign for a student loan."
+          effects:
+            - take_loan(4800000, 4.5%, 10)
+            - quality.tuition_by_loan = true
+            - start_occupation(core-loop/university-business)
+            - journal("Enrolled in business at university with a student loan at age {age}.")
+
+- id: enrol-engineering
+  icon: 🎓
+  trigger: action
+  menu: occupation/education
+  tags: [education, university]
+  when: age >= 18 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_engineering
+  cooldown: 1
+  text: "Enrol in a four-year engineering degree? Tuition is $14,000 a year."
+  choices:
+    - label: Pay tuition in cash each year
+      when: money >= 1400000
+      outcomes:
+        - weight: 1
+          text: "You enrol and plan to pay tuition from your own pocket."
+          effects:
+            - quality.tuition_by_loan = false
+            - start_occupation(core-loop/university-engineering)
+            - journal("Enrolled in engineering at university at age {age}.")
+    - label: Take out a student loan for all four years
+      outcomes:
+        - weight: 1
+          text: "You enrol and sign for a student loan."
+          effects:
+            - take_loan(5600000, 4.5%, 10)
+            - quality.tuition_by_loan = true
+            - start_occupation(core-loop/university-engineering)
+            - journal("Enrolled in engineering at university with a student loan at age {age}.")
+
+- id: enrol-nursing
+  icon: 🎓
+  trigger: action
+  menu: occupation/education
+  tags: [education, university]
+  when: age >= 18 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_nursing
+  cooldown: 1
+  text: "Enrol in a four-year nursing degree? Tuition is $11,000 a year."
+  choices:
+    - label: Pay tuition in cash each year
+      when: money >= 1100000
+      outcomes:
+        - weight: 1
+          text: "You enrol and plan to pay tuition from your own pocket."
+          effects:
+            - quality.tuition_by_loan = false
+            - start_occupation(core-loop/university-nursing)
+            - journal("Enrolled in nursing at university at age {age}.")
+    - label: Take out a student loan for all four years
+      outcomes:
+        - weight: 1
+          text: "You enrol and sign for a student loan."
+          effects:
+            - take_loan(4400000, 4.5%, 10)
+            - quality.tuition_by_loan = true
+            - start_occupation(core-loop/university-nursing)
+            - journal("Enrolled in nursing at university with a student loan at age {age}.")
+
+- id: enrol-arts
+  icon: 🎓
+  trigger: action
+  menu: occupation/education
+  tags: [education, university]
+  when: age >= 18 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_arts
+  cooldown: 1
+  text: "Enrol in a four-year arts degree? Tuition is $10,000 a year."
+  choices:
+    - label: Pay tuition in cash each year
+      when: money >= 1000000
+      outcomes:
+        - weight: 1
+          text: "You enrol and plan to pay tuition from your own pocket."
+          effects:
+            - quality.tuition_by_loan = false
+            - start_occupation(core-loop/university-arts)
+            - journal("Enrolled in arts at university at age {age}.")
+    - label: Take out a student loan for all four years
+      outcomes:
+        - weight: 1
+          text: "You enrol and sign for a student loan."
+          effects:
+            - take_loan(4000000, 4.5%, 10)
+            - quality.tuition_by_loan = true
+            - start_occupation(core-loop/university-arts)
+            - journal("Enrolled in arts at university with a student loan at age {age}.")
+
+- id: study-harder
+  icon: 📚
+  trigger: action
+  menu: occupation
+  tags: [education]
+  when: has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)
+  cooldown: 1
+  text: "You hit the books."
+  outcomes:
+    - weight: 70
+      text: "The extra study pays off."
+      effects:
+        - stat.smarts += 3
+        - stat.happiness -= 1
+    - weight: 30
+      text: "You study hard, but little of it sticks."
+      effects:
+        - stat.smarts += 1
+        - stat.happiness -= 2
+
+- id: drop-out-of-university
+  icon: 🚪
+  trigger: action
+  menu: occupation
+  tags: [education, university]
+  when: has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)
+  text: "You think about leaving university."
+  choices:
+    - label: Drop out
+      outcomes:
+        - weight: 1
+          text: "You pack your dorm room and leave without a degree."
+          effects:
+            - end_occupation(core-loop/university-business)
+            - end_occupation(core-loop/university-engineering)
+            - end_occupation(core-loop/university-nursing)
+            - end_occupation(core-loop/university-arts)
+            - stat.happiness -= 4
+            - journal("Dropped out of university at age {age}.")
+    - label: Stay enrolled

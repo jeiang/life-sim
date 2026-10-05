@@ -19,6 +19,12 @@ qualities:
   - { id: has_degree_engineering, type: flag, default: false }
   - { id: has_degree_nursing, type: flag, default: false }
   - { id: has_degree_arts, type: flag, default: false }
+  - { id: graduated_high_school, type: flag, default: false }
+  - { id: tuition_by_loan, type: flag, default: false }
+  - { id: raise_bonus, type: int, min: 0, default: 0 }
+  - { id: work_effort, type: int, min: 0, max: 5, default: 0 }
+  - { id: applying_for, type: int, min: 0, default: 0 }
+  - { id: interview_score, type: int, min: 0, default: 0 }
 exclusivity: [school, full-time, part-time]
 year:
   slots: [1, 3]

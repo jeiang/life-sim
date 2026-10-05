@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/occupations.schema.json
+- id: elementary-school
+  label: Elementary school
+  icon: 🏫
+  group: school
+  ladder: school
+  requires: age >= 6
+  pay: 0
+  duration_years: 6
+  promotes_to: high-school
+- id: high-school
+  label: High school
+  icon: 🎒
+  group: school
+  ladder: school
+  requires: age >= 12
+  pay: 0
+  duration_years: 6
+- id: university-business
+  label: University (Business)
+  icon: 🎓
+  group: school
+  ladder: school
+  requires: age >= 18 and quality.graduated_high_school
+  pay: "quality.tuition_by_loan ? 0 : -1200000"
+  duration_years: 4
+  loan: student-loan
+- id: university-engineering
+  label: University (Engineering)
+  icon: 🎓
+  group: school
+  ladder: school
+  requires: age >= 18 and quality.graduated_high_school
+  pay: "quality.tuition_by_loan ? 0 : -1400000"
+  duration_years: 4
+  loan: student-loan
+- id: university-nursing
+  label: University (Nursing)
+  icon: 🎓
+  group: school
+  ladder: school
+  requires: age >= 18 and quality.graduated_high_school
+  pay: "quality.tuition_by_loan ? 0 : -1100000"
+  duration_years: 4
+  loan: student-loan
+- id: university-arts
+  label: University (Arts)
+  icon: 🎓
+  group: school
+  ladder: school
+  requires: age >= 18 and quality.graduated_high_school
+  pay: "quality.tuition_by_loan ? 0 : -1000000"
+  duration_years: 4
+  loan: student-loan

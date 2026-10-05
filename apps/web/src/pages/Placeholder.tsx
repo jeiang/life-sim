@@ -1,8 +1,9 @@
 import { ArrowLeft } from "lucide-preact";
-import { closePage, type PageId } from "../nav.ts";
+import { closePage, openPage, type PageId } from "../nav.ts";
 
 const TITLES: Record<PageId, string> = {
   profile: "Profile",
+  chart: "Net worth",
   settings: "Settings",
   occupation: "Occupation",
   assets: "Assets",
@@ -25,7 +26,20 @@ export function Placeholder(props: { id: PageId }) {
         </button>
         <h1 class="font-bold">{TITLES[props.id]}</h1>
       </div>
-      <main class="flex-1 p-4 text-text-muted">Coming soon.</main>
+      <main class="flex-1 p-4 text-text-muted">
+        Coming soon.
+        {props.id === "assets" && (
+          <div class="mt-3">
+            <button
+              type="button"
+              onClick={() => openPage("chart")}
+              class="min-h-11 rounded-full border border-text-muted/50 px-4 text-text"
+            >
+              Net worth chart
+            </button>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

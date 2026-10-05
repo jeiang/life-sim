@@ -111,3 +111,39 @@ test("touch targets are at least 44px and layout survives 200% text", async ({
     page.getByRole("heading", { name: /^Age 1 year/i }),
   ).toBeAttached();
 });
+
+test("profile and net-worth chart open, describe the data, and pass axe", async ({
+  page,
+}) => {
+  await page.goto("/");
+  for (let i = 0; i < 5; i++) {
+    if (await ageButton(page).isDisabled()) break;
+    await ageButton(page).click();
+    await resolvePending(page);
+  }
+  await page.getByRole("button", { name: "Your profile" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Your profile" }),
+  ).toBeVisible();
+  await expect(page.getByTestId("net-worth")).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: /^Health, \d+ percent$/ }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Net worth chart" }).click();
+  await expect(page.getByTestId("chart")).toBeVisible();
+  await expect(page.getByTestId("chart-summary")).toContainText("Started at");
+  await page.getByRole("button", { name: "Show data table" }).click();
+  await expect(page.getByRole("row").nth(1)).toBeVisible();
+  for (const scheme of ["light", "dark"] as const) {
+    await page.emulateMedia({ colorScheme: scheme });
+    const results = await new AxeBuilder({ page }).analyze();
+    expect(results.violations).toEqual([]);
+  }
+  await page.getByRole("button", { name: "Back" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Your profile" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Back" }).click();
+  await expect(ageButton(page)).toBeVisible();
+});

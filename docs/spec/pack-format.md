@@ -65,7 +65,7 @@ packs/<pack-id>/
 | `id`, `icon`, `tags` | Identity; optional icon (see Icons); free tags for grouping. |
 | `trigger` | `event` (drawn at age-up) or `action` (offered in a menu). |
 | `menu` | For actions: the menu path, `<top>` or `<top>/<submenu>`, where the top is one of `occupation`, `assets`, `relationships`, `activities` (see [screens](screens.md#menu-ids)). |
-| `scope` | Optional. `loan` makes the storylet eligible once per loan the player holds, with `loan` bound (for example a missed-payment event). |
+| `scope` | Optional binding, evaluated once per bound item. `loan`: once per loan the player holds, with `loan` bound (for example a missed-payment event). `person`: once per non-player person during the NPC yearly pass, with `person` bound (NPC storylets). Without `scope`, only the player and storylet-local names are in scope. |
 | `when` | Eligibility condition (boolean expression). |
 | `chance` | Event that rolls independently each year at this probability. |
 | `weight` | Event that competes for a flavour slot with this weight. An event has exactly one of `chance` or `weight`. |

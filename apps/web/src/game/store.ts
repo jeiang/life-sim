@@ -1,18 +1,24 @@
 import { bundles } from "virtual:packs";
 import {
   ageUp,
+  type CompiledStorylet,
   canAgeUp,
   choose,
   describePending,
   indexBundles,
+  listShop,
   type NetWorthPoint,
   newLife,
   type PackIndex,
   type PendingView,
+  purchase,
   recordNetWorth,
+  runAction,
+  type ShopRow,
   type World,
 } from "@life/core";
 import { computed, signal } from "@preact/signals";
+import { amountDemo } from "../components/AmountPickerDemo.tsx";
 
 /** UI-layer seed: the only place the web app draws randomness (ADR 0002). */
 function randomSeed(): number {
@@ -51,19 +57,58 @@ export const pending = computed<PendingView | null>(() =>
 
 export const canAge = computed(() => canAgeUp(world.value));
 
+/** Outcome lines of the finished steps of the open `next:` chain, shown above the current step. */
+export const chainLines = signal<readonly string[]>([]);
+
 export function ageUpOneYear(): void {
   if (!canAgeUp(world.value)) return;
   const r = ageUp(world.value, bundles);
   world.value = r.world;
   latestLines.value = r.lines;
   track();
+  chainLines.value = [];
 }
 
 export function chooseOption(index: number): void {
-  if (!world.value.pending) return;
+  const before = world.value.pending;
+  if (!before) return;
   const r = choose(world.value, bundles, index);
   world.value = r.world;
   latestLines.value = r.lines;
+  // A `next:` step keeps the parent's `rest` object; a later queued event gets a fresh one.
+  const chained =
+    r.world.pending !== null && r.world.pending.rest === before.rest;
+  chainLines.value = chained ? [...chainLines.value, ...r.lines] : [];
+  track();
+}
+
+/** Item kind id whose purchase dialog is open, or null. */
+export const purchasing = signal<string | null>(null);
+
+/** Open the purchase dialog for an item kind (shop rows call this). */
+export function openPurchase(itemKindId: string): void {
+  purchasing.value = itemKindId;
+}
+
+export function closePurchase(): void {
+  purchasing.value = null;
+}
+
+/** The open purchase's shop row, priced now, or null. */
+export const purchaseRow = computed<ShopRow | null>(() => {
+  const id = purchasing.value;
+  if (id === null) return null;
+  return listShop(world.value, bundles).find((r) => r.id === id) ?? null;
+});
+
+/** Buy the open item with cash or its loan, then close the dialog. */
+export function confirmPurchase(mode: "cash" | "loan"): void {
+  const id = purchasing.value;
+  if (id === null) return;
+  const r = purchase(world.value, bundles, id, mode);
+  world.value = r.world;
+  latestLines.value = r.lines;
+  purchasing.value = null;
   track();
 }
 
@@ -71,4 +116,63 @@ export function startNewLife(): void {
   world.value = newLife(bundles, randomSeed());
   latestLines.value = [];
   netWorthHistory.value = recordNetWorth([], world.value);
+  chainLines.value = [];
+  purchasing.value = null;
+}
+
+// Test hook for the e2e suite; the flag is set only by the e2e build, so it is tree-shaken out of releases.
+if (import.meta.env.VITE_E2E) {
+  const hook = {
+    /** Run an action (e.g. start a `next:` chain). */
+    runAction(id: string): void {
+      const r = runAction(world.value, bundles, id);
+      world.value = r.world;
+      latestLines.value = r.lines;
+    },
+    openPurchase,
+    pickAmount(min: number, max: number, step: number): void {
+      amountDemo.value = { min, max, step };
+    },
+    /**
+     * Open a three-step `next:` chain (core-loop has none longer than two interactive steps):
+     * fixture storylets cloned from the interview questions, appended to the loaded Pack.
+     */
+    startChain3(): void {
+      const storylets = packIndex.storylets as Map<string, CompiledStorylet>;
+      const src = [...storylets.values()].find((x) =>
+        x.id.endsWith("interview-question-2"),
+      );
+      if (!src) throw new Error("interview chain missing");
+      const rewire = (v: unknown, next: string | null): unknown => {
+        if (Array.isArray(v)) return v.map((x) => rewire(x, next));
+        if (v && typeof v === "object") {
+          const o: Record<string, unknown> = {};
+          for (const [k, x] of Object.entries(v)) {
+            if (k === "next") {
+              if (next !== null) o[k] = next;
+            } else o[k] = rewire(x, next);
+          }
+          return o;
+        }
+        return v;
+      };
+      const mk = (n: number, next: string | null) => ({
+        ...(rewire(src, next) as object),
+        id: `e2e-chain-${n}`,
+        text: `Chain step ${n}`,
+      });
+      for (const f of [mk(1, "e2e-chain-2"), mk(2, "e2e-chain-3"), mk(3, null)])
+        storylets.set(f.id, f as CompiledStorylet);
+      world.value = { ...world.value, pending: { storyletId: "e2e-chain-1" } };
+    },
+    /** Set the player's cash, minor units. */
+    setMoney(n: number): void {
+      const w = world.value;
+      const persons = new Map(w.persons);
+      const p = persons.get(w.playerId);
+      if (p) persons.set(w.playerId, { ...p, money: n });
+      world.value = { ...w, persons };
+    },
+  };
+  (window as unknown as { __life: typeof hook }).__life = hook;
 }

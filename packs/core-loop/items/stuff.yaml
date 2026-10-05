@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/items.schema.json
+# Cash-only purchases (no loan kind).
+- id: phone
+  label: Phone
+  icon: 📱
+  category: stuff
+  price: 60000
+  value: max(5000, asset.purchase_price * (100 - 25 * asset.years) / 100)
+- id: computer
+  label: Computer
+  icon: 💻
+  category: stuff
+  price: 120000
+  value: max(10000, asset.purchase_price * (100 - 20 * asset.years) / 100)
+- id: jewellery
+  label: Jewellery
+  icon: 💍
+  category: stuff
+  price: 250000
+  value: asset.purchase_price * (100 + asset.years) / 100
+- id: instrument
+  label: Instrument
+  icon: 🎸
+  category: stuff
+  price: 45000
+  value: max(10000, asset.purchase_price * (100 - 5 * asset.years) / 100)

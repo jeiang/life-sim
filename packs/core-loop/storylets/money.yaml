@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Purchases and sales go through Core's purchase dialog and asset rows (item kinds in items/),
+# so this file holds only the money-related stories.
+- id: missed-payment
+  icon: 📬
+  trigger: event
+  scope: loan
+  chance: 100%
+  when: loan.missed > 0
+  text: "A payment on your loan slipped past its due date and the balance grew. The letters from the lender are getting sharper."
+  outcomes:
+    - weight: 1
+      text: You lose sleep over the unpaid instalment.
+      effects:
+        - stat.happiness -= 6 + loan.missed * 2
+        - journal("Missed a loan payment. The shortfall was added to the balance.")
+
+- id: driving-test
+  icon: 🪪
+  trigger: action
+  menu: activities
+  when: age >= 16 and not quality.has_drivers_license and money >= 15000
+  text: "You book a driving test. The fee is $150."
+  choices:
+    - label: Take the test
+      outcomes:
+        - weight: 50 + stat.smarts / 4
+          text: The examiner nods and hands you a licence.
+          effects:
+            - money -= 15000
+            - quality.has_drivers_license = true
+            - stat.happiness += 8
+            - journal("Passed the driving test.")
+        - weight: 50 - stat.smarts / 4
+          text: You clip a cone on the last turn and fail.
+          effects:
+            - money -= 15000
+            - stat.happiness -= 4
+            - journal("Failed the driving test.")
+    - label: Not now

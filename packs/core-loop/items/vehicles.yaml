@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/items.schema.json
+# Prices are in cents. `value` is the current value at settlement; vehicles lose value each year.
+# Gap: the item schema has no age or licence requirement field, so "cars need age 16+ and a driver's
+# licence" cannot be expressed yet; see the driving-test action in storylets/money.yaml.
+- id: used-bike
+  label: Used bike
+  icon: 🚲
+  category: vehicles
+  price: 12000
+  value: max(2000, asset.purchase_price * (100 - 10 * asset.years) / 100)
+- id: used-car
+  label: Used car
+  icon: 🚗
+  category: vehicles
+  price: 800000
+  value: max(100000, asset.purchase_price * (100 - 12 * asset.years) / 100)
+  loan: auto-loan
+- id: new-car
+  label: New car
+  icon: 🚙
+  category: vehicles
+  price: 3000000
+  value: max(400000, asset.purchase_price * (100 - 15 * asset.years) / 100)
+  loan: auto-loan

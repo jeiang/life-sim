@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Yearly mortality. `chance` is in basis points (out of 10,000), integer arithmetic only.
+#
+#   base    = age^4 / 68000        age 30 -> 11, 50 -> 91, 70 -> 353, 80 -> 602, 90 -> 965
+#   health  = (140 - health) / 90  health 100 -> x0.44, 50 -> x1.0, 0 -> x1.56
+#   ceiling = (age - 100) * 1000   adds up to certain death by 110, so every life ends
+#
+# Accident and illness deaths among chance events are in chance.yaml.
+
+- id: natural-mortality
+  icon: 🕯️
+  trigger: event
+  chance: min(10000, (age * age * age * age / 68000) * (140 - stat.health) / 90 + max(0, age - 100) * 1000)
+  when: age >= 30
+  text: "{player.first_name}'s health fails."
+  outcomes:
+    - weight: 3
+      when: age < 65
+      text: "{player.first_name} dies suddenly, far too young."
+      effects:
+        - die("sudden illness")
+    - weight: 2
+      when: age < 65
+      text: "{player.first_name} loses a long fight with cancer."
+      effects:
+        - die("cancer")
+    - weight: 2
+      when: age >= 45
+      text: "{player.first_name}'s heart gives out."
+      effects:
+        - die("heart failure")
+    - weight: 1
+      when: age >= 45
+      text: "A stroke ends {player.first_name}'s life."
+      effects:
+        - die("stroke")
+    - weight: 5
+      when: age >= 65
+      text: "{player.first_name} dies peacefully in sleep, at age {age}."
+      effects:
+        - die("old age")
+
+- id: childhood-mortality
+  icon: 🕯️
+  trigger: event
+  chance: 3 + max(0, 12 - age)
+  when: age >= 1 and age < 30
+  text: "A sudden illness takes {player.first_name}'s life."
+  outcomes:
+    - weight: 1
+      effects:
+        - die("illness")

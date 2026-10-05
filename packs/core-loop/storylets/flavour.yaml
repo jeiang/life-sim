@@ -1,0 +1,401 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Weighted flavour events: low-stakes colour for each stage of life. Most have no choices.
+
+# ---- childhood ---------------------------------------------------------------
+- id: first-steps
+  icon: 👣
+  trigger: event
+  weight: 30
+  when: age >= 1 and age <= 2
+  once: true
+  text: "{player.first_name} takes first wobbly steps across the living room, grabbing the sofa on the way."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 3
+
+- id: first-words
+  icon: 🗣️
+  trigger: event
+  weight: 30
+  when: age >= 1 and age <= 3
+  once: true
+  text: "{player.first_name} says a first real word. Nobody can agree on what it was."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.smarts += 2
+        - stat.happiness += 2
+
+- id: imaginary-friend
+  icon: 🧸
+  trigger: event
+  weight: 12
+  when: age >= 3 and age <= 7
+  once: true
+  text: "An invisible friend joins every meal and gets blamed for every spill."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 3
+
+- id: learned-to-ride-a-bike
+  icon: 🚲
+  trigger: event
+  weight: 25
+  when: age >= 5 and age <= 9
+  once: true
+  text: "After a scraped knee and a lot of wobbling, {player.first_name} finally rides a bike without help."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 4
+        - stat.health += 1
+
+- id: loose-tooth
+  icon: 🦷
+  trigger: event
+  weight: 15
+  when: age >= 5 and age <= 9
+  text: "A tooth falls out at breakfast. The tooth fairy leaves a coin."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 2
+        - money += 100
+
+- id: pet-goldfish
+  icon: 🐟
+  trigger: event
+  weight: 10
+  when: age >= 5 and age <= 11
+  once: true
+  text: "A goldfish from the school fair comes home in a plastic bag. It is named after a cartoon character."
+  outcomes:
+    - weight: 70
+      text: The goldfish thrives and outlives two bowls.
+      effects:
+        - stat.happiness += 3
+    - weight: 30
+      text: The goldfish lasts a week. There is a small ceremony.
+      effects:
+        - stat.happiness -= 2
+
+- id: school-play
+  icon: 🎭
+  trigger: event
+  weight: 14
+  when: age >= 6 and age <= 11
+  text: "{player.first_name} gets a part in the school play, a talking tree with one line."
+  outcomes:
+    - weight: 60
+      text: The line lands perfectly and the hall applauds.
+      effects:
+        - stat.happiness += 4
+    - weight: 40
+      text: The line is forgotten in a rush of stage fright, but everyone is kind about it.
+      effects:
+        - stat.happiness += 1
+
+- id: lemonade-stand
+  icon: 🍋
+  trigger: event
+  weight: 10
+  when: age >= 7 and age <= 12
+  text: "A hot weekend inspires a lemonade stand on the corner."
+  outcomes:
+    - weight: 60
+      text: Neighbours are generous and the jar fills up.
+      effects:
+        - money += 1500
+        - stat.happiness += 2
+    - weight: 40
+      text: Hardly anyone walks by and the ice melts.
+      effects:
+        - stat.happiness -= 1
+
+- id: sleepover
+  icon: 🏕️
+  trigger: event
+  weight: 14
+  when: age >= 8 and age <= 13
+  text: "A sleepover turns into a blanket fort, too much candy, and a very late night."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 3
+
+# ---- teens -------------------------------------------------------------------
+- id: bad-haircut
+  icon: 💇
+  trigger: event
+  weight: 12
+  when: age >= 12 and age <= 30
+  text: "A new haircut seemed like a good idea in the salon mirror. It looks different in daylight."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.looks -= 3
+        - stat.happiness -= 2
+
+- id: growth-spurt
+  icon: 📏
+  trigger: event
+  weight: 12
+  when: age >= 12 and age <= 16
+  once: true
+  text: "{player.first_name} shoots up a few inches over the summer and none of the old clothes fit."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.looks += 2
+        - money -= 4000
+
+- id: first-crush
+  icon: 💘
+  trigger: event
+  weight: 14
+  when: age >= 12 and age <= 17
+  once: true
+  text: "A classmate smiles in the corridor and {player.first_name} spends the whole week thinking about it."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 3
+
+- id: favourite-band
+  icon: 🎸
+  trigger: event
+  weight: 12
+  when: age >= 12 and age <= 19
+  once: true
+  text: "A song on the radio changes everything. {player.first_name} suddenly has a favourite band and strong opinions."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 3
+
+- id: acne-flare
+  icon: 😖
+  trigger: event
+  weight: 10
+  when: age >= 13 and age <= 17
+  text: "A stubborn breakout arrives the day before the school photos."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.looks -= 2
+        - stat.happiness -= 2
+
+- id: science-fair
+  icon: 🔬
+  trigger: event
+  weight: 10
+  when: age >= 12 and age <= 17
+  text: "A science fair project about the speed of melting ice earns a ribbon."
+  outcomes:
+    - weight: 65
+      text: The ribbon goes up on the wall.
+      effects:
+        - stat.smarts += 3
+        - stat.happiness += 2
+    - weight: 35
+      text: The poster falls off the board, but the judges liked the idea.
+      effects:
+        - stat.smarts += 1
+
+- id: school-dance
+  icon: 💃
+  trigger: event
+  weight: 10
+  when: age >= 14 and age <= 18
+  text: "The school dance is loud, awkward, and surprisingly fun."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 3
+
+- id: driving-lesson-jitters
+  icon: 🚗
+  trigger: event
+  weight: 10
+  when: age >= 16 and age <= 19
+  text: "A first lap of the empty car park ends with a stall and a lot of laughing."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 2
+
+# ---- any age after school ----------------------------------------------------
+- id: good-hair-day
+  icon: ✨
+  trigger: event
+  weight: 12
+  when: age >= 14 and age <= 70
+  text: "Everything about the mirror looks right this morning."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.looks += 2
+        - stat.happiness += 1
+
+- id: lucky-parking
+  icon: 🅿️
+  trigger: event
+  weight: 12
+  when: age >= 18 and age <= 90
+  text: "{player.first_name} finds a parking space right outside the door, on the busiest day of the year."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 1
+
+- id: lost-keys
+  icon: 🔑
+  trigger: event
+  weight: 12
+  when: age >= 16
+  text: "The keys are not in the usual place, or the second place, or the third."
+  outcomes:
+    - weight: 60
+      text: They turn up in a coat pocket.
+      effects:
+        - stat.happiness -= 1
+    - weight: 40
+      text: They stay lost, and a locksmith charges for the visit.
+      effects:
+        - money -= min(money, 6000)
+        - stat.happiness -= 2
+
+- id: old-friend-reunion
+  icon: 🤝
+  trigger: event
+  weight: 12
+  when: age >= 20 and age <= 80
+  text: "An old friend gets in touch after years of silence. The conversation picks up as if no time had passed."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 4
+
+# ---- adulthood ---------------------------------------------------------------
+- id: neighbourhood-party
+  icon: 🎉
+  trigger: event
+  weight: 10
+  when: age >= 20 and age <= 80
+  text: "A street party closes the road for an afternoon. {player.first_name} meets half the neighbourhood."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 3
+
+- id: cooking-streak
+  icon: 🍳
+  trigger: event
+  weight: 10
+  when: age >= 18 and age <= 80
+  text: "A month of cooking at home instead of ordering out leaves {player.first_name} feeling better."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.health += 2
+        - money += 2000
+
+- id: rainy-commute
+  icon: 🌧️
+  trigger: event
+  weight: 10
+  when: age >= 18 and age <= 64
+  text: "Rain, a missed bus, and a soaked jacket make for a miserable week."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness -= 2
+
+- id: new-hobby
+  icon: 🧶
+  trigger: event
+  weight: 10
+  when: age >= 20 and age <= 75
+  text: "A free weekend and a curious mind lead {player.first_name} into a brand new hobby."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.smarts += 1
+        - stat.happiness += 3
+        - money -= min(money, 2500)
+
+- id: midlife-reflection
+  icon: 🪞
+  trigger: event
+  weight: 12
+  when: age >= 38 and age <= 55
+  text: "{player.first_name} catches sight of a grey hair and spends an evening thinking about the years so far."
+  outcomes:
+    - weight: 50
+      text: The mood passes by breakfast and a sense of calm replaces it.
+      effects:
+        - stat.happiness += 2
+    - weight: 50
+      text: The restlessness lingers for weeks.
+      effects:
+        - stat.happiness -= 2
+
+# ---- old age -----------------------------------------------------------------
+- id: retirement-garden
+  icon: 🌻
+  trigger: event
+  weight: 14
+  when: age >= 60
+  text: "Time in the garden brings tomatoes, sunflowers, and a quiet kind of pride."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 3
+        - stat.health += 1
+
+- id: old-photographs
+  icon: 📷
+  trigger: event
+  weight: 12
+  when: age >= 60
+  text: "A shoebox of old photographs is found in the attic. {player.first_name} loses an afternoon to it."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 2
+
+- id: stiff-joints
+  icon: 🦴
+  trigger: event
+  weight: 14
+  when: age >= 62
+  text: "Stairs feel steeper than they used to. Mornings take a little longer."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.health -= 2
+
+- id: community-choir
+  icon: 🎶
+  trigger: event
+  weight: 10
+  when: age >= 65
+  text: "A neighbour talks {player.first_name} into joining the community choir."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 3
+
+- id: crossword-club
+  icon: 🧩
+  trigger: event
+  weight: 10
+  when: age >= 62
+  text: "A weekly crossword club keeps the mind sharp and the gossip fresh."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.smarts += 1
+        - stat.happiness += 2

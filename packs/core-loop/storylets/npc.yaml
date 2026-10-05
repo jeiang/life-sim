@@ -1,0 +1,156 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# NPC storylets (`scope: person`) run once per non-player person in the yearly NPC pass.
+#
+# Limits of the closed effect set that shape this file:
+#   - `die(...)` ends the PLAYER's life, not the bound person. It cannot be used here.
+#   - Expressions cannot read a person's role, so a storylet cannot tell a parent from a
+#     sibling or a coworker. Age windows approximate the role instead: parents (born
+#     22-40 years before the player) are the only people generated at 50+ early in a life;
+#     siblings and classmates share the 0-18 band.
+#   - Effects on stats, money and qualities apply to the player, as the player's reaction.
+# A parent's death is therefore recorded as the `parents_died` quality plus a journal line
+# and a happiness drop, capped at two per life.
+
+- id: parent-illness
+  icon: 🤒
+  trigger: event
+  scope: person
+  chance: 4%
+  when: person.age >= 50 and person.stat.health < 70
+  cooldown: 3
+  text: "{person.first_name} {person.last_name} has been unwell for months and {player.first_name} worries."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness -= 4
+        - journal("{person.first_name} {person.last_name} was ill this year.")
+
+- id: parent-recovery
+  icon: 🌤️
+  trigger: event
+  scope: person
+  chance: 5%
+  when: person.age >= 50 and person.stat.health >= 50 and person.stat.health < 80
+  text: "{person.first_name} {person.last_name} is back on their feet, much to everyone's relief."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 3
+
+- id: parent-death
+  icon: 🕊️
+  trigger: event
+  scope: person
+  chance: min(10000, (person.age * person.age * person.age * person.age / 68000) * (140 - person.stat.health) / 90)
+  when: person.age >= 60 and quality.parents_died < 2
+  max_per_life: 2
+  text: "{person.first_name} {person.last_name} passes away at {person.age}."
+  outcomes:
+    - weight: 1
+      effects:
+        - quality.parents_died += 1
+        - stat.happiness -= 20
+        - journal("{person.first_name} {person.last_name} died at {person.age}.")
+
+- id: parent-gift
+  icon: 🎁
+  trigger: event
+  scope: person
+  chance: 3%
+  when: person.age >= 45 and age >= 16
+  text: "{person.first_name} {person.last_name} slips {player.first_name} a card with some cash inside."
+  outcomes:
+    - weight: 1
+      effects:
+        - money += 10000
+        - stat.happiness += 2
+
+- id: sibling-starts-school
+  icon: 🎒
+  trigger: event
+  scope: person
+  chance: 100%
+  when: person.age == 6
+  text: "{person.first_name} puts on a new backpack and heads to the first day of school."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 1
+
+- id: sibling-learns-to-ride
+  icon: 🚲
+  trigger: event
+  scope: person
+  chance: 40%
+  when: person.age >= 5 and person.age <= 8 and age >= 4
+  once: true
+  text: "{person.first_name} wobbles down the street on two wheels for the first time."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 2
+
+- id: sibling-school-award
+  icon: 🏅
+  trigger: event
+  scope: person
+  chance: 6%
+  when: person.age >= 8 and person.age <= 18 and person.stat.smarts >= 60
+  cooldown: 3
+  text: "{person.first_name} brings home a certificate from school."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 2
+
+- id: sibling-graduates
+  icon: 🎓
+  trigger: event
+  scope: person
+  chance: 100%
+  when: person.age == 18
+  text: "{person.first_name} graduates from high school, and the family celebrates."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 3
+        - journal("{person.first_name} graduated high school.")
+
+- id: sibling-rivalry
+  icon: ⚔️
+  trigger: event
+  scope: person
+  chance: 6%
+  when: person.age >= 8 and person.age <= 17 and age >= 8 and age <= 17
+  cooldown: 3
+  text: "{person.first_name} and {player.first_name} argue over the bathroom, the remote, and who started it."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness -= 2
+
+- id: person-new-job
+  icon: 💼
+  trigger: event
+  scope: person
+  chance: 3%
+  when: person.age >= 24 and person.age <= 55
+  cooldown: 4
+  text: "{person.first_name} {person.last_name} lands a new job and invites {player.first_name} out to celebrate."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 2
+
+- id: person-checks-in
+  icon: ☎️
+  trigger: event
+  scope: person
+  chance: 5%
+  when: person.age >= 30 and age >= 20
+  cooldown: 3
+  text: "{person.first_name} calls just to catch up."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 2

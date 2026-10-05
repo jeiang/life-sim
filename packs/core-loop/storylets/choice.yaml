@@ -1,0 +1,397 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Choice events. Chain steps (reached only through `next`) carry `chance: 0%` and never roll
+# on their own; the Pack format requires every event to have a chance or a weight.
+
+- id: found-wallet
+  icon: 👛
+  trigger: event
+  chance: 3%
+  when: age >= 10
+  text: "{player.first_name} spots a wallet on the pavement. There is cash inside and an ID card."
+  choices:
+    - label: Hand it in
+      outcomes:
+        - weight: 60
+          text: The owner is grateful and sends a thank-you note.
+          effects:
+            - stat.happiness += 4
+        - weight: 40
+          text: A kind gesture, though nobody ever says thank you.
+          effects:
+            - stat.happiness += 2
+    - label: Keep the cash
+      outcomes:
+        - weight: 85
+          text: Nobody ever finds out. A nagging feeling remains.
+          effects:
+            - money += 8000
+            - stat.happiness -= 1
+        - weight: 15
+          text: A neighbour saw everything and the rumour spreads.
+          effects:
+            - money += 8000
+            - stat.happiness -= 5
+
+- id: friend-loan-request
+  icon: 🙏
+  trigger: event
+  chance: 3%
+  when: age >= 18 and money >= 20000
+  cooldown: 5
+  text: "A friend asks {player.first_name} to lend $200 until payday."
+  choices:
+    - label: Lend the money
+      outcomes:
+        - weight: 1
+          text: The cash changes hands with a handshake.
+          effects:
+            - money -= 20000
+          next: friend-loan-aftermath
+    - label: Politely decline
+      outcomes:
+        - weight: 1
+          text: The conversation is awkward, and the friendship cools a little.
+          effects:
+            - stat.happiness -= 2
+
+- id: friend-loan-aftermath
+  icon: 💬
+  trigger: event
+  chance: 0%
+  text: "Weeks later, the loan comes up again."
+  outcomes:
+    - weight: 60
+      text: The friend repays the loan in full, with a thank-you coffee.
+      effects:
+        - money += 20000
+        - stat.happiness += 3
+    - weight: 30
+      text: The friend repays half and keeps promising the rest.
+      effects:
+        - money += 10000
+        - stat.happiness -= 1
+    - weight: 10
+      text: The friend stops answering messages and the money is gone.
+      effects:
+        - stat.happiness -= 5
+
+- id: bully-at-school
+  icon: 😠
+  trigger: event
+  chance: 6%
+  when: age >= 8 and age <= 16
+  cooldown: 4
+  text: "A bigger kid at school starts picking on {player.first_name} in the corridors."
+  choices:
+    - label: Stand up to them
+      outcomes:
+        - weight: 1
+          text: "{player.first_name} squares up and the whole corridor goes quiet."
+          next: bully-showdown
+    - label: Tell a teacher
+      outcomes:
+        - weight: 70
+          text: The teacher steps in and the bullying fades.
+          effects:
+            - stat.happiness += 2
+        - weight: 30
+          text: Nothing much changes, and the bully knows who told.
+          effects:
+            - stat.happiness -= 3
+    - label: Keep your head down
+      outcomes:
+        - weight: 1
+          text: The weeks drag on.
+          effects:
+            - stat.happiness -= 5
+          next: bully-aftermath
+
+- id: bully-showdown
+  icon: 🥊
+  trigger: event
+  chance: 0%
+  text: "The bully shoves back. A crowd forms."
+  choices:
+    - label: Walk away with your head high
+      outcomes:
+        - weight: 1
+          text: The crowd drifts off, and the bully loses interest.
+          effects:
+            - stat.happiness += 2
+          next: bully-aftermath
+    - label: Fight back
+      outcomes:
+        - weight: 40
+          text: A scuffle ends before it starts, thanks to a teacher.
+          effects:
+            - stat.health -= 3
+            - stat.happiness -= 2
+          next: bully-aftermath
+        - weight: 60
+          text: A bruised lip and a suspended week.
+          effects:
+            - stat.health -= 6
+            - stat.happiness -= 4
+          next: bully-aftermath
+
+- id: bully-aftermath
+  icon: 🏫
+  trigger: event
+  chance: 0%
+  text: "Things at school start to settle."
+  outcomes:
+    - weight: 50
+      text: A teacher checks in and {player.first_name} finally gets some support.
+      effects:
+        - stat.happiness += 4
+    - weight: 30
+      text: A new group of friends makes the corridors feel safer.
+      effects:
+        - stat.happiness += 3
+        - stat.smarts += 1
+    - weight: 20
+      text: The tension never quite goes away.
+      effects:
+        - stat.happiness -= 2
+
+- id: cheat-on-test
+  icon: 📝
+  trigger: event
+  chance: 5%
+  when: age >= 11 and age <= 17
+  text: "The answers to a hard test are sitting open on the desk next to {player.first_name}."
+  choices:
+    - label: Peek
+      outcomes:
+        - weight: 70
+          text: A top mark, and a guilty stomach.
+          effects:
+            - stat.happiness -= 1
+        - weight: 30
+          text: The teacher notices.
+          effects:
+            - stat.happiness -= 3
+          next: cheat-caught
+    - label: Eyes on your own paper
+      outcomes:
+        - weight: 1
+          text: A so-so mark, earned honestly.
+          effects:
+            - stat.smarts += 2
+            - stat.happiness += 1
+
+- id: cheat-caught
+  icon: 🧑‍🏫
+  trigger: event
+  chance: 0%
+  text: "The teacher asks {player.first_name} to stay behind after class."
+  choices:
+    - label: Own up
+      outcomes:
+        - weight: 1
+          text: The punishment is lighter for being honest.
+          effects:
+            - stat.happiness -= 2
+            - stat.smarts += 1
+    - label: Deny everything
+      outcomes:
+        - weight: 50
+          text: The teacher lets it go with a warning.
+          effects:
+            - stat.happiness -= 2
+        - weight: 50
+          text: A call home and a week of detention.
+          effects:
+            - stat.happiness -= 6
+
+- id: stray-dog
+  icon: 🐕
+  trigger: event
+  chance: 2.5%
+  when: age >= 6
+  text: "A scruffy stray dog follows {player.first_name} home and refuses to leave."
+  choices:
+    - label: Take it in
+      outcomes:
+        - weight: 1
+          text: A new best friend. The vet bills are another matter.
+          effects:
+            - stat.happiness += 6
+            - stat.health += 1
+            - money -= min(money, 9000)
+    - label: Take it to the shelter
+      outcomes:
+        - weight: 1
+          text: The staff are glad to see it and promise to find it a family.
+          effects:
+            - stat.happiness += 2
+
+- id: group-project
+  icon: 👥
+  trigger: event
+  chance: 5%
+  when: age >= 12 and age <= 22
+  text: "A group project is due and one teammate has done nothing."
+  choices:
+    - label: Do their share
+      outcomes:
+        - weight: 1
+          text: A tiring week, but the project is excellent.
+          effects:
+            - stat.smarts += 2
+            - stat.happiness -= 2
+    - label: Report it to the teacher
+      outcomes:
+        - weight: 60
+          text: The teacher sorts it out and the work gets shared fairly.
+          effects:
+            - stat.happiness += 1
+        - weight: 40
+          text: The teammate is furious and the group turns frosty.
+          effects:
+            - stat.happiness -= 3
+    - label: Let the grade slide
+      outcomes:
+        - weight: 1
+          text: A mediocre mark for everyone.
+          effects:
+            - stat.smarts -= 1
+
+- id: skip-class
+  icon: 🛹
+  trigger: event
+  chance: 4%
+  when: age >= 13 and age <= 18
+  text: "Friends invite {player.first_name} to skip the afternoon and head to the skate park."
+  choices:
+    - label: Go along
+      outcomes:
+        - weight: 75
+          text: A glorious afternoon, and nobody notices.
+          effects:
+            - stat.happiness += 4
+            - stat.smarts -= 1
+        - weight: 25
+          text: The school phones home.
+          effects:
+            - stat.happiness -= 3
+            - stat.smarts -= 1
+    - label: Stay in class
+      outcomes:
+        - weight: 1
+          text: A dull afternoon and a clear conscience.
+          effects:
+            - stat.smarts += 1
+
+- id: yard-sale
+  icon: 🏷️
+  trigger: event
+  chance: 3%
+  when: age >= 14 and age <= 80
+  text: "An attic full of unused things could fund a yard sale."
+  choices:
+    - label: Hold a yard sale
+      outcomes:
+        - weight: 70
+          text: A busy Saturday and a pile of notes.
+          effects:
+            - money += 12000
+            - stat.happiness += 2
+        - weight: 30
+          text: Hardly anyone shows, and the leftovers go to charity.
+          effects:
+            - money += 2500
+    - label: Leave it in the attic
+      outcomes:
+        - weight: 1
+          text: The attic stays full.
+
+- id: concert-tickets
+  icon: 🎤
+  trigger: event
+  chance: 3%
+  when: age >= 15 and age <= 60 and money >= 15000
+  text: "Tickets for a favourite band go on sale. They are not cheap."
+  choices:
+    - label: Buy a pair
+      outcomes:
+        - weight: 85
+          text: The night is everything it should be.
+          effects:
+            - money -= 15000
+            - stat.happiness += 7
+        - weight: 15
+          text: The show is cancelled and the refund takes months.
+          effects:
+            - money -= 15000
+            - stat.happiness -= 2
+    - label: Save the money
+      outcomes:
+        - weight: 1
+          text: Sensible, if a bit dull.
+          effects:
+            - stat.happiness -= 1
+
+- id: volunteer-weekend
+  icon: 🌱
+  trigger: event
+  chance: 4%
+  when: age >= 14
+  text: "A local charity needs hands for a weekend clean-up."
+  choices:
+    - label: Volunteer
+      outcomes:
+        - weight: 1
+          text: Hard work, good company, and a warm feeling afterwards.
+          effects:
+            - stat.happiness += 5
+            - stat.health += 1
+    - label: Stay home
+      outcomes:
+        - weight: 1
+          text: A lazy weekend.
+
+- id: overpaid-change
+  icon: 🪙
+  trigger: event
+  chance: 3%
+  when: age >= 10
+  text: "A cashier hands {player.first_name} far too much change."
+  choices:
+    - label: Point it out
+      outcomes:
+        - weight: 1
+          text: The cashier smiles with relief.
+          effects:
+            - stat.happiness += 2
+    - label: Pocket it
+      outcomes:
+        - weight: 1
+          text: A small, slightly guilty bonus.
+          effects:
+            - money += 2000
+            - stat.happiness -= 1
+
+- id: noisy-neighbour
+  icon: 📢
+  trigger: event
+  chance: 3%
+  when: age >= 20
+  text: "The neighbours play music until three in the morning, again."
+  choices:
+    - label: Knock and ask them to stop
+      outcomes:
+        - weight: 70
+          text: They are embarrassed and apologetic.
+          effects:
+            - stat.happiness += 2
+        - weight: 30
+          text: They shout back, and things get tense.
+          effects:
+            - stat.happiness -= 4
+    - label: Buy earplugs
+      outcomes:
+        - weight: 1
+          text: The nights are bearable again.
+          effects:
+            - money -= min(money, 1500)

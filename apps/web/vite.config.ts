@@ -10,6 +10,7 @@ const THEME_COLOR = "#0369a1";
 const BACKGROUND_COLOR = "#f8fafc";
 
 export default defineConfig({
+  define: { __BUILD_REV__: JSON.stringify(process.env.LIFE_SIM_REV ?? "dev") },
   plugins: [
     preact(),
     tailwindcss(),

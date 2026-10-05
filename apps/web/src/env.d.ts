@@ -21,3 +21,6 @@ declare module "virtual:packs" {
     }[];
   };
 }
+
+/** Git short revision baked in at build time (LIFE_SIM_REV, or "dev"). */
+declare const __BUILD_REV__: string;

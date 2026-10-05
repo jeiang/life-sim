@@ -48,6 +48,8 @@
             };
             inherit (self.packages.${system}) pnpmDeps;
             nativeBuildInputs = [ pkgs.nodejs_24 pkgs.pnpm_10 pkgs.pnpmConfigHook ];
+            # Baked into the bundle by Vite `define` (Settings > About this install).
+            LIFE_SIM_REV = self.shortRev or self.dirtyShortRev or "dev";
             buildPhase = ''
               runHook preBuild
               pnpm --filter @life/web build

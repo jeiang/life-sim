@@ -5,7 +5,7 @@
   "scripts": {
     "test": "vitest run",
     "build": "pnpm --filter @life/web build",
-    "harness": "echo 'harness: not implemented yet (see packages/harness)'"
+    "harness": "node --experimental-strip-types packages/harness/src/cli.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",

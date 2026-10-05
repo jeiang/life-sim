@@ -1,0 +1,7 @@
+- kind: generator
+  id: player
+  first_names: [Sam]
+  last_names: [Smith]
+  age: [0, 0]
+  stats:
+    happiness: [50, 60]

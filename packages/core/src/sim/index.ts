@@ -5,6 +5,7 @@ export {
   listSubmenus,
   runAction,
 } from "./actions.ts";
+export { setAssertSink } from "./env.ts";
 export {
   ageUp,
   canAgeUp,

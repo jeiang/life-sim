@@ -80,10 +80,23 @@ function yearsIn(p: Person, kindId: string): number {
   return n;
 }
 
+let assertSink: ((message: string) => void) | null = null;
+
+/**
+ * Route expression runtime assertions (division by zero, overflow) to `sink` for every
+ * expression the Core evaluates from now on; `null` restores production behaviour (no hook,
+ * values clamp silently). For the balance harness and dev builds; ADR 0004.
+ */
+export function setAssertSink(sink: ((message: string) => void) | null): void {
+  assertSink = sink;
+}
+
 /** Expression environment (ADR 0004) over the world. Only the whitelisted names exist. */
 export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
   const subject = getPerson(world, scope.subject);
+  const sink = assertSink;
   return {
+    ...(sink ? { onAssert: sink } : {}),
     get(path: string): Value {
       if (path === "age") return subject.age;
       if (path === "money") return subject.money;

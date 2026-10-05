@@ -1,0 +1,10 @@
+id: base
+version: 1
+stats:
+  - { id: happiness, label: Happiness, start: [50, 100] }
+qualities: []
+exclusivity: []
+year:
+  slots: [1, 1]
+  cap: 2
+migrations: {}

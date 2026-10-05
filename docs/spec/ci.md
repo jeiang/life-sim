@@ -26,7 +26,13 @@ All checks are hermetic `checks.<system>.*` flake outputs, so `nix flake check` 
 
 ## Open risk
 
-WebKit for Playwright on x86_64-linux inside the Nix sandbox is not yet verified (darwin was verified). The first build task proves the `e2e` check on buildbot, setting `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` if needed. If it cannot run, reopen the CI decision; the fallback is a non-hermetic e2e job.
+Resolved (issue #30): Playwright Chromium and WebKit both run in the x86_64-linux Nix sandbox on buildbot. `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` was not needed. The `e2e` check (defined on x86_64-linux, aarch64-linux, and aarch64-darwin, where nixpkgs ships the browsers) sets:
+
+- `PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}` and `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true`.
+- `HOME=$TMPDIR` and `XDG_RUNTIME_DIR=$TMPDIR/xdg` (mode 700), plus a `FONTCONFIG_FILE` with DejaVu fonts.
+- On Linux only, WPE WebKit aborts with "Could not create EGL display: no supported platform available" without a GPU. The fix is Mesa software rendering: `EGL_PLATFORM=surfaceless`, `LIBGL_ALWAYS_SOFTWARE=1`, `GALLIUM_DRIVER=llvmpipe`, `__EGL_VENDOR_LIBRARY_FILENAMES` pointing at Mesa's `50_mesa.json`, `LIBGL_DRIVERS_PATH=${pkgs.mesa}/lib/dri`, and `LD_LIBRARY_PATH` including `libglvnd` and `mesa`.
+
+The e2e specs and a stub page live in `e2e/`; the app e2e suites extend this setup.
 
 ## Merge flow
 

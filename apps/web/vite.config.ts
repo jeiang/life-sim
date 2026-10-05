@@ -1,7 +1,9 @@
+import { fileURLToPath } from "node:url";
 import preact from "@preact/preset-vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { packs } from "./vite-plugin-packs.ts";
 
 // Keep in sync with --color-primary (light) and the manifest/theme-color meta in index.html.
 const THEME_COLOR = "#0369a1";
@@ -11,6 +13,7 @@ export default defineConfig({
   plugins: [
     preact(),
     tailwindcss(),
+    packs({ packsDir: fileURLToPath(new URL("../../packs", import.meta.url)) }),
     VitePWA({
       registerType: "prompt",
       injectRegister: "script",

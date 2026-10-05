@@ -9,7 +9,9 @@ export default defineConfig({
   reporter: "list",
   use: { baseURL: `http://127.0.0.1:${port}` },
   webServer: {
-    command: "node --experimental-strip-types serve.ts",
+    command:
+      "pnpm --filter @life/web build && node --experimental-strip-types serve.ts",
+    timeout: 180_000,
     url: `http://127.0.0.1:${port}`,
     reuseExistingServer: false,
   },

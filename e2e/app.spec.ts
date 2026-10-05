@@ -48,6 +48,16 @@ test("Age is disabled while a choice is open and menus open a page with Back", a
   await page.goto("/");
   await page.getByRole("button", { name: "Settings" }).click();
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "About this install" }),
+  ).toBeVisible();
+  await expect(page.getByText("Build version")).toBeVisible();
+  await expect(page.getByText("Browser tab")).toBeVisible();
+  await expect(
+    page.getByText(
+      /^(Persistent|May be cleared by the browser|Not supported|Not checked yet)$/,
+    ),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Back" }).click();
   await expect(ageButton(page)).toBeEnabled();
   await page.getByRole("button", { name: "Activities" }).click();

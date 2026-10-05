@@ -9,7 +9,12 @@ import {
   showLifeList,
 } from "../game/store.ts";
 import { closeAllPages, closePage, openPage } from "../nav.ts";
-import { IMPORT_ACCEPT, importFile } from "../persistence/index.ts";
+import {
+  IMPORT_ACCEPT,
+  importFile,
+  type PersistState,
+  persistState,
+} from "../persistence/index.ts";
 
 function ImportPanel() {
   const input = useRef<HTMLInputElement>(null);
@@ -59,6 +64,41 @@ function ImportPanel() {
   );
 }
 
+const STORAGE_LABEL: Record<PersistState, string> = {
+  granted: "Persistent",
+  denied: "May be cleared by the browser",
+  unsupported: "Not supported",
+  unknown: "Not checked yet",
+};
+
+function displayMode(): string {
+  const standalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  return standalone ? "Installed app" : "Browser tab";
+}
+
+function AboutInstall() {
+  const rows: [string, string][] = [
+    ["Build version", __BUILD_REV__],
+    ["Storage", STORAGE_LABEL[persistState.value]],
+    ["Display mode", displayMode()],
+  ];
+  return (
+    <section class="space-y-2 rounded-xl bg-surface-raised p-4">
+      <h2 class="font-bold">About this install</h2>
+      <dl class="space-y-1 text-sm">
+        {rows.map(([name, value]) => (
+          <div key={name} class="flex justify-between gap-4">
+            <dt>{name}</dt>
+            <dd class="font-semibold">{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
 const linkClass =
   "flex min-h-11 w-full items-center rounded-xl bg-surface-raised px-4 font-semibold";
 
@@ -96,6 +136,7 @@ export function SettingsPage() {
       >
         Credits
       </button>
+      <AboutInstall />
     </PageShell>
   );
 }

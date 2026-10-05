@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../../../schema/pack.schema.json
+id: base
+version: 2
+currency:
+  symbol: "$"
+  digits: 2
+stats:
+  - { id: happiness, label: Happiness, icon: 😀, start: [50, 100] }
+  - { id: smarts, label: Smarts, start: [0, 100] }
+qualities:
+  - { id: years_worked, type: int, min: 0, default: 0 }
+  - { id: has_diploma, type: flag, default: false }
+exclusivity: [school, full-time]
+year:
+  slots: [1, 3]
+  cap: 4
+migrations:
+  rename:
+    - { from: old-job-offer, to: first-job-offer }
+  remove:
+    - { id: retired-event, fallback: first-job-offer }

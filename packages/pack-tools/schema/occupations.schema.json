@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Occupation kinds (list)",
+  "type": "array",
+  "items": {
+    "additionalProperties": false,
+    "title": "Occupation kind",
+    "type": "object",
+    "required": ["id", "label", "group", "pay"],
+    "properties": {
+      "id": {
+        "pattern": "^[a-z][a-z0-9_-]*$",
+        "description": "Content id",
+        "type": "string"
+      },
+      "label": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "icon": {
+        "description": "A literal emoji (Twemoji subset) or `gameicons/<author>/<name>`",
+        "type": "string"
+      },
+      "group": {
+        "pattern": "^[a-z][a-z0-9_-]*$",
+        "description": "Content id",
+        "type": "string"
+      },
+      "ladder": {
+        "type": "string"
+      },
+      "requires": {
+        "description": "Expression in the Pack expression language (ADR 0004)",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      },
+      "pay": {
+        "description": "Expression in the Pack expression language (ADR 0004)",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      },
+      "duration_years": {
+        "minimum": 1,
+        "type": "integer"
+      },
+      "promotes_to": {
+        "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+        "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+        "type": "string"
+      },
+      "promotion_years": {
+        "minimum": 1,
+        "type": "integer"
+      },
+      "loan": {
+        "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+        "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+        "type": "string"
+      }
+    }
+  }
+}

@@ -61,7 +61,10 @@ const NEG_BP = 7;
 
 class Parser {
   private i = 0;
-  constructor(private readonly toks: Token[]) {}
+  private readonly toks: Token[];
+  constructor(toks: Token[]) {
+    this.toks = toks;
+  }
 
   peek(): Token {
     return this.toks[this.i] as Token;

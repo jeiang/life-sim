@@ -1,0 +1,9 @@
+- id: bonus
+  trigger: action
+  menu: occupation
+  text: "Hello {player.last_name}."
+  outcomes:
+    - effects:
+        - start_occupation(base/cashier)
+        - grant_asset(base/phone)
+        - stat.smarts += 1

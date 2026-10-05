@@ -1,0 +1,204 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "title": "Pack manifest (pack.yaml)",
+  "type": "object",
+  "required": ["id", "version"],
+  "properties": {
+    "id": {
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "depends": {
+      "type": "array",
+      "items": {
+        "pattern": "^[a-z][a-z0-9-]*$",
+        "type": "string"
+      }
+    },
+    "currency": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": ["symbol", "digits"],
+      "properties": {
+        "symbol": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "digits": {
+          "minimum": 0,
+          "maximum": 4,
+          "type": "integer"
+        }
+      }
+    },
+    "stats": {
+      "type": "array",
+      "items": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["id", "label", "start"],
+        "properties": {
+          "id": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "label": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "icon": {
+            "description": "A literal emoji (Twemoji subset) or `gameicons/<author>/<name>`",
+            "type": "string"
+          },
+          "start": {
+            "description": "Inclusive start range within 0-100",
+            "type": "array",
+            "items": [
+              {
+                "minimum": 0,
+                "maximum": 100,
+                "type": "integer"
+              },
+              {
+                "minimum": 0,
+                "maximum": 100,
+                "type": "integer"
+              }
+            ],
+            "additionalItems": false,
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      }
+    },
+    "qualities": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": ["id", "type", "default"],
+            "properties": {
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "type": {
+                "const": "int",
+                "type": "string"
+              },
+              "min": {
+                "type": "integer"
+              },
+              "max": {
+                "type": "integer"
+              },
+              "default": {
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": ["id", "type", "default"],
+            "properties": {
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "type": {
+                "const": "flag",
+                "type": "string"
+              },
+              "default": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "exclusivity": {
+      "type": "array",
+      "items": {
+        "pattern": "^[a-z][a-z0-9_-]*$",
+        "description": "Content id",
+        "type": "string"
+      }
+    },
+    "year": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": ["slots", "cap"],
+      "properties": {
+        "slots": {
+          "description": "Flavour slot count range [min, max]",
+          "type": "array",
+          "items": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "minimum": 0,
+              "type": "integer"
+            }
+          ],
+          "additionalItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "cap": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      }
+    },
+    "migrations": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "rename": {
+          "type": "array",
+          "items": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": ["from", "to"],
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "remove": {
+          "type": "array",
+          "items": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "fallback": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

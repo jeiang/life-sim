@@ -1,0 +1,9 @@
+- id: auto-loan
+  label: Auto loan
+  rate: 7.5%
+  term_years: 5
+  secured: true
+- id: student-loan
+  label: Student loan
+  rate: 4%
+  term_years: 10

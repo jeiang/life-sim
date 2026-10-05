@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Loan kinds (list)",
+  "type": "array",
+  "items": {
+    "additionalProperties": false,
+    "title": "Loan kind",
+    "type": "object",
+    "required": ["id", "label", "rate", "term_years"],
+    "properties": {
+      "id": {
+        "pattern": "^[a-z][a-z0-9_-]*$",
+        "description": "Content id",
+        "type": "string"
+      },
+      "label": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "icon": {
+        "description": "A literal emoji (Twemoji subset) or `gameicons/<author>/<name>`",
+        "type": "string"
+      },
+      "rate": {
+        "pattern": "^\\d+(\\.\\d{1,2})?%$",
+        "description": "Yearly rate as a percent literal, for example `6.5%`",
+        "type": "string"
+      },
+      "term_years": {
+        "minimum": 1,
+        "type": "integer"
+      },
+      "secured": {
+        "type": "boolean"
+      }
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "People data (list)",
+  "type": "array",
+  "items": {
+    "title": "People data: role or generator",
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["kind", "id", "label"],
+        "properties": {
+          "kind": {
+            "const": "role",
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "description": "Content id",
+            "type": "string"
+          },
+          "label": {
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      },
+      {
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["kind", "id", "first_names", "last_names", "age"],
+        "properties": {
+          "kind": {
+            "const": "generator",
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "description": "Content id",
+            "type": "string"
+          },
+          "first_names": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "last_names": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "age": {
+            "description": "Inclusive [min, max]",
+            "type": "array",
+            "items": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "additionalItems": false,
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "stats": {
+            "type": "object",
+            "patternProperties": {
+              "^[a-z][a-z0-9_]*$": {
+                "description": "Inclusive [min, max]",
+                "type": "array",
+                "items": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "additionalItems": false,
+                "minItems": 2,
+                "maxItems": 2
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

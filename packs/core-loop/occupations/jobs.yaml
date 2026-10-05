@@ -1,0 +1,175 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/occupations.schema.json
+# Generated-style data: pay is cents per year plus the player's accumulated raise bonus.
+- id: cashier
+  label: Cashier
+  icon: 🛒
+  group: part-time
+  ladder: teen
+  requires: age >= 14
+  pay: 900000 + quality.raise_bonus
+  promotes_to: barista
+  promotion_years: 2
+- id: barista
+  label: Barista
+  icon: ☕
+  group: part-time
+  ladder: teen
+  requires: age >= 14
+  pay: 1100000 + quality.raise_bonus
+- id: server
+  label: Server
+  icon: 🍽️
+  group: full-time
+  ladder: service
+  requires: age >= 18
+  pay: 2200000 + quality.raise_bonus
+  promotes_to: shift-lead
+  promotion_years: 2
+- id: shift-lead
+  label: Shift lead
+  icon: 📋
+  group: full-time
+  ladder: service
+  requires: age >= 18
+  pay: 2900000 + quality.raise_bonus
+  promotes_to: restaurant-manager
+  promotion_years: 3
+- id: restaurant-manager
+  label: Restaurant manager
+  icon: 🏢
+  group: full-time
+  ladder: service
+  requires: age >= 18
+  pay: 4200000 + quality.raise_bonus
+- id: apprentice
+  label: Electrician's apprentice
+  icon: 🔧
+  group: full-time
+  ladder: trades
+  requires: age >= 18 and quality.graduated_high_school
+  pay: 2400000 + quality.raise_bonus
+  promotes_to: electrician
+  promotion_years: 3
+- id: electrician
+  label: Electrician
+  icon: ⚡
+  group: full-time
+  ladder: trades
+  requires: age >= 18 and quality.graduated_high_school
+  pay: 4300000 + quality.raise_bonus
+  promotes_to: master-electrician
+  promotion_years: 4
+- id: master-electrician
+  label: Master electrician
+  icon: 🛠️
+  group: full-time
+  ladder: trades
+  requires: age >= 18 and quality.graduated_high_school
+  pay: 6400000 + quality.raise_bonus
+- id: junior-analyst
+  label: Junior analyst
+  icon: 📈
+  group: full-time
+  ladder: professional
+  requires: age >= 18 and quality.has_degree_business
+  pay: 3200000 + quality.raise_bonus
+  promotes_to: analyst
+  promotion_years: 2
+- id: analyst
+  label: Analyst
+  icon: 📈
+  group: full-time
+  ladder: professional
+  requires: age >= 18 and quality.has_degree_business
+  pay: 4800000 + quality.raise_bonus
+  promotes_to: senior-analyst
+  promotion_years: 3
+- id: senior-analyst
+  label: Senior analyst
+  icon: 📈
+  group: full-time
+  ladder: professional
+  requires: age >= 18 and quality.has_degree_business
+  pay: 7000000 + quality.raise_bonus
+- id: junior-engineer
+  label: Junior engineer
+  icon: 📐
+  group: full-time
+  ladder: professional
+  requires: age >= 18 and quality.has_degree_engineering
+  pay: 3600000 + quality.raise_bonus
+  promotes_to: engineer
+  promotion_years: 2
+- id: engineer
+  label: Engineer
+  icon: 📐
+  group: full-time
+  ladder: professional
+  requires: age >= 18 and quality.has_degree_engineering
+  pay: 5400000 + quality.raise_bonus
+  promotes_to: senior-engineer
+  promotion_years: 3
+- id: senior-engineer
+  label: Senior engineer
+  icon: 📐
+  group: full-time
+  ladder: professional
+  requires: age >= 18 and quality.has_degree_engineering
+  pay: 7800000 + quality.raise_bonus
+- id: staff-nurse
+  label: Staff nurse
+  icon: 🩺
+  group: full-time
+  ladder: professional
+  requires: age >= 18 and quality.has_degree_nursing
+  pay: 3400000 + quality.raise_bonus
+  promotes_to: charge-nurse
+  promotion_years: 2
+- id: charge-nurse
+  label: Charge nurse
+  icon: 🩺
+  group: full-time
+  ladder: professional
+  requires: age >= 18 and quality.has_degree_nursing
+  pay: 4800000 + quality.raise_bonus
+  promotes_to: nurse-manager
+  promotion_years: 3
+- id: nurse-manager
+  label: Nurse manager
+  icon: 🩺
+  group: full-time
+  ladder: professional
+  requires: age >= 18 and quality.has_degree_nursing
+  pay: 6800000 + quality.raise_bonus
+- id: studio-assistant
+  label: Studio assistant
+  icon: 🎨
+  group: full-time
+  ladder: professional
+  requires: age >= 18 and quality.has_degree_arts
+  pay: 2400000 + quality.raise_bonus
+  promotes_to: designer
+  promotion_years: 2
+- id: designer
+  label: Designer
+  icon: 🎨
+  group: full-time
+  ladder: professional
+  requires: age >= 18 and quality.has_degree_arts
+  pay: 3800000 + quality.raise_bonus
+  promotes_to: art-director
+  promotion_years: 3
+- id: art-director
+  label: Art director
+  icon: 🎨
+  group: full-time
+  ladder: professional
+  requires: age >= 18 and quality.has_degree_arts
+  pay: 6200000 + quality.raise_bonus
+- id: retired
+  label: Retired
+  icon: 🏖️
+  group: full-time
+  ladder: retirement
+  requires: age >= 60
+  pay: min(3600000, 800000 + quality.years_worked * 70000)

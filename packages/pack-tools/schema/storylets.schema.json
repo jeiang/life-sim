@@ -13,6 +13,11 @@
         "description": "Content id",
         "type": "string"
       },
+      "label": {
+        "minLength": 1,
+        "description": "Actions only: the menu label; default derived from the id",
+        "type": "string"
+      },
       "icon": {
         "description": "A literal emoji (Twemoji subset) or `gameicons/<author>/<name>`",
         "type": "string"

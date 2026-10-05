@@ -1,4 +1,4 @@
-import type { PackBundle } from "../pack.ts";
+import type { FamilyDecl, PackBundle } from "../pack.ts";
 import type { PersonId, World } from "../state/types.ts";
 import {
   addJournalLine,
@@ -11,25 +11,13 @@ import { spawnPerson } from "./ops.ts";
 import { indexBundles, type PackIndex } from "./pack-index.ts";
 
 /**
- * Which Pack people data builds the family. Ids may be full (`core-loop/parents`) or short
- * (`parents`, matched against any Pack). Anything the Packs do not define is skipped.
+ * Which Pack people data builds the family; a Pack manifest's `family` is the default.
+ * Ids may be full (`core-loop/parent-gen`) or short (matched against any Pack). Anything
+ * the Packs do not define is skipped.
  */
-export interface FamilySpec {
-  /** Generator for the player's name; absent or unknown: the first generator's names. */
-  readonly player: string;
-  readonly parent: {
-    readonly role: string;
-    readonly generator: string;
-    readonly count: number;
-  };
-  readonly sibling: {
-    readonly role: string;
-    readonly generator: string;
-    /** Inclusive count range. */
-    readonly count: readonly [number, number];
-  };
-}
+export type FamilySpec = FamilyDecl;
 
+/** Used when no Pack declares a family. */
 export const DEFAULT_FAMILY: FamilySpec = {
   player: "player",
   parent: { role: "parent", generator: "parents", count: 2 },
@@ -41,6 +29,7 @@ export interface NewLifeOptions {
   readonly givenName?: string;
   /** Override the generated family name (parents and siblings share it). */
   readonly familyName?: string;
+  /** Overrides the manifest family (or the default) field by field. */
   readonly family?: Partial<FamilySpec>;
 }
 
@@ -64,7 +53,10 @@ export function newLife(
   opts: NewLifeOptions = {},
 ): World {
   const idx = indexBundles(bundles);
-  const family: FamilySpec = { ...DEFAULT_FAMILY, ...opts.family };
+  const family: FamilySpec = {
+    ...(idx.family ?? DEFAULT_FAMILY),
+    ...opts.family,
+  };
   const packVersions = bundles.map((b) => ({
     id: b.id,
     version: String(b.version),
@@ -78,7 +70,7 @@ export function newLife(
   });
   const [w0, rng] = nextStream(seeded, 0, "birth/player");
   const genId =
-    resolve(idx.generators, family.player) ??
+    (family.player ? resolve(idx.generators, family.player) : undefined) ??
     [...idx.generators.keys()].sort()[0];
   const gen = genId ? idx.generators.get(genId) : undefined;
   const pick = (xs: readonly string[] | undefined, fallback: string): string =>

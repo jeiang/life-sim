@@ -18,7 +18,7 @@ export interface ActionRow {
 
 const cmp = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
-/** `core-loop/spend-time-with-loved-ones` -> `Spend time with loved ones`. */
+/** Fallback label from an id: `core-loop/spend-time-with-loved-ones` -> `Spend time with loved ones`. */
 export function actionLabel(id: string): string {
   const short = (id.split("/").pop() ?? id).replaceAll(/[-_]+/g, " ");
   return short.charAt(0).toUpperCase() + short.slice(1);
@@ -58,7 +58,7 @@ export function listActions(
     const reason = lockedReason(world, bundles, s, scope);
     rows.push({
       id: s.id,
-      label: actionLabel(s.id),
+      label: s.label ?? actionLabel(s.id),
       ...(s.icon ? { icon: s.icon } : {}),
       menu: menuPath,
       locked: reason !== null,

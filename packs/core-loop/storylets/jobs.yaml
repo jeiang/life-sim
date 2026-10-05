@@ -4,6 +4,7 @@
 # Promotion is data (`promotes_to`) plus the promote-* events below; raises are `quality.raise_bonus`.
 
 - id: apply-cashier
+  label: Apply as a cashier
   icon: 🛒
   trigger: action
   menu: activities/job-board
@@ -20,6 +21,7 @@
       next: interview-question-1
 
 - id: apply-barista
+  label: Apply as a barista
   icon: ☕
   trigger: action
   menu: activities/job-board
@@ -36,6 +38,7 @@
       next: interview-question-1
 
 - id: apply-server
+  label: Apply as a server
   icon: 🍽️
   trigger: action
   menu: activities/job-board
@@ -52,6 +55,7 @@
       next: interview-question-1
 
 - id: apply-apprentice
+  label: Apply as an apprentice
   icon: 🔧
   trigger: action
   menu: activities/job-board
@@ -68,6 +72,7 @@
       next: interview-question-1
 
 - id: apply-junior-analyst
+  label: Apply as a junior analyst
   icon: 📈
   trigger: action
   menu: activities/job-board
@@ -84,6 +89,7 @@
       next: interview-question-1
 
 - id: apply-junior-engineer
+  label: Apply as a junior engineer
   icon: 📐
   trigger: action
   menu: activities/job-board
@@ -100,6 +106,7 @@
       next: interview-question-1
 
 - id: apply-staff-nurse
+  label: Apply as a staff nurse
   icon: 🩺
   trigger: action
   menu: activities/job-board
@@ -116,6 +123,7 @@
       next: interview-question-1
 
 - id: apply-studio-assistant
+  label: Apply as a studio assistant
   icon: 🎨
   trigger: action
   menu: activities/job-board
@@ -586,6 +594,7 @@
         - journal("Promoted to art director at age {age}.")
 
 - id: work-harder
+  label: Work harder
   icon: 💪
   trigger: action
   menu: occupation
@@ -608,6 +617,7 @@
         - stat.health -= 3
 
 - id: ask-for-raise
+  label: Ask for a raise
   icon: 💵
   trigger: action
   menu: occupation
@@ -633,6 +643,7 @@
         - quality.work_effort = 0
 
 - id: quit-job
+  label: Quit your job
   icon: 🚪
   trigger: action
   menu: occupation
@@ -669,6 +680,7 @@
         - journal("Quit your job at age {age}.")
 
 - id: retire
+  label: Retire
   icon: 🏖️
   trigger: action
   menu: occupation

@@ -86,6 +86,24 @@ export const ManifestSchema = obj(
         cap: Type.Integer({ minimum: 0 }),
       }),
     ),
+    family: Type.Optional(
+      obj(
+        {
+          player: Type.Optional(
+            Type.Union([Ref], {
+              description: "Generator whose names the player is drawn from",
+            }),
+          ),
+          parent: obj({
+            role: Ref,
+            generator: Ref,
+            count: Type.Integer({ minimum: 0 }),
+          }),
+          sibling: obj({ role: Ref, generator: Ref, count: Range }),
+        },
+        "Starting family",
+      ),
+    ),
     migrations: Type.Optional(
       obj({
         rename: Type.Optional(
@@ -119,6 +137,13 @@ const Choice = obj({
 export const StoryletSchema = obj(
   {
     id: Id,
+    label: Type.Optional(
+      Type.String({
+        minLength: 1,
+        description:
+          "Actions only: the menu label; default derived from the id",
+      }),
+    ),
     icon: Type.Optional(Icon),
     tags: Type.Optional(Type.Array(Type.String())),
     trigger: Type.Union([Type.Literal("event"), Type.Literal("action")]),

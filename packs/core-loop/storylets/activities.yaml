@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
 - id: go-to-gym
+  label: Go to the gym
   icon: 🏋️
   trigger: action
   menu: activities
@@ -32,6 +33,7 @@
         - stat.happiness -= 1
 
 - id: visit-library
+  label: Visit the library
   icon: 📚
   trigger: action
   menu: activities
@@ -58,6 +60,7 @@
         - stat.looks -= 1
 
 - id: see-doctor
+  label: See a doctor
   icon: 🩺
   trigger: action
   menu: activities
@@ -86,6 +89,7 @@
         - stat.happiness -= 2
 
 - id: meditate
+  label: Meditate
   icon: 🧘
   trigger: action
   menu: activities
@@ -110,6 +114,7 @@
         - stat.happiness -= 1
 
 - id: take-a-walk
+  label: Take a walk
   icon: 🚶
   trigger: action
   menu: activities

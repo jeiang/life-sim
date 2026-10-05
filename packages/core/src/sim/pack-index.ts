@@ -5,6 +5,7 @@ import type {
   CompiledOccupationKind,
   CompiledRole,
   CompiledStorylet,
+  FamilyDecl,
   PackBundle,
   QualityDecl,
   StatDecl,
@@ -25,6 +26,8 @@ export interface PackIndex {
   readonly stats: readonly StatDecl[];
   readonly qualities: ReadonlyMap<string, QualityDecl>;
   readonly currency: { readonly symbol: string; readonly digits: number };
+  /** Starting family from the first manifest that declares one. */
+  readonly family: FamilyDecl | undefined;
   /** Event draw settings from the first manifest that declares them. */
   readonly year: {
     readonly slots: readonly [number, number];
@@ -49,6 +52,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
   const stats: StatDecl[] = [];
   let currency = { symbol: "", digits: 0 };
   let year: PackIndex["year"] | undefined;
+  let family: FamilyDecl | undefined;
   for (const b of bundles) {
     for (const s of b.storylets) storylets.set(s.id, s);
     for (const o of b.occupations) occupations.set(o.id, o);
@@ -62,6 +66,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     stats.push(...b.stats);
     if (b.currency) currency = b.currency;
     if (!year && b.year) year = b.year;
+    if (!family && b.family) family = b.family;
   }
   const events = [...storylets.values()]
     .filter((s) => s.trigger === "event")
@@ -78,6 +83,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     stats,
     qualities,
     currency,
+    family,
     year: year ?? { slots: [0, 0], cap: Number.MAX_SAFE_INTEGER },
   };
   cache.set(bundles, index);

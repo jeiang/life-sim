@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
 # Yearly mortality. `chance` is in basis points (out of 10,000), integer arithmetic only.
 #
-#   base    = age^4 / 68000        age 30 -> 11, 50 -> 91, 70 -> 353, 80 -> 602, 90 -> 965
+#   base    = age^4 / 90000        age 30 -> 9, 50 -> 69, 70 -> 267, 80 -> 455, 90 -> 729
 #   health  = (140 - health) / 90  health 100 -> x0.44, 50 -> x1.0, 0 -> x1.56
 #   ceiling = (age - 100) * 1000   adds up to certain death by 110, so every life ends
 #
@@ -10,7 +10,7 @@
 - id: natural-mortality
   icon: 🕯️
   trigger: event
-  chance: min(10000, (age * age * age * age / 68000) * (140 - stat.health) / 90 + max(0, age - 100) * 1000)
+  chance: min(10000, (age * age * age * age / 90000) * (140 - stat.health) / 90 + max(0, age - 100) * 1000)
   when: age >= 30
   text: "{player.first_name}'s health fails."
   outcomes:

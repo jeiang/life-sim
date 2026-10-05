@@ -629,7 +629,7 @@
     - weight: 20 + quality.work_effort * 12 + stat.smarts / 5
       text: "Your boss agrees to a raise."
       effects:
-        - quality.raise_bonus += 150000
+        - quality.raise_bonus += 100000
         - stat.happiness += 4
         - journal("Got a raise at age {age}.")
     - weight: 60

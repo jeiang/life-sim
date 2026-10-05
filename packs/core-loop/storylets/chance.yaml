@@ -59,6 +59,17 @@
         - stat.happiness -= 10
         - money -= min(money, 150000)
 
+- id: everyday-stress
+  icon: 😮‍💨
+  trigger: event
+  chance: 60%
+  when: age >= 6 and stat.happiness > 55
+  text: "Deadlines, bills and small frustrations pile up for {player.first_name}."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness -= 7
+
 - id: sudden-recovery
   icon: 💪
   trigger: event
@@ -134,12 +145,13 @@
   icon: 📈
   trigger: event
   chance: 4%
-  when: quality.years_worked >= 1 and age <= 64
+  when: has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)
   text: "A manager calls {player.first_name} in and announces an unexpected raise."
   outcomes:
     - weight: 1
       effects:
         - money += 100000
+        - quality.raise_bonus += 50000
         - stat.happiness += 5
 
 - id: fender-bender

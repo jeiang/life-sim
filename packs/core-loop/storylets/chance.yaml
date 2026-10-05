@@ -1,0 +1,239 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Chance events: each rolls independently every year. Percents are absolute yearly odds.
+# Deaths from accident and illness live here too (see also mortality.yaml).
+
+- id: flu-season
+  icon: 🤧
+  trigger: event
+  chance: 9%
+  when: age >= 1
+  text: "{player.first_name} comes down with the flu."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.health -= 4
+        - stat.happiness -= 2
+
+- id: food-poisoning
+  icon: 🤢
+  trigger: event
+  chance: 3%
+  when: age >= 3
+  text: "Something at a questionable buffet does not agree with {player.first_name}."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.health -= 5
+        - stat.happiness -= 2
+
+- id: broken-bone
+  icon: 🩹
+  trigger: event
+  chance: 2%
+  when: age >= 4
+  text: "A slip on the ice leaves {player.first_name} with a cast."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.health -= 8
+        - stat.happiness -= 3
+        - money -= min(money, 20000)
+
+- id: serious-illness
+  icon: 🏥
+  trigger: event
+  chance: 1.5%
+  when: age >= 20
+  text: "A worrying diagnosis sends {player.first_name} into a long round of treatment."
+  outcomes:
+    - weight: 70
+      text: Treatment works and the doctors are pleased.
+      effects:
+        - stat.health -= 15
+        - stat.happiness -= 6
+        - money -= min(money, 80000)
+    - weight: 30
+      text: The treatment is hard going and the recovery is slow.
+      effects:
+        - stat.health -= 25
+        - stat.happiness -= 10
+        - money -= min(money, 150000)
+
+- id: sudden-recovery
+  icon: 💪
+  trigger: event
+  chance: 4%
+  when: stat.health < 60
+  text: "A good run of sleep, rest, and fresh air leaves {player.first_name} feeling much better."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.health += 8
+        - stat.happiness += 3
+
+- id: found-money
+  icon: 💵
+  trigger: event
+  chance: 3%
+  when: age >= 8
+  text: "{player.first_name} finds some folded bills in an old coat."
+  outcomes:
+    - weight: 1
+      effects:
+        - money += 2000
+        - stat.happiness += 2
+
+- id: tax-refund
+  icon: 🧾
+  trigger: event
+  chance: 6%
+  when: age >= 18 and quality.years_worked >= 1
+  text: "A tax refund lands in the account."
+  outcomes:
+    - weight: 1
+      effects:
+        - money += 25000
+        - stat.happiness += 2
+
+- id: lottery-scratch-win
+  icon: 🎟️
+  trigger: event
+  chance: 3%
+  when: age >= 18
+  text: "{player.first_name} scratches a card bought on a whim at the corner shop."
+  outcomes:
+    - weight: 80
+      text: A small prize, enough to cover the card and lunch.
+      effects:
+        - money += 1000
+        - stat.happiness += 2
+    - weight: 18
+      text: A decent win. Dinner out is on the card.
+      effects:
+        - money += 25000
+        - stat.happiness += 5
+    - weight: 2
+      text: A big win. {player.first_name} checks the numbers three times.
+      effects:
+        - money += 500000
+        - stat.happiness += 12
+
+- id: windfall-inheritance
+  icon: 📜
+  trigger: event
+  chance: 1%
+  when: age >= 25
+  text: "A distant relative leaves {player.first_name} a small sum in a will."
+  outcomes:
+    - weight: 1
+      effects:
+        - money += 150000
+        - stat.happiness += 3
+
+- id: pay-raise-surprise
+  icon: 📈
+  trigger: event
+  chance: 4%
+  when: quality.years_worked >= 1 and age <= 64
+  text: "A manager calls {player.first_name} in and announces an unexpected raise."
+  outcomes:
+    - weight: 1
+      effects:
+        - money += 100000
+        - stat.happiness += 5
+
+- id: fender-bender
+  icon: 💥
+  trigger: event
+  chance: 2%
+  when: age >= 17 and age <= 80
+  text: "A moment of distraction at a junction ends in a crumpled bumper."
+  outcomes:
+    - weight: 80
+      text: Nobody is hurt and the repair bill is manageable.
+      effects:
+        - money -= min(money, 50000)
+        - stat.happiness -= 3
+    - weight: 20
+      text: Someone is hurt, and the aftermath drags on.
+      effects:
+        - money -= min(money, 120000)
+        - stat.health -= 10
+        - stat.happiness -= 6
+
+- id: burglary
+  icon: 🚪
+  trigger: event
+  chance: 1.5%
+  when: age >= 18
+  text: "{player.first_name} comes home to a forced door and some missing belongings."
+  outcomes:
+    - weight: 1
+      effects:
+        - money -= min(money, 40000)
+        - stat.happiness -= 6
+
+# ---- accident and illness deaths --------------------------------------------
+- id: fatal-car-crash
+  icon: 🚧
+  trigger: event
+  chance: 0.1%
+  when: age >= 16 and age <= 85
+  text: "A long drive in bad conditions ends in a collision."
+  outcomes:
+    - weight: 1
+      effects:
+        - die("killed in a car crash")
+
+- id: heart-attack
+  icon: 🫀
+  trigger: event
+  chance: 0.4% + (age - 45) * 4 + max(0, 60 - stat.health) * 2
+  when: age >= 45
+  text: "A tight feeling in the chest turns into an emergency."
+  outcomes:
+    - weight: 100 - stat.health
+      text: "{player.first_name} does not survive the night."
+      effects:
+        - die("heart attack")
+    - weight: stat.health
+      text: Quick action and a long hospital stay pull {player.first_name} through.
+      effects:
+        - stat.health -= 20
+        - stat.happiness -= 6
+        - money -= min(money, 100000)
+
+- id: severe-pneumonia
+  icon: 🫁
+  trigger: event
+  chance: 1.2%
+  when: age >= 55
+  text: "A cough that will not clear becomes severe pneumonia."
+  outcomes:
+    - weight: 10 + max(0, 70 - stat.health)
+      text: "{player.first_name} cannot fight it off."
+      effects:
+        - die("pneumonia")
+    - weight: 70
+      text: Antibiotics and rest bring a slow recovery.
+      effects:
+        - stat.health -= 12
+        - stat.happiness -= 4
+
+- id: serious-fall
+  icon: 🪜
+  trigger: event
+  chance: 3%
+  when: age >= 65
+  text: "A fall at home leaves {player.first_name} on the floor, waiting for help."
+  outcomes:
+    - weight: 12 + max(0, 60 - stat.health) / 2
+      text: The injuries prove too much.
+      effects:
+        - die("complications from a fall")
+    - weight: 88
+      text: A hip operation and weeks of rehab follow.
+      effects:
+        - stat.health -= 14
+        - stat.happiness -= 5
+        - money -= min(money, 60000)

@@ -1,0 +1,179 @@
+import type { Occupation, Person, QualityValue, World } from "./types.ts";
+
+/**
+ * Canonical JSON: every object's keys sorted by UTF-16 code unit order,
+ * no whitespace, persons as an array in id order. Only integers, strings,
+ * booleans, arrays and objects can appear, so the text is identical on every
+ * engine. Arrays keep their order (it is meaningful state).
+ */
+export function canonicalStringify(value: unknown): string {
+  if (value === null) return "null";
+  switch (typeof value) {
+    case "string":
+    case "boolean":
+      return JSON.stringify(value);
+    case "number":
+      if (!Number.isSafeInteger(value))
+        throw new TypeError(`non-integer number in state: ${value}`);
+      return Object.is(value, -0) ? "0" : String(value);
+    case "object": {
+      if (Array.isArray(value))
+        return `[${value.map(canonicalStringify).join(",")}]`;
+      const o = value as Record<string, unknown>;
+      const parts: string[] = [];
+      for (const k of Object.keys(o).sort()) {
+        if (o[k] === undefined) continue;
+        parts.push(`${JSON.stringify(k)}:${canonicalStringify(o[k])}`);
+      }
+      return `{${parts.join(",")}}`;
+    }
+    default:
+      throw new TypeError(`cannot serialize ${typeof value}`);
+  }
+}
+
+export function serializeWorld(world: World): string {
+  return canonicalStringify({
+    ...world,
+    persons: [...world.persons.values()].sort((a, b) => a.id - b.id),
+  });
+}
+
+type Json = Record<string, unknown>;
+
+function fail(path: string, what: string): never {
+  throw new TypeError(`invalid world at ${path}: expected ${what}`);
+}
+const obj = (v: unknown, p: string): Json =>
+  typeof v === "object" && v !== null && !Array.isArray(v)
+    ? (v as Json)
+    : fail(p, "object");
+const arr = (v: unknown, p: string): unknown[] =>
+  Array.isArray(v) ? v : fail(p, "array");
+const int = (v: unknown, p: string): number =>
+  Number.isSafeInteger(v) ? (v as number) : fail(p, "integer");
+const str = (v: unknown, p: string): string =>
+  typeof v === "string" ? v : fail(p, "string");
+const bool = (v: unknown, p: string): boolean =>
+  typeof v === "boolean" ? v : fail(p, "boolean");
+const optInt = (v: unknown, p: string): number | undefined =>
+  v === undefined ? undefined : int(v, p);
+
+function qualities(v: unknown, p: string): Record<string, QualityValue> {
+  const out: Record<string, QualityValue> = {};
+  for (const [k, x] of Object.entries(obj(v, p))) {
+    out[k] = typeof x === "boolean" ? x : int(x, `${p}.${k}`);
+  }
+  return out;
+}
+
+function intRecord(v: unknown, p: string): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [k, x] of Object.entries(obj(v, p))) out[k] = int(x, `${p}.${k}`);
+  return out;
+}
+
+function occupation(v: unknown, p: string): Occupation {
+  const o = obj(v, p);
+  const endedAge = optInt(o.endedAge, `${p}.endedAge`);
+  return {
+    id: int(o.id, `${p}.id`),
+    kindId: str(o.kindId, `${p}.kindId`),
+    group: str(o.group, `${p}.group`),
+    startedAge: int(o.startedAge, `${p}.startedAge`),
+    years: int(o.years, `${p}.years`),
+    performance: int(o.performance, `${p}.performance`),
+    pay: int(o.pay, `${p}.pay`),
+    ...(endedAge === undefined ? {} : { endedAge }),
+  };
+}
+
+function person(v: unknown, p: string): Person {
+  const o = obj(v, p);
+  return {
+    id: int(o.id, `${p}.id`),
+    givenName: str(o.givenName, `${p}.givenName`),
+    familyName: str(o.familyName, `${p}.familyName`),
+    age: int(o.age, `${p}.age`),
+    alive: bool(o.alive, `${p}.alive`),
+    stats: intRecord(o.stats, `${p}.stats`),
+    qualities: qualities(o.qualities, `${p}.qualities`),
+    money: int(o.money, `${p}.money`),
+    occupations: arr(o.occupations, `${p}.occupations`).map((x, i) =>
+      occupation(x, `${p}.occupations[${i}]`),
+    ),
+    occupationHistory: arr(o.occupationHistory, `${p}.occupationHistory`).map(
+      (x, i) => occupation(x, `${p}.occupationHistory[${i}]`),
+    ),
+    assets: arr(o.assets, `${p}.assets`).map((x, i) => {
+      const a = obj(x, `${p}.assets[${i}]`);
+      const q = `${p}.assets[${i}]`;
+      return {
+        id: int(a.id, `${q}.id`),
+        kindId: str(a.kindId, `${q}.kindId`),
+        purchasePrice: int(a.purchasePrice, `${q}.purchasePrice`),
+        value: int(a.value, `${q}.value`),
+        qualities: qualities(a.qualities, `${q}.qualities`),
+      };
+    }),
+    loans: arr(o.loans, `${p}.loans`).map((x, i) => {
+      const l = obj(x, `${p}.loans[${i}]`);
+      const q = `${p}.loans[${i}]`;
+      const securedAssetId = optInt(l.securedAssetId, `${q}.securedAssetId`);
+      return {
+        id: int(l.id, `${q}.id`),
+        kindId: str(l.kindId, `${q}.kindId`),
+        principal: int(l.principal, `${q}.principal`),
+        balance: int(l.balance, `${q}.balance`),
+        rateBp: int(l.rateBp, `${q}.rateBp`),
+        termYears: int(l.termYears, `${q}.termYears`),
+        payment: int(l.payment, `${q}.payment`),
+        ...(securedAssetId === undefined ? {} : { securedAssetId }),
+        missed: int(l.missed, `${q}.missed`),
+      };
+    }),
+  };
+}
+
+/** Parse and validate a serialized world. Throws TypeError on any shape or non-integer violation. Schema migrations are applied before this by the save layer. */
+export function deserializeWorld(text: string): World {
+  const o = obj(JSON.parse(text), "$");
+  const persons = new Map<number, Person>();
+  for (const [i, x] of arr(o.persons, "$.persons").entries()) {
+    const p = person(x, `$.persons[${i}]`);
+    persons.set(p.id, p);
+  }
+  return {
+    schemaVersion: int(o.schemaVersion, "$.schemaVersion"),
+    seed: int(o.seed, "$.seed"),
+    playerId: int(o.playerId, "$.playerId"),
+    nextId: int(o.nextId, "$.nextId"),
+    persons,
+    relationships: arr(o.relationships, "$.relationships").map((x, i) => {
+      const r = obj(x, `$.relationships[${i}]`);
+      return {
+        from: int(r.from, `$.relationships[${i}].from`),
+        to: int(r.to, `$.relationships[${i}].to`),
+        role: str(r.role, `$.relationships[${i}].role`),
+        closeness: int(r.closeness, `$.relationships[${i}].closeness`),
+      };
+    }),
+    journal: arr(o.journal, "$.journal").map((x, i) => {
+      const e = obj(x, `$.journal[${i}]`);
+      return {
+        age: int(e.age, `$.journal[${i}].age`),
+        lines: arr(e.lines, `$.journal[${i}].lines`).map((l, j) =>
+          str(l, `$.journal[${i}].lines[${j}]`),
+        ),
+      };
+    }),
+    rngCounters: intRecord(o.rngCounters, "$.rngCounters"),
+    packVersions: arr(o.packVersions, "$.packVersions").map((x, i) => {
+      const v = obj(x, `$.packVersions[${i}]`);
+      return {
+        id: str(v.id, `$.packVersions[${i}].id`),
+        version: str(v.version, `$.packVersions[${i}].version`),
+      };
+    }),
+  };
+}

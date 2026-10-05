@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/loans.schema.json
+- id: student-loan
+  label: Student loan
+  icon: 🎓
+  rate: 4.5%
+  term_years: 10
+  secured: false
+- id: auto-loan
+  label: Auto loan
+  icon: 🚗
+  rate: 7%
+  term_years: 5
+  secured: true
+- id: mortgage
+  label: Mortgage
+  icon: 🏠
+  rate: 5.5%
+  term_years: 25
+  secured: true

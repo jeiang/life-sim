@@ -1,0 +1,87 @@
+# Core loop content (`core-loop` Pack)
+
+Decided in [Core loop content scope](https://github.com/jeiang/life-sim/issues/13). This is the content of the first playable, written as one Pack in the [Pack format](pack-format.md) and shown through the [screens](screens.md). Numbers marked "about" are targets for authoring; the balance harness tunes values such as salaries, prices, and chances.
+
+## Setting
+
+- One generic US-like setting: dollars (`$`, 2 minor-unit digits), US-style first and last names, and US school ages. There is no country model. Relocation and other countries are a later Pack, and multi-currency needs a Core release (ADR 0002).
+
+## Stats and qualities
+
+- Stats: Happiness, Health, Smarts, Looks (0-100; start ranges per BitLife: Happiness 50-100, Health 80-100, Smarts and Looks 0-100).
+- Qualities as needed by content (for example `years_worked`, `missed_payments`, `has_degree_<major>`), declared in the manifest.
+
+## Education (occupations, `school` exclusivity group)
+
+| Stage | Ages | Notes |
+|---|---|---|
+| Elementary school | 6-11 | Automatic |
+| High school | 12-17 | Automatic; graduation at 18 |
+| University (optional) | 18+, 4 years | 3-4 majors (for example business, engineering, nursing, arts). Tuition each year at settlement, paid in cash or by student loan, chosen at enrolment |
+
+- Verbs (Occupation menu): study harder; drop out (university only).
+- Graduate school (medical, law, business) is a later Pack that keys off majors.
+
+## Jobs (occupations, `full-time` and `part-time` exclusivity groups)
+
+About 12 jobs in 4 ladders, each rung with pay, requirements, and a promotion target:
+
+| Ladder | Example rungs | Requirement |
+|---|---|---|
+| Teen part-time | Cashier, Barista | Age 14+ |
+| Service | Server, Shift lead, Restaurant manager | Age 18+ |
+| Trades | Apprentice, Electrician, Master electrician | Age 18+, high school |
+| Professional | Junior analyst, Analyst, Senior analyst (or per major) | Matching degree |
+
+- Applying from the job board opens a two-question interview chain (`next:`), and the hire outcome is weighted by stats.
+- Yearly verbs: work harder, ask for a raise, quit.
+- Retirement at 60+: ends the job and starts a `Retired` occupation that pays a yearly pension based on years worked.
+
+## People
+
+- At birth: two parents and 0-2 siblings, generated from Pack data.
+- At school start: 2-3 classmates. At job start: 2 coworkers.
+- Verbs (Relationships menu, profile): spend time, conversation, ask for money (family), befriend (classmates, coworkers).
+- NPC yearly pass: aging, stat drift, and a few NPC storylets (for example a parent's illness or death).
+- No dating, marriage, or children (later Pack).
+
+## Shop and assets (`assets/shopping`)
+
+About 10 item kinds, bought through the purchase dialog:
+
+| Category | Items | Loan kind |
+|---|---|---|
+| Vehicles | Used bike, used car, new car | Auto loan (cars) |
+| Homes | Studio condo, house, big house | Mortgage |
+| Stuff | Phone, computer, jewellery, instrument | None (cash only) |
+
+- Asset values change each year at settlement (vehicles depreciate, homes appreciate slightly).
+- Selling an asset returns its current value.
+
+## Loans
+
+- Kinds: student loan, auto loan, mortgage. Each kind has a fixed rate and term; the payment is a fixed yearly amount deducted at settlement.
+- When cash is short, the player pays what they can. A "missed payment" storylet lowers happiness and adds the shortfall to the balance. After 3 misses in a row, the asset is repossessed: it is sold at current value against the debt.
+
+## Activities (`activities`)
+
+Gym, library, doctor, meditate, take a walk, and the job board. Each is an action storylet with age gates and stat effects. No casino; the amount picker is first used by the gambling Pack.
+
+## Storylets
+
+About 60, plus NPC and mortality storylets:
+
+| Kind | Count | Examples |
+|---|---|---|
+| Flavour events (weighted) | About 30, spread across childhood, teens, adulthood, old age | Learned to ride a bike; bad haircut |
+| Chance events | About 15 | Illness, windfall, accident, lottery scratch-card win |
+| Choice events | About 15, some with `next:` chains | Found wallet; a friend asks for a loan |
+
+## Death and the end of a life
+
+- A mortality storylet whose yearly chance rises with age and falls with health, plus a few accident and illness deaths among the chance events.
+- Death shows an obituary (age, cause, net worth, career, education), then the life moves to the graveyard. There is no heir and no continue-as-child.
+
+## Chart
+
+The first chart series is net worth over age (cash plus asset values minus loan balances), shown from the Assets menu and the player profile.

@@ -51,20 +51,11 @@ export function App() {
     <div class="@container mx-auto max-w-md bg-surface text-text">
       <div class="flex h-dvh @max-xs:h-auto @max-xs:min-h-dvh flex-col">
         <UpdateBanner />
-        {open ? (
-          <Screen id={open} />
-        ) : (
-          <>
-            <Header />
-            <Feed />
-            <StatPanel />
-            <BottomBar />
-          </>
-        )}
+        <SaveWarning />
+        <Screen />
         <ChoiceDialog />
         <PurchaseDialog />
         {import.meta.env.VITE_E2E ? <AmountPickerDemo /> : null}
-import { SaveWarning } from "./components/SaveWarning.tsx";
       </div>
     </div>
   );

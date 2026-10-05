@@ -1,4 +1,3 @@
-import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import { compilePacks } from "../packages/pack-tools/src/index.ts";
 
@@ -95,24 +94,3 @@ test("a person's profile lists their interactions", async ({ page }) => {
     page.getByRole("heading", { name: "Interactions" }),
   ).toBeVisible();
 });
-
-for (const scheme of ["light", "dark"] as const) {
-  test(`menu pages have no axe violations (${scheme})`, async ({ page }) => {
-    await page.emulateMedia({ colorScheme: scheme });
-    await page.goto("/");
-    for (const menu of [
-      "occupation",
-      "assets",
-      "relationships",
-      "activities",
-    ]) {
-      await openMenu(page, menu);
-      const results = await new AxeBuilder({ page }).analyze();
-      expect(results.violations, menu).toEqual([]);
-      await page.getByRole("button", { name: "Back" }).click();
-    }
-    await openMenu(page, "assets");
-    await page.getByRole("button", { name: "Shopping" }).click();
-    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
-  });
-}

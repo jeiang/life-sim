@@ -6,6 +6,7 @@ export {
   runAction,
 } from "./actions.ts";
 export { setAssertSink } from "./env.ts";
+export { playFixedLife } from "./fixed-life.ts";
 export {
   ageUp,
   canAgeUp,

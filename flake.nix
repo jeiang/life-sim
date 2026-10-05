@@ -152,7 +152,10 @@
               ''}
               export HOME=$TMPDIR
               export XDG_RUNTIME_DIR=$TMPDIR/xdg && mkdir -p -m 700 $XDG_RUNTIME_DIR
-              cd e2e && pnpm exec playwright test
+              (cd e2e && pnpm exec playwright test)
+              # Release guard: the plain build (no VITE_E2E) must not carry the e2e hooks.
+              pnpm --filter @life/web build
+              node --experimental-strip-types e2e/check-prod-bundle.ts apps/web/dist
             '';
             installPhase = "touch $out";
           };

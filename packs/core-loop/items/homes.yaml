@@ -4,20 +4,20 @@
   label: Studio condo
   icon: 🏢
   category: homes
-  price: 15000000
+  price: 12000000
   value: asset.purchase_price * (100 + 2 * asset.years) / 100
   loan: mortgage
 - id: house
   label: House
   icon: 🏠
   category: homes
-  price: 30000000
+  price: 25000000
   value: asset.purchase_price * (100 + 2 * asset.years) / 100
   loan: mortgage
 - id: big-house
   label: Big house
   icon: 🏡
   category: homes
-  price: 75000000
+  price: 60000000
   value: asset.purchase_price * (100 + 3 * asset.years) / 100
   loan: mortgage

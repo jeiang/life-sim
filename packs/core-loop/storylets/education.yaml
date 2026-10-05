@@ -119,12 +119,12 @@
   trigger: action
   menu: occupation/education
   tags: [education, university]
-  when: age >= 18 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_business
+  when: age >= 18 and age <= 24 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_business
   cooldown: 1
-  text: "Enrol in a four-year business degree? Tuition is $12,000 a year."
+  text: "Enrol in a four-year business degree? Tuition is $9,000 a year."
   choices:
     - label: Pay tuition in cash each year
-      when: money >= 1200000
+      when: money >= 900000
       outcomes:
         - weight: 1
           text: "You enrol and plan to pay tuition from your own pocket."
@@ -137,7 +137,7 @@
         - weight: 1
           text: "You enrol and sign for a student loan."
           effects:
-            - take_loan(core-loop/student-loan, 4800000)
+            - take_loan(core-loop/student-loan, 3600000)
             - quality.tuition_by_loan = true
             - start_occupation(core-loop/university-business)
             - journal("Enrolled in business at university with a student loan at age {age}.")
@@ -148,12 +148,12 @@
   trigger: action
   menu: occupation/education
   tags: [education, university]
-  when: age >= 18 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_engineering
+  when: age >= 18 and age <= 24 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_engineering
   cooldown: 1
-  text: "Enrol in a four-year engineering degree? Tuition is $14,000 a year."
+  text: "Enrol in a four-year engineering degree? Tuition is $10,000 a year."
   choices:
     - label: Pay tuition in cash each year
-      when: money >= 1400000
+      when: money >= 1000000
       outcomes:
         - weight: 1
           text: "You enrol and plan to pay tuition from your own pocket."
@@ -166,7 +166,7 @@
         - weight: 1
           text: "You enrol and sign for a student loan."
           effects:
-            - take_loan(core-loop/student-loan, 5600000)
+            - take_loan(core-loop/student-loan, 4000000)
             - quality.tuition_by_loan = true
             - start_occupation(core-loop/university-engineering)
             - journal("Enrolled in engineering at university with a student loan at age {age}.")
@@ -177,12 +177,12 @@
   trigger: action
   menu: occupation/education
   tags: [education, university]
-  when: age >= 18 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_nursing
+  when: age >= 18 and age <= 24 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_nursing
   cooldown: 1
-  text: "Enrol in a four-year nursing degree? Tuition is $11,000 a year."
+  text: "Enrol in a four-year nursing degree? Tuition is $8,000 a year."
   choices:
     - label: Pay tuition in cash each year
-      when: money >= 1100000
+      when: money >= 800000
       outcomes:
         - weight: 1
           text: "You enrol and plan to pay tuition from your own pocket."
@@ -195,7 +195,7 @@
         - weight: 1
           text: "You enrol and sign for a student loan."
           effects:
-            - take_loan(core-loop/student-loan, 4400000)
+            - take_loan(core-loop/student-loan, 3200000)
             - quality.tuition_by_loan = true
             - start_occupation(core-loop/university-nursing)
             - journal("Enrolled in nursing at university with a student loan at age {age}.")
@@ -206,12 +206,12 @@
   trigger: action
   menu: occupation/education
   tags: [education, university]
-  when: age >= 18 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_arts
+  when: age >= 18 and age <= 24 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_arts
   cooldown: 1
-  text: "Enrol in a four-year arts degree? Tuition is $10,000 a year."
+  text: "Enrol in a four-year arts degree? Tuition is $7,000 a year."
   choices:
     - label: Pay tuition in cash each year
-      when: money >= 1000000
+      when: money >= 700000
       outcomes:
         - weight: 1
           text: "You enrol and plan to pay tuition from your own pocket."
@@ -224,7 +224,7 @@
         - weight: 1
           text: "You enrol and sign for a student loan."
           effects:
-            - take_loan(core-loop/student-loan, 4000000)
+            - take_loan(core-loop/student-loan, 2800000)
             - quality.tuition_by_loan = true
             - start_occupation(core-loop/university-arts)
             - journal("Enrolled in arts at university with a student loan at age {age}.")

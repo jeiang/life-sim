@@ -18,6 +18,14 @@ _Avoid_: Mod, plugin, DLC
 The minimum playable cycle of one life: birth, aging up year by year, school, a job, money, shopping, and random events, until death.
 _Avoid_: MVP, base game
 
+**Pack manifest**:
+The declaration at the root of a pack: its id, version, dependencies, stats, qualities, exclusivity groups, year draw settings, and migrations.
+_Avoid_: Pack config, header
+
+**Pack migration**:
+A manifest entry that maps a renamed or removed content id to its replacement or fallback, so existing saves still load.
+_Avoid_: Save migration (that is a Core schema change), alias
+
 ### State
 
 **World**:
@@ -87,6 +95,18 @@ A storylet offered to the player in a menu.
 
 **Event**:
 A storylet drawn by the Core during an age-up.
+
+**Chance event**:
+An event that rolls independently each age-up at its own yearly probability.
+_Avoid_: Random event, rare event
+
+**Flavour slot**:
+One of the few places per age-up filled by drawing a weighted event from the eligible pool.
+_Avoid_: Filler, random slot
+
+**Expression**:
+A short formula in the pack language, used for conditions, weights, chances, and effect statements.
+_Avoid_: Script, code, rule
 
 **Effect**:
 One change a storylet outcome makes to the world, from a fixed set the Core defines; Packs cannot invent new kinds.

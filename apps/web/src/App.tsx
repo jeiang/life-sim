@@ -1,7 +1,9 @@
+import { AmountPickerDemo } from "./components/AmountPickerDemo.tsx";
 import { BottomBar } from "./components/BottomBar.tsx";
+import { ChoiceDialog } from "./components/ChoiceDialog.tsx";
 import { Feed } from "./components/Feed.tsx";
 import { Header } from "./components/Header.tsx";
-import { PendingNotice } from "./components/PendingNotice.tsx";
+import { PurchaseDialog } from "./components/PurchaseDialog.tsx";
 import { StatPanel } from "./components/StatPanel.tsx";
 import { UpdateBanner } from "./components/UpdateBanner.tsx";
 import { type PageId, page } from "./nav.ts";
@@ -26,7 +28,9 @@ export function App() {
             <BottomBar />
           </>
         )}
-        <PendingNotice />
+        <ChoiceDialog />
+        <PurchaseDialog />
+        {import.meta.env.VITE_E2E ? <AmountPickerDemo /> : null}
       </div>
     </div>
   );

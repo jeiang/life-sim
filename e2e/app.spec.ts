@@ -147,3 +147,133 @@ test("profile and net-worth chart open, describe the data, and pass axe", async 
   await page.getByRole("button", { name: "Back" }).click();
   await expect(ageButton(page)).toBeVisible();
 });
+
+type LifeHook = {
+  startChain3(): void;
+  openPurchase(id: string): void;
+  setMoney(n: number): void;
+};
+const hook = <K extends keyof LifeHook>(
+  page: Page,
+  name: K,
+  ...args: Parameters<LifeHook[K]>
+) =>
+  page.evaluate(
+    ([n, a]) =>
+      (
+        window as unknown as {
+          __life: Record<string, (...x: unknown[]) => void>;
+        }
+      ).__life[n as string]?.(...(a as unknown[])),
+    [name, args] as const,
+  );
+
+test("a 3-step next: chain completes in one modal with earlier outcomes shown above", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await hook(page, "startChain3");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toContainText("Chain step 1");
+  await expect(dialog.locator("ul")).toHaveCount(0);
+  const choose = () =>
+    dialog.getByRole("button").and(page.locator(":enabled")).first().click();
+  await choose();
+  await expect(dialog).toContainText("Chain step 2");
+  await expect(dialog.locator("li")).not.toHaveCount(0);
+  const afterFirst = await dialog.locator("li").count();
+  await choose();
+  await expect(dialog).toContainText("Chain step 3");
+  expect(await dialog.locator("li").count()).toBeGreaterThan(afterFirst);
+  // The chain is still one dialog, and Escape does not dismiss a pending event.
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeVisible();
+  await choose();
+  await expect(dialog).toBeHidden();
+});
+
+test("purchase dialog reflects affordability and loan terms, traps focus, returns focus", async ({
+  page,
+  browserName,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Settings" }).focus();
+  await hook(page, "setMoney", 0);
+  await hook(page, "openPurchase", "core-loop/studio-condo");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toContainText("Studio condo");
+  await expect(dialog.getByRole("button", { name: "Pay cash" })).toBeDisabled();
+  await expect(
+    dialog.getByRole("button", { name: "Take loan" }),
+  ).toBeDisabled();
+  await expect(dialog).toContainText("Down payment");
+  await expect(dialog).toContainText("a year");
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  // Focus stays inside the dialog (WebKit does not Tab to buttons by default).
+  for (let i = 0; i < (browserName === "webkit" ? 0 : 4); i++) {
+    await page.keyboard.press("Tab");
+    expect(
+      await dialog.evaluate((d) => d.contains(document.activeElement)),
+    ).toBe(true);
+  }
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(page.getByRole("button", { name: "Settings" })).toBeFocused();
+
+  // Enough for the 20% down payment but not the whole price.
+  await hook(page, "setMoney", 5_000_000);
+  await hook(page, "openPurchase", "core-loop/studio-condo");
+  await expect(dialog.getByRole("button", { name: "Pay cash" })).toBeDisabled();
+  await expect(dialog.getByRole("button", { name: "Take loan" })).toBeEnabled();
+  await page.keyboard.press("Escape");
+
+  // An item with no loan kind never offers one.
+  await hook(page, "setMoney", 20_000_000);
+  await hook(page, "openPurchase", "core-loop/used-bike");
+  await expect(dialog.getByRole("button", { name: "Pay cash" })).toBeEnabled();
+  await expect(
+    dialog.getByRole("button", { name: "Take loan" }),
+  ).toBeDisabled();
+  await page.keyboard.press("Escape");
+
+  await hook(page, "openPurchase", "core-loop/studio-condo");
+  await expect(dialog.getByRole("button", { name: "Pay cash" })).toBeEnabled();
+  await expect(dialog.getByRole("button", { name: "Take loan" })).toBeEnabled();
+  await dialog.getByRole("button", { name: "Take loan" }).click();
+  await expect(dialog).toBeHidden();
+});
+
+test("amount picker clamps to min/max/step and confirms or cancels", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const picked = () =>
+    page.evaluate(
+      () => (window as unknown as { __picked?: number | null }).__picked,
+    );
+  const open = () =>
+    page.evaluate(() =>
+      (
+        window as unknown as { __life: { pickAmount(...a: number[]): void } }
+      ).__life.pickAmount(10, 100, 5),
+    );
+  const dialog = page.getByRole("dialog");
+  await open();
+  const input = dialog.getByRole("spinbutton");
+  await expect(input).toBeFocused();
+  await input.fill("47");
+  await dialog.getByRole("button", { name: "Confirm" }).click();
+  await expect(dialog).toBeHidden();
+  expect(await picked()).toBe(45);
+  await open();
+  await dialog.getByRole("spinbutton").fill("5000");
+  await dialog.getByRole("spinbutton").press("Enter");
+  expect(await picked()).toBe(100);
+  await open();
+  await expect(dialog.getByRole("spinbutton")).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  expect(await picked()).toBeNull();
+});

@@ -10,7 +10,7 @@ export default defineConfig({
   use: { baseURL: `http://127.0.0.1:${port}` },
   webServer: {
     command:
-      "pnpm --filter @life/web build && node --experimental-strip-types serve.ts",
+      "VITE_E2E=1 pnpm --filter @life/web build && node --experimental-strip-types serve.ts",
     timeout: 180_000,
     url: `http://127.0.0.1:${port}`,
     reuseExistingServer: false,

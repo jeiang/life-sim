@@ -1,0 +1,130 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Note: actions cannot yet bind a chosen person (`scope` is events-only, and
+# `relationship(p)` only accepts persons bound by `spawn_person ... as p`), so the
+# verbs below act on the player's wider circle through stats, and the befriend
+# verbs spawn a person and set closeness on them.
+- id: spend-time-with-loved-ones
+  icon: 🫶
+  trigger: action
+  menu: relationships
+  tags: [relationship, spend-time]
+  cooldown: 1
+  text: "You set aside an afternoon for the people close to you."
+  outcomes:
+    - weight: 70
+      text: "You share a meal and plenty of laughs."
+      effects:
+        - stat.happiness += 4
+        - journal("Spent quality time with loved ones at age {age}.")
+    - weight: 20
+      text: "The time together is pleasant if unremarkable."
+      effects:
+        - stat.happiness += 2
+    - weight: 10
+      text: "You end up arguing over something small."
+      effects:
+        - stat.happiness -= 2
+
+- id: have-a-conversation
+  icon: 💬
+  trigger: action
+  menu: relationships
+  tags: [relationship, conversation]
+  when: age >= 3
+  cooldown: 1
+  text: "You strike up a conversation."
+  outcomes:
+    - weight: 60
+      text: "You have a warm, honest talk and learn something."
+      effects:
+        - stat.happiness += 2
+        - stat.smarts += 1
+    - weight: 30
+      text: "Small talk, but friendly."
+      effects:
+        - stat.happiness += 1
+    - weight: 10
+      text: "The conversation goes sideways and leaves you drained."
+      effects:
+        - stat.happiness -= 2
+
+- id: ask-parents-for-money
+  icon: 💵
+  trigger: action
+  menu: relationships
+  tags: [relationship, money, family]
+  when: age >= 6 and age < 30
+  cooldown: 2
+  text: "You ask your parents for some money."
+  outcomes:
+    - weight: 45
+      text: "They hand over some cash with a gentle reminder to be responsible."
+      effects:
+        - money += 2000
+        - journal("Got some money from the folks at age {age}.")
+    - weight: 30
+      text: "They give you a little, along with a lecture about saving."
+      effects:
+        - money += 500
+        - stat.happiness -= 1
+    - weight: 25
+      text: "They say no and suggest you earn it yourself."
+      effects:
+        - stat.happiness -= 3
+
+- id: make-a-friend-classmate
+  icon: 🤝
+  trigger: action
+  menu: relationships
+  tags: [relationship, befriend]
+  when: age >= 6 and age < 18
+  cooldown: 1
+  text: "You try to befriend someone at school."
+  outcomes:
+    - weight: 60 + stat.looks / 5
+      text: "You and {friend.first_name} {friend.last_name} hit it off."
+      effects:
+        - spawn_person(core-loop/friend, core-loop/classmate-gen) as friend
+        - relationship(friend).closeness += 25
+        - stat.happiness += 3
+        - journal("Made a new friend, {friend.first_name} {friend.last_name}, at age {age}.")
+    - weight: 40
+      text: "They seem busy and the moment passes."
+      effects:
+        - stat.happiness -= 1
+
+- id: make-a-friend-coworker
+  icon: 🤝
+  trigger: action
+  menu: relationships
+  tags: [relationship, befriend]
+  when: age >= 18
+  cooldown: 1
+  text: "You make an effort to get to know someone you work around."
+  outcomes:
+    - weight: 55 + stat.looks / 5
+      text: "You and {friend.first_name} {friend.last_name} swap stories over coffee."
+      effects:
+        - spawn_person(core-loop/friend, core-loop/coworker-gen) as friend
+        - relationship(friend).closeness += 25
+        - stat.happiness += 3
+        - journal("Befriended {friend.first_name} {friend.last_name} at age {age}.")
+    - weight: 45
+      text: "Conversation stalls and you part ways politely."
+
+- id: friend-from-nowhere
+  icon: 🧑‍🤝‍🧑
+  trigger: event
+  tags: [relationship, befriend]
+  weight: 6
+  when: age >= 6 and age < 18
+  cooldown: 3
+  text: "A kid in your class asks if you want to sit together."
+  outcomes:
+    - weight: 1
+      text: "You and {friend.first_name} {friend.last_name} start spending time together."
+      effects:
+        - spawn_person(core-loop/friend, core-loop/classmate-gen) as friend
+        - relationship(friend).closeness += 20
+        - stat.happiness += 3
+        - journal("Made a friend, {friend.first_name} {friend.last_name}, at age {age}.")

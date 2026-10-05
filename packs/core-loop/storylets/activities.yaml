@@ -1,0 +1,136 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+- id: go-to-gym
+  icon: 🏋️
+  trigger: action
+  menu: activities
+  tags: [activity, fitness]
+  when: age >= 12
+  cooldown: 1
+  text: "You head to the gym."
+  outcomes:
+    - weight: 55 + stat.health / 4
+      text: "A solid session. You leave sore, sweaty, and pleased with yourself."
+      effects:
+        - stat.health += 4
+        - stat.looks += 2
+        - stat.happiness += 2
+        - journal("Worked out at the gym at age {age}.")
+    - weight: 30
+      text: "You go through the motions, but it still beats staying on the couch."
+      effects:
+        - stat.health += 2
+        - journal("Had an average workout at the gym at age {age}.")
+    - weight: 10
+      text: "You overdo it and pull a muscle."
+      effects:
+        - stat.health -= 4
+        - stat.happiness -= 3
+        - journal("Pulled a muscle at the gym at age {age}.")
+    - weight: 5
+      text: "The gym is packed and you give up and go home."
+      effects:
+        - stat.happiness -= 1
+
+- id: visit-library
+  icon: 📚
+  trigger: action
+  menu: activities
+  tags: [activity, learning]
+  when: age >= 6
+  cooldown: 1
+  text: "You spend an afternoon at the library."
+  outcomes:
+    - weight: 60
+      text: "You read something that genuinely sticks with you."
+      effects:
+        - stat.smarts += 3
+        - stat.happiness += 1
+        - journal("Spent a productive afternoon at the library at age {age}.")
+    - weight: 30
+      text: "You skim a few books and enjoy the quiet."
+      effects:
+        - stat.smarts += 1
+        - stat.happiness += 2
+    - weight: 10
+      text: "You fall asleep over a book and wake up with a page-shaped imprint on your cheek."
+      effects:
+        - stat.happiness += 1
+        - stat.looks -= 1
+
+- id: see-doctor
+  icon: 🩺
+  trigger: action
+  menu: activities
+  tags: [activity, health]
+  when: money >= 5000
+  cooldown: 1
+  text: "You book a check-up. The visit costs $50."
+  outcomes:
+    - weight: 25 + (100 - stat.health) / 2
+      text: "The doctor finds a few things to fix and sends you home with a plan."
+      effects:
+        - money -= 5000
+        - stat.health += 8
+        - journal("Went to the doctor and got treated at age {age}.")
+    - weight: 45
+      text: "A clean bill of health. A little reassurance goes a long way."
+      effects:
+        - money -= 5000
+        - stat.health += 2
+        - stat.happiness += 2
+        - journal("Got a clean check-up at age {age}.")
+    - weight: 10
+      text: "The waiting room is crowded and the visit is mostly a blur of paperwork."
+      effects:
+        - money -= 5000
+        - stat.happiness -= 2
+
+- id: meditate
+  icon: 🧘
+  trigger: action
+  menu: activities
+  tags: [activity, mind]
+  when: age >= 10
+  cooldown: 1
+  text: "You find a quiet corner and sit still for a while."
+  outcomes:
+    - weight: 60
+      text: "Your thoughts settle and you feel lighter."
+      effects:
+        - stat.happiness += 4
+        - stat.health += 1
+        - journal("Meditated and felt calmer at age {age}.")
+    - weight: 30
+      text: "Your mind wanders, but the stillness helps a little."
+      effects:
+        - stat.happiness += 2
+    - weight: 10
+      text: "You can't stop thinking about your to-do list and give up."
+      effects:
+        - stat.happiness -= 1
+
+- id: take-a-walk
+  icon: 🚶
+  trigger: action
+  menu: activities
+  tags: [activity, outdoors]
+  when: age >= 4
+  cooldown: 1
+  text: "You step outside for a walk."
+  outcomes:
+    - weight: 60
+      text: "Fresh air and a nice route. You come home in a better mood."
+      effects:
+        - stat.happiness += 3
+        - stat.health += 2
+        - journal("Went for a pleasant walk at age {age}.")
+    - weight: 25
+      text: "You notice something new in the neighbourhood and smile about it."
+      effects:
+        - stat.happiness += 2
+        - stat.smarts += 1
+    - weight: 15
+      text: "It starts to rain and you get soaked."
+      effects:
+        - stat.happiness -= 1
+        - stat.health -= 1

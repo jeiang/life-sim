@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/people.schema.json
+- { kind: role, id: parent, label: Parent }
+- { kind: role, id: sibling, label: Sibling }
+- { kind: role, id: classmate, label: Classmate }
+- { kind: role, id: coworker, label: Coworker }
+- { kind: role, id: friend, label: Friend }
+- kind: generator
+  id: parent-gen
+  age: [22, 40]
+  stats:
+    happiness: [60, 100]
+    health: [50, 100]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names: [James, Mary, Robert, Patricia, John, Jennifer, Michael, Linda, David, Elizabeth, William, Barbara, Richard, Susan, Joseph, Jessica, Thomas, Sarah, Charles, Karen, Daniel, Nancy, Matthew, Lisa, Anthony, Betty, Mark, Margaret, Donald, Sandra, Steven, Ashley, Paul, Kimberly, Andrew, Emily, Joshua, Donna, Kenneth, Michelle, Kevin, Carol, Brian, Amanda, Edward, Melissa, George, Deborah, Ryan, Stephanie, Jacob, Rebecca, Nicholas, Laura, Eric, Cynthia, Tyler, Hannah, Aaron, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
+- kind: generator
+  id: sibling-gen
+  age: [0, 18]
+  stats:
+    happiness: [70, 100]
+    health: [50, 100]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names: [James, Mary, Robert, Patricia, John, Jennifer, Michael, Linda, David, Elizabeth, William, Barbara, Richard, Susan, Joseph, Jessica, Thomas, Sarah, Charles, Karen, Daniel, Nancy, Matthew, Lisa, Anthony, Betty, Mark, Margaret, Donald, Sandra, Steven, Ashley, Paul, Kimberly, Andrew, Emily, Joshua, Donna, Kenneth, Michelle, Kevin, Carol, Brian, Amanda, Edward, Melissa, George, Deborah, Ryan, Stephanie, Jacob, Rebecca, Nicholas, Laura, Eric, Cynthia, Tyler, Hannah, Aaron, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
+- kind: generator
+  id: classmate-gen
+  age: [6, 18]
+  stats:
+    happiness: [60, 100]
+    health: [50, 100]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names: [James, Mary, Robert, Patricia, John, Jennifer, Michael, Linda, David, Elizabeth, William, Barbara, Richard, Susan, Joseph, Jessica, Thomas, Sarah, Charles, Karen, Daniel, Nancy, Matthew, Lisa, Anthony, Betty, Mark, Margaret, Donald, Sandra, Steven, Ashley, Paul, Kimberly, Andrew, Emily, Joshua, Donna, Kenneth, Michelle, Kevin, Carol, Brian, Amanda, Edward, Melissa, George, Deborah, Ryan, Stephanie, Jacob, Rebecca, Nicholas, Laura, Eric, Cynthia, Tyler, Hannah, Aaron, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
+- kind: generator
+  id: coworker-gen
+  age: [18, 60]
+  stats:
+    happiness: [50, 100]
+    health: [40, 100]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names: [James, Mary, Robert, Patricia, John, Jennifer, Michael, Linda, David, Elizabeth, William, Barbara, Richard, Susan, Joseph, Jessica, Thomas, Sarah, Charles, Karen, Daniel, Nancy, Matthew, Lisa, Anthony, Betty, Mark, Margaret, Donald, Sandra, Steven, Ashley, Paul, Kimberly, Andrew, Emily, Joshua, Donna, Kenneth, Michelle, Kevin, Carol, Brian, Amanda, Edward, Melissa, George, Deborah, Ryan, Stephanie, Jacob, Rebecca, Nicholas, Laura, Eric, Cynthia, Tyler, Hannah, Aaron, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]

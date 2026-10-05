@@ -18,8 +18,8 @@ All checks are hermetic `checks.<system>.*` flake outputs, so `nix flake check` 
 | `vitest` | Unit tests for Core and Pack tooling. Playwright specs are excluded from Vitest collection |
 | `packs` | Compiles and validates all Packs (see [Pack format](pack-format.md#build-checks)) |
 | `versions` | Fails when npm pins for `@playwright/test` (and `@biomejs/biome`, if kept) differ from the nixpkgs versions |
-| `e2e` | Playwright on Chromium and WebKit against the built app, including the same-seed golden check |
-| balance harness | Added once [Balance harness scope](https://github.com/jeiang/life-sim/issues/20) is decided |
+| `e2e` | Playwright on Chromium and WebKit against the built app, plus the in-run determinism comparison of 20 seeded lives across Node, Chromium, and WebKit ([harness](harness.md#determinism-check-in-e2e)) |
+| `harness` | 1,000 seeded lives across player profiles. Fails on engine faults, and writes a balance report ([harness](harness.md)) |
 
 - Tool versions (Node, pnpm, Biome, Playwright browsers) come from `flake.lock`. Bumping nixpkgs is deliberate and fails `versions` until the npm pins match.
 - Playwright uses `PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}`.

@@ -48,9 +48,9 @@ Decided in [Screen kinds and main play layout](https://github.com/jeiang/life-si
 ## App screens (not Pack-driven)
 
 - Install card (iOS "Add to Home Screen" guidance; Android install button).
-- Settings: export lives, import lives, start a new life (the current one goes to the graveyard), credits (from the build's credits manifest).
+- Settings: export lives, import lives, credits (from the build's credits manifest).
 - Graveyard: finished lives as obituaries.
-- Life list: the ongoing lives to continue (several lives, ADR 0003).
+- Life list: the ongoing lives to continue, plus "start a new life", which adds a life to the list (several lives, ADR 0003). Only death moves a life to the graveyard.
 
 ## Menu ids
 

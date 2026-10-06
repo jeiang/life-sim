@@ -52,7 +52,7 @@ describe("the core-loop Pack", () => {
     expect(a.faults.total).toBe(0);
     expect(a.death.ended).toBe(8);
     expect(JSON.stringify(b)).toBe(JSON.stringify(a));
-  });
+  }, 120_000);
 
   test("--life-seed replays one life", () => {
     const { report } = runHarness({

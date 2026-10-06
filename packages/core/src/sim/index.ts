@@ -16,6 +16,7 @@ export {
   type SimResult,
   startStorylet,
 } from "./flow.ts";
+export { godSetMoney, godSetStat, isGodLife } from "./god.ts";
 export { type NetWorthPoint, recordNetWorth } from "./networth.ts";
 export {
   DEFAULT_FAMILY,

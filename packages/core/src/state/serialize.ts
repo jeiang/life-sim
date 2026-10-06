@@ -1,15 +1,17 @@
-import type {
-  ChoiceEntry,
-  Obituary,
-  ObituaryOccupation,
-  Occupation,
-  Pending,
-  Person,
-  QualityValue,
-  QueuedEvent,
-  ScopeRef,
-  StoryletRecord,
-  World,
+import {
+  type ChoiceEntry,
+  GENDERS,
+  type Gender,
+  type Obituary,
+  type ObituaryOccupation,
+  type Occupation,
+  type Pending,
+  type Person,
+  type QualityValue,
+  type QueuedEvent,
+  type ScopeRef,
+  type StoryletRecord,
+  type World,
 } from "./types.ts";
 
 /**
@@ -100,12 +102,19 @@ function occupation(v: unknown, p: string): Occupation {
   };
 }
 
+function gender(v: unknown, p: string): Gender {
+  return GENDERS.includes(v as Gender) ? (v as Gender) : fail(p, "gender");
+}
+
 function person(v: unknown, p: string): Person {
   const o = obj(v, p);
   return {
     id: int(o.id, `${p}.id`),
     givenName: str(o.givenName, `${p}.givenName`),
     familyName: str(o.familyName, `${p}.familyName`),
+    ...(o.gender === undefined
+      ? {}
+      : { gender: gender(o.gender, `${p}.gender`) }),
     age: int(o.age, `${p}.age`),
     alive: bool(o.alive, `${p}.alive`),
     stats: intRecord(o.stats, `${p}.stats`),
@@ -246,8 +255,29 @@ function choiceLog(v: unknown, p: string): ChoiceEntry[] {
       }
       case "sell":
         return { t, asset: int(o.asset, `${q}.asset`) };
+      case "start":
+        return {
+          t,
+          givenName: str(o.givenName, `${q}.givenName`),
+          familyName: str(o.familyName, `${q}.familyName`),
+          gender: gender(o.gender, `${q}.gender`),
+          stats: intRecord(o.stats, `${q}.stats`),
+          parents: int(o.parents, `${q}.parents`),
+          siblings: int(o.siblings, `${q}.siblings`),
+        };
+      case "god-stat":
+        return {
+          t,
+          stat: str(o.stat, `${q}.stat`),
+          value: int(o.value, `${q}.value`),
+        };
+      case "god-money":
+        return { t, value: int(o.value, `${q}.value`) };
       default:
-        return fail(`${q}.t`, "age, choose, action, buy or sell");
+        return fail(
+          `${q}.t`,
+          "age, choose, action, buy, sell, start, god-stat or god-money",
+        );
     }
   });
 }

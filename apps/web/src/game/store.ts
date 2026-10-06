@@ -2,11 +2,14 @@ import { bundles } from "virtual:packs";
 import {
   ageUp,
   type CompiledStorylet,
+  type CustomStart,
   canAgeUp,
   choose,
   describePending,
   endLife,
   type GraveyardEntry,
+  godSetMoney,
+  godSetStat,
   indexBundles,
   listShop,
   type NetWorthPoint,
@@ -241,7 +244,15 @@ export function confirmPurchase(mode: "cash" | "loan"): void {
 
 /** Add a new life to the list and play it. The current life stays in the list. */
 export function startNewLife(): void {
-  const w = newLife(bundles, randomSeed());
+  begin(newLife(bundles, randomSeed()));
+}
+
+/** God mode: start a life with the chosen starting options. */
+export function startCustomLife(custom: CustomStart): void {
+  begin(newLife(bundles, randomSeed(), { custom }));
+}
+
+function begin(w: World): void {
   currentLifeId.value = crypto.randomUUID();
   lastSaved = null;
   world.value = w;
@@ -371,6 +382,19 @@ export function runMenuAction(
   target?: number,
 ): string | null {
   return apply(() => runAction(world.value, bundles, actionId, target));
+}
+
+/** God mode: set a player stat (0-100). */
+export function editStat(stat: string, value: number): string | null {
+  return apply(() => ({
+    world: godSetStat(world.value, stat, value),
+    lines: [],
+  }));
+}
+
+/** God mode: set the player's money, minor units. */
+export function editMoney(value: number): string | null {
+  return apply(() => ({ world: godSetMoney(world.value, value), lines: [] }));
 }
 
 export function sellAsset(assetId: number): string | null {

@@ -2,6 +2,7 @@ import type { PackBundle } from "../pack.ts";
 import type { ChoiceEntry, World } from "../state/types.ts";
 import { runAction } from "./actions.ts";
 import { ageUp, choose } from "./flow.ts";
+import { godSetMoney, godSetStat } from "./god.ts";
 import { type NewLifeOptions, newLife } from "./new-life.ts";
 import { purchase, sell } from "./purchase.ts";
 
@@ -15,9 +16,13 @@ export function replay(
   log: readonly ChoiceEntry[],
   opts: NewLifeOptions = {},
 ): World {
-  let w = newLife(bundles, seed, opts);
-  for (const c of log) {
+  const first = log[0];
+  const start = first?.t === "start" ? first : undefined;
+  let w = newLife(bundles, seed, start ? { ...opts, custom: start } : opts);
+  for (const c of start ? log.slice(1) : log) {
     switch (c.t) {
+      case "start":
+        throw new RangeError("a start entry is only valid as the first choice");
       case "age":
         w = ageUp(w, bundles).world;
         break;
@@ -32,6 +37,12 @@ export function replay(
         break;
       case "sell":
         w = sell(w, bundles, c.asset).world;
+        break;
+      case "god-stat":
+        w = godSetStat(w, c.stat, c.value);
+        break;
+      case "god-money":
+        w = godSetMoney(w, c.value);
         break;
     }
   }

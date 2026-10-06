@@ -2,11 +2,13 @@ import { bundles } from "virtual:packs";
 import { useRef, useState } from "preact/hooks";
 import { ExportPanel } from "../components/ExportPanel.tsx";
 import { PageShell } from "../components/PageShell.tsx";
+import { godMode, setGodMode, tryUnlock } from "../game/god.ts";
 import {
   currentLifeId,
   getLifeStore,
   refreshLists,
   showLifeList,
+  world,
 } from "../game/store.ts";
 import { closeAllPages, closePage, openPage } from "../nav.ts";
 import {
@@ -78,9 +80,13 @@ function displayMode(): string {
   return standalone ? "Installed app" : "Browser tab";
 }
 
+const UNLOCK_TAPS = 7;
+
 function AboutInstall() {
+  const [taps, setTaps] = useState(0);
+  const [code, setCode] = useState("");
+  const [wrong, setWrong] = useState(false);
   const rows: [string, string][] = [
-    ["Build version", __BUILD_REV__],
     ["Storage", STORAGE_LABEL[persistState.value]],
     ["Display mode", displayMode()],
   ];
@@ -88,6 +94,18 @@ function AboutInstall() {
     <section class="space-y-2 rounded-xl bg-surface-raised p-4">
       <h2 class="font-bold">About this install</h2>
       <dl class="space-y-1 text-sm">
+        <div class="flex items-center justify-between gap-4">
+          <dt>Build version</dt>
+          <dd>
+            <button
+              type="button"
+              onClick={() => setTaps(taps + 1)}
+              class="min-h-11 font-semibold"
+            >
+              {__BUILD_REV__}
+            </button>
+          </dd>
+        </div>
         {rows.map(([name, value]) => (
           <div key={name} class="flex justify-between gap-4">
             <dt>{name}</dt>
@@ -95,6 +113,64 @@ function AboutInstall() {
           </div>
         ))}
       </dl>
+      {taps >= UNLOCK_TAPS && !godMode.value && (
+        <form
+          class="space-y-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void tryUnlock(code).then((ok) => {
+              setWrong(!ok);
+              if (ok) setCode("");
+            });
+          }}
+        >
+          <label class="block">
+            <span class="mb-1 block font-semibold">Code</span>
+            <input
+              value={code}
+              autoCapitalize="off"
+              autocomplete="off"
+              onInput={(e) => setCode(e.currentTarget.value)}
+              class="min-h-11 w-full rounded-xl border border-text-muted/50 bg-surface px-3"
+            />
+          </label>
+          {wrong && (
+            <p role="alert" class="text-sm text-danger">
+              That code is not right.
+            </p>
+          )}
+          <button
+            type="submit"
+            class="min-h-11 rounded-xl bg-action px-4 font-semibold text-on-action"
+          >
+            Unlock
+          </button>
+        </form>
+      )}
+    </section>
+  );
+}
+
+function GodSection() {
+  if (!godMode.value) return null;
+  return (
+    <section class="space-y-2 rounded-xl bg-surface-raised p-4">
+      <label class="flex min-h-11 items-center justify-between gap-4">
+        <span class="font-bold">God mode</span>
+        <input
+          type="checkbox"
+          role="switch"
+          aria-checked="true"
+          checked
+          onChange={() => setGodMode(false)}
+          class="size-6"
+        />
+      </label>
+      {currentLifeId.value !== null && !world.value.ended && (
+        <button type="button" class={linkClass} onClick={() => openPage("god")}>
+          Edit this life
+        </button>
+      )}
     </section>
   );
 }
@@ -136,6 +212,7 @@ export function SettingsPage() {
       >
         Credits
       </button>
+      <GodSection />
       <AboutInstall />
     </PageShell>
   );

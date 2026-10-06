@@ -9,7 +9,9 @@ export type PageId =
   | "relationships"
   | "activities"
   | "graveyard"
-  | "credits";
+  | "credits"
+  | "god"
+  | "customlife";
 
 /** The full-page screen on top of the play layout, or null. Menu pages replace the placeholder. */
 export const page = signal<PageId | null>(null);

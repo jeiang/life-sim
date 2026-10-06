@@ -11,6 +11,8 @@ import { currentLifeId, deathObituary, ready } from "./game/store.ts";
 import { type PageId, page } from "./nav.ts";
 import { ChartPage } from "./pages/ChartPage.tsx";
 import { CreditsPage } from "./pages/Credits.tsx";
+import { CustomLifePage } from "./pages/CustomLife.tsx";
+import { GodPanel } from "./pages/GodPanel.tsx";
 import { GraveyardPage } from "./pages/Graveyard.tsx";
 import { LivesPage } from "./pages/Lives.tsx";
 import { isMenuId, MenuPage } from "./pages/Menu.tsx";
@@ -25,6 +27,8 @@ function PageScreen(props: { id: PageId }) {
   if (props.id === "settings") return <SettingsPage />;
   if (props.id === "graveyard") return <GraveyardPage />;
   if (props.id === "credits") return <CreditsPage />;
+  if (props.id === "god") return <GodPanel />;
+  if (props.id === "customlife") return <CustomLifePage />;
   if (isMenuId(props.id)) return <MenuPage id={props.id} />;
   return <Placeholder id={props.id} />;
 }

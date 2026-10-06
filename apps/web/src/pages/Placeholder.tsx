@@ -11,6 +11,8 @@ const TITLES: Record<PageId, string> = {
   activities: "Activities",
   graveyard: "Graveyard",
   credits: "Credits",
+  god: "God mode",
+  customlife: "Custom life",
 };
 
 /** Stand-in full page with Back; each menu issue replaces its own page. */

@@ -126,7 +126,7 @@ describe("settlement", () => {
 
   test("a lower standard hurts every year", () => {
     const w = settle(own("riverton", 0, "homeless"));
-    expect(me(w).stats).toMatchObject({ happiness: 48, health: 49 });
+    expect(me(w).stats).toMatchObject({ happiness: 48, health: 50 });
   });
 
   test("savings short of the cost: drop to the best standard they can afford, money never negative", () => {

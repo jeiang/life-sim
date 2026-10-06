@@ -8,6 +8,9 @@ import {
 } from "../state/world.ts";
 import type { PackIndex } from "./pack-index.ts";
 
+/** Living costs and standard effects never apply below this age (a minor with no parent left). */
+const ADULT_AGE = 18;
+
 /** True while the person lives with their parents (see `Person.withParents`). */
 export function livesWithParents(p: Person): boolean {
   return p.withParents ?? p.age < 18;
@@ -83,7 +86,10 @@ export function standardCost(
 /** What the person pays now: 0 with parents, with housing provided, or without standards. */
 export function livingCost(p: Person, idx: PackIndex): number {
   const s = standardOf(p, idx);
-  return !s || livesWithParents(p) || housingProvided(p, idx)
+  return !s ||
+    p.age < ADULT_AGE ||
+    livesWithParents(p) ||
+    housingProvided(p, idx)
     ? 0
     : standardCost(p, idx, s);
 }
@@ -135,7 +141,13 @@ export function settleLiving(world: World, idx: PackIndex): World {
   const id = world.playerId;
   const p = getPerson(world, id);
   const chosen = chosenStandardOf(p, idx);
-  if (!p.alive || !chosen || livesWithParents(p) || housingProvided(p, idx))
+  if (
+    !p.alive ||
+    !chosen ||
+    p.age < ADULT_AGE ||
+    livesWithParents(p) ||
+    housingProvided(p, idx)
+  )
     return world;
   const before = standardOf(p, idx) as CompiledStandard;
   const money = Math.max(0, p.money);

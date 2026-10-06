@@ -116,7 +116,7 @@ Living with parents also ends by itself, with a journal line, once no parent is 
 
 The player on their own pays at settlement (after occupations pay, before loans): `cost x city cost index`, less `living.housing_share` of it when they own a home (an item of category `living.home_category`) in their current city. Homes record the city they were bought in; older saves read it as the owner's city. Moving does not sell a home, and a home in another city gives no waiver.
 
-The player chooses a standard (`set_standard(id)`, or the **Standard of living** action); moving out takes `living.default`, or the best standard they can afford. When savings cannot cover the chosen standard, they live the best one they can afford for that year, down to the cheapest (journaled), and the next age-up tries the chosen one again. Living costs never make money negative. Nothing is charged with parents. The lived standard's `happiness` and `health` then apply.
+The player chooses a standard (`set_standard(id)`, or the **Standard of living** action); moving out takes `living.default`, or the best standard they can afford. When savings cannot cover the chosen standard, they live the best one they can afford for that year, down to the cheapest (journaled), and the next age-up tries the chosen one again. Living costs never make money negative. Nothing is charged with parents or to a player under 18 (a minor whose last parent has died is not charged; a guardian situation comes later). The lived standard's `happiness` and `health` then apply.
 
 An occupation with `provides_housing: true` (for prison, boarding school, military) waives all of this while it is held: no cost, no standard effects, and `living.risk` reads 100%.
 

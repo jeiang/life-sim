@@ -92,6 +92,16 @@ describe("cost of living", () => {
     expect(noHomeHere).toBe(sameCityNoHome);
   });
 
+  test("a minor on their own (last parent dead) is never charged or downgraded", () => {
+    let w = own("riverton", 1_000, "wealthy");
+    w = updatePerson(w, 0, (p) => ({ ...p, age: 15 }));
+    expect(livingCost(me(w), idx)).toBe(0);
+    const after = settle(w);
+    expect(me(after).money).toBe(1_000);
+    expect(me(after).livedStandardId).toBe(std("wealthy"));
+    expect(me(after).stats).toMatchObject({ happiness: 50, health: 50 });
+  });
+
   test("nothing is charged with parents", () => {
     const w = updatePerson(own("riverton", 1e6), 0, (p) => ({
       ...p,

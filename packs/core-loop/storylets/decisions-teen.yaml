@@ -382,6 +382,7 @@
 - id: lottery-ticket
   icon: 🎟️
   trigger: event
+  tags: [wager]
   weight: 10
   when: age >= 18 and age <= 95 and money >= 500
   cooldown: 3

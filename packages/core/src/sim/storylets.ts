@@ -7,7 +7,7 @@ import type {
 import type { PersonId, QueuedEvent, ScopeRef, World } from "../state/types.ts";
 import { addJournalLine, getPerson, nextStream } from "../state/world.ts";
 import { applyEffects } from "./effects.ts";
-import { makeEnv, rolesOf, type Scope } from "./env.ts";
+import { makeEnv, reportOutcome, rolesOf, type Scope } from "./env.ts";
 import { confinementOf } from "./living.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import type { PackIndex } from "./pack-index.ts";
@@ -253,6 +253,10 @@ function runOutcome(
   const withBound: Scope = { ...scope, bound };
   // Effects run first so a `spawn_person ... as n` binding exists for the outcome text.
   w = applyEffects(w, idx, outcome.effects, scope, bound);
+  reportOutcome(
+    s.id,
+    getPerson(w, scope.subject).money - getPerson(w0, scope.subject).money,
+  );
   if (!w.ended) {
     const note = curve ? wearNote(curve, base.uses ?? 0) : "";
     if (outcome.text !== undefined) {

@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: harness-${{ github.event.pull_request.number || github.ref }}
+  group: harness-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -76,13 +76,20 @@ jobs:
 
       - name: Sticky PR comment
         # Fork PRs get a read-only token; the job summary above still has the numbers.
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const body = "<!-- harness-10k -->\n" + require("fs").readFileSync("out/summary.md", "utf8");
             const { owner, repo } = context.repo;
-            const issue_number = context.issue.number;
+            let issue_number = context.issue.number;
+            if (context.eventName === "workflow_dispatch") {
+              // Dispatched on a branch: comment on its open PR, if any.
+              const head = `${owner}:${context.ref.replace("refs/heads/", "")}`;
+              const { data: prs } = await github.rest.pulls.list({ owner, repo, head, state: "open" });
+              if (!prs.length) return;
+              issue_number = prs[0].number;
+            }
             const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
             const prev = comments.find((c) => c.body?.startsWith("<!-- harness-10k -->"));
             if (prev) await github.rest.issues.updateComment({ owner, repo, comment_id: prev.id, body });

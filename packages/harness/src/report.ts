@@ -412,7 +412,7 @@ const major = (n: number): number => Math.round(n / 100);
 
 export function renderMarkdown(
   r: Report,
-  meta: { seed: number; profiles: readonly ProfileName[]; seconds: number },
+  meta: { seed: number; profiles: readonly ProfileName[] },
 ): string {
   const L: string[] = [];
   L.push("# Balance harness report", "");
@@ -552,6 +552,5 @@ export function renderMarkdown(
     for (const [a, d] of Object.entries(row)) L.push(dRow(`age ${a}`, d));
     L.push("");
   }
-  L.push(`Run time: ${meta.seconds.toFixed(1)} s`, "");
   return L.join("\n");
 }

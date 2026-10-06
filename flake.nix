@@ -114,7 +114,7 @@
             '';
             installPhase = "touch $out";
           };
-          # 1,000 fixed seeds across the simulated profiles (docs/spec/harness.md). Fails only on engine faults; the report lands in $out.
+          # 1,000 fixed seeds across the simulated profiles, on every core the build gets (docs/spec/harness.md). Fails only on engine faults; the report lands in $out.
           harness = pkgs.stdenvNoCC.mkDerivation {
             name = "life-sim-check-harness";
             inherit src pnpmDeps;
@@ -123,7 +123,7 @@
             doCheck = true;
             checkPhase = ''
               mkdir -p $TMPDIR/report
-              node --experimental-strip-types packages/harness/src/cli.ts --lives 1000 --profile all --seed 20260101 --out $TMPDIR/report
+              node --experimental-strip-types packages/harness/src/cli.ts --lives 1000 --profile all --seed 20260101 --jobs "''${NIX_BUILD_CORES:-0}" --out $TMPDIR/report
             '';
             installPhase = "cp -r $TMPDIR/report $out";
           };

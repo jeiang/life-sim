@@ -24,20 +24,39 @@ export function lifeSeedFor(seed: number, i: number): number {
   return streamFor(seed, i, "harness/life-seed", 0).next32();
 }
 
+/** Lives [from, to) of the run, in order; lives past the run's end are skipped. */
+export function runLives(
+  bundles: readonly PackBundle[],
+  opts: Pick<HarnessOptions, "lives" | "profiles" | "seed" | "lifeSeed">,
+  from: number,
+  to: number,
+  onLife?: (r: LifeResult) => void,
+): LifeResult[] {
+  const profiles = opts.profiles.length > 0 ? opts.profiles : PROFILE_NAMES;
+  const out: LifeResult[] = [];
+  for (let i = from; i < to; i++) {
+    const seed = opts.lifeSeed ?? lifeSeedFor(opts.seed, i);
+    const profile = profiles[i % profiles.length] as ProfileName;
+    const r = runLife(bundles, seed, profile);
+    out.push(r);
+    onLife?.(r);
+  }
+  return out;
+}
+
+/** How many lives a run plays: one when replaying a life seed. */
+export const lifeCount = (opts: Pick<HarnessOptions, "lives" | "lifeSeed">) =>
+  opts.lifeSeed === undefined ? opts.lives : 1;
+
 export function runHarness(
   opts: HarnessOptions,
   onLife?: (r: LifeResult) => void,
 ): HarnessResult {
   const start = performance.now();
   const agg = new Aggregate(opts.bundles);
-  const profiles = opts.profiles.length > 0 ? opts.profiles : PROFILE_NAMES;
-  const n = opts.lifeSeed === undefined ? opts.lives : 1;
-  for (let i = 0; i < n; i++) {
-    const seed = opts.lifeSeed ?? lifeSeedFor(opts.seed, i);
-    const profile = profiles[i % profiles.length] as ProfileName;
-    const r = runLife(opts.bundles, seed, profile);
+  runLives(opts.bundles, opts, 0, lifeCount(opts), (r) => {
     agg.add(r);
     onLife?.(r);
-  }
+  });
   return { report: agg.report(), seconds: (performance.now() - start) / 1000 };
 }

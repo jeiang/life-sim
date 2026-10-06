@@ -172,6 +172,11 @@ export interface Person {
    * charged, no standard applies, and money and assets sit in trust (no shopping) until 18.
    */
   readonly withGuardian?: boolean;
+  /**
+   * Static job label and income tier of a person without a simulated career (set at spawn from
+   * a generator that declares jobs). Absent: none.
+   */
+  readonly job?: { readonly label: string; readonly tier: number };
 }
 
 export interface Relationship {

@@ -6,6 +6,14 @@ export {
   runAction,
 } from "./actions.ts";
 export {
+  enterRole,
+  inCareerRole,
+  incomeTier,
+  isJointSpouse,
+  jobLabelOf,
+  npcCareerYear,
+} from "./careers.ts";
+export {
   type DecisionDraw,
   makeEnv,
   setAssertSink,

@@ -21,6 +21,7 @@ import {
   type SaveFile,
   sell,
   serializeSave,
+  serializeWorld,
   setAssertSink,
   setChanceDropSink,
   setDecisionSink,
@@ -117,6 +118,11 @@ export interface LifeResult {
   readonly wagers: Readonly<
     Record<string, { plays: number; net: number; worst: number }>
   >;
+  /** Persons in the final world and how many of them (not the player) hold or held a job; null without a world. */
+  readonly persons: number | null;
+  readonly careers: number;
+  /** Length of the serialized final world, bytes (UTF-8 for the ASCII-only canonical text). */
+  readonly saveBytes: number;
   readonly loansOpened: number;
   readonly loansDefaulted: number;
   readonly repossessions: number;
@@ -513,6 +519,15 @@ export function runLife(
     capDrops,
     samples,
     wagers,
+    persons: final ? final.persons.size : null,
+    careers: final
+      ? [...final.persons.values()].filter(
+          (p) =>
+            p.id !== final.playerId &&
+            (p.occupations.length > 0 || p.occupationHistory.length > 0),
+        ).length
+      : 0,
+    saveBytes: final ? serializeWorld(final).length : 0,
     loansOpened: loanIds.size,
     loansDefaulted: defaulted.size,
     repossessions,

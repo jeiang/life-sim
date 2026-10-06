@@ -163,6 +163,62 @@ export const ManifestSchema = obj(
         "Starting family",
       ),
     ),
+    npc_careers: Type.Optional(
+      obj(
+        {
+          roles: Type.Array(Ref, {
+            minItems: 1,
+            description:
+              "Roles the player holds toward people who get a simulated career",
+          }),
+          start_age: Type.Integer({ minimum: 0 }),
+          retire_age: Type.Integer({ minimum: 0 }),
+          group: Type.String({
+            minLength: 1,
+            description: "Exclusivity group of the jobs NPCs hold",
+          }),
+          retired: Type.Optional(
+            Type.Union([Ref], {
+              description: "Occupation kind started at retirement",
+            }),
+          ),
+          hire: Type.String({
+            pattern: PERCENT,
+            description:
+              "Yearly chance an unemployed person with a work history is hired",
+          }),
+          promotion: Type.String({
+            pattern: PERCENT,
+            description:
+              "Yearly chance of a promotion once `promotion_years` are served",
+          }),
+          job_loss: Type.String({
+            pattern: PERCENT,
+            description: "Yearly chance of losing the job",
+          }),
+          tiers: Type.Array(Type.Integer({ minimum: 1 }), {
+            description:
+              "Ascending yearly-income thresholds in minor units; the income tier is how many are reached",
+          }),
+          education: Type.Optional(
+            Type.Array(
+              obj({
+                quality: Type.String({ minLength: 1 }),
+                chance: Type.String({
+                  pattern: PERCENT,
+                }),
+                needs: Type.Optional(Type.String({ minLength: 1 })),
+              }),
+              {
+                description:
+                  "Flag qualities rolled once when a career starts, in order; `needs` names a flag that must already be true",
+              },
+            ),
+          ),
+        },
+        "NPC careers",
+      ),
+    ),
     living: Type.Optional(
       obj(
         {
@@ -330,6 +386,12 @@ export const OccupationSchema = obj(
       Type.Boolean({
         description:
           "The work can be done from anywhere; `has_remote_job()` is true while one is held",
+      }),
+    ),
+    npc: Type.Optional(
+      Type.Literal(false, {
+        description:
+          "`false`: never assigned to an NPC career (creator, prison and similar special occupations)",
       }),
     ),
     provides_housing: Type.Optional(
@@ -557,6 +619,23 @@ export const PeopleSchema = Type.Union(
       last_names: Type.Array(Type.String({ minLength: 1 }), { minItems: 1 }),
       age: Range,
       stats: Type.Optional(Type.Record(Name, Range)),
+      jobs: Type.Optional(
+        Type.Array(
+          obj({
+            label: Label,
+            tier: Type.Integer({
+              minimum: 0,
+              description:
+                "Static income tier, 0 up to the number of `npc_careers.tiers`",
+            }),
+          }),
+          {
+            minItems: 1,
+            description:
+              "Static job labels with income tiers; a spawned person gets one at random (no simulated career)",
+          },
+        ),
+      ),
     }),
   ],
   { title: "People data: role or generator" },

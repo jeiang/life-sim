@@ -7,6 +7,7 @@ Decided in [Balance harness scope](https://github.com/jeiang/life-sim/issues/20)
 - `packages/harness`: a Node CLI that runs the same Core package and compiled Pack bundles as the app, with no UI.
 - `pnpm harness --lives N --profile <name> --seed <S>`: unlimited runs for local tuning (for example 100,000 lives).
 - `--jobs N` (default: the available cores; `0` also means the available cores): split the lives across `N` `node:worker_threads` workers. Each worker compiles the Packs once and plays batches of lives; results are merged in life order, so `report.md` and `report.json` are byte-identical for any `N` and identical to a single-thread run of the same seeds. Neither file records the run time (it varies); the CLI prints it. Faults found in a worker are reported with their life seed as before. `--jobs 1` runs in-process without workers.
+- The report's `population` block (and "Population per save" table) gives, per finished save, the persons in the world, the persons other than the player who hold or held a job (NPC careers, #131), and the serialized world size in bytes, each with p50, p99 and max.
 
 ## Full run in CI
 

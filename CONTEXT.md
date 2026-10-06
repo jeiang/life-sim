@@ -88,6 +88,13 @@ _Avoid_: Run, playthrough
 A role a person holds, such as student at a school or employee in a job, with a ladder, yearly pay or tuition, and performance. A person can hold several at once, limited by the exclusivity groups their kinds declare (for example one school, one full-time job). Past occupations remain on record as history. Packs test group membership with `in_group(g)` (currently holding one in the group) and `years_in_group(g)` (years across every occupation in the group, held or past); there is no effect that ends a whole group, so packs end occupations one by one with `end_occupation`.
 _Avoid_: Job, enrollment, career (as a model term)
 
+**NPC career**:
+The simulated job of a person the player holds a career role (`partner`, `spouse`, adult `child`) toward: a real occupation drawn from the Packs' entry rungs, paid yearly into that person's own money, with promotion, job loss and retirement rolls. It stops (record kept) when they leave the role. Other people only have a static job label and income tier.
+_Avoid_: Job simulation for parents, siblings, friends or coworkers (they are static)
+
+**Joint money**:
+Once a partner's money is merged into the player's (`merge_money()`, marriage without a prenup), their pay goes to the player. With a prenup it stays in `person.money`.
+
 **City**:
 A Pack-defined place to live, with a cost index (cost of living relative to the baseline), a wage index (pay multiplier) and a birth weight. Every life has one. Countries come later with the Relocation pack.
 _Avoid_: Town, location, region

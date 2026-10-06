@@ -18,6 +18,7 @@ import type {
   FamilyDecl,
   Gender,
   LivingDecl,
+  NpcCareersDecl,
   PackBundle,
   PackMigrations,
   QualityDecl,
@@ -74,7 +75,7 @@ function signedPercentBp(text: string): number {
   return text.startsWith("-") ? -percentBp(text.slice(1)) : percentBp(text);
 }
 
-/** The one Pack allowed to declare the singleton `year` and `family` blocks. */
+/** The one Pack allowed to declare the singleton `year`, `family` and `npc_careers` blocks. */
 const CORE_LOOP = "core-loop";
 
 export type Kind =
@@ -604,6 +605,7 @@ class PackCompiler {
       ...(m.repeat ? { repeat: this.manifestRepeat(m.repeat) } : {}),
       ...(m.family ? { family: this.family(m.family) } : {}),
       ...(m.living ? { living: this.living(m.living) } : {}),
+      ...(m.npc_careers ? { npcCareers: this.npcCareers(m.npc_careers) } : {}),
       migrations,
       ...bundle,
     };
@@ -631,6 +633,48 @@ class PackCompiler {
         generator: at("sibling", "generator", f.sibling.generator, "generator"),
         count: f.sibling.count as [number, number],
       },
+    };
+  }
+
+  private npcCareers(n: NonNullable<Manifest["npc_careers"]>): NpcCareersDecl {
+    const at = (raw: string, kind: Kind, ...path: (string | number)[]) =>
+      this.ref(raw, [kind], ["npc_careers", ...path]) ?? raw;
+    const flag = (q: string, ...path: (string | number)[]): string => {
+      if (this.baseNames[`quality.${q}`] !== "bool")
+        this.err(
+          ["npc_careers", ...path],
+          `'${q}' is not a declared flag quality`,
+        );
+      return q;
+    };
+    if (!this.groups.has(n.group))
+      this.err(
+        ["npc_careers", "group"],
+        `undeclared exclusivity group '${n.group}'`,
+      );
+    if (n.start_age >= n.retire_age)
+      this.err(
+        ["npc_careers", "retire_age"],
+        "retire_age must exceed start_age",
+      );
+    for (const [i, t] of n.tiers.entries())
+      if (i > 0 && t <= (n.tiers[i - 1] as number))
+        this.err(["npc_careers", "tiers", i], "tiers must be ascending");
+    return {
+      roles: n.roles.map((r, i) => at(r, "role", "roles", i)),
+      startAge: n.start_age,
+      retireAge: n.retire_age,
+      group: n.group,
+      ...(n.retired ? { retired: at(n.retired, "occupation", "retired") } : {}),
+      hireBp: percentBp(n.hire),
+      promotionBp: percentBp(n.promotion),
+      jobLossBp: percentBp(n.job_loss),
+      tiers: [...n.tiers],
+      education: (n.education ?? []).map((e, i) => ({
+        quality: flag(e.quality, "education", i, "quality"),
+        chanceBp: percentBp(e.chance),
+        ...(e.needs ? { needs: flag(e.needs, "education", i, "needs") } : {}),
+      })),
     };
   }
 
@@ -686,7 +730,7 @@ class PackCompiler {
       }
     }
     if (this.pack.id !== CORE_LOOP)
-      for (const key of ["year", "family"] as const)
+      for (const key of ["year", "family", "npc_careers"] as const)
         if (m[key])
           this.err(
             [key],
@@ -892,6 +936,8 @@ class PackCompiler {
         "person.role": "id",
         "person.alive": "bool",
         "person.closeness": "int",
+        "person.money": "int",
+        "person.income_tier": "int",
       };
       for (const s of this.statIds) n[`person.stat.${s}`] = "int";
       return n;
@@ -1261,6 +1307,7 @@ class PackCompiler {
     if (o.duration_years !== undefined) out.durationYears = o.duration_years;
     if (o.provides_housing) out.providesHousing = true;
     if (o.remote) out.remote = true;
+    if (o.npc === false) out.npc = false;
     if (o.confines) {
       const menus = o.confines.menus === true;
       const events = o.confines.events === true;
@@ -1499,6 +1546,9 @@ class PackCompiler {
       lastNames: p.last_names,
       age: p.age as [number, number],
       stats,
+      ...(p.jobs
+        ? { jobs: p.jobs.map((j) => ({ label: j.label, tier: j.tier })) }
+        : {}),
     } satisfies CompiledGenerator;
   }
 

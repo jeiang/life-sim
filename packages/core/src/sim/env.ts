@@ -12,6 +12,7 @@ import {
   type World,
 } from "../state/types.ts";
 import { getPerson } from "../state/world.ts";
+import { incomeTier } from "./careers.ts";
 import {
   confinementOf,
   costIndexOf,
@@ -125,6 +126,8 @@ function personField(
   if (field === "alive") return p.alive;
   if (field === "role") return roleOf(world, id) ?? "";
   if (field === "closeness") return closenessOf(world, id);
+  if (field === "money") return p.money;
+  if (field === "income_tier") return incomeTier(world, idx, id);
   if (field.startsWith("stat.")) return p.stats[field.slice(5)] ?? 0;
   if (field.startsWith("quality."))
     return qualityOf(p, idx, field.slice(8)) as Value;

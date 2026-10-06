@@ -148,6 +148,8 @@ export interface CompiledOccupationKind {
   readonly loan?: string;
   /** The work can be done from anywhere; read through `has_remote_job()`. */
   readonly remote?: boolean;
+  /** False: never assigned to NPC careers (creator, prison and similar special occupations). */
+  readonly npc?: false;
 }
 
 /**
@@ -301,6 +303,15 @@ export interface CompiledGenerator {
   readonly age: readonly [number, number];
   /** Stat id -> inclusive start range. */
   readonly stats: Readonly<Record<string, readonly [number, number]>>;
+  /** Static job labels with income tiers; a spawned person gets one drawn uniformly. Absent: none. */
+  readonly jobs?: readonly StaticJob[];
+}
+
+/** The job label and income tier of a person without a simulated career. */
+export interface StaticJob {
+  readonly label: string;
+  /** 0 up to the number of `npc_careers.tiers` thresholds. */
+  readonly tier: number;
 }
 
 export type CompiledPeopleItem = CompiledRole | CompiledGenerator;
@@ -327,6 +338,35 @@ export interface FamilyDecl {
     /** Inclusive count range. */
     readonly count: readonly [number, number];
   };
+}
+
+/** NPC careers (ADR 0002, 0003): who gets one and how it runs. All ids are full. */
+export interface NpcCareersDecl {
+  /** Roles the player holds toward people who get a simulated career. */
+  readonly roles: readonly string[];
+  /** Age from which a person in one of the roles works. */
+  readonly startAge: number;
+  /** Age at which they retire. */
+  readonly retireAge: number;
+  /** Exclusivity group of the jobs NPCs hold; entry kinds are the ones nothing promotes to. */
+  readonly group: string;
+  /** Occupation kind started at retirement (a pension). */
+  readonly retired?: string;
+  /** Yearly chance, basis points, that an unemployed person with a work history is hired. */
+  readonly hireBp: number;
+  /** Yearly chance, basis points, of a promotion once `promotion_years` are served. */
+  readonly promotionBp: number;
+  /** Yearly chance, basis points, of losing the job. */
+  readonly jobLossBp: number;
+  /** Ascending yearly-income thresholds, minor units; the tier is how many are reached. */
+  readonly tiers: readonly number[];
+  /** Qualities rolled once when a career starts, in order. */
+  readonly education: readonly {
+    readonly quality: string;
+    readonly chanceBp: number;
+    /** Flag quality that must already be true for this one to roll. */
+    readonly needs?: string;
+  }[];
 }
 
 export interface PackBundle {
@@ -357,6 +397,8 @@ export interface PackBundle {
   readonly repeat?: RepeatCurve;
   /** Starting family; ids are full. The first Pack that declares one wins. */
   readonly family?: FamilyDecl;
+  /** NPC careers; only Pack `core-loop` may declare it. */
+  readonly npcCareers?: NpcCareersDecl;
   readonly migrations: PackMigrations;
   /** All content below is sorted by id. */
   readonly storylets: readonly CompiledStorylet[];

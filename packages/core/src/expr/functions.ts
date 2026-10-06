@@ -79,6 +79,8 @@ export const ASSIGNABLE: Readonly<Record<string, readonly AssignOp[]>> = {
   stat: ["+=", "-=", "="],
   quality: ["+=", "="],
   money: ["+=", "-="],
+  /** Only `person.money`; the checker rejects every other `person.*` target. */
+  person: ["+=", "-="],
 };
 
 /** Pure function implementations, usable as the base of an evaluator function table. */

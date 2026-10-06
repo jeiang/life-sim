@@ -2,6 +2,7 @@ import { type Effect, type Expr, evaluate } from "../expr/index.ts";
 import type { World } from "../state/types.ts";
 import {
   addJournalLine,
+  addMoney,
   clamp,
   getPerson,
   putRelationship,
@@ -9,6 +10,7 @@ import {
   setStat,
   updatePerson,
 } from "../state/world.ts";
+import { enterRole } from "./careers.ts";
 import { makeEnv, qualityOf, type Scope } from "./env.ts";
 import { livesWithParents, startLivingOnOwn } from "./living.ts";
 import { grantUnit, removeHolding, tradeHolding } from "./market.ts";
@@ -57,14 +59,25 @@ function str(
 }
 
 /** Replace every role row `from` holds toward `to` with one `role` row at the highest closeness. */
-function setRole(w: World, from: number, to: number, role: string): World {
+function setRole(
+  w: World,
+  idx: PackIndex,
+  from: number,
+  to: number,
+  role: string,
+): World {
   const rows = w.relationships.filter((r) => r.from === from && r.to === to);
   if (rows.length === 0) return w;
   const closeness = Math.max(...rows.map((r) => r.closeness));
-  return putRelationship(
+  // The household state (together, merged money) belongs to the pair, not to the role.
+  const household = rows.some((r) => r.household === "merged")
+    ? "merged"
+    : rows.find((r) => r.household)?.household;
+  const next = putRelationship(
     { ...w, relationships: w.relationships.filter((r) => !rows.includes(r)) },
-    { from, to, role, closeness },
+    { from, to, role, closeness, ...(household ? { household } : {}) },
   );
+  return from === w.playerId ? enterRole(next, idx, to, role) : next;
 }
 
 function applyEffect(
@@ -88,7 +101,7 @@ function applyEffect(
         const role = str(e[2], w, idx, scope);
         if (!idx.roles.has(role))
           throw new RangeError(`unknown role '${role}'`);
-        return pid === undefined ? w : setRole(w, who, pid, role);
+        return pid === undefined ? w : setRole(w, idx, who, pid, role);
       }
       const delta = evalInt(e[2], w, idx, scope);
       const sign = e[0] === "sub" ? -1 : 1;
@@ -114,6 +127,10 @@ function applyEffect(
         }
         return out;
       }
+      if (target === "person.money")
+        return scope.person === undefined
+          ? w
+          : addMoney(w, scope.person, sign * delta);
       if (target === "money")
         return updatePerson(w, who, (p) => ({
           ...p,
@@ -142,7 +159,7 @@ function applyEffect(
       const gen = str(e[2], w, idx, scope);
       const [w2, pid] = spawnPerson(w, idx, who, role, gen);
       bound.set(e[3], pid);
-      return w2;
+      return who === w2.playerId ? enterRole(w2, idx, pid, role) : w2;
     }
     case "do": {
       const args = e.slice(2) as Expr[];

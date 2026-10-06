@@ -79,6 +79,11 @@
         "description": "The work can be done from anywhere; `has_remote_job()` is true while one is held",
         "type": "boolean"
       },
+      "npc": {
+        "description": "`false`: never assigned to an NPC career (creator, prison and similar special occupations)",
+        "const": false,
+        "type": "boolean"
+      },
       "provides_housing": {
         "description": "While held, no living cost is charged and the standard's effects do not apply (for example prison)",
         "type": "boolean"

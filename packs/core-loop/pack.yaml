@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
 id: core-loop
-version: 10
+version: 11
 currency:
   symbol: "$"
   digits: 2
@@ -56,6 +56,22 @@ family:
   player: sibling-gen
   parent: { role: parent, generator: parent-gen, count: 2 }
   sibling: { role: sibling, generator: sibling-gen, count: [0, 2] }
+npc_careers:
+  roles: [partner, spouse, child]
+  start_age: 18
+  retire_age: 65
+  group: full-time
+  retired: retired
+  hire: 40%
+  promotion: 30%
+  job_loss: 3%
+  tiers: [1500000, 3000000, 5000000, 8000000]
+  education:
+    - { quality: graduated_high_school, chance: 85% }
+    - { quality: has_degree_business, chance: 8%, needs: graduated_high_school }
+    - { quality: has_degree_engineering, chance: 6%, needs: graduated_high_school }
+    - { quality: has_degree_nursing, chance: 6%, needs: graduated_high_school }
+    - { quality: has_degree_arts, chance: 4%, needs: graduated_high_school }
 living:
   default: average
   housing_share: 40%

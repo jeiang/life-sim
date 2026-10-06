@@ -48,16 +48,18 @@ Agents prepare cornn-flaek PRs. Merging and deploying stay your explicit actions
 
 The code that opens Settings > Hidden options (god mode, 18+ mode) is checked in the browser with bcrypt against a hash given to the build as `VITE_HIDDEN_CODE_HASH`. The plain code is never in the repo, bundle, PRs or logs; the hash is in the bundle. A build without the variable shows no code field. The default package and the buildbot build leave it unset.
 
-Make a hash (cost 10 verifies in well under a second on a phone; `bcryptjs` is already a dependency):
+Make a hash with the helper (cost 12 by default; `COST=10` changes it). It reads the code without echo from a prompt, or from stdin (`printf '%s' "$code" | ...`) or env `CODE`, never from the command line, so the code stays out of shell history and `ps`. It prints only the hash:
 
 ```
-nix develop -c pnpm --filter @life/web exec node -e 'require("bcryptjs").hash(process.argv[1], 10).then(console.log)' 'the code'
+nix develop -c pnpm --filter @life/web --silent hash-code
 ```
+
+Cost 12 verifies in about 0.35 s in Node on a Mac (pure JS `bcryptjs`); phones are slower, so expect roughly 1 s there. Use `COST=10` (4x faster) if that feels long. Both `$2a$` and `$2b$` hashes verify.
 
 The cluster build (cornn-flaek `modules/edge/default.nix`) passes it by overriding the package:
 
 ```nix
-lifeSim = "${inputs.life-sim.packages.${system}.default.overrideAttrs (_: { VITE_HIDDEN_CODE_HASH = "$2b$10$..."; })}/dist";
+lifeSim = "${inputs.life-sim.packages.${system}.default.overrideAttrs (_: { VITE_HIDDEN_CODE_HASH = "$2b$12$..."; })}/dist";
 ```
 
 That derivation is not the one buildbot pushed to garret, so `just deploy alda --skip-checks --remote-build` builds it on the target (the pnpm dependencies still come from the cache). The e2e build uses a throwaway code and hash (`e2e/playwright.config.ts`).

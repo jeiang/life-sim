@@ -20,6 +20,20 @@ describe("verifyCode", () => {
     expect(await verifyCode("test-code", HASH)).toBe(true);
     expect(await verifyCode("  test-code ", HASH)).toBe(true);
   });
+  test("accepts a $2a$ hash of cost 12 (the same format as $2b$)", async () => {
+    expect(
+      await verifyCode(
+        "test-code",
+        "$2a$12$HX33cCeBVSl2s3iXlifgeeiRP.AFdTQNH2dRvXn5RjVDZyJH4loT6",
+      ),
+    ).toBe(true);
+    expect(
+      await verifyCode(
+        "other",
+        "$2a$12$HX33cCeBVSl2s3iXlifgeeiRP.AFdTQNH2dRvXn5RjVDZyJH4loT6",
+      ),
+    ).toBe(false);
+  });
   test("rejects a wrong code", async () => {
     expect(await verifyCode("nope", HASH)).toBe(false);
     expect(await verifyCode("TEST-CODE", HASH)).toBe(false);

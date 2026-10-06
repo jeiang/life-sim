@@ -35,6 +35,7 @@ packs/<pack-id>/
 ## Composition
 
 - Add-only. A Pack can add content and reference ids from the Packs it depends on. It cannot override or patch another Pack's content.
+- Stat and quality ids are bare and shared by every loaded Pack, so no two Packs may declare the same one. The compiler (and `indexBundles` at load) rejects a duplicate with an error naming both Packs and the id. Convention: a Pack prefixes its own qualities with its short name (`vac_`, `gambling_`, `moved_`). A quality several Packs need (for example `criminal_record`) is declared once in `core-loop`, and other Packs depend on `core-loop` and use it.
 - Content ids are permanent. A shipped id that disappears without a migration entry fails the build (compared against the previous release's id list).
 
 ## Storylet

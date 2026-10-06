@@ -22,6 +22,8 @@ Every choice comes from the seeded RNG, so a run is reproducible from its seed.
 | `studious` | Prefers study actions and university; accepts job offers |
 | `spender` | Buys whenever affordable, takes loans when offered |
 | `idle` | Takes no voluntary actions; answers events at random |
+| `investor` | From 18, keeps $10,000 in cash and puts the rest into a fixed mix of funds and government bonds each year, never selling; seeks work like `spender`; turns down every investing offer (tips, scams). Only acts when Pack `investing` is loaded |
+| `tipstacker` | Like `investor`, but asks every tip source (each relative and friend, the news, a book) each year, passes every tip on the spot and puts its spare cash into the kind most sources named. Its annualised return must stay within a few points of `investor`'s, else tip accuracy is tuned down |
 | `grinder` | 12 random repeatable actions a year, to stress diminishing returns; opt-in (`--profile grinder`), not part of `all` |
 | `gambler` | Four voluntary moves a year, all on the Gambling Pack's casino games and lottery (random game, amount uniform over the allowed grid); applies for work only when nothing is left to bet on. Answers events at random, never goes to support meetings |
 
@@ -49,6 +51,7 @@ It **reports** without failing, in `report.md` and `report.json` in the check ou
 - housing: age at moving out, share moved out and kicked out (of lives reaching 18), and share still living with their parents at 30 and 40, overall and per profile;
 - repeated activities: per repeatable action, uses per year lived, mean and maximum uses in a year it was used, and the share of those years past the full-effect and reduced ranges;
 - Vacations (only when Pack `vacations` is loaded): trips per life by price tier, trip spending as a share of gross earnings, travel deaths per 10,000 trips, and median net worth of travellers against non-travellers within each profile;
+- Investing (only when Pack `investing` is loaded): annualised and mean return per market kind, crash years (-20% or worse), delistings and bond default rate, tip and insider-tip accuracy against a random kind, and per profile participation, annualised return of the holdings, tips, scams and median net worth of investors against the rest;
 - stats at 100: share of living lives at the cap, per stat, by decade of age;
 - gambling (when the Gambling Pack is loaded): share of lives that staked anything and share ever addicted, per profile; addiction and recovery rates, bans and VIP rooms; lifetime stakes per gambler; and per game the bets, stakes, net change of cash and realised return (stakes plus net, over stakes). A gambling action that leaves cash below zero is an assertion fault;
 - stat distributions by age.

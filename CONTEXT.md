@@ -152,6 +152,14 @@ _Avoid_: Prompt slot, choice slot
 An action that can be done many times a year with diminishing returns: uses up to the manifest curve's `full` give the whole effect, uses up to `reduced` give a share (default a quarter) of every gain, later uses give none. Only gains shrink (positive stats and closeness); money, costs and harms never do. Counted per action (and per target person) per year, reset at age-up, held in life state as the **uses** counters.
 _Avoid_: Grind, spam, cooldown (the opposite rule)
 
+**Tip** (Investing Pack):
+A hint about one market kind from a **tip source**: each relative or friend (asked from the relationships menu), the financial news or an investing book (`activities/investing`). Each source gives at most one tip a year, about a kind the source draws, never the player: the kind's chance is a base weight tilted by its stored forecast and by the source's quality (a relative's smarts, the news, a book), so a tip is right more often than chance but never always. The player then chooses to put 5% or 25% of their cash into it, or pass. An **insider tip** is a rare outcome of asking a relative or friend: it names only a kind forecast to rise strongly, and acting on it records the player's age as `invest_insider_age` (for a later Crime Pack bridge to arrest the player years afterwards).
+_Avoid_: Advice, rumour
+
+**Scam** (Investing Pack):
+A decision event (Ponzi scheme, fake coin, guaranteed returns) that mostly costs a share of the player's cash. It draws by weight, which falls with smarts and with each scam already lost to (`invest_scams`).
+_Avoid_: Fraud event
+
 **Trip** (Vacations Pack):
 A solo vacation or cruise, a priced repeatable action in the `activities/travel` submenu. The player picks a **price tier** (1-5 steps of the amount picker, cheapest first; only affordable tiers are offered) and, for a vacation, a destination type (beach, city, mountains, theme park, abroad); better tiers shift weight from bad events to great ones. A trip's death outcome (about 1 in 10,000) has the cause "travel accident". Under 16 only a **family trip** decision exists (living with a parent; raises closeness with each living parent).
 _Avoid_: Holiday (use Trip), tier (alone)

@@ -27,9 +27,11 @@ import {
   settleLiving,
   standardOf,
   streamFor,
+  trade,
   type World,
   worldHash,
 } from "@life/core";
+import { type InvestLife, InvestTracker } from "./investing.ts";
 import {
   type Context,
   type Move,
@@ -121,6 +123,8 @@ export interface LifeResult {
   readonly kickedOut: boolean;
   /** Sum of positive occupation pay over the life (gross, minor units). */
   readonly earnings: number;
+  /** Market and holdings results; only when the Investing Pack is loaded. */
+  readonly invest?: InvestLife;
   /** Voluntary actions with an amount: per action id, times done per grid slot (index 0 is slot 1) and money put in. */
   readonly amountActions: Readonly<
     Record<
@@ -274,6 +278,9 @@ export function runLife(
   let earnings = 0;
   const amountActions: Record<string, { slots: number[]; spent: number }> = {};
   let w: World | null = null;
+  const invest = InvestTracker.wanted(bundles)
+    ? new InvestTracker(bundles)
+    : null;
 
   /** Note the age at which the player first stops living with their parents. */
   const noteHome = (): void => {
@@ -339,6 +346,7 @@ export function runLife(
           fault("assertion", `${m.id} left money below 0`);
       }
     } else if (m.t === "buy") w = purchase(w, bundles, m.kind, m.mode).world;
+    else if (m.t === "trade") w = trade(w, bundles, m.kind, m.amount).world;
     else w = sell(w, bundles, m.asset).world;
   };
 
@@ -391,7 +399,9 @@ export function runLife(
       const choicesBefore = firesIn(w, choiceIds);
       lastDraw = null;
       yearUses.push({ ...w.uses });
+      const settledFrom = w;
       w = ageUp(w, bundles).world;
+      invest?.year(settledFrom, w);
       age = playerOf(w).age;
       const draw = lastDraw as { queued: number; empty: number } | null;
       if (draw) yearDecisions.push({ age, ...draw });
@@ -515,5 +525,6 @@ export function runLife(
       0,
     earnings,
     amountActions,
+    ...(invest ? { invest: invest.result(final) } : {}),
   };
 }

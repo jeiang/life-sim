@@ -1,4 +1,10 @@
 import { DEFAULT_REPEAT, type PackBundle, type RepeatCurve } from "@life/core";
+import {
+  INVESTING_PACK,
+  type InvestingReport,
+  InvestStats,
+  renderInvesting,
+} from "./investing.ts";
 import type { ProfileName } from "./profiles.ts";
 import type { Fault, LifeResult } from "./run.ts";
 import {
@@ -217,6 +223,8 @@ export interface Report {
   };
   /** Vacations metrics; present only when the Pack is loaded and a trip was taken. */
   readonly vacations?: VacationsReport;
+  /** Investing metrics; present only when the Pack is loaded. */
+  readonly investing?: InvestingReport;
   /** Decade ages: stat id -> age -> distribution. */
   readonly statsByAge: Record<string, Record<string, Dist | null>>;
   /** Decade ages: stat id -> age -> percent of living lives with the stat at 100. */
@@ -298,6 +306,7 @@ export class Aggregate {
   private readonly bundles: readonly PackBundle[];
   private lives = 0;
   private readonly vacations: VacationStats | null;
+  private readonly investing: InvestStats | null;
   private readonly profile = new Map<
     string,
     { lives: number; faults: number; deathAges: number[]; nw40: number[] }
@@ -348,6 +357,9 @@ export class Aggregate {
     this.vacations = bundles.some((b) => b.id === VACATIONS_PACK)
       ? new VacationStats()
       : null;
+    this.investing = bundles.some((b) => b.id === INVESTING_PACK)
+      ? new InvestStats()
+      : null;
     const base = bundles.find((b) => b.repeat)?.repeat ?? DEFAULT_REPEAT;
     for (const b of bundles)
       for (const s of b.storylets)
@@ -357,6 +369,7 @@ export class Aggregate {
   add(r: LifeResult): void {
     this.lives++;
     this.vacations?.add(r);
+    this.investing?.add(r);
     const pf = this.profile.get(r.profile) ?? {
       lives: 0,
       faults: 0,
@@ -635,6 +648,7 @@ export class Aggregate {
         netWorth40: dist(p.nw40),
       };
     const vacations = this.vacations?.report();
+    const investing = this.investing?.report();
     return {
       lives: this.lives,
       profiles,
@@ -795,6 +809,7 @@ export class Aggregate {
         ),
       },
       ...(vacations ? { vacations } : {}),
+      ...(investing ? { investing } : {}),
       statsByAge,
       statsAt100,
     };
@@ -1070,6 +1085,7 @@ export function renderMarkdown(
     }
   }
   if (r.vacations) L.push(...renderVacations(r.vacations), "");
+  if (r.investing) L.push(...renderInvesting(r.investing), "");
   L.push(
     "## Stats at 100",
     "",

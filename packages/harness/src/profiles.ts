@@ -1,6 +1,8 @@
 import {
   type ActionRow,
+  getPerson,
   listActions,
+  listMarket,
   listShop,
   type PackBundle,
   type PendingView,
@@ -15,6 +17,8 @@ export const PROFILE_NAMES = [
   "spender",
   "idle",
   "gambler",
+  "investor",
+  "tipstacker",
 ] as const;
 /** Profiles that only run when asked for by name (`--profile grinder`), never in `all`. */
 export const EXTRA_PROFILE_NAMES = ["grinder"] as const;
@@ -37,7 +41,8 @@ export type Move =
       readonly kind: string;
       readonly mode: "cash" | "loan";
     }
-  | { readonly t: "sell"; readonly asset: number };
+  | { readonly t: "sell"; readonly asset: number }
+  | { readonly t: "trade"; readonly kind: string; readonly amount: number };
 
 /** What a profile may look at: the bundles' menu layout and the pure Core listings. */
 export interface Context {
@@ -242,8 +247,119 @@ const grinder: Profile = {
   pickChoice: uniformChoice,
 };
 
+const INVESTING = "investing/";
+/** Cash an investor keeps back for living costs, and the smallest trade worth making (minor units). */
+const BUFFER = 1_000_000;
+const MIN_TRADE = 50_000;
+/** The investor's target mix, percent of the portfolio by market kind. */
+const MIX: readonly (readonly [string, number])[] = [
+  ["investing/total-market", 50],
+  ["investing/world-index", 15],
+  ["investing/income-bond-fund", 10],
+  ["investing/corporate-bond-fund", 5],
+  ["investing/gov-bond-5", 10],
+  ["investing/gov-bond-10", 10],
+];
+const PASS = /^(pass|walk away)/i;
+
+const spareCash = (w: World): number => getPerson(w, w.playerId).money - BUFFER;
+
+/** Mostly the studious player's answers, but turns down every investing offer (tips, scams). */
+const prudentChoice: Profile["pickChoice"] = (view, enabled, rng) => {
+  if (view.storyletId.startsWith(INVESTING)) {
+    const pass = enabled.find((c) => PASS.test(c.label));
+    if (pass) return pass.index;
+  }
+  return studious.pickChoice(view, enabled, rng);
+};
+
+/** Looks for work, like the spender when it has nothing to put away. */
+function findWork(w: World, ctx: Context, rng: Rng): Move | null {
+  const jobs = unlockedActions(w, ctx).filter((r) => JOB.test(short(r.id)));
+  return jobs.length === 0 ? null : asMove(pick(jobs, rng), rng);
+}
+
+/** Buy-and-hold: puts spare cash into the `MIX` funds and bonds each year, and never sells. */
+const investor: Profile = {
+  maxMoves: () => 4,
+  nextMove(w, ctx, rng) {
+    const spare = spareCash(w);
+    const rows = listMarket(w, ctx.bundles);
+    if (spare >= MIN_TRADE) {
+      const held = (id: string) => rows.find((r) => r.id === id)?.value ?? 0;
+      const total = rows.reduce((n, r) => n + r.value, 0) + spare;
+      let best: { kind: string; deficit: number } | null = null;
+      for (const [kind, pct] of MIX) {
+        const row = rows.find((r) => r.id === kind);
+        if (!row || row.locked || row.price <= 0) continue;
+        const deficit = Math.trunc((total * pct) / 100) - held(kind);
+        if (!best || deficit > best.deficit) best = { kind, deficit };
+      }
+      if (best)
+        return {
+          t: "trade",
+          kind: best.kind,
+          amount: Math.min(spare, Math.max(MIN_TRADE, best.deficit)),
+        };
+    }
+    return findWork(w, ctx, rng);
+  },
+  pickChoice: prudentChoice,
+};
+
+const ASK = /^investing\/(ask-for-tip|read-the-news|read-investing-book)$/;
+const TIP = /^investing\/tip-(.+)$/;
+
+/** The tips heard this age, per life (profiles hold no state of their own, so it hangs off the life's stream). */
+const heard = new WeakMap<Rng, { age: number; kinds: Map<string, number> }>();
+const tipsOf = (rng: Rng, age: number): Map<string, number> => {
+  const h = heard.get(rng);
+  if (h && h.age === age) return h.kinds;
+  const fresh = { age, kinds: new Map<string, number>() };
+  heard.set(rng, fresh);
+  return fresh.kinds;
+};
+
+/**
+ * Asks every tip source (each relative and friend, the news, a book) once a year, passes every
+ * tip on the spot, and puts its spare cash into the kind most sources named (ties: lowest id).
+ */
+const tipstacker: Profile = {
+  maxMoves: () => 12,
+  nextMove(w, ctx, rng) {
+    const me = getPerson(w, w.playerId);
+    const spare = spareCash(w);
+    if (spare >= MIN_TRADE) {
+      const tips = tipsOf(rng, me.age);
+      const ask = unlockedActions(w, ctx).find((r) => ASK.test(r.id));
+      if (ask) return asMove(ask, rng);
+      const [kind] = [...tips].sort(
+        (a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1),
+      )[0] ?? [null];
+      if (kind) {
+        tips.clear();
+        const row = listMarket(w, ctx.bundles).find((r) => r.id === kind);
+        if (row && !row.locked && row.price > 0)
+          return { t: "trade", kind, amount: spare };
+      }
+    }
+    return findWork(w, ctx, rng);
+  },
+  pickChoice(view, enabled, rng) {
+    const m = TIP.exec(view.storyletId);
+    if (m) {
+      const me = heard.get(rng);
+      const kind = `${INVESTING}${m[1]}`;
+      me?.kinds.set(kind, (me.kinds.get(kind) ?? 0) + 1);
+    }
+    return prudentChoice(view, enabled, rng);
+  },
+};
+
 export const PROFILES: Record<ProfileName, Profile> = {
   grinder,
+  investor,
+  tipstacker,
   random,
   studious,
   spender,

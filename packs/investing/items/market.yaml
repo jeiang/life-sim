@@ -1,0 +1,131 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/items.schema.json
+# Market kinds, traded from the Investments screen (age 18+). Prices are per world year.
+# Index funds: the broad market (with rare crashes) and a global fund that follows it.
+- id: total-market
+  label: Total Market Index Fund
+  icon: 📈
+  category: investments
+  requires: age >= 18
+  market:
+    start: 10000
+    drift: 8%
+    vol: 16%
+    crash: { chance: 4%, drop: 35% }
+- id: world-index
+  label: World Index Fund
+  icon: 🌍
+  category: investments
+  requires: age >= 18
+  market:
+    start: 8500
+    drift: 2%
+    vol: 8%
+    beta: { of: total-market, factor: 75% }
+# Bond funds: steadier, lower returns.
+- id: income-bond-fund
+  label: Income Bond Fund
+  icon: 💵
+  category: investments
+  requires: age >= 18
+  market:
+    start: 5000
+    drift: 3%
+    vol: 3%
+- id: corporate-bond-fund
+  label: Corporate Bond Fund
+  icon: 🏦
+  category: investments
+  requires: age >= 18
+  market:
+    start: 4000
+    drift: 4.5%
+    vol: 6%
+    beta: { of: total-market, factor: 10% }
+# Fictional stocks: they follow the market, with company risk on top.
+- id: acme-robotics
+  label: Acme Robotics
+  icon: 🤖
+  category: investments
+  requires: age >= 18
+  market:
+    start: 4500
+    drift: 3%
+    vol: 22%
+    beta: { of: total-market, factor: 110% }
+- id: northwind-foods
+  label: Northwind Foods
+  icon: 🥫
+  category: investments
+  requires: age >= 18
+  market:
+    start: 8200
+    drift: 2%
+    vol: 15%
+    beta: { of: total-market, factor: 60% }
+- id: lumen-energy
+  label: Lumen Energy
+  icon: ⚡
+  category: investments
+  requires: age >= 18
+  market:
+    start: 1900
+    drift: 3%
+    vol: 28%
+    beta: { of: total-market, factor: 90% }
+# One coin: huge swings, deep crashes.
+- id: quark-coin
+  label: Quark Coin
+  icon: 🪙
+  category: investments
+  requires: age >= 18
+  market:
+    start: 250000
+    drift: 12%
+    vol: 35%
+    crash: { chance: 8%, drop: 40% }
+# Penny stocks: wild swings, an occasional 10x, and a real chance of being delisted to nothing.
+- id: pinecrest-mining
+  label: Pinecrest Mining
+  icon: ⛏️
+  category: investments
+  requires: age >= 18
+  market:
+    start: 250
+    drift: -20%
+    vol: 60%
+    jump: { chance: 1%, multiple: 10 }
+    delist: 6%
+- id: brightwave-labs
+  label: Brightwave Labs
+  icon: 🧪
+  category: investments
+  requires: age >= 18
+  market:
+    start: 180
+    drift: -15%
+    vol: 50%
+    jump: { chance: 1%, multiple: 10 }
+    delist: 5%
+# Government bonds: fixed yearly coupon, principal back at maturity, sellable early at market
+# price. One issuer for v1, so both carry the same small default chance (rolled per bond); a
+# default takes 60% of the remaining principal. A later country sets its own.
+- id: gov-bond-5
+  label: Government bond (5 years)
+  icon: 🏛️
+  category: investments
+  requires: age >= 18
+  market:
+    start: 10000
+    drift: 0%
+    vol: 1%
+    bond: { term: 5, coupon: 3%, default: 0.4%, loss: 60% }
+- id: gov-bond-10
+  label: Government bond (10 years)
+  icon: 🏛️
+  category: investments
+  requires: age >= 18
+  market:
+    start: 10000
+    drift: 0%
+    vol: 1%
+    bond: { term: 10, coupon: 4%, default: 0.4%, loss: 60% }

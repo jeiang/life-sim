@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
+id: investing
+version: 1
+depends: [core-loop]
+qualities:
+  # Age at which the player acted on an insider tip (0 = never). A later Crime Pack bridge reads it
+  # to arrest the player years afterwards.
+  - { id: invest_insider_age, type: int, min: 0, default: 0 }
+  # Scams the player has lost money to; each one makes the next offer less likely to be believed.
+  - { id: invest_scams, type: int, min: 0, default: 0 }

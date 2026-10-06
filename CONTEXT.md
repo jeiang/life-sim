@@ -136,6 +136,10 @@ _Avoid_: Prompt slot, choice slot
 An action that can be done many times a year with diminishing returns: uses up to the manifest curve's `full` give the whole effect, uses up to `reduced` give a share (default a quarter) of every gain, later uses give none. Only gains shrink (positive stats and closeness); money, costs and harms never do. Counted per action (and per target person) per year, reset at age-up, held in life state as the **uses** counters.
 _Avoid_: Grind, spam, cooldown (the opposite rule)
 
+**Trip** (Vacations Pack):
+A solo vacation or cruise, a priced repeatable action in the `activities/travel` submenu. The player picks a **price tier** (1-5 steps of the amount picker, cheapest first; only affordable tiers are offered) and, for a vacation, a destination type (beach, city, mountains, theme park, abroad); better tiers shift weight from bad events to great ones. A trip's death outcome (about 1 in 10,000) has the cause "travel accident". Under 16 only a **family trip** decision exists (living with a parent; raises closeness with each living parent).
+_Avoid_: Holiday (use Trip), tier (alone)
+
 **Expression**:
 A short formula in the pack language, used for conditions, weights, chances, and effect statements.
 _Avoid_: Script, code, rule

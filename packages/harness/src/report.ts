@@ -81,6 +81,22 @@ export interface Report {
     /** Mean choice events per life, by profile. */
     readonly meanPerLifeByProfile: Record<string, number>;
   };
+  /** Decision slots (Packs with `year.decisions`), over age-ups to age 5 or later. */
+  readonly decisions: {
+    readonly years: number;
+    /** Percent of those years with at least 1, 2 and 3 decisions queued. */
+    readonly atLeast1: number;
+    readonly atLeast2: number;
+    readonly atLeast3: number;
+    /** Slots that fired with no eligible decision, and the percent of years with one. */
+    readonly noEligible: number;
+    readonly noEligibleYearShare: number;
+    /** The same at-least shares by profile. */
+    readonly byProfile: Record<
+      string,
+      { atLeast1: number; atLeast2: number; atLeast3: number }
+    >;
+  };
   readonly death: {
     readonly ended: number;
     readonly unfinished: number;
@@ -142,6 +158,11 @@ export class Aggregate {
   private readonly choicePerLife5: number[] = [];
   private readonly choiceYearsPerLife5: number[] = [];
   private choiceYears5 = 0;
+  private decYears = 0;
+  private readonly decAtLeast = [0, 0, 0];
+  private decEmpty = 0;
+  private decEmptyYears = 0;
+  private readonly profileDec = new Map<string, number[]>();
   private choiceEvents5 = 0;
   private years5 = 0;
   private readonly stageYears: number[] = STAGES.map(() => 0);
@@ -228,6 +249,20 @@ export class Aggregate {
       const list = this.profileChoice.get(r.profile) ?? [];
       this.profileChoice.set(r.profile, list);
       list.push(all);
+    }
+    for (const y of r.yearDecisions) {
+      if (y.age < 5) continue;
+      const pd = this.profileDec.get(r.profile) ?? [0, 0, 0, 0];
+      this.profileDec.set(r.profile, pd);
+      pd[3] = (pd[3] as number) + 1;
+      this.decYears++;
+      for (let k = 0; k < 3; k++)
+        if (y.queued > k) {
+          this.decAtLeast[k] = (this.decAtLeast[k] as number) + 1;
+          pd[k] = (pd[k] as number) + 1;
+        }
+      this.decEmpty += y.empty;
+      if (y.empty > 0) this.decEmptyYears++;
     }
     for (const n of r.yearEvents) {
       this.eventHist[String(n)] = (this.eventHist[String(n)] ?? 0) + 1;
@@ -359,6 +394,26 @@ export class Aggregate {
             ]),
         ),
       },
+      decisions: {
+        years: this.decYears,
+        atLeast1: pct(this.decAtLeast[0] as number, this.decYears),
+        atLeast2: pct(this.decAtLeast[1] as number, this.decYears),
+        atLeast3: pct(this.decAtLeast[2] as number, this.decYears),
+        noEligible: this.decEmpty,
+        noEligibleYearShare: pct(this.decEmptyYears, this.decYears),
+        byProfile: Object.fromEntries(
+          [...this.profileDec]
+            .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+            .map(([k, v]) => [
+              k,
+              {
+                atLeast1: pct(v[0] as number, v[3] as number),
+                atLeast2: pct(v[1] as number, v[3] as number),
+                atLeast3: pct(v[2] as number, v[3] as number),
+              },
+            ]),
+        ),
+      },
       death: {
         ended: this.deathAges.length,
         unfinished: this.unfinished,
@@ -483,6 +538,19 @@ export function renderMarkdown(
     (a, b) => Number(a[0]) - Number(b[0]),
   ))
     L.push(`| ${k} | ${n} |`);
+  L.push(
+    "",
+    "## Decision slots",
+    "",
+    `Over ${r.decisions.years} age-ups to age 5 or later, years with at least 1 / 2 / 3 decisions: ${r.decisions.atLeast1}% / ${r.decisions.atLeast2}% / ${r.decisions.atLeast3}%.`,
+    "",
+    `Slots that fired with no eligible decision: ${r.decisions.noEligible} (${r.decisions.noEligibleYearShare}% of years).`,
+    "",
+    "| profile | at least 1 | at least 2 | at least 3 |",
+    "|---|---|---|---|",
+  );
+  for (const [k, v] of Object.entries(r.decisions.byProfile))
+    L.push(`| ${k} | ${v.atLeast1}% | ${v.atLeast2}% | ${v.atLeast3}% |`);
   L.push(
     "",
     "## Choice events",

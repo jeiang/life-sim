@@ -13,6 +13,7 @@ import {
   personsInIdOrder,
   updatePerson,
 } from "../state/world.ts";
+import { reportDecisions } from "./env.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import { indexBundles, type PackIndex } from "./pack-index.ts";
 import { settle } from "./settle.ts";
@@ -165,6 +166,78 @@ function ensureYearEntry(world: World, idx: PackIndex): World {
   return addJournalLine(w, age, quiet[rng.int(quiet.length)] as string);
 }
 
+const isDecision = (c: Candidate): boolean => c.storylet.choices.length > 0;
+
+/**
+ * Decision slots (`year.decisions`, basis points of "at least k decisions"). Slot k rolls only
+ * when slot k-1 fired, with probability p_k / p_{k-1}, so the run of hits reaches k with
+ * probability p_k. Chance choice events fill slots first; the rest draw one eligible choice
+ * storylet each by weight. Flavour slots draw from storylets without choices.
+ */
+function drawWithDecisions(
+  world: World,
+  idx: PackIndex,
+  cands: readonly Candidate[],
+  chance: readonly Candidate[],
+): [World, QueuedEvent[]] {
+  const probs = idx.year.decisions as readonly number[];
+  let w = world;
+  let fired = 0;
+  if (clockAge(w) >= (idx.year.decisionsMinAge ?? 0)) {
+    for (const [k, p] of probs.entries()) {
+      const prev = k === 0 ? 10000 : (probs[k - 1] as number);
+      if (prev <= 0) break;
+      const [w2, rng] = nextStream(w, clockAge(w), `decision-slot/${k + 1}`);
+      w = w2;
+      if (rng.int(prev) >= p) break;
+      fired++;
+    }
+  }
+  const taken = new Set(chance.map(keyOf));
+  const have = chance.filter(isDecision).length;
+  const need = Math.max(0, fired - have);
+  const pool = cands.filter((c) => isDecision(c) && !taken.has(keyOf(c)));
+  const decisions: Candidate[] = [];
+  for (let i = 0; i < need; i++) {
+    const [w2, drawn] = drawWeighted(
+      w,
+      idx,
+      pool,
+      1,
+      `decision-pick/${have + i + 1}`,
+    );
+    w = w2;
+    const pick = drawn[0];
+    if (!pick) break;
+    decisions.push(pick);
+    pool.splice(pool.indexOf(pick), 1);
+  }
+  const [lo, hi] = idx.year.slots;
+  let slots = lo;
+  if (hi > lo) {
+    const [w2, rng] = nextStream(w, clockAge(w), "year/slots");
+    w = w2;
+    slots = lo + rng.int(hi - lo + 1);
+  }
+  const [w3, flavour] = drawWeighted(
+    w,
+    idx,
+    cands.filter((c) => !taken.has(keyOf(c)) && !isDecision(c)),
+    slots,
+    "year/flavour",
+  );
+  const all = [...chance, ...decisions, ...flavour].slice(
+    0,
+    Math.max(0, idx.year.cap),
+  );
+  reportDecisions({
+    fired,
+    queued: all.filter(isDecision).length,
+    empty: need - decisions.length,
+  });
+  return [w3, all.map(asEvent)];
+}
+
 /** The player's events for this age-up: chance events first, then flavour slots, under the cap. */
 function drawEvents(world: World, idx: PackIndex): [World, QueuedEvent[]] {
   const cands = [
@@ -172,6 +245,7 @@ function drawEvents(world: World, idx: PackIndex): [World, QueuedEvent[]] {
     ...candidates(world, idx, "loan"),
   ];
   const [w1, chance] = rollChance(world, idx, cands);
+  if (idx.year.decisions) return drawWithDecisions(w1, idx, cands, chance);
   const [lo, hi] = idx.year.slots;
   let w = w1;
   let slots = lo;

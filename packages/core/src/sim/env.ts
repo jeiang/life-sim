@@ -91,6 +91,30 @@ export function setAssertSink(sink: ((message: string) => void) | null): void {
   assertSink = sink;
 }
 
+/** What the decision-slot draw did in one age-up (for the balance harness). */
+export interface DecisionDraw {
+  /** Slots that fired (the length of the unbroken run of hits). */
+  readonly fired: number;
+  /** Decisions queued: chance choice events plus decisions drawn into slots, under the cap. */
+  readonly queued: number;
+  /** Fired slots (after chance choice events counted) with no eligible decision to draw. */
+  readonly empty: number;
+}
+
+let decisionSink: ((draw: DecisionDraw) => void) | null = null;
+
+/** Report every decision-slot draw to `sink` (pack with `year.decisions` only); `null` stops. */
+export function setDecisionSink(
+  sink: ((draw: DecisionDraw) => void) | null,
+): void {
+  decisionSink = sink;
+}
+
+/** @internal Used by the year draw. */
+export function reportDecisions(draw: DecisionDraw): void {
+  decisionSink?.(draw);
+}
+
 /** Expression environment (ADR 0004) over the world. Only the whitelisted names exist. */
 export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
   const subject = getPerson(world, scope.subject);

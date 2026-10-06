@@ -84,6 +84,25 @@ export const ManifestSchema = obj(
           { description: "Flavour slot count range [min, max]" },
         ),
         cap: Type.Integer({ minimum: 0 }),
+        decisions: Type.Optional(
+          Type.Array(
+            Type.String({
+              pattern: "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$",
+              description: "Probability of at least this many decisions",
+            }),
+            {
+              minItems: 1,
+              description:
+                "Decision slots: chance of at least 1, 2, 3, ... decisions in a year (non-increasing percents)",
+            },
+          ),
+        ),
+        decisions_min_age: Type.Optional(
+          Type.Integer({
+            minimum: 0,
+            description: "Age reached from which decision slots roll",
+          }),
+        ),
         quiet: Type.Optional(
           Type.Array(Type.String({ minLength: 1 }), {
             minItems: 1,

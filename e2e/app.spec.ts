@@ -17,6 +17,8 @@ async function resolvePending(page: Page): Promise<void> {
 }
 
 test("ages up ten times, resolving every pending choice", async ({ page }) => {
+  // Several decisions a year make this the longest walk; slow software-rendered WebKit needs room.
+  test.setTimeout(120_000);
   await page.goto("/");
   await expect(
     page.getByRole("heading", { name: /^Age 0 years/i }),
@@ -257,6 +259,26 @@ test("a 3-step next: chain completes in one modal with earlier outcomes shown ab
   await expect(dialog).toBeVisible();
   await choose();
   await expect(dialog).toBeHidden();
+});
+
+test("queued decisions open one after another and age-up waits for the last", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await hook(page, "queueDecisions");
+  const dialog = page.getByRole("dialog");
+  const choose = () =>
+    dialog.getByRole("button").and(page.locator(":enabled")).first().click();
+  await expect(dialog).toContainText("Decision 1");
+  await expect(ageButton(page)).toBeDisabled();
+  await choose();
+  await expect(dialog).toContainText("Decision 2");
+  await expect(ageButton(page)).toBeDisabled();
+  await choose();
+  await expect(dialog).toContainText("Decision 3");
+  await choose();
+  await expect(dialog).toBeHidden();
+  await expect(ageButton(page)).toBeEnabled();
 });
 
 test("purchase dialog reflects affordability and loan terms, traps focus, returns focus", async ({

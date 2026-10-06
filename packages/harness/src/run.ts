@@ -16,6 +16,7 @@ import {
   sell,
   serializeSave,
   setAssertSink,
+  setDecisionSink,
   streamFor,
   type World,
   worldHash,
@@ -66,6 +67,14 @@ export interface LifeResult {
   readonly yearEvents: readonly number[];
   /** Choice events (event storylets that ask the player to pick) opened by each age-up, with the age reached. */
   readonly yearChoices: readonly { readonly age: number; readonly n: number }[];
+  /** Decision slots per age-up (with the age reached); only from Packs that declare `year.decisions`. */
+  readonly yearDecisions: readonly {
+    readonly age: number;
+    /** Decisions queued (chance choice events included). */
+    readonly queued: number;
+    /** Slots that fired with nothing eligible to draw. */
+    readonly empty: number;
+  }[];
   readonly samples: readonly YearSample[];
   readonly loansOpened: number;
   readonly loansDefaulted: number;
@@ -160,6 +169,11 @@ export function runLife(
 
   const yearEvents: number[] = [];
   const yearChoices: { age: number; n: number }[] = [];
+  const yearDecisions: { age: number; queued: number; empty: number }[] = [];
+  let lastDraw: { queued: number; empty: number } | null = null;
+  setDecisionSink((d) => {
+    lastDraw = d;
+  });
   const choiceIds = new Set<string>();
   for (const b of bundles)
     for (const st of b.storylets)
@@ -246,8 +260,11 @@ export function runLife(
       const loansBefore = playerOf(w).loans;
       const firesBefore = totalFires(w);
       const choicesBefore = firesIn(w, choiceIds);
+      lastDraw = null;
       w = ageUp(w, bundles).world;
       age = playerOf(w).age;
+      const draw = lastDraw as { queued: number; empty: number } | null;
+      if (draw) yearDecisions.push({ age, ...draw });
       if (!resolve()) break;
       yearEvents.push(totalFires(w) - firesBefore);
       yearChoices.push({ age, n: firesIn(w, choiceIds) - choicesBefore });
@@ -278,6 +295,7 @@ export function runLife(
     fault("exception", describeError(e));
   } finally {
     setAssertSink(null);
+    setDecisionSink(null);
   }
 
   const final = w;
@@ -294,6 +312,7 @@ export function runLife(
     fires: final ? firesById(final) : {},
     yearEvents,
     yearChoices,
+    yearDecisions,
     samples,
     loansOpened: loanIds.size,
     loansDefaulted: defaulted.size,

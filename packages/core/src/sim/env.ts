@@ -143,7 +143,9 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
       if (path === "city.label")
         return (subject.cityId && idx.cities.get(subject.cityId)?.label) || "";
       if (path === "city.country")
-        return (subject.cityId && idx.cities.get(subject.cityId)?.country) || "";
+        return (
+          (subject.cityId && idx.cities.get(subject.cityId)?.country) || ""
+        );
       if (path === "city.id") return subject.cityId ?? "";
       if (path === "living.with_parents") return livesWithParents(subject);
       if (path.startsWith("loan.") && scope.loan) {

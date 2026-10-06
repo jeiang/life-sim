@@ -114,6 +114,21 @@ describe("cities and living situation", () => {
     ).toThrow();
   });
 
+  test("a god-mode custom start can fix the birth city and replays", () => {
+    const custom = {
+      givenName: "Ada",
+      familyName: "Lovelace",
+      gender: "female" as const,
+      stats: {},
+      parents: 2,
+      siblings: 0,
+      cityId: "core-loop/dustwater",
+    };
+    const w = newLife(bundles, 5, { custom });
+    expect(player(w).cityId).toBe("core-loop/dustwater");
+    expect(worldHash(replay(5, bundles, w.choiceLog))).toBe(worldHash(w));
+  });
+
   test("birth cities follow the weights over many seeds", () => {
     const seen = new Set<string>();
     for (let s = 0; s < 200; s++)

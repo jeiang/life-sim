@@ -3,7 +3,8 @@
  * evaluator agree. Adding one is a Core release (ADR 0002, ADR 0004).
  */
 
-export type Type = "int" | "bool" | "string" | "id";
+/** `group` is an exclusivity group declared in a manifest (a bare word or a string literal). */
+export type Type = "int" | "bool" | "string" | "id" | "group";
 
 export interface Signature {
   readonly params: readonly Type[];
@@ -25,6 +26,8 @@ export const FUNCTIONS = {
   role_closeness: { params: ["id"], returns: "int" },
   /** Living people the player holds this role toward. */
   role_count: { params: ["id"], returns: "int" },
+  in_group: { params: ["group"], returns: "bool" },
+  years_in_group: { params: ["group"], returns: "int" },
 } as const satisfies Record<string, Signature>;
 
 /** Effect calls (statements with arguments). `spawn_person(...) as <name>` is parsed separately. */

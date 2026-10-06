@@ -369,6 +369,15 @@ describe("build checks fail", () => {
       { "base/occupations/jobs.yaml": sub("group: school", "group: nope") },
       "undeclared exclusivity group 'nope'",
     );
+    expectError(
+      {
+        "base/storylets/work.yaml": sub(
+          "not has_occupation(cashier)",
+          'not in_group("nope")',
+        ),
+      },
+      "undeclared exclusivity group 'nope'",
+    );
   });
 
   test("a reference to a Pack that is not a dependency", () => {

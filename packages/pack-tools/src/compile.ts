@@ -154,6 +154,9 @@ const CALL_KINDS: Record<string, Kind[][] | undefined> = {
   spawn_person: [["role"], ["generator"]],
 };
 
+/** Functions whose one argument names an exclusivity group, not a content id. */
+const GROUP_FUNCTIONS = new Set(["in_group", "years_in_group"]);
+
 const PLAYER_NAMES: Record<string, ExprType> = {
   age: "int",
   money: "int",
@@ -757,6 +760,17 @@ class PackCompiler {
     if (tag === "id") {
       const full = this.ref(e[1] as string, kinds, path);
       return full ? ["id", full] : undefined;
+    }
+    if (tag === "call" && GROUP_FUNCTIONS.has(e[1] as string)) {
+      const g = (e[2] as unknown as readonly string[])[1] as string;
+      if (!this.groups.has(g)) {
+        this.err(
+          path,
+          `undeclared exclusivity group '${g}'; declared: ${[...this.groups].sort().join(", ") || "none"}`,
+        );
+        return undefined;
+      }
+      return e;
     }
     if (tag === "call") {
       const args = (e.slice(2) as Expr[]).map((a, i) =>

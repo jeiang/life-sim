@@ -111,6 +111,23 @@ describe("AST shape", () => {
       ],
     });
   });
+  test("group arguments are bare words or strings", () => {
+    const want = {
+      ok: true,
+      ast: ["call", "years_in_group", ["id", "full-time"]],
+    };
+    expect(compileExpr('years_in_group("full-time")', env, "int")).toEqual(
+      want,
+    );
+    expect(compileExpr("in_group(school)", env, "bool")).toEqual({
+      ok: true,
+      ast: ["call", "in_group", ["id", "school"]],
+    });
+    const bad = compileExpr("in_group(5)", env, "bool");
+    expect(!bad.ok && bad.errors[0]?.message).toContain(
+      "exclusivity group name",
+    );
+  });
   test("percent literals are basis points; negative literals fold", () => {
     expect(compileExpr("-2.5%", env, "int")).toEqual({ ok: true, ast: -250 });
   });

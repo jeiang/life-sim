@@ -94,7 +94,7 @@ Targets: `random`: no stat over 10% at 100 at ages 30-60 and over 15% at age 20 
 
 Baseline (pre-#106, commit 0fbc9f76 plus the metric; `random`, 3,000 lives, seed 20260101): share at 100 at ages 20 / 30 / 50 / 70: happiness 29 / 20 / 16 / 30%, health 2.5 / 5 / 5 / 3%, looks 0.8 / 1 / 8 / 17%, smarts 19 / 26 / 40 / 51%. With repeatables untuned (#122, same run) it was almost identical (happiness 30 / 25 / 23 / 40%, smarts 19 / 27 / 40 / 51%), so the repeatables did not cause the saturation: stats start at random values, nothing pulled them down, and decisions and events only add. `grinder` untuned: happiness 46 / 45 / 45%, health 49 / 56 / 54%, smarts 95-100% from age 20 (ages 20 / 30 / 50).
 
-Changes (pack version 8):
+Changes (pack version 9):
 - Default curve `repeat` is now `{ full: 3, reduced: 8, factor: 25% }` (was 10 / 20): a year of 10 library visits is no longer 10 full uses.
 - `have-a-conversation` no longer gives `smarts +1`; the biggest sink for grinders (every relative counts apart).
 - Three new yearly events that pull a high stat down: `mind-wanders` (age 10+, smarts over 65, 50%, -2), `looks-fade` (age 30+, looks over 60, 40%, -1), `wear-and-tear` (age 30+, health over 90, 40%, -3); `everyday-stress` rises from 60% to 85%.

@@ -107,6 +107,7 @@ function personField(
   const p = getPerson(world, id);
   if (field === "first_name") return p.givenName;
   if (field === "last_name") return p.familyName;
+  if (field === "gender") return p.gender ?? "";
   const pronoun = pronounOf(p.gender, field);
   if (pronoun !== undefined) return pronoun;
   if (field === "age") return p.age;

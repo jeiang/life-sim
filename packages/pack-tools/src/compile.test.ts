@@ -439,6 +439,15 @@ describe("build checks fail", () => {
       }),
     );
     expect(ok.diagnostics.map(formatDiagnostic)).toEqual([]);
+    const cond = compilePacks(
+      fixture({
+        "base/storylets/work.yaml": sub(
+          "person.age > 50",
+          'person.gender == "female" and player.gender != "male" and person.age > 50',
+        ),
+      }),
+    );
+    expect(cond.diagnostics.map(formatDiagnostic)).toEqual([]);
     expectError(
       {
         "base/storylets/work.yaml": sub(

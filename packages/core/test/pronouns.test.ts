@@ -67,6 +67,18 @@ describe("person gender", () => {
     ).toBe("They/them/their");
   });
 
+  test("gender is readable as a string; absent reads empty", () => {
+    const w0 = newLife(bundles, 1);
+    const w = updatePerson(w0, w0.playerId, (p) => ({
+      ...p,
+      gender: "female",
+    }));
+    const none = updatePerson(w0, w0.playerId, ({ gender: _g, ...p }) => p);
+    const sc = { subject: w.playerId };
+    expect(renderText("{player.gender}", w, idx, sc)).toBe("female");
+    expect(renderText("[{player.gender}]", none, idx, sc)).toBe("[]");
+  });
+
   test("a gender-less person survives a save round trip", () => {
     const w0 = newLife(bundles, 1);
     const w = updatePerson(w0, w0.playerId, ({ gender: _g, ...p }) => p);

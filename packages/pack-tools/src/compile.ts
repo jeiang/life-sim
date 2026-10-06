@@ -160,7 +160,10 @@ const GROUP_FUNCTIONS = new Set(["in_group", "years_in_group"]);
 /** `<prefix>.subject`, `<prefix>.Subject`, ... as string names. */
 function pronounNames(prefix: string): Record<string, ExprType> {
   return Object.fromEntries(
-    PRONOUN_FIELDS.map((f) => [`${prefix}.${f}`, "string" as const]),
+    [...PRONOUN_FIELDS, "gender"].map((f) => [
+      `${prefix}.${f}`,
+      "string" as const,
+    ]),
   );
 }
 

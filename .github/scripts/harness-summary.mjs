@@ -10,7 +10,10 @@ const b = basePath ? load(basePath) : undefined;
 const major = (minor) => (minor === undefined ? "-" : Math.round(minor / 100));
 const rows = [
   ["median age at death", (x) => x.death.age?.p50],
-  ["p10 / p90 age at death", (x) => `${x.death.age?.p10 ?? "-"} / ${x.death.age?.p90 ?? "-"}`],
+  [
+    "p10 / p90 age at death",
+    (x) => `${x.death.age?.p10 ?? "-"} / ${x.death.age?.p90 ?? "-"}`,
+  ],
   ["median net worth at 18", (x) => major(x.netWorth["18"]?.p50)],
   ["median net worth at 40", (x) => major(x.netWorth["40"]?.p50)],
   ["median net worth at 65", (x) => major(x.netWorth["65"]?.p50)],
@@ -42,10 +45,14 @@ if (r.faults.total > 0) {
       .join(", ")}). First:`,
   );
   for (const f of r.faults.first.slice(0, 10))
-    out.push(`- \`${f.kind}\` [${f.profile}, life-seed ${f.seed}, age ${f.age}]: ${f.message}`);
+    out.push(
+      `- \`${f.kind}\` [${f.profile}, life-seed ${f.seed}, age ${f.age}]: ${f.message}`,
+    );
   out.push("");
 } else if (status !== "0") {
-  out.push(`The harness exited with status ${status} without reporting faults (see the job log).`);
+  out.push(
+    `The harness exited with status ${status} without reporting faults (see the job log).`,
+  );
   out.push("");
 } else {
   out.push("No engine faults.");

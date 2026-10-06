@@ -175,7 +175,7 @@
   icon: 💞
   trigger: event
   weight: 10
-  when: age >= 20 and age <= 50
+  when: age >= 20 and age <= 50 and count_role(core-loop/partner, 0, 100) == 0 and count_role(core-loop/spouse, 0, 100) == 0
   cooldown: 6
   text: "A friend nudges {player.first_name} to try a dating app."
   choices:

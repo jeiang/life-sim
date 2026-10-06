@@ -1260,6 +1260,7 @@ class PackCompiler {
     if (pay !== undefined) out.pay = pay;
     if (o.duration_years !== undefined) out.durationYears = o.duration_years;
     if (o.provides_housing) out.providesHousing = true;
+    if (o.remote) out.remote = true;
     if (o.confines) {
       const menus = o.confines.menus === true;
       const events = o.confines.events === true;

@@ -6,7 +6,12 @@
     "additionalProperties": false,
     "title": "Occupation kind",
     "type": "object",
-    "required": ["id", "label", "group", "pay"],
+    "required": [
+      "id",
+      "label",
+      "group",
+      "pay"
+    ],
     "properties": {
       "id": {
         "pattern": "^[a-z][a-z0-9_-]*$",
@@ -74,6 +79,10 @@
         "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
         "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
         "type": "string"
+      },
+      "remote": {
+        "description": "The work can be done from anywhere; `has_remote_job()` is true while one is held",
+        "type": "boolean"
       },
       "provides_housing": {
         "description": "While held, no living cost is charged and the standard's effects do not apply (for example prison)",

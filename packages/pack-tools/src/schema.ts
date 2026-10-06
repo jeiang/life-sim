@@ -326,6 +326,12 @@ export const OccupationSchema = obj(
     promotes_to: Type.Optional(Ref),
     promotion_years: Type.Optional(Type.Integer({ minimum: 1 })),
     loan: Type.Optional(Ref),
+    remote: Type.Optional(
+      Type.Boolean({
+        description:
+          "The work can be done from anywhere; `has_remote_job()` is true while one is held",
+      }),
+    ),
     provides_housing: Type.Optional(
       Type.Boolean({
         description:

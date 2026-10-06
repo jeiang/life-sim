@@ -6,7 +6,10 @@
     "additionalProperties": false,
     "title": "Storylet",
     "type": "object",
-    "required": ["id", "trigger"],
+    "required": [
+      "id",
+      "trigger"
+    ],
     "properties": {
       "id": {
         "pattern": "^[a-z][a-z0-9_-]*$",
@@ -153,7 +156,10 @@
         "additionalProperties": false,
         "title": "Amount input (actions only): the player picks money from `min` to `max` in `step`s (default 1); `amount` is bound in choice and outcome `when`, `weight`, effects and text",
         "type": "object",
-        "required": ["min", "max"],
+        "required": [
+          "min",
+          "max"
+        ],
         "properties": {
           "min": {
             "description": "Expression in the Pack expression language (ADR 0004)",
@@ -208,7 +214,9 @@
         "items": {
           "additionalProperties": false,
           "type": "object",
-          "required": ["label"],
+          "required": [
+            "label"
+          ],
           "properties": {
             "label": {
               "minLength": 1,

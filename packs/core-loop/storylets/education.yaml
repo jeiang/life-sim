@@ -69,6 +69,7 @@
       text: "You graduate from high school."
       effects:
         - quality.graduated_high_school = true
+        - end_occupation(core-loop/high-school)
         - stat.happiness += 5
         - journal("Graduated from high school at age {age}.")
 
@@ -85,6 +86,7 @@
       text: "You earn a degree in business."
       effects:
         - quality.has_degree_business = true
+        - end_occupation(core-loop/university-business)
         - quality.tuition_by_loan = false
         - stat.happiness += 8
         - journal("Graduated with a business degree at age {age}.")
@@ -93,6 +95,7 @@
       text: "You earn a degree in engineering."
       effects:
         - quality.has_degree_engineering = true
+        - end_occupation(core-loop/university-engineering)
         - quality.tuition_by_loan = false
         - stat.happiness += 8
         - journal("Graduated with a engineering degree at age {age}.")
@@ -101,6 +104,7 @@
       text: "You earn a degree in nursing."
       effects:
         - quality.has_degree_nursing = true
+        - end_occupation(core-loop/university-nursing)
         - quality.tuition_by_loan = false
         - stat.happiness += 8
         - journal("Graduated with a nursing degree at age {age}.")
@@ -109,6 +113,7 @@
       text: "You earn a degree in arts."
       effects:
         - quality.has_degree_arts = true
+        - end_occupation(core-loop/university-arts)
         - quality.tuition_by_loan = false
         - stat.happiness += 8
         - journal("Graduated with a arts degree at age {age}.")
@@ -119,7 +124,7 @@
   trigger: action
   menu: occupation/education
   tags: [education, university]
-  when: age >= 18 and age <= 24 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_business
+  when: age >= 18 and age <= 24 and quality.graduated_high_school and not in_group(school) and not quality.has_degree_business
   cooldown: 1
   text: "Enrol in a four-year business degree? Tuition is $9,000 a year."
   choices:
@@ -149,7 +154,7 @@
   trigger: action
   menu: occupation/education
   tags: [education, university]
-  when: age >= 18 and age <= 24 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_engineering
+  when: age >= 18 and age <= 24 and quality.graduated_high_school and not in_group(school) and not quality.has_degree_engineering
   cooldown: 1
   text: "Enrol in a four-year engineering degree? Tuition is $10,000 a year."
   choices:
@@ -179,7 +184,7 @@
   trigger: action
   menu: occupation/education
   tags: [education, university]
-  when: age >= 18 and age <= 24 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_nursing
+  when: age >= 18 and age <= 24 and quality.graduated_high_school and not in_group(school) and not quality.has_degree_nursing
   cooldown: 1
   text: "Enrol in a four-year nursing degree? Tuition is $8,000 a year."
   choices:
@@ -209,7 +214,7 @@
   trigger: action
   menu: occupation/education
   tags: [education, university]
-  when: age >= 18 and age <= 24 and quality.graduated_high_school and not (has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)) and not quality.has_degree_arts
+  when: age >= 18 and age <= 24 and quality.graduated_high_school and not in_group(school) and not quality.has_degree_arts
   cooldown: 1
   text: "Enrol in a four-year arts degree? Tuition is $7,000 a year."
   choices:
@@ -239,7 +244,7 @@
   trigger: action
   menu: occupation
   tags: [education]
-  when: has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)
+  when: in_group(school)
   repeatable: true
   text: "You hit the books."
   outcomes:

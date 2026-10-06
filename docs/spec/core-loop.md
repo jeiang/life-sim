@@ -19,7 +19,7 @@ Decided in [Core loop content scope](https://github.com/jeiang/life-sim/issues/1
 | High school | 12-17 | Automatic; graduation at 18 |
 | University (optional) | 18+, 4 years | 3-4 majors (for example business, engineering, nursing, arts). Tuition each year at settlement, paid in cash or by student loan, chosen at enrolment |
 
-- Verbs (Occupation menu): study harder; drop out (university only).
+- Verbs (Occupation menu): study harder (any `school` group occupation); drop out (core-loop university only). Graduation also ends the school occupation explicitly with `end_occupation`, so a school ends cleanly even when it did not run to its `duration_years`. Enrolment is closed while `in_group("school")`.
 - Graduate school (medical, law, business) is a later Pack that keys off majors.
 
 ## Jobs (occupations, `full-time` and `part-time` exclusivity groups)
@@ -34,8 +34,8 @@ About 12 jobs in 4 ladders, each rung with pay, requirements, and a promotion ta
 | Professional | Junior analyst, Analyst, Senior analyst (or per major) | Matching degree |
 
 - Applying from the job board opens a two-question interview chain (`next:`), and the hire outcome is weighted by stats.
-- Yearly verbs: work harder, ask for a raise, quit.
-- Retirement at 60+: ends the job and starts a `Retired` occupation that pays a yearly pension based on years worked.
+- Yearly verbs: work harder, ask for a raise, quit. Work harder and ask for a raise are gated on the groups (`in_group("full-time")` without `Retired`, or `in_group("part-time")`), so any Pack's jobs get them; the `apply-*` jobs need `not in_group("full-time")` (part-time ones `not in_group("part-time")`), so applying never silently ends a job from another Pack, and the analyst, engineer and nurse applications also need no `criminal_record`. Quit still names core-loop jobs: other Packs ship their own quit action.
+- Retirement at 60+: starts the `Retired` occupation (same `full-time` group, so it ends any full-time job) and ends the part-time core-loop jobs. The pension is based on `years_in_group("full-time") + years_in_group("part-time")`.
 
 ## People
 
@@ -44,8 +44,24 @@ About 12 jobs in 4 ladders, each rung with pay, requirements, and a promotion ta
 - At school start: 2-3 classmates. At job start: 2 coworkers.
 - Verbs (Relationships menu, profile): spend time, conversation, ask for money (family), befriend (classmates, coworkers).
 - NPC yearly pass: aging, stat drift, and a few NPC storylets (for example a parent's illness or death).
-- Core-loop declares the roles `partner`, `spouse` and `child` (no content creates them yet), so core-loop content can be guarded on them; a later Pack turns people into them with `relationship(p).role = ...`.
+- Core-loop declares the roles `partner`, `spouse` and `child` (no content creates them yet), so core-loop content can be guarded on them; a later Pack turns people into them with `relationship(p).role = ...`. `dating-app` and `heartbreak` do not fire for a player who has a partner or spouse (heartbreak: a spouse); `grandchild-babysit` and `tell-old-stories` wait until the player is 65 / 75 if a child exists, so a young child never gets the grandparent events.
+- NPC storylets are role-targeted: `sibling-*` events target `sibling`, `person-new-job` and `person-checks-in` the human roles that make sense. **Generic mortality** (`person-mortality`) kills people of the human roles (sibling, classmate, coworker, friend, partner, spouse, child) at the same rates as the player (`natural-mortality` from 30, `childhood-mortality` below); parents keep `parent-death` and are not in its targets, and a non-human role added later is simply not listed. A death costs the player `3 + closeness / 8` happiness and adds a journal line.
 - No dating, marriage, or children in core-loop itself (later Pack).
+
+## Shared state for other Packs
+
+Core-loop owns these qualities so no Pack edits core-loop content or rolls its own. None is shown in the UI.
+
+| Quality | Meaning |
+|---|---|
+| `criminal_record` (flag), `wanted` (flag) | Set by Crime. The professional `apply-*` jobs (analyst, engineer, nurse) need no `criminal_record`; entry jobs still hire. |
+| `pending_charge` (int, 0 = none) | A mailbox: any Pack sets it to a charge code, Crime arrests at the next age-up and resets it. |
+| `family_wealth` (int 1-5) | Rolled once, hidden, by `roll-family-wealth` at the first age-up (a life has no events at age 0): 15 / 25 / 30 / 20 / 10% for poor, modest, middle, comfortable, wealthy (default 3 for a life that predates it). Parents' help, weddings, family standing and the parents' household read it. |
+| `attracted_men`, `attracted_women`, `attracted_nonbinary` (int 0-100) | The player's attraction, rolled once with the family wealth by `roll-attraction`, by the player's gender. Dating reads them for date offers. NPC attraction comes in a later release. |
+| `karma` (int 0-100, default 50) | Hidden. Non-repeatable content (Crime, Dating, Base, and core-loop's own wallet, volunteering, cheating and helping-a-stranger choices) raises or lowers it; a few events read it. Repeatable actions must not write it (a repeated compliment would max it). |
+| `lang_<language>` (int 0-100) | One skill per language: English (default 100), Spanish, French, German, Italian, Japanese, Mandarin, Korean (default 0). `Study a language` (`activities/languages`, age 6+, repeatable) raises one; the quality gain follows the repeat curve by hand (qualities are not scaled by the Core): +6 or +3 for uses 1-10 in a year, +2 or +1 for 11-20, 0 from 21. Yearly growth abroad is Relocation's. |
+
+Analyst, engineer and designer ladder jobs are `remote`; service, trades and nursing are not.
 
 ## Shop and assets (`assets/shopping`)
 
@@ -112,7 +128,7 @@ About 60, plus NPC and mortality storylets:
 | Kind | Count | Examples |
 |---|---|---|
 | Flavour events (weighted) | About 30, spread across childhood, teens, adulthood, old age | Learned to ride a bike; bad haircut |
-| Chance events | About 15 | Illness, windfall, accident, lottery scratch-card win |
+| Chance events | About 15 | Illness, windfall, accident |
 | Choice events | About 15, some with `next:` chains | Found wallet; a friend asks for a loan |
 
 ## Death and the end of a life

@@ -146,6 +146,8 @@ export interface CompiledOccupationKind {
   readonly confines?: { readonly menus: boolean; readonly events: boolean };
   /** Loan kind that can finance it (student loan). */
   readonly loan?: string;
+  /** The work can be done from anywhere; read through `has_remote_job()`. */
+  readonly remote?: boolean;
 }
 
 /**

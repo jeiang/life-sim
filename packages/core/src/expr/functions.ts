@@ -24,6 +24,8 @@ export const FUNCTIONS = {
   standard_cost: { params: ["id"], returns: "int" },
   /** Average closeness (integer) to the living people the player holds this role toward; 0 with none. */
   role_closeness: { params: ["id"], returns: "int" },
+  /** True while the player holds an occupation flagged `remote`. */
+  has_remote_job: { params: [], returns: "bool" },
   in_group: { params: ["group"], returns: "bool" },
   years_in_group: { params: ["group"], returns: "int" },
   count_role: { params: ["id", "int", "int"], returns: "int" },

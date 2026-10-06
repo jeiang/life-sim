@@ -260,6 +260,10 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
       if (pure) return pure(...(args as number[]));
       const id = args[0] as string;
       switch (name) {
+        case "has_remote_job":
+          return subject.occupations.some(
+            (o) => idx.occupations.get(o.kindId)?.remote === true,
+          );
         case "has_occupation":
           return subject.occupations.some((o) => o.kindId === id);
         case "owns":

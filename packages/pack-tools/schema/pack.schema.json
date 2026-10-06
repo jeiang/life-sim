@@ -159,6 +159,15 @@
         "cap": {
           "minimum": 0,
           "type": "integer"
+        },
+        "quiet": {
+          "description": "Neutral journal lines for a year with no events; one is picked per quiet year",
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          }
         }
       }
     },

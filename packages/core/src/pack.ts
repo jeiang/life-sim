@@ -182,6 +182,8 @@ export interface PackBundle {
   readonly year?: {
     readonly slots: readonly [number, number];
     readonly cap: number;
+    /** Neutral lines for a year in which nothing else was journaled. */
+    readonly quiet?: readonly string[];
   };
   /** Starting family; ids are full. The first Pack that declares one wins. */
   readonly family?: FamilyDecl;

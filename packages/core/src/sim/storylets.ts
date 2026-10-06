@@ -7,7 +7,7 @@ import { makeEnv, rolesOf, type Scope } from "./env.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import type { PackIndex } from "./pack-index.ts";
 import { explainFalse } from "./reason.ts";
-import { renderText } from "./text.ts";
+import { formatMoney, renderText } from "./text.ts";
 
 /** A `next:` chain longer than this stops silently (guards against authored cycles). */
 const MAX_CHAIN = 32;
@@ -105,6 +105,30 @@ function say(world: World, text: string): World {
   return addJournalLine(world, clockAge(world), text);
 }
 
+const signed = (n: number): string => (n < 0 ? `\u2212${-n}` : `+${n}`);
+
+/** Visible stat and money changes of the subject between two worlds, e.g. `Smarts −3, Happiness +2`. */
+function deltas(
+  before: World,
+  after: World,
+  idx: PackIndex,
+  who: PersonId,
+): string {
+  const a = getPerson(before, who);
+  const b = getPerson(after, who);
+  const parts: string[] = [];
+  for (const st of idx.stats) {
+    const d = (b.stats[st.id] ?? 0) - (a.stats[st.id] ?? 0);
+    if (d !== 0) parts.push(`${st.label} ${signed(d)}`);
+  }
+  const m = b.money - a.money;
+  if (m !== 0)
+    parts.push(
+      `${m < 0 ? "\u2212" : "+"}${formatMoney(Math.abs(m), idx.currency)}`,
+    );
+  return parts.join(", ");
+}
+
 function pickOutcome(
   world: World,
   idx: PackIndex,
@@ -137,8 +161,11 @@ function runOutcome(
   const withBound: Scope = { ...scope, bound };
   // Effects run first so a `spawn_person ... as n` binding exists for the outcome text.
   w = applyEffects(w, idx, outcome.effects, scope, bound);
-  if (outcome.text !== undefined && !w.ended)
-    w = say(w, renderText(outcome.text, w, idx, withBound));
+  if (outcome.text !== undefined && !w.ended) {
+    const text = renderText(outcome.text, w, idx, withBound);
+    const d = deltas(w0, w, idx, scope.subject);
+    w = say(w, d ? `${text} (${d})` : text);
+  }
   if (w.ended || !outcome.next) return w;
   const next = idx.storylets.get(outcome.next);
   if (!next) throw new RangeError(`unknown storylet '${outcome.next}'`);
@@ -202,5 +229,6 @@ export function resolveChoice(
     throw new RangeError(`choice ${choiceIndex} of '${s.id}' is not available`);
   let w = world;
   if (s.text !== undefined) w = say(w, renderText(s.text, w, idx, scope));
+  w = say(w, `You chose: ${choice.label}`);
   return runOutcome(w, idx, s, choice.outcomes, ref, 0);
 }

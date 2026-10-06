@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: project-deps
@@ -33,9 +34,8 @@ jobs:
       - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
         if: env.PROJECT_TOKEN != ''
         with:
-          github-token: ${{ secrets.PROJECT_TOKEN }}
           script: |
             const run = require("./.github/scripts/project-deps.cjs");
-            await run({ github, context, core });
+            await run({ github, getOctokit, context, core });
       - if: env.PROJECT_TOKEN == ''
         run: echo "::notice::PROJECT_TOKEN secret is not set; skipping project dependency sync. See docs/spec/ci.md."

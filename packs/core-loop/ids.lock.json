@@ -1,6 +1,6 @@
 {
   "pack": "core-loop",
-  "version": 9,
+  "version": 10,
   "ids": [
     "core-loop/above-average",
     "core-loop/acne-flare",
@@ -144,6 +144,7 @@
     "core-loop/learned-to-ride-a-bike",
     "core-loop/lemonade-stand",
     "core-loop/library-book-lost",
+    "core-loop/looks-fade",
     "core-loop/loose-tooth",
     "core-loop/lost-keys",
     "core-loop/lottery-scratch-win",
@@ -157,6 +158,7 @@
     "core-loop/memoir-writing",
     "core-loop/midlife-crisis",
     "core-loop/midlife-reflection",
+    "core-loop/mind-wanders",
     "core-loop/missed-payment",
     "core-loop/mortgage",
     "core-loop/move-city",
@@ -302,6 +304,7 @@
     "core-loop/visit-library",
     "core-loop/volunteer-weekend",
     "core-loop/wealthy",
+    "core-loop/wear-and-tear",
     "core-loop/wedding-invite",
     "core-loop/will-and-testament",
     "core-loop/windfall-inheritance",

@@ -56,9 +56,43 @@ export interface Asset {
   readonly qualities: Readonly<Record<string, QualityValue>>;
 }
 
-/** Gender chosen in god mode; absent on generated people. */
+/** Set on generated people and chosen in god mode; absent on people from old saves. */
 export type Gender = "male" | "female" | "nonbinary";
 export const GENDERS: readonly Gender[] = ["male", "female", "nonbinary"];
+
+/** Default draw weights of a generator that sets no `gender`: male and female equally. */
+export const DEFAULT_GENDER_WEIGHTS: Readonly<Record<Gender, number>> = {
+  male: 1,
+  female: 1,
+  nonbinary: 0,
+};
+
+/** Pronoun placeholder fields (`{n.subject}`, `{n.Subject}`); an absent gender reads as neutral. */
+export const PRONOUN_FIELDS: readonly string[] = [
+  "subject",
+  "object",
+  "possessive",
+  "Subject",
+  "Object",
+  "Possessive",
+];
+
+const PRONOUNS: Record<Gender, readonly [string, string, string]> = {
+  male: ["he", "him", "his"],
+  female: ["she", "her", "her"],
+  nonbinary: ["they", "them", "their"],
+};
+
+/** The pronoun for a `PRONOUN_FIELDS` entry, or `undefined` if `field` is not one. */
+export function pronounOf(
+  gender: Gender | undefined,
+  field: string,
+): string | undefined {
+  const i = PRONOUN_FIELDS.indexOf(field);
+  if (i < 0) return undefined;
+  const word = PRONOUNS[gender ?? "nonbinary"][i % 3] as string;
+  return i < 3 ? word : word[0]?.toUpperCase() + word.slice(1);
+}
 
 export interface Person {
   readonly id: PersonId;

@@ -429,6 +429,63 @@ describe("build checks fail", () => {
     );
   });
 
+  test("pronoun placeholders resolve for the player and spawned people only", () => {
+    const ok = compilePacks(
+      fixture({
+        "base/storylets/work.yaml": sub(
+          'journal("Met {n.first_name} {n.last_name}.")',
+          'journal("{n.Subject} met {player.object}; {n.possessive} day.")',
+        ),
+      }),
+    );
+    expect(ok.diagnostics.map(formatDiagnostic)).toEqual([]);
+    const cond = compilePacks(
+      fixture({
+        "base/storylets/work.yaml": sub(
+          "person.age > 50",
+          'person.gender == "female" and player.gender != "male" and person.age > 50',
+        ),
+      }),
+    );
+    expect(cond.diagnostics.map(formatDiagnostic)).toEqual([]);
+    expectError(
+      {
+        "base/storylets/work.yaml": sub(
+          'journal("Met {n.first_name} {n.last_name}.")',
+          'journal("{m.subject} met {n.pronoun}.")',
+        ),
+      },
+      "unknown placeholder '{m.subject}'",
+      "unknown placeholder '{n.pronoun}'",
+    );
+  });
+
+  test("generator first-name pools and gender weights compile; all-zero weights are rejected", () => {
+    const people = (extra: string) =>
+      sub(
+        "  first_names: [Sam, Alex]\n",
+        `  first_names:\n    male: [Sam]\n    female: [Alex]\n${extra}`,
+      );
+    const r = compilePacks(
+      fixture({
+        "base/people/names.yaml": people("  gender: { female: 3 }\n"),
+      }),
+    );
+    expect(r.diagnostics.map(formatDiagnostic)).toEqual([]);
+    const gen = r.bundles[0]?.people.find((p) => p.id === "base/local");
+    if (gen?.type !== "generator") throw new Error("no generator");
+    expect(gen.firstNames).toEqual({
+      male: ["Sam"],
+      female: ["Alex"],
+      nonbinary: ["Sam", "Alex"],
+    });
+    expect(gen.genderWeights).toEqual({ male: 0, female: 3, nonbinary: 0 });
+    expectError(
+      { "base/people/names.yaml": people("  gender: { male: 0 }\n") },
+      "gender weights need at least one above 0",
+    );
+  });
+
   test("unknown person in relationship effect", () => {
     expectError(
       {

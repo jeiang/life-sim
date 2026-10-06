@@ -1,13 +1,18 @@
 import { type Expr, evaluate } from "../expr/index.ts";
-import type {
-  Asset,
-  Loan,
-  Obituary,
-  ObituaryOccupation,
-  Occupation,
-  Person,
-  PersonId,
-  World,
+import type { CompiledGenerator } from "../pack.ts";
+import type { Rng } from "../rng.ts";
+import {
+  type Asset,
+  DEFAULT_GENDER_WEIGHTS,
+  GENDERS,
+  type Gender,
+  type Loan,
+  type Obituary,
+  type ObituaryOccupation,
+  type Occupation,
+  type Person,
+  type PersonId,
+  type World,
 } from "../state/types.ts";
 import {
   addJournalLine,
@@ -225,6 +230,33 @@ export function startOccupation(
   }));
 }
 
+/** Range of the first-name roll: one raw draw, mapped onto the pool once the gender is known. */
+export const NAME_ROLL_RANGE = 0x100000000;
+
+/** Gender drawn by the generator's weights (one draw, even when a single gender has weight). */
+export function drawGender(
+  rng: Rng,
+  gen: CompiledGenerator | undefined,
+): Gender {
+  const weights = GENDERS.map(
+    (g) => gen?.genderWeights[g] ?? DEFAULT_GENDER_WEIGHTS[g],
+  );
+  return GENDERS[rng.weightedPick(weights)] as Gender;
+}
+
+/** First name for `gender` from a `NAME_ROLL_RANGE` roll; "" with an empty pool. */
+export function pickFirstName(
+  gen: CompiledGenerator | undefined,
+  gender: Gender,
+  roll: number,
+  fallback = "",
+): string {
+  const pool = gen?.firstNames[gender];
+  return pool?.length
+    ? (pool[Math.floor((roll * pool.length) / NAME_ROLL_RANGE)] as string)
+    : fallback;
+}
+
 /** Create a person from a generator and link them from `from` with the role. */
 export function spawnPerson(
   world: World,
@@ -238,20 +270,25 @@ export function spawnPerson(
   if (!gen) throw new RangeError(`unknown generator '${generatorId}'`);
   const age = clockAge(world);
   const [w0, rng] = nextStream(world, age, `spawn/${generatorId}`);
-  const pick = (xs: readonly string[]): string =>
-    xs.length ? (xs[rng.int(xs.length)] as string) : "";
-  const givenName = pick(gen.firstNames);
-  const drawn = pick(gen.lastNames);
+  // The first-name roll sits where the name draw always was; the gender drawn last picks the pool.
+  const nameRoll = rng.int(NAME_ROLL_RANGE);
+  const lastNames = gen.lastNames;
+  const drawn = lastNames.length
+    ? (lastNames[rng.int(lastNames.length)] as string)
+    : "";
   const stats: Record<string, number> = {};
   for (const s of idx.stats) {
     const [lo, hi] = gen.stats[s.id] ?? s.start;
     stats[s.id] = clamp(lo + rng.int(hi - lo + 1), 0, 100);
   }
   const [lo, hi] = gen.age;
+  const personAge = lo + rng.int(hi - lo + 1);
+  const gender = drawGender(rng, gen);
   const [w1, id] = addPerson(w0, {
-    givenName,
+    givenName: pickFirstName(gen, gender, nameRoll),
     familyName: opts.familyName ?? drawn,
-    age: lo + rng.int(hi - lo + 1),
+    age: personAge,
+    gender,
     stats,
   });
   return [

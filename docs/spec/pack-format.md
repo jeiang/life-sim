@@ -198,11 +198,13 @@ relationship(<person>).role = role   (replaces all the player's role rows toward
 journal("text")                      die("cause")
 ```
 
+A `kind: generator` item in `people/` sets `first_names` (a list used for every gender, or `{ male: [...], female: [...] }` pools where non-binary people draw from both), `last_names`, `age`, optional `stats`, and an optional `gender`: a fixed value (`gender: female`) or integer weights (`gender: { male: 1, female: 3 }`; omitted genders weigh 0; default male 1, female 1). A spawned person's gender is drawn from these weights and their first name from that gender's pool, so a Pack can spawn a person of a chosen gender.
+
 `move_to(city)` puts the player in a city (family and everyone else stay); `move_out()` ends living with parents and picks the starting standard of living; `set_standard(standard)` chooses one (ignored with parents).
 
 ## Text
 
-- Inline English. Placeholders (`{player.first_name}`, `{money}`, or a person bound by `spawn_person(...) as <name>`) are checked at build time against what is in scope.
+- Inline English. Placeholders (`{player.first_name}`, `{money}`, or a person bound by `spawn_person(...) as <name>`) are checked at build time against what is in scope. Every person reference (`player`, `person`, a bound name) also has pronoun placeholders from that person's gender: `{n.subject}` (he/she/they), `{n.object}` (him/her/them), `{n.possessive}` (his/her/their), and capitalised `{n.Subject}`, `{n.Object}`, `{n.Possessive}` for sentence starts. A person with no gender (old saves) reads as they/them/their. Expressions read `player.gender` and `person.gender` (or `<name>.gender`) as the string `"male"`, `"female"` or `"nonbinary"` (empty when absent), for example `person.gender == "female"`. Pronouns do not conjugate verbs, so write text that works for "they" (past tense, or "{n.first_name} says").
 - Localization later extracts strings keyed by content id and field path. Keyed text is not required now.
 
 ## Icons

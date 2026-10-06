@@ -15,6 +15,7 @@ import type {
   Expr,
   Type as ExprType,
   FamilyDecl,
+  Gender,
   LivingDecl,
   PackBundle,
   PackMigrations,
@@ -22,7 +23,13 @@ import type {
   RepeatCurve,
   StatDecl,
 } from "@life/core";
-import { DEFAULT_REPEAT, PACK_BUNDLE_FORMAT } from "@life/core";
+import {
+  DEFAULT_GENDER_WEIGHTS,
+  DEFAULT_REPEAT,
+  GENDERS,
+  PACK_BUNDLE_FORMAT,
+  PRONOUN_FIELDS,
+} from "@life/core";
 import type { TSchema } from "@sinclair/typebox";
 import { buildCredits, type CreditsManifest } from "./credits.ts";
 import type { Diagnostic } from "./diagnostics.ts";
@@ -157,6 +164,16 @@ const CALL_KINDS: Record<string, Kind[][] | undefined> = {
 /** Functions whose one argument names an exclusivity group, not a content id. */
 const GROUP_FUNCTIONS = new Set(["in_group", "years_in_group"]);
 
+/** `<prefix>.subject`, `<prefix>.Subject`, ... as string names. */
+function pronounNames(prefix: string): Record<string, ExprType> {
+  return Object.fromEntries(
+    [...PRONOUN_FIELDS, "gender"].map((f) => [
+      `${prefix}.${f}`,
+      "string" as const,
+    ]),
+  );
+}
+
 const PLAYER_NAMES: Record<string, ExprType> = {
   age: "int",
   money: "int",
@@ -172,6 +189,7 @@ const PLAYER_NAMES: Record<string, ExprType> = {
   confined: "bool",
   "player.first_name": "string",
   "player.last_name": "string",
+  ...pronounNames("player"),
 };
 
 export function compilePacks(packsDir: string): CompileOutput {
@@ -831,6 +849,7 @@ class PackCompiler {
         "person.age": "int",
         "person.first_name": "string",
         "person.last_name": "string",
+        ...pronounNames("person"),
         "person.role": "id",
         "person.alive": "bool",
         "person.closeness": "int",
@@ -1044,6 +1063,7 @@ class PackCompiler {
         }
         bound[`${name}.first_name`] = "string";
         bound[`${name}.last_name`] = "string";
+        Object.assign(bound, pronounNames(name));
         bound[`${name}.age`] = "int";
         bound[`${name}.closeness`] = "int";
         persons.push(name);
@@ -1260,6 +1280,23 @@ class PackCompiler {
       return { type: "role", id: this.owner, label: p.label };
     if (p.age[0] > p.age[1])
       this.err(["age"], "age range minimum exceeds maximum");
+    const firstNames: Record<Gender, readonly string[]> = Array.isArray(
+      p.first_names,
+    )
+      ? { male: p.first_names, female: p.first_names, nonbinary: p.first_names }
+      : {
+          male: p.first_names.male,
+          female: p.first_names.female,
+          nonbinary: [...p.first_names.male, ...p.first_names.female],
+        };
+    const genderWeights: Record<Gender, number> = { ...DEFAULT_GENDER_WEIGHTS };
+    if (typeof p.gender === "string") {
+      for (const g of GENDERS) genderWeights[g] = g === p.gender ? 1 : 0;
+    } else if (p.gender) {
+      for (const g of GENDERS) genderWeights[g] = p.gender[g] ?? 0;
+      if (GENDERS.every((g) => genderWeights[g] === 0))
+        this.err(["gender"], "gender weights need at least one above 0");
+    }
     const stats: Record<string, [number, number]> = {};
     for (const [k, v] of Object.entries(p.stats ?? {})) {
       if (!this.statIds.has(k))
@@ -1277,7 +1314,8 @@ class PackCompiler {
     return {
       type: "generator",
       id: this.owner,
-      firstNames: p.first_names,
+      firstNames,
+      genderWeights,
       lastNames: p.last_names,
       age: p.age as [number, number],
       stats,

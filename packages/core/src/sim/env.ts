@@ -3,12 +3,13 @@ import {
   pureFunctions,
   type Value,
 } from "../expr/index.ts";
-import type {
-  Loan,
-  Person,
-  PersonId,
-  QualityValue,
-  World,
+import {
+  type Loan,
+  type Person,
+  type PersonId,
+  pronounOf,
+  type QualityValue,
+  type World,
 } from "../state/types.ts";
 import { getPerson } from "../state/world.ts";
 import {
@@ -106,6 +107,9 @@ function personField(
   const p = getPerson(world, id);
   if (field === "first_name") return p.givenName;
   if (field === "last_name") return p.familyName;
+  if (field === "gender") return p.gender ?? "";
+  const pronoun = pronounOf(p.gender, field);
+  if (pronoun !== undefined) return pronoun;
   if (field === "age") return p.age;
   if (field === "alive") return p.alive;
   if (field === "role") return roleOf(world, id) ?? "";

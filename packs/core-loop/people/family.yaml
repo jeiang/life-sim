@@ -15,7 +15,9 @@
     health: [50, 100]
     smarts: [0, 100]
     looks: [0, 100]
-  first_names: [James, Mary, Robert, Patricia, John, Jennifer, Michael, Linda, David, Elizabeth, William, Barbara, Richard, Susan, Joseph, Jessica, Thomas, Sarah, Charles, Karen, Daniel, Nancy, Matthew, Lisa, Anthony, Betty, Mark, Margaret, Donald, Sandra, Steven, Ashley, Paul, Kimberly, Andrew, Emily, Joshua, Donna, Kenneth, Michelle, Kevin, Carol, Brian, Amanda, Edward, Melissa, George, Deborah, Ryan, Stephanie, Jacob, Rebecca, Nicholas, Laura, Eric, Cynthia, Tyler, Hannah, Aaron, Megan]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
   last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
 - kind: generator
   id: sibling-gen
@@ -25,7 +27,9 @@
     health: [50, 100]
     smarts: [0, 100]
     looks: [0, 100]
-  first_names: [James, Mary, Robert, Patricia, John, Jennifer, Michael, Linda, David, Elizabeth, William, Barbara, Richard, Susan, Joseph, Jessica, Thomas, Sarah, Charles, Karen, Daniel, Nancy, Matthew, Lisa, Anthony, Betty, Mark, Margaret, Donald, Sandra, Steven, Ashley, Paul, Kimberly, Andrew, Emily, Joshua, Donna, Kenneth, Michelle, Kevin, Carol, Brian, Amanda, Edward, Melissa, George, Deborah, Ryan, Stephanie, Jacob, Rebecca, Nicholas, Laura, Eric, Cynthia, Tyler, Hannah, Aaron, Megan]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
   last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
 - kind: generator
   id: classmate-gen
@@ -35,7 +39,9 @@
     health: [50, 100]
     smarts: [0, 100]
     looks: [0, 100]
-  first_names: [James, Mary, Robert, Patricia, John, Jennifer, Michael, Linda, David, Elizabeth, William, Barbara, Richard, Susan, Joseph, Jessica, Thomas, Sarah, Charles, Karen, Daniel, Nancy, Matthew, Lisa, Anthony, Betty, Mark, Margaret, Donald, Sandra, Steven, Ashley, Paul, Kimberly, Andrew, Emily, Joshua, Donna, Kenneth, Michelle, Kevin, Carol, Brian, Amanda, Edward, Melissa, George, Deborah, Ryan, Stephanie, Jacob, Rebecca, Nicholas, Laura, Eric, Cynthia, Tyler, Hannah, Aaron, Megan]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
   last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
 - kind: generator
   id: coworker-gen
@@ -45,5 +51,7 @@
     health: [40, 100]
     smarts: [0, 100]
     looks: [0, 100]
-  first_names: [James, Mary, Robert, Patricia, John, Jennifer, Michael, Linda, David, Elizabeth, William, Barbara, Richard, Susan, Joseph, Jessica, Thomas, Sarah, Charles, Karen, Daniel, Nancy, Matthew, Lisa, Anthony, Betty, Mark, Margaret, Donald, Sandra, Steven, Ashley, Paul, Kimberly, Andrew, Emily, Joshua, Donna, Kenneth, Michelle, Kevin, Carol, Brian, Amanda, Edward, Melissa, George, Deborah, Ryan, Stephanie, Jacob, Rebecca, Nicholas, Laura, Eric, Cynthia, Tyler, Hannah, Aaron, Megan]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
   last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]

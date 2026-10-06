@@ -8,7 +8,12 @@ import {
   personsInIdOrder,
   updatePerson,
 } from "../state/world.ts";
-import { spawnPerson } from "./ops.ts";
+import {
+  drawGender,
+  NAME_ROLL_RANGE,
+  pickFirstName,
+  spawnPerson,
+} from "./ops.ts";
 import { indexBundles, type PackIndex } from "./pack-index.ts";
 
 /**
@@ -84,8 +89,8 @@ export function newLife(
   const pick = (xs: readonly string[] | undefined, fallback: string): string =>
     xs?.length ? (xs[rng.int(xs.length)] as string) : fallback;
   const { custom } = opts;
-  const givenName =
-    custom?.givenName ?? opts.givenName ?? pick(gen?.firstNames, "Player");
+  // The first-name roll sits where the name draw always was; the gender drawn last picks the pool.
+  const nameRoll = rng.int(NAME_ROLL_RANGE);
   const familyName =
     custom?.familyName ?? opts.familyName ?? pick(gen?.lastNames, "Player");
   const stats: Record<string, number> = {};
@@ -97,11 +102,18 @@ export function newLife(
   }
   const qualities: Record<string, number | boolean> = {};
   for (const [id, q] of idx.qualities) qualities[id] = q.default;
+  // Drawn last and always, so the other draws match a plain life.
+  const drawnGender = drawGender(rng, gen);
+  const gender = custom?.gender ?? drawnGender;
+  const givenName =
+    custom?.givenName ??
+    opts.givenName ??
+    pickFirstName(gen, gender, nameRoll, "Player");
   let w = updatePerson(w0, w0.playerId, (p) => ({
     ...p,
     givenName,
     familyName,
-    ...(custom ? { gender: custom.gender } : {}),
+    gender,
     stats,
     qualities,
   }));

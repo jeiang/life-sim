@@ -64,6 +64,23 @@ export interface Report {
     readonly years: number;
     readonly distribution: Record<string, number>;
   };
+  /** Choice events: event storylets that ask the player to pick (chain steps included). */
+  readonly choices: {
+    /** Choice events per life, all ages. */
+    readonly perLife: Dist | null;
+    /** Choice events per life from age 5 onward. */
+    readonly perLifeFrom5: Dist | null;
+    /** Years (age-ups to age 5 or later) with at least one choice event, per life. */
+    readonly yearsWithChoiceFrom5: Dist | null;
+    /** Of age-ups to age 5 or later: share with at least one choice event, percent. */
+    readonly yearShareFrom5: number;
+    /** Mean years between choice events from age 5 (years / events). */
+    readonly yearsPerChoiceFrom5: number;
+    /** Share of years with a choice event, percent, by life stage. */
+    readonly yearShareByStage: Record<string, number>;
+    /** Mean choice events per life, by profile. */
+    readonly meanPerLifeByProfile: Record<string, number>;
+  };
   readonly death: {
     readonly ended: number;
     readonly unfinished: number;
@@ -111,7 +128,25 @@ function chainSteps(bundles: readonly PackBundle[]): Set<string> {
 
 const DECADES = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
+const STAGES: readonly (readonly [string, number, number])[] = [
+  ["5-12", 5, 12],
+  ["13-17", 13, 17],
+  ["18-29", 18, 29],
+  ["30-49", 30, 49],
+  ["50-64", 50, 64],
+  ["65+", 65, 200],
+];
+
 export class Aggregate {
+  private readonly choicePerLife: number[] = [];
+  private readonly choicePerLife5: number[] = [];
+  private readonly choiceYearsPerLife5: number[] = [];
+  private choiceYears5 = 0;
+  private choiceEvents5 = 0;
+  private years5 = 0;
+  private readonly stageYears: number[] = STAGES.map(() => 0);
+  private readonly stageHit: number[] = STAGES.map(() => 0);
+  private readonly profileChoice = new Map<string, number[]>();
   private readonly bundles: readonly PackBundle[];
   private lives = 0;
   private readonly profile = new Map<
@@ -168,6 +203,32 @@ export class Aggregate {
     }
     for (const [id, n] of Object.entries(r.fires))
       this.fires[id] = (this.fires[id] ?? 0) + n;
+    {
+      let all = 0;
+      let from5 = 0;
+      let years = 0;
+      for (const y of r.yearChoices) {
+        all += y.n;
+        if (y.age < 5) continue;
+        from5 += y.n;
+        this.years5++;
+        if (y.n > 0) years++;
+        STAGES.forEach(([, lo, hi], i) => {
+          if (y.age >= lo && y.age <= hi) {
+            this.stageYears[i] = (this.stageYears[i] as number) + 1;
+            if (y.n > 0) this.stageHit[i] = (this.stageHit[i] as number) + 1;
+          }
+        });
+      }
+      this.choicePerLife.push(all);
+      this.choicePerLife5.push(from5);
+      this.choiceYearsPerLife5.push(years);
+      this.choiceYears5 += years;
+      this.choiceEvents5 += from5;
+      const list = this.profileChoice.get(r.profile) ?? [];
+      this.profileChoice.set(r.profile, list);
+      list.push(all);
+    }
     for (const n of r.yearEvents) {
       this.eventHist[String(n)] = (this.eventHist[String(n)] ?? 0) + 1;
       this.eventSum += n;
@@ -273,6 +334,30 @@ export class Aggregate {
             : Math.round((this.eventSum / this.eventYears) * 100) / 100,
         years: this.eventYears,
         distribution: this.eventHist,
+      },
+      choices: {
+        perLife: dist(this.choicePerLife),
+        perLifeFrom5: dist(this.choicePerLife5),
+        yearsWithChoiceFrom5: dist(this.choiceYearsPerLife5),
+        yearShareFrom5: pct(this.choiceYears5, this.years5),
+        yearsPerChoiceFrom5:
+          this.choiceEvents5 === 0
+            ? 0
+            : Math.round((this.years5 / this.choiceEvents5) * 100) / 100,
+        yearShareByStage: Object.fromEntries(
+          STAGES.map(([name], i) => [
+            name,
+            pct(this.stageHit[i] as number, this.stageYears[i] as number),
+          ]),
+        ),
+        meanPerLifeByProfile: Object.fromEntries(
+          [...this.profileChoice]
+            .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+            .map(([k, v]) => [
+              k,
+              Math.round((v.reduce((a, b) => a + b, 0) / v.length) * 100) / 100,
+            ]),
+        ),
       },
       death: {
         ended: this.deathAges.length,
@@ -398,6 +483,30 @@ export function renderMarkdown(
     (a, b) => Number(a[0]) - Number(b[0]),
   ))
     L.push(`| ${k} | ${n} |`);
+  L.push(
+    "",
+    "## Choice events",
+    "",
+    `${r.choices.yearShareFrom5}% of years from age 5 on had at least one choice event (one every ${r.choices.yearsPerChoiceFrom5} years).`,
+    "",
+    DHEAD,
+    dRow("choice events per life", r.choices.perLife),
+    dRow("choice events per life, age 5+", r.choices.perLifeFrom5),
+    dRow("years with a choice, age 5+", r.choices.yearsWithChoiceFrom5),
+    "",
+    "| life stage | years with a choice |",
+    "|---|---|",
+  );
+  for (const [k, v] of Object.entries(r.choices.yearShareByStage))
+    L.push(`| ${k} | ${v}% |`);
+  L.push(
+    "",
+    `Mean choice events per life by profile: ${Object.entries(
+      r.choices.meanPerLifeByProfile,
+    )
+      .map(([k, v]) => `${k} ${v}`)
+      .join(" · ")}`,
+  );
   L.push(
     "",
     "## Death",

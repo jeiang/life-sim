@@ -18,6 +18,7 @@ The profiles are deliberately crude, so judge each metric against the profile th
 | Loans | some defaults, rare repossessions | repossessions come almost entirely from `spender`, who loans for every car and home |
 | Mood | stats spread, not pinned at 100 | `everyday-stress` pulls happiness down 7 points in 60% of years while it is above 55 |
 | Events per year | about 3-4 | |
+| Choice events | a decision about every 2-3 years from age 5 (35-45% of years have at least one) | `choice events per life` and `years with a choice` in the harness report; every life stage from 5 on should be near this, none far below |
 | Never-fired storylets in 10,000 lives | none | see below for the rare ones |
 
 ## What was tuned
@@ -27,6 +28,10 @@ The profiles are deliberately crude, so judge each metric against the profile th
 - Mortality: `age^4 / 90000` (was `/ 68000`).
 - University enrolment closes at age 24 (a random-choice player previously enrolled at some point in 97% of lives).
 - `pay-raise-surprise` required `quality.years_worked`, which is only set at retirement, so it almost never fired; it now requires a job and also adds a small permanent raise.
+
+- More decisions (issue #91): 20 new choice storylets in `storylets/decisions.yaml`, 4-6% a year each, spread over ages 5-90 (childhood dares and dilemmas, teen parties and study nights, adult spending/health/community choices, retirement-age hobbies and visits). Before: 19% of years from age 5 had a choice event (one every 4.6 years, 5-12 only 9%). After: see the numbers below.
+
+Result (10,000 lives, seed 20260101, 0 faults, median death age 73): 33.8 choice events per life (p10 19, p90 47) and 26.5 years with a choice (of about 70 from age 5): **39.3% of years from age 5 have a choice event, one decision every 2.0 years**. By stage (share of years with a choice): 5-12 28.4%, 13-17 41.7%, 18-29 38.6%, 30-49 42.0%, 50-64 45.5%, 65+ 35.5%. By profile (events per life): idle 28.6, random 35.0, spender 35.8, studious 36.0. Every storylet still fires.
 
 ## Intentionally rare storylets
 

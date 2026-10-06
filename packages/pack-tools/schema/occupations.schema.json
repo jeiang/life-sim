@@ -78,6 +78,21 @@
       "provides_housing": {
         "description": "While held, no living cost is charged and the standard's effects do not apply (for example prison)",
         "type": "boolean"
+      },
+      "confines": {
+        "additionalProperties": false,
+        "title": "Confinement (prison, hospital): while held the player is `confined`, housing is provided, and only content tagged `custody-ok` runs where locked",
+        "type": "object",
+        "properties": {
+          "menus": {
+            "description": "Lock action menus and the shop except actions tagged `custody-ok`",
+            "type": "boolean"
+          },
+          "events": {
+            "description": "Lock yearly events except those tagged `custody-ok`",
+            "type": "boolean"
+          }
+        }
       }
     }
   }

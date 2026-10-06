@@ -7,3 +7,4 @@ The Core is content-agnostic, but not fully generic. It has built-in models for 
 - A new kind of change, such as currency exchange for relocation, needs a Core release, not only a Pack.
 - Death is never automatic: a Pack must ship a mortality storylet, or no one dies.
 - Continuing as a child is a pointer move in the world, not a state migration.
+- Amendment (confinement): occupations may declare `confines { menus, events }`. Core locks content by whitelist, not blocklist: while confined, only storylets tagged `custody-ok` (a Core-owned tag) run in a locked trigger kind, the shop is locked, and housing is provided. Core exposes the boolean `confined`. Future menus and events therefore lock by default; a Pack that wants one to work in custody tags it.

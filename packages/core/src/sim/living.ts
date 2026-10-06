@@ -31,11 +31,29 @@ export function assetCityId(owner: Person, asset: Asset): string | undefined {
   return asset.cityId ?? owner.cityId;
 }
 
-/** True when an occupation the person holds provides housing, which waives living costs. */
+/** True when an occupation the person holds provides housing (or confines them), which waives living costs. */
 export function housingProvided(p: Person, idx: PackIndex): boolean {
-  return p.occupations.some(
-    (o) => idx.occupations.get(o.kindId)?.providesHousing,
-  );
+  return p.occupations.some((o) => {
+    const k = idx.occupations.get(o.kindId);
+    return k?.providesHousing || k?.confines;
+  });
+}
+
+/** What the person's confining occupations lock; undefined when they are not confined. */
+export function confinementOf(
+  p: Person,
+  idx: PackIndex,
+): { readonly menus: boolean; readonly events: boolean } | undefined {
+  let out: { menus: boolean; events: boolean } | undefined;
+  for (const o of p.occupations) {
+    const c = idx.occupations.get(o.kindId)?.confines;
+    if (c)
+      out = {
+        menus: (out?.menus ?? false) || c.menus,
+        events: (out?.events ?? false) || c.events,
+      };
+  }
+  return out;
 }
 
 /** The standard the person chose: their own, else the Pack default; undefined without standards. */

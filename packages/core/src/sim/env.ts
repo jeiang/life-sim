@@ -12,6 +12,7 @@ import type {
 } from "../state/types.ts";
 import { getPerson } from "../state/world.ts";
 import {
+  confinementOf,
   costIndexOf,
   housingProvided,
   livesWithParents,
@@ -140,6 +141,7 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
         return personField(world, idx, scope.subject, path.slice(7), path);
       if (path === "city.cost_index") return costIndexOf(subject, idx);
       if (path === "city.wage_index") return wageIndexOf(subject, idx);
+      if (path === "confined") return confinementOf(subject, idx) !== undefined;
       if (path === "living.cost") return livingCost(subject, idx);
       if (path === "living.standard") return standardOf(subject, idx)?.id ?? "";
       if (path === "living.risk")

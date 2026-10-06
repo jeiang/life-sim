@@ -162,6 +162,7 @@ const PLAYER_NAMES: Record<string, ExprType> = {
   "living.risk": "int",
   "city.country": "string",
   "living.with_parents": "bool",
+  confined: "bool",
   "player.first_name": "string",
   "player.last_name": "string",
 };
@@ -1057,6 +1058,13 @@ class PackCompiler {
     if (pay !== undefined) out.pay = pay;
     if (o.duration_years !== undefined) out.durationYears = o.duration_years;
     if (o.provides_housing) out.providesHousing = true;
+    if (o.confines) {
+      const menus = o.confines.menus === true;
+      const events = o.confines.events === true;
+      if (!menus && !events)
+        this.err(["confines"], "'confines' must lock 'menus' or 'events'");
+      out.confines = { menus, events };
+    }
     if (o.promotes_to !== undefined) {
       const r = this.ref(o.promotes_to, ["occupation"], ["promotes_to"]);
       if (r) out.promotesTo = r;

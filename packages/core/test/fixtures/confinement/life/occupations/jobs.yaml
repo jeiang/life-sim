@@ -1,0 +1,14 @@
+- id: job
+  label: Shop job
+  group: full-time
+  pay: 500000
+- id: cell
+  label: Prisoner
+  group: full-time
+  pay: 0
+  confines: { menus: true, events: true }
+- id: ward
+  label: Patient
+  group: full-time
+  pay: 0
+  confines: { menus: false, events: true }

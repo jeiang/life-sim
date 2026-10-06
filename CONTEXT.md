@@ -76,6 +76,10 @@ _Avoid_: Town, location, region
 Whether a person lives with their parents (free) or on their own. Ends for the player by moving out, being asked to leave by the parents, or the last parent dying; the player is never forced out by age.
 _Avoid_: Housing status, residence
 
+**Confinement**:
+A state of the player, held through an occupation that declares `confines` (prison, hospital). While confined the player is `confined`, housing is provided, and only content tagged `custody-ok` runs where menus or events are locked; the shop is locked with menus.
+_Avoid_: Imprisonment, lockout
+
 **Standard of living**:
 A Pack-defined level of spending (homeless to ultra-rich) with a base yearly cost, yearly happiness and health effects and an illness and death risk multiplier. The player on their own chooses one and pays its cost, scaled by the city cost index, each settlement; short of savings they live the best one they can afford that year.
 _Avoid_: Lifestyle, rent, tier

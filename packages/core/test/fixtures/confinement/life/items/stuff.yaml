@@ -1,0 +1,5 @@
+- id: trinket
+  label: Trinket
+  category: shopping
+  price: 5000
+  value: asset.purchase_price

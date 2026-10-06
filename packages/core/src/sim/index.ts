@@ -25,6 +25,7 @@ export { godSetMoney, godSetStat, isGodLife } from "./god.ts";
 export {
   assetCityId,
   chosenStandardOf,
+  confinementOf,
   costIndexOf,
   housingProvided,
   livesWithParents,

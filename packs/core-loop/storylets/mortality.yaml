@@ -10,6 +10,7 @@
 - id: natural-mortality
   icon: 🕯️
   trigger: event
+  tags: [mortality, custody-ok]
   chance: min(10000, ((age * age * age * age / 90000) * (140 - stat.health) / 90) * living.risk / 10000 + max(0, age - 100) * 1000)
   when: age >= 30
   text: "{player.first_name}'s health fails."
@@ -43,6 +44,7 @@
 - id: childhood-mortality
   icon: 🕯️
   trigger: event
+  tags: [mortality, custody-ok]
   chance: 3 + max(0, 12 - age)
   when: age >= 1 and age < 30
   text: "A sudden illness takes {player.first_name}'s life."

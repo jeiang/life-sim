@@ -4,10 +4,14 @@ import type { PersonId, QueuedEvent, ScopeRef, World } from "../state/types.ts";
 import { addJournalLine, getPerson, nextStream } from "../state/world.ts";
 import { applyEffects } from "./effects.ts";
 import { makeEnv, rolesOf, type Scope } from "./env.ts";
+import { confinementOf } from "./living.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import type { PackIndex } from "./pack-index.ts";
 import { explainFalse } from "./reason.ts";
 import { formatMoney, renderText } from "./text.ts";
+
+/** Core-owned storylet tag: the only content that runs while a confinement locks its trigger kind. */
+export const CUSTODY_OK = "custody-ok";
 
 /** A `next:` chain longer than this stops silently (guards against authored cycles). */
 const MAX_CHAIN = 32;
@@ -62,6 +66,13 @@ export function ineligibility(
   if (!bindingLive(world, scope)) return "Not available";
   if (scope?.kind === "person" && !hasTargetRole(world, s, scope.id))
     return "Not available";
+  const lock = confinementOf(getPerson(world, world.playerId), idx);
+  if (
+    lock &&
+    (s.trigger === "action" ? lock.menus : lock.events) &&
+    !s.tags.includes(CUSTODY_OK)
+  )
+    return "Not allowed while confined";
   const rec = world.storyletLog[logKey(s.id, scope)];
   if (rec) {
     if (s.once) return "Already done";

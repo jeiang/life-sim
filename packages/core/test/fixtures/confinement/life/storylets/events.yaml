@@ -1,0 +1,16 @@
+- id: visit
+  trigger: event
+  chance: 100%
+  tags: [custody-ok]
+  text: A visitor.
+  outcomes:
+    - effects:
+        - stat.health += 1
+
+- id: party
+  trigger: event
+  chance: 100%
+  text: A party.
+  outcomes:
+    - effects:
+        - stat.happiness += 1

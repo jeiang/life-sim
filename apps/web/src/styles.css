@@ -55,7 +55,10 @@
 }
 
 /* Root size: 100% elsewhere; on iOS, -apple-system-body makes the rem base follow
-   Larger Text (Dynamic Type). All sizes are rem/em so they cascade. */
+   Larger Text (Dynamic Type). All sizes are rem/em so they cascade.
+   A system-font keyword must be the ENTIRE value of `font`: `font: -apple-system-body, sans-serif`
+   is invalid and the whole declaration is dropped (that was the #89 bug). The shorthand also
+   resets line-height, so it is restored after. Must stay on :root: rem resolves from html. */
 :root {
   color-scheme: light dark;
   font-size: 100%;
@@ -63,14 +66,31 @@
 }
 @supports (font: -apple-system-body) {
   :root {
-    font: -apple-system-body, sans-serif;
+    /* biome-ignore lint/a11y/useGenericFontNames: a system-font keyword cannot take a fallback list */
+    font: -apple-system-body;
+    line-height: 1.5;
   }
 }
 
-/* The app shell is exactly the viewport; only inner regions scroll. */
-html,
-body {
+/* The document never scrolls: html/body are pinned to the viewport (position: fixed is what
+   keeps iOS from rubber-banding or panning the page after focus changes or zoom). Only inner
+   regions scroll. The html background is primary under the safe-area top so the iOS scroll-edge
+   effect (which samples the page background behind the status bar) fades into the header
+   colour, not into the light surface colour. */
+html {
   height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: linear-gradient(
+    to bottom,
+    var(--c-primary) env(safe-area-inset-top, 0px),
+    var(--c-surface) env(safe-area-inset-top, 0px)
+  );
+}
+body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
   overflow: hidden;
   overscroll-behavior: none;
 }

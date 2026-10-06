@@ -28,19 +28,23 @@ export function Modal(props: {
         el.querySelector<HTMLElement>("[data-autofocus]:not([disabled])") ??
         el.querySelector<HTMLElement>(FOCUSABLE) ??
         el;
-      target.focus();
+      target.focus({ preventScroll: true });
     }
     // Keep focus inside even when the browser moves it by other means.
     const guard = (e: FocusEvent) => {
       const c = card.current;
       if (c && e.target instanceof Node && !c.contains(e.target)) {
-        (c.querySelector<HTMLElement>(FOCUSABLE) ?? c).focus();
+        (c.querySelector<HTMLElement>(FOCUSABLE) ?? c).focus({
+          preventScroll: true,
+        });
       }
     };
     document.addEventListener("focusin", guard);
     return () => {
       document.removeEventListener("focusin", guard);
-      if (opener?.isConnected) opener.focus();
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
+      // The document must stay unscrollable; undo any programmatic scroll (focus, zoom).
+      window.scrollTo(0, 0);
     };
   }, []);
 

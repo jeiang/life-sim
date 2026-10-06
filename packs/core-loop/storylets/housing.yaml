@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Where the player lives. Every number that shapes being kicked out lives in `parents-ask-you-to-leave`:
+# the base chance, the weight of a cooler parent relationship, the stacking impatience after 30
+# (capped at 10 steps) and the weight per sibling. A cultural pack can add storylets with other numbers.
+- id: move-out
+  label: Move out
+  icon: 📦
+  trigger: action
+  menu: assets/housing
+  tags: [housing]
+  when: age >= 18 and living.with_parents
+  text: "You pack your things and leave your parents' home in {city.label}."
+  outcomes:
+    - weight: 1
+      text: "You have a place of your own now."
+      effects:
+        - move_out()
+        - journal("Moved out of your parents' home in {city.label} at age {age}.")
+
+- id: move-city
+  label: Move to another city
+  icon: 🚚
+  trigger: action
+  menu: assets/housing
+  tags: [housing]
+  when: age >= 18 and not living.with_parents and money >= 250000
+  text: "Moving costs $2,500."
+  choices:
+    - { label: Dustwater, when: city.id != core-loop/dustwater and money >= 250000, outcomes: [{ weight: 1, text: "You settle into Dustwater.", effects: [money -= 250000, move_to(core-loop/dustwater), "journal(\"Moved to Dustwater at age {age}.\")"] }] }
+    - { label: Harborview, when: city.id != core-loop/harborview and money >= 250000, outcomes: [{ weight: 1, text: "You settle into Harborview.", effects: [money -= 250000, move_to(core-loop/harborview), "journal(\"Moved to Harborview at age {age}.\")"] }] }
+    - { label: Maple Falls, when: city.id != core-loop/maple-falls and money >= 250000, outcomes: [{ weight: 1, text: "You settle into Maple Falls.", effects: [money -= 250000, move_to(core-loop/maple-falls), "journal(\"Moved to Maple Falls at age {age}.\")"] }] }
+    - { label: Riverton, when: city.id != core-loop/riverton and money >= 250000, outcomes: [{ weight: 1, text: "You settle into Riverton.", effects: [money -= 250000, move_to(core-loop/riverton), "journal(\"Moved to Riverton at age {age}.\")"] }] }
+    - { label: Lakeshore, when: city.id != core-loop/lakeshore and money >= 250000, outcomes: [{ weight: 1, text: "You settle into Lakeshore.", effects: [money -= 250000, move_to(core-loop/lakeshore), "journal(\"Moved to Lakeshore at age {age}.\")"] }] }
+    - { label: Goldcrest, when: city.id != core-loop/goldcrest and money >= 250000, outcomes: [{ weight: 1, text: "You settle into Goldcrest.", effects: [money -= 250000, move_to(core-loop/goldcrest), "journal(\"Moved to Goldcrest at age {age}.\")"] }] }
+    - label: Stay where you are
+
+- id: parents-ask-you-to-leave
+  icon: 🚪
+  trigger: event
+  tags: [housing]
+  when: age >= 18 and living.with_parents
+  chance: 100 + (100 - role_closeness(core-loop/parent)) * 4 + min(10, max(0, age - 30)) * 150 + role_count(core-loop/sibling) * 75
+  text: "Your parents sit you down: it is time you had a place of your own."
+  outcomes:
+    - weight: 1
+      effects:
+        - move_out()
+        - stat.happiness -= 5
+        - journal("Your parents asked you to move out at age {age}.")

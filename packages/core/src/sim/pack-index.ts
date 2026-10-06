@@ -1,4 +1,5 @@
 import type {
+  CompiledCity,
   CompiledGenerator,
   CompiledItemKind,
   CompiledLoanKind,
@@ -20,6 +21,7 @@ export interface PackIndex {
   readonly occupations: ReadonlyMap<string, CompiledOccupationKind>;
   readonly items: ReadonlyMap<string, CompiledItemKind>;
   readonly loans: ReadonlyMap<string, CompiledLoanKind>;
+  readonly cities: ReadonlyMap<string, CompiledCity>;
   readonly roles: ReadonlyMap<string, CompiledRole>;
   readonly generators: ReadonlyMap<string, CompiledGenerator>;
   /** Bundle order (dependencies first). */
@@ -49,6 +51,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
   const occupations = new Map<string, CompiledOccupationKind>();
   const items = new Map<string, CompiledItemKind>();
   const loans = new Map<string, CompiledLoanKind>();
+  const cities = new Map<string, CompiledCity>();
   const roles = new Map<string, CompiledRole>();
   const generators = new Map<string, CompiledGenerator>();
   const qualities = new Map<string, QualityDecl>();
@@ -61,6 +64,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     for (const o of b.occupations) occupations.set(o.id, o);
     for (const i of b.items) items.set(i.id, i);
     for (const l of b.loans) loans.set(l.id, l);
+    for (const c of b.cities) cities.set(c.id, c);
     for (const p of b.people) {
       if (p.type === "role") roles.set(p.id, p);
       else generators.set(p.id, p);
@@ -81,6 +85,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     occupations,
     items,
     loans,
+    cities,
     roles,
     generators,
     stats,

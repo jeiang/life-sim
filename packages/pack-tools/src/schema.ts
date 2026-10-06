@@ -256,6 +256,31 @@ export const LoanSchema = obj(
   "Loan kind",
 );
 
+export const CitySchema = obj(
+  {
+    id: Id,
+    label: Label,
+    icon: Type.Optional(Icon),
+    cost_index: Type.String({
+      pattern: "^\\d+(\\.\\d{1,2})?%$",
+      description:
+        "Cost of living relative to the baseline, as a percent literal, for example `130%`",
+    }),
+    weight: Type.Integer({
+      minimum: 1,
+      description: "Relative weight when a life picks its birth city",
+    }),
+    country: Type.Optional(
+      Type.String({
+        minLength: 1,
+        description:
+          "Country the city belongs to, a plain string for now (no country content type yet)",
+      }),
+    ),
+  },
+  "City",
+);
+
 export const PeopleSchema = Type.Union(
   [
     obj({ kind: Type.Literal("role"), id: Id, label: Label }),
@@ -281,6 +306,7 @@ export const FILE_SCHEMAS = {
   "occupations.schema.json": list(OccupationSchema, "Occupation kinds"),
   "items.schema.json": list(ItemSchema, "Item kinds"),
   "loans.schema.json": list(LoanSchema, "Loan kinds"),
+  "cities.schema.json": list(CitySchema, "Cities"),
   "people.schema.json": list(PeopleSchema, "People data"),
 } as const;
 
@@ -289,4 +315,5 @@ export type StoryletSrc = Static<typeof StoryletSchema>;
 export type OccupationSrc = Static<typeof OccupationSchema>;
 export type ItemSrc = Static<typeof ItemSchema>;
 export type LoanSrc = Static<typeof LoanSchema>;
+export type CitySrc = Static<typeof CitySchema>;
 export type PeopleSrc = Static<typeof PeopleSchema>;

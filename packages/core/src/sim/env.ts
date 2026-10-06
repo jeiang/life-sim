@@ -31,6 +31,16 @@ export interface Scope {
   readonly bound?: ReadonlyMap<string, PersonId>;
 }
 
+/** True while the person lives with their parents (see `Person.withParents`). */
+export function livesWithParents(p: Person): boolean {
+  return p.withParents ?? p.age < 18;
+}
+
+/** Cost index (basis points, 10000 = 100%) of the person's city; 10000 without one. */
+export function costIndexOf(p: Person, idx: PackIndex): number {
+  return (p.cityId && idx.cities.get(p.cityId)?.costIndexBp) || 10000;
+}
+
 export function qualityOf(p: Person, idx: PackIndex, id: string): QualityValue {
   const v = p.qualities[id];
   if (v !== undefined) return v;
@@ -129,6 +139,15 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
         return qualityOf(subject, idx, path.slice(8)) as Value;
       if (path.startsWith("player."))
         return personField(world, idx, scope.subject, path.slice(7), path);
+      if (path === "city.cost_index") return costIndexOf(subject, idx);
+      if (path === "city.label")
+        return (subject.cityId && idx.cities.get(subject.cityId)?.label) || "";
+      if (path === "city.country")
+        return (
+          (subject.cityId && idx.cities.get(subject.cityId)?.country) || ""
+        );
+      if (path === "city.id") return subject.cityId ?? "";
+      if (path === "living.with_parents") return livesWithParents(subject);
       if (path.startsWith("loan.") && scope.loan) {
         const f = path.slice(5);
         if (f === "balance") return scope.loan.balance;
@@ -162,6 +181,21 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
           return subject.assets.some((a) => a.kindId === id);
         case "years_in":
           return yearsIn(subject, id);
+        case "role_closeness":
+        case "role_count": {
+          const alive = world.relationships.filter(
+            (r) =>
+              r.from === world.playerId &&
+              r.role === id &&
+              world.persons.get(r.to)?.alive,
+          );
+          if (name === "role_count") return alive.length;
+          return alive.length
+            ? Math.trunc(
+                alive.reduce((n, r) => n + r.closeness, 0) / alive.length,
+              )
+            : 0;
+        }
         case "has":
           return (
             subject.occupations.some((o) => o.kindId === id) ||

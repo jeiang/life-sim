@@ -69,8 +69,11 @@ const kind = <T extends { kindId: string }>(
   });
 
 function person(p: Person, r: Resolve): Person {
+  const { cityId, ...rest } = p;
+  const city = cityId === undefined ? null : r(cityId);
   return {
-    ...p,
+    ...rest,
+    ...(city === null ? {} : { cityId: city }),
     stats: keys(p.stats, r),
     qualities: keys<QualityValue>(p.qualities, r),
     occupations: kind<Occupation>(p.occupations, r),

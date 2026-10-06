@@ -68,6 +68,14 @@ _Avoid_: Run, playthrough
 A role a person holds, such as student at a school or employee in a job, with a ladder, yearly pay or tuition, and performance. A person can hold several at once, limited by the exclusivity groups their kinds declare (for example one school, one full-time job). Past occupations remain on record as history.
 _Avoid_: Job, enrollment, career (as a model term)
 
+**City**:
+A Pack-defined place to live, with a cost index (cost of living relative to the baseline) and a birth weight. Every life has one. Countries come later with the Relocation pack.
+_Avoid_: Town, location, region
+
+**Living situation**:
+Whether a person lives with their parents (free) or on their own. Ends for the player by moving out, being asked to leave by the parents, or the last parent dying; the player is never forced out by age.
+_Avoid_: Housing status, residence
+
 **Money**:
 An integer amount in minor units of the single currency the Pack sets.
 _Avoid_: Cash balance, funds

@@ -108,7 +108,15 @@ function gender(v: unknown, p: string): Gender {
 
 function person(v: unknown, p: string): Person {
   const o = obj(v, p);
+  const cityId =
+    o.cityId === undefined ? undefined : str(o.cityId, `${p}.cityId`);
+  const withParents =
+    o.withParents === undefined
+      ? undefined
+      : bool(o.withParents, `${p}.withParents`);
   return {
+    ...(cityId === undefined ? {} : { cityId }),
+    ...(withParents === undefined ? {} : { withParents }),
     id: int(o.id, `${p}.id`),
     givenName: str(o.givenName, `${p}.givenName`),
     familyName: str(o.familyName, `${p}.familyName`),
@@ -130,8 +138,11 @@ function person(v: unknown, p: string): Person {
       const a = obj(x, `${p}.assets[${i}]`);
       const q = `${p}.assets[${i}]`;
       const acquiredAge = optInt(a.acquiredAge, `${q}.acquiredAge`);
+      const cityId =
+        a.cityId === undefined ? undefined : str(a.cityId, `${q}.cityId`);
       return {
         id: int(a.id, `${q}.id`),
+        ...(cityId === undefined ? {} : { cityId }),
         kindId: str(a.kindId, `${q}.kindId`),
         purchasePrice: int(a.purchasePrice, `${q}.purchasePrice`),
         value: int(a.value, `${q}.value`),
@@ -255,9 +266,12 @@ function choiceLog(v: unknown, p: string): ChoiceEntry[] {
       }
       case "sell":
         return { t, asset: int(o.asset, `${q}.asset`) };
-      case "start":
+      case "start": {
+        const cityId =
+          o.cityId === undefined ? undefined : str(o.cityId, `${q}.cityId`);
         return {
           t,
+          ...(cityId === undefined ? {} : { cityId }),
           givenName: str(o.givenName, `${q}.givenName`),
           familyName: str(o.familyName, `${q}.familyName`),
           gender: gender(o.gender, `${q}.gender`),
@@ -265,6 +279,7 @@ function choiceLog(v: unknown, p: string): ChoiceEntry[] {
           parents: int(o.parents, `${q}.parents`),
           siblings: int(o.siblings, `${q}.siblings`),
         };
+      }
       case "god-stat":
         return {
           t,

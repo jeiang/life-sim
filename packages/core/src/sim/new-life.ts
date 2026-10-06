@@ -5,6 +5,7 @@ import {
   clamp,
   createWorld,
   nextStream,
+  personsInIdOrder,
   updatePerson,
 } from "../state/world.ts";
 import { spawnPerson } from "./ops.ts";
@@ -29,6 +30,8 @@ export interface NewLifeOptions {
   readonly givenName?: string;
   /** Override the generated family name (parents and siblings share it). */
   readonly familyName?: string;
+  /** Birth city (full id); default: a weighted random draw over the Pack cities. */
+  readonly cityId?: string;
   /** Overrides the manifest family (or the default) field by field. */
   readonly family?: Partial<FamilySpec>;
   /**
@@ -106,6 +109,34 @@ export function newLife(
 
   // Family.
   w = spawnFamily(w, idx, w.playerId, family, familyName, custom);
+
+  // Birth city: the whole family lives there, and the player with them.
+  const chosen = opts.cityId ?? custom?.cityId;
+  if (chosen !== undefined && !idx.cities.has(chosen))
+    throw new RangeError(`unknown city '${chosen}'`);
+  let cityId = chosen;
+  if (cityId === undefined && idx.cities.size > 0) {
+    const [w4, cityRng] = nextStream(w, 0, "birth/city");
+    w = w4;
+    const cities = [...idx.cities.values()].sort((a, b) =>
+      a.id < b.id ? -1 : 1,
+    );
+    let roll = cityRng.int(cities.reduce((n, c) => n + c.weight, 0));
+    for (const c of cities) {
+      if (roll < c.weight) {
+        cityId = c.id;
+        break;
+      }
+      roll -= c.weight;
+    }
+  }
+  for (const p of personsInIdOrder(w)) {
+    w = updatePerson(w, p.id, (x) => ({
+      ...x,
+      ...(cityId === undefined ? {} : { cityId }),
+      ...(x.id === w.playerId ? { withParents: true } : {}),
+    }));
+  }
   return custom
     ? { ...w, choiceLog: [...w.choiceLog, { t: "start", ...custom }] }
     : w;

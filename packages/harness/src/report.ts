@@ -121,6 +121,27 @@ export interface Report {
     readonly defaultRate: number;
     readonly repossessions: number;
   };
+  /** Living situation: cities and moving out. */
+  readonly housing: {
+    /** Age at which living with parents first ended, over lives where it did. */
+    readonly moveOutAge: Dist | null;
+    /** Percent of lives reaching 18 that ever stopped living with their parents. */
+    readonly movedOut: number;
+    /** Percent of lives reaching 18 in which the parents asked the player to leave. */
+    readonly kickedOut: number;
+    /** Percent of lives reaching 30 / 40 still living with their parents at that age. */
+    readonly withParents30: number;
+    readonly withParents40: number;
+    readonly byProfile: Record<
+      string,
+      {
+        movedOut: number;
+        kickedOut: number;
+        withParents30: number;
+        withParents40: number;
+      }
+    >;
+  };
   /** Decade ages: stat id -> age -> distribution. */
   readonly statsByAge: Record<string, Record<string, Dist | null>>;
 }
@@ -152,6 +173,16 @@ const STAGES: readonly (readonly [string, number, number])[] = [
   ["50-64", 50, 64],
   ["65+", 65, 200],
 ];
+
+function homeShares(h: readonly number[] = []) {
+  const n = (i: number): number => h[i] ?? 0;
+  return {
+    movedOut: pct(n(1), n(0)),
+    kickedOut: pct(n(2), n(0)),
+    withParents30: pct(n(4), n(3)),
+    withParents40: pct(n(6), n(5)),
+  };
+}
 
 export class Aggregate {
   private readonly choicePerLife: number[] = [];
@@ -201,6 +232,9 @@ export class Aggregate {
   private loansDefaulted = 0;
   private repossessions = 0;
   private readonly stats = new Map<string, Map<number, number[]>>();
+  private readonly moveOutAges: number[] = [];
+  /** Per profile (and "all"): [reached18, movedOut, kickedOut, reached30, with30, reached40, with40]. */
+  private readonly home = new Map<string, number[]>();
 
   constructor(bundles: readonly PackBundle[]) {
     this.bundles = bundles;
@@ -310,6 +344,26 @@ export class Aggregate {
     if (reached >= 65) {
       this.reached65++;
       if (r.retired) this.retired++;
+    }
+    {
+      const reachedAge = (a: number): boolean => reached >= a;
+      const withAt = (a: number): boolean =>
+        r.samples.some((s) => s.age === a && s.withParents);
+      if (r.moveOutAge !== null) this.moveOutAges.push(r.moveOutAge);
+      for (const key of ["all", r.profile]) {
+        const h = this.home.get(key) ?? [0, 0, 0, 0, 0, 0, 0];
+        this.home.set(key, h);
+        const add = (i: number, yes: boolean): void => {
+          if (yes) h[i] = (h[i] as number) + 1;
+        };
+        add(0, reachedAge(18));
+        add(1, reachedAge(18) && r.moveOutAge !== null);
+        add(2, reachedAge(18) && r.kickedOut);
+        add(3, reachedAge(30));
+        add(4, withAt(30));
+        add(5, reachedAge(40));
+        add(6, withAt(40));
+      }
     }
     this.loansOpened += r.loansOpened;
     this.loansDefaulted += r.loansDefaulted;
@@ -441,6 +495,16 @@ export class Aggregate {
         defaulted: this.loansDefaulted,
         defaultRate: pct(this.loansDefaulted, this.loansOpened),
         repossessions: this.repossessions,
+      },
+      housing: {
+        moveOutAge: dist(this.moveOutAges),
+        ...homeShares(this.home.get("all")),
+        byProfile: Object.fromEntries(
+          [...this.home]
+            .filter(([k]) => k !== "all")
+            .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+            .map(([k, v]) => [k, homeShares(v)]),
+        ),
       },
       statsByAge,
     };
@@ -612,6 +676,26 @@ export function renderMarkdown(
     `- Opened: ${r.loans.opened}`,
     `- Defaulted (a payment missed): ${r.loans.defaulted} (${r.loans.defaultRate}%)`,
     `- Repossessions: ${r.loans.repossessions}`,
+    "",
+  );
+  const hs = r.housing;
+  L.push(
+    "## Housing",
+    "",
+    DHEAD,
+    dRow("age at moving out", hs.moveOutAge),
+    "",
+    "| | moved out | kicked out | with parents at 30 | with parents at 40 |",
+    "|---|---|---|---|---|",
+    `| all | ${hs.movedOut}% | ${hs.kickedOut}% | ${hs.withParents30}% | ${hs.withParents40}% |`,
+  );
+  for (const [k, v] of Object.entries(hs.byProfile))
+    L.push(
+      `| ${k} | ${v.movedOut}% | ${v.kickedOut}% | ${v.withParents30}% | ${v.withParents40}% |`,
+    );
+  L.push(
+    "",
+    "Moved out and kicked out are shares of lives reaching 18; with parents is the share of lives reaching that age.",
     "",
   );
   L.push("## Stats by age", "");

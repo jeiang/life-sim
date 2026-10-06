@@ -75,6 +75,13 @@ export interface Person {
   readonly assets: readonly Asset[];
   /** In id order. */
   readonly loans: readonly Loan[];
+  /** Pack city id the person lives in; absent in lives made before cities existed. */
+  readonly cityId?: string;
+  /**
+   * True while the person lives with their parents. Absent in lives made before living
+   * situations existed (read as: with parents under 18, on their own from 18).
+   */
+  readonly withParents?: boolean;
 }
 
 export interface Relationship {
@@ -154,6 +161,8 @@ export interface CustomStart {
   readonly parents: number;
   /** Siblings spawned (drawn from the manifest range otherwise). */
   readonly siblings: number;
+  /** Birth city (full id); absent: drawn by weight like a plain life. */
+  readonly cityId?: string;
 }
 
 /**

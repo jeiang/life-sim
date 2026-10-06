@@ -127,6 +127,22 @@ export interface CompiledLoanKind {
   readonly secured: boolean;
 }
 
+/**
+ * A place to live. The Relocation pack later groups cities into countries; `costIndexBp`
+ * scales living costs (10000 = 100%).
+ */
+export interface CompiledCity {
+  readonly id: string;
+  readonly label: string;
+  readonly icon?: IconRef;
+  /** Cost of living relative to the baseline, basis points (7000 = 70%). */
+  readonly costIndexBp: number;
+  /** Relative weight when a life picks its birth city. */
+  readonly weight: number;
+  /** Country the city belongs to, a plain string until countries exist as content. */
+  readonly country?: string;
+}
+
 export interface CompiledRole {
   readonly type: "role";
   readonly id: string;
@@ -200,5 +216,6 @@ export interface PackBundle {
   readonly occupations: readonly CompiledOccupationKind[];
   readonly items: readonly CompiledItemKind[];
   readonly loans: readonly CompiledLoanKind[];
+  readonly cities: readonly CompiledCity[];
   readonly people: readonly CompiledPeopleItem[];
 }

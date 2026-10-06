@@ -150,11 +150,12 @@ describe("NPC careers", () => {
       });
     const merged = year(link("merged"), bundles);
     expect(getPerson(merged, id).money).toBe(0);
+    const apart = year(link(), bundles);
     const pay = getPerson(merged, id).occupations[0]?.pay as number;
-    expect(getPerson(merged, merged.playerId).money).toBeGreaterThanOrEqual(
-      pay,
+    expect(getPerson(merged, merged.playerId).money).toBe(
+      getPerson(apart, apart.playerId).money + pay,
     );
-    expect(getPerson(year(link(), bundles), id).money).toBeGreaterThan(0);
+    expect(getPerson(apart, id).money).toBe(pay);
   });
 
   test("person.money reads and moves; income tier follows pay and wealth", () => {

@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
 id: core-loop
-version: 4
+version: 5
 currency:
   symbol: "$"
   digits: 2

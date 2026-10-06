@@ -9,7 +9,13 @@ import {
   type World,
 } from "@life/core";
 
-export const PROFILE_NAMES = ["random", "studious", "spender", "idle"] as const;
+export const PROFILE_NAMES = [
+  "random",
+  "studious",
+  "spender",
+  "idle",
+  "gambler",
+] as const;
 /** Profiles that only run when asked for by name (`--profile grinder`), never in `all`. */
 export const EXTRA_PROFILE_NAMES = ["grinder"] as const;
 export type ProfileName =
@@ -186,6 +192,35 @@ const spender: Profile = {
   pickChoice: uniformChoice,
 };
 
+/** Actions of the Gambling Pack (casino games, lottery, support meetings). */
+const GAMBLING = /^gambling\//;
+const GAMBLE = /^(play-|bet-|roll-|buy-lottery)/;
+
+/**
+ * Bets all year at the casinos and the lottery; works only when nothing is left to bet on.
+ * Once addicted it tries to quit: support meetings and work, with a one-in-five relapse
+ * on each move.
+ */
+const gambler: Profile = {
+  maxMoves: () => 4,
+  nextMove(w, ctx, rng) {
+    const rows = unlockedActions(w, ctx);
+    const me = w.persons.get(w.playerId);
+    const quitting = me?.qualities.gambling_addicted === true && rng.int(5) > 0;
+    const meeting = rows.find(
+      (r) => r.id === "gambling/gambling-support-meeting",
+    );
+    if (quitting && meeting) return asMove(meeting, rng);
+    const bets = rows.filter(
+      (r) => GAMBLING.test(r.id) && GAMBLE.test(short(r.id)),
+    );
+    if (!quitting && bets.length > 0) return asMove(pick(bets, rng), rng);
+    const jobs = rows.filter((r) => JOB.test(short(r.id)));
+    return jobs.length === 0 ? null : asMove(pick(jobs, rng), rng);
+  },
+  pickChoice: uniformChoice,
+};
+
 const idle: Profile = {
   maxMoves: () => 0,
   nextMove: () => null,
@@ -213,4 +248,5 @@ export const PROFILES: Record<ProfileName, Profile> = {
   studious,
   spender,
   idle,
+  gambler,
 };

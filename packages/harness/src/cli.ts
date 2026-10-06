@@ -12,7 +12,7 @@ import {
 } from "./profiles.ts";
 import { renderMarkdown } from "./report.ts";
 
-const USAGE = `usage: pnpm harness --lives N [--profile random|studious|spender|idle|grinder|all|a,b] [--seed S] [--out dir] [--packs dir] [--life-seed X] [--jobs N]
+const USAGE = `usage: pnpm harness --lives N [--profile random|studious|spender|idle|gambler|grinder|all|a,b] [--seed S] [--out dir] [--packs dir] [--life-seed X] [--jobs N]
   --lives      lives to simulate (default 100)
   --profile    simulated player profile(s); several are dealt to lives in turn (default all)
   --seed       base seed, uint32 (default 1)

@@ -127,6 +127,29 @@ export interface Report {
       }
     >;
   };
+  /** Gambling Pack actions (empty when no life staked anything). */
+  readonly gambling: {
+    /** Percent of lives that placed at least one stake, by profile and overall. */
+    readonly gambledShare: Record<string, number>;
+    /** Percent of lives ever addicted, by profile and overall. */
+    readonly addictedShare: Record<string, number>;
+    /** Of gamblers (lives that staked anything), percent ever addicted. */
+    readonly addictedOfGamblers: number;
+    /** Of addicted lives, percent that recovered. */
+    readonly recovered: number;
+    /** Percent of lives ever banned from the casinos, and with the VIP room open. */
+    readonly banned: number;
+    readonly vip: number;
+    /** Percent of the years of lives that gambled that were lived addicted. */
+    readonly addictedYearShare: number;
+    /** Lifetime stakes of gamblers. */
+    readonly wageredPerGambler: Dist | null;
+    /** Realised return = (stakes + net change of cash) / stakes, percent, over the whole run. */
+    readonly games: Record<
+      string,
+      { bets: number; wagered: number; net: number; returnPct: number }
+    >;
+  };
   /** Chance hits dropped by the yearly cap, by Pack id (Packs with none are omitted). */
   readonly capDrops: Record<string, number>;
   readonly death: {
@@ -248,6 +271,19 @@ export class Aggregate {
   private decEmpty = 0;
   private decEmptyYears = 0;
   private readonly capDrops = new Map<string, number>();
+  private readonly gamb = {
+    lives: new Map<string, number>(),
+    gambled: new Map<string, number>(),
+    addicted: new Map<string, number>(),
+    addictedGamblers: 0,
+    recovered: 0,
+    banned: 0,
+    vip: 0,
+    addictedYears: 0,
+    gamblerYears: 0,
+    wagered: [] as number[],
+    games: new Map<string, { bets: number; wagered: number; net: number }>(),
+  };
   private readonly profileDec = new Map<string, number[]>();
   private choiceEvents5 = 0;
   private years5 = 0;
@@ -362,6 +398,31 @@ export class Aggregate {
       const list = this.profileChoice.get(r.profile) ?? [];
       this.profileChoice.set(r.profile, list);
       list.push(all);
+    }
+    {
+      const g = this.gamb;
+      const g2 = r.gambling;
+      for (const k of [r.profile, "all"]) {
+        g.lives.set(k, (g.lives.get(k) ?? 0) + 1);
+        if (g2.gambled) g.gambled.set(k, (g.gambled.get(k) ?? 0) + 1);
+        if (g2.everAddicted) g.addicted.set(k, (g.addicted.get(k) ?? 0) + 1);
+      }
+      if (g2.gambled) {
+        g.wagered.push(g2.wagered);
+        g.gamblerYears += r.samples.length;
+        g.addictedYears += g2.addictedYears;
+        if (g2.everAddicted) g.addictedGamblers++;
+      }
+      if (g2.recovered) g.recovered++;
+      if (g2.everBanned) g.banned++;
+      if (g2.vip) g.vip++;
+      for (const [id, v] of Object.entries(g2.games)) {
+        const t = g.games.get(id) ?? { bets: 0, wagered: 0, net: 0 };
+        g.games.set(id, t);
+        t.bets += v.bets;
+        t.wagered += v.wagered;
+        t.net += v.net;
+      }
     }
     for (const [pack, n] of Object.entries(r.capDrops))
       this.capDrops.set(pack, (this.capDrops.get(pack) ?? 0) + n);
@@ -501,6 +562,40 @@ export class Aggregate {
     this.repossessions += r.repossessions;
   }
 
+  private gamblingReport(): Report["gambling"] {
+    const g = this.gamb;
+    const share = (m: Map<string, number>) =>
+      Object.fromEntries(
+        [...g.lives]
+          .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+          .map(([k, n]) => [k, pct(m.get(k) ?? 0, n)]),
+      );
+    const all = g.lives.get("all") ?? 0;
+    const gamblers = g.gambled.get("all") ?? 0;
+    const addicted = g.addicted.get("all") ?? 0;
+    return {
+      gambledShare: share(g.gambled),
+      addictedShare: share(g.addicted),
+      addictedOfGamblers: pct(g.addictedGamblers, gamblers),
+      recovered: pct(g.recovered, addicted),
+      banned: pct(g.banned, all),
+      vip: pct(g.vip, all),
+      addictedYearShare: pct(g.addictedYears, g.gamblerYears),
+      wageredPerGambler: dist(g.wagered),
+      games: Object.fromEntries(
+        [...g.games]
+          .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+          .map(([id, t]) => [
+            id,
+            {
+              ...t,
+              returnPct: pct(t.wagered + t.net, t.wagered),
+            },
+          ]),
+      ),
+    };
+  }
+
   report(): Report {
     const chain = chainSteps(this.bundles);
     const all = this.bundles.flatMap((b) => b.storylets.map((s) => s.id));
@@ -628,6 +723,7 @@ export class Aggregate {
             ]),
         ),
       },
+      gambling: this.gamblingReport(),
       capDrops: Object.fromEntries(
         [...this.capDrops].sort((a, b) => (a[0] < b[0] ? -1 : 1)),
       ),
@@ -809,6 +905,31 @@ export function renderMarkdown(
   );
   for (const [k, v] of Object.entries(r.decisions.byProfile))
     L.push(`| ${k} | ${v.atLeast1}% | ${v.atLeast2}% | ${v.atLeast3}% |`);
+  if (Object.keys(r.gambling.games).length > 0) {
+    const g = r.gambling;
+    const by = (m: Record<string, number>) =>
+      Object.entries(m)
+        .map(([k, v]) => `${k} ${v}%`)
+        .join(" · ");
+    L.push(
+      "",
+      "## Gambling",
+      "",
+      `Lives that staked anything: ${by(g.gambledShare)}.`,
+      "",
+      `Ever addicted: ${by(g.addictedShare)}; of gamblers ${g.addictedOfGamblers}%; ${g.recovered}% of the addicted recovered. Years lived addicted: ${g.addictedYearShare}% of the years of gamblers. Banned for suspected cheating: ${g.banned}% of lives; VIP room open: ${g.vip}%.`,
+      "",
+      DHEAD,
+      dRow("lifetime stakes per gambler (minor units)", g.wageredPerGambler),
+      "",
+      "| game | bets | staked | net | realised return |",
+      "|---|---|---|---|---|",
+    );
+    for (const [id, t] of Object.entries(g.games))
+      L.push(
+        `| ${id} | ${t.bets} | ${major(t.wagered)} | ${major(t.net)} | ${t.returnPct}% |`,
+      );
+  }
   L.push("", "## Chance events dropped by the yearly cap", "");
   const drops = Object.entries(r.capDrops);
   if (drops.length === 0) L.push("None.");

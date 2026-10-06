@@ -1,0 +1,663 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Casino games, the lottery and their follow-up hands. Generated structure; edit the numbers with care: every table's theoretical return is in BALANCE.md.
+
+- id: play-roulette
+  label: "Play roulette"
+  icon: 🎡
+  trigger: action
+  menu: activities/casino
+  tags: [casino, gambling]
+  when: age >= 18 and age >= quality.gambling_banned_until
+  repeatable: true
+  amount:
+    min: 500
+    max: "min(money, quality.gambling_vip ? 500000 : 50000)"
+    step: 100
+  text: "The wheel is spinning. Roulette: minimum $5, table limit $500 ($5,000 in the VIP room). What do you back?"
+  choices:
+    - label: "Red or black (pays 1 to 1)"
+      outcomes:
+        - weight: 4750
+          text: "The ball settles on your colour."
+          effects:
+            - money += amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak += 1
+            - stat.happiness += 2
+        - weight: 5250
+          text: "The ball lands on the other colour."
+          effects:
+            - money -= amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += amount
+            - stat.happiness -= 1
+    - label: "A dozen (pays 2 to 1)"
+      outcomes:
+        - weight: 3167
+          text: "Your dozen comes in."
+          effects:
+            - money += amount * 2
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak += 1
+            - stat.happiness += 2
+        - weight: 6833
+          text: "The ball skips your dozen."
+          effects:
+            - money -= amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += amount
+            - stat.happiness -= 1
+    - label: "A single number (pays 35 to 1)"
+      outcomes:
+        - weight: 264
+          text: "Your number! The table erupts."
+          effects:
+            - money += amount * 35
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak += 1
+            - stat.happiness += 2
+        - weight: 9736
+          text: "The ball drops into a different pocket."
+          effects:
+            - money -= amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += amount
+            - stat.happiness -= 1
+
+- id: play-slots
+  label: "Play the slots"
+  icon: 🎰
+  trigger: action
+  menu: activities/casino
+  tags: [casino, gambling]
+  when: age >= 18 and age >= quality.gambling_banned_until
+  repeatable: true
+  amount:
+    min: 100
+    max: "min(money, quality.gambling_vip ? 100000 : 10000)"
+    step: 100
+  text: "Rows of flashing machines. Slots: minimum $1, table limit $100 ($1,000 in the VIP room)."
+  outcomes:
+    - weight: 10
+      text: "JACKPOT! The machine flashes, rings and pours out coins."
+      effects:
+        - money += amount * 99
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - quality.gambling_streak += 1
+        - stat.happiness += 3
+        - "journal(\"Hit the slots jackpot at age {age}.\")"
+    - weight: 100
+      text: "Three of a kind. A rush of coins."
+      effects:
+        - money += amount * 19
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - quality.gambling_streak += 1
+        - stat.happiness += 3
+    - weight: 400
+      text: "A good line pays out."
+      effects:
+        - money += amount * 4
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - quality.gambling_streak += 1
+        - stat.happiness += 3
+    - weight: 1200
+      text: "Two matching symbols and a small payout."
+      effects:
+        - money += amount * 1
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - quality.gambling_streak += 1
+        - stat.happiness += 3
+    - weight: 1600
+      text: "The reels line up and give you your money back."
+      effects:
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+    - weight: 6690
+      text: "The reels stop on nothing in particular."
+      effects:
+        - money -= amount
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - quality.gambling_streak = 0
+        - quality.gambling_lost += amount
+        - stat.happiness -= 1
+
+- id: bet-on-horse-races
+  label: "Bet on the horses"
+  icon: 🏇
+  trigger: action
+  menu: activities/casino
+  tags: [casino, gambling]
+  when: age >= 18 and age >= quality.gambling_banned_until
+  repeatable: true
+  amount:
+    min: 500
+    max: "min(money, quality.gambling_vip ? 500000 : 50000)"
+    step: 100
+  text: "The next race is about to start. The track: minimum $5, table limit $500 ($5,000 in the VIP room). Who gets your bet?"
+  choices:
+    - label: "The favourite, Steady Hand (2 to 1)"
+      outcomes:
+        - weight: 3100
+          text: "Steady Hand takes it by a length."
+          effects:
+            - money += amount * 2
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak += 1
+            - stat.happiness += 2
+        - weight: 6900
+          text: "Steady Hand fades in the straight."
+          effects:
+            - money -= amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += amount
+            - stat.happiness -= 1
+    - label: "A contender, Copper Lane (5 to 1)"
+      outcomes:
+        - weight: 1550
+          text: "Copper Lane surges late and wins."
+          effects:
+            - money += amount * 5
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak += 1
+            - stat.happiness += 2
+        - weight: 8450
+          text: "Copper Lane finishes in the pack."
+          effects:
+            - money -= amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += amount
+            - stat.happiness -= 1
+    - label: "The longshot, Moonwalk (20 to 1)"
+      outcomes:
+        - weight: 443
+          text: "Moonwalk wins and nobody saw it coming."
+          effects:
+            - money += amount * 20
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak += 1
+            - stat.happiness += 2
+        - weight: 9557
+          text: "Moonwalk is last out of the gate and stays there."
+          effects:
+            - money -= amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += amount
+            - stat.happiness -= 1
+
+- id: roll-craps
+  label: "Shoot craps"
+  icon: 🎲
+  trigger: action
+  menu: activities/casino
+  tags: [casino, gambling]
+  when: age >= 18 and age >= quality.gambling_banned_until
+  repeatable: true
+  amount:
+    min: 500
+    max: "min(money, quality.gambling_vip ? 500000 : 50000)"
+    step: 100
+  text: "A loud craps table waves you over. Craps: minimum $5, table limit $500 ($5,000 in the VIP room). One roll of the dice."
+  choices:
+    - label: "The field (pays 1 to 1, 2 to 1 on a 2 or 12)"
+      outcomes:
+        - weight: 14
+          text: "The dice land in the field."
+          effects:
+            - money += amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak += 1
+            - stat.happiness += 2
+        - weight: 2
+          text: "Snake eyes or boxcars. The field pays double."
+          effects:
+            - money += amount * 2
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak += 1
+            - stat.happiness += 2
+        - weight: 20
+          text: "The dice land outside the field."
+          effects:
+            - money -= amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += amount
+            - stat.happiness -= 1
+    - label: "Any seven (pays 4 to 1)"
+      outcomes:
+        - weight: 6
+          text: "Seven! The table shouts."
+          effects:
+            - money += amount * 4
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak += 1
+            - stat.happiness += 2
+        - weight: 30
+          text: "No seven this time."
+          effects:
+            - money -= amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += amount
+            - stat.happiness -= 1
+
+- id: play-baccarat
+  label: "Play baccarat"
+  icon: 🃏
+  trigger: action
+  menu: activities/casino
+  tags: [casino, gambling]
+  when: age >= 18 and age >= quality.gambling_banned_until
+  repeatable: true
+  amount:
+    min: 1000
+    max: "min(money, quality.gambling_vip ? 1000000 : 100000)"
+    step: 100
+  text: "A quiet table with a green felt and one hand to play. Baccarat: minimum $10, table limit $1,000 ($10,000 in the VIP room)."
+  choices:
+    - label: "Banker (pays 0.95 to 1)"
+      outcomes:
+        - weight: 4586
+          text: "The banker hand wins."
+          effects:
+            - money += amount * 95 / 100
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak += 1
+            - stat.happiness += 2
+        - weight: 953
+          text: "A tie. Your bet is returned."
+          effects:
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - stat.happiness += 1
+        - weight: 4461
+          text: "The player hand beats the banker."
+          effects:
+            - money -= amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += amount
+            - stat.happiness -= 1
+    - label: "Player (pays 1 to 1)"
+      outcomes:
+        - weight: 4462
+          text: "The player hand wins."
+          effects:
+            - money += amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak += 1
+            - stat.happiness += 2
+        - weight: 953
+          text: "A tie. Your bet is returned."
+          effects:
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - stat.happiness += 1
+        - weight: 4585
+          text: "The banker hand wins."
+          effects:
+            - money -= amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += amount
+            - stat.happiness -= 1
+    - label: "Tie (pays 8 to 1)"
+      outcomes:
+        - weight: 953
+          text: "A tie! The dealer pushes a tall stack across."
+          effects:
+            - money += amount * 8
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak += 1
+            - stat.happiness += 2
+        - weight: 9047
+          text: "Not a tie."
+          effects:
+            - money -= amount
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += amount
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += amount
+            - stat.happiness -= 1
+
+- id: buy-lottery-ticket
+  label: "Buy a lottery ticket"
+  icon: 🎟️
+  trigger: action
+  menu: activities
+  tags: [gambling, lottery]
+  when: age >= 18 and money >= 200
+  repeatable: true
+  text: "A ticket costs $2. The top prize is $5,000,000."
+  outcomes:
+    - weight: 1
+      text: "THE JACKPOT. {player.first_name} checks the numbers a dozen times. Every one matches."
+      effects:
+        - money += 499999800
+        - quality.gambling_wagered += 200
+        - quality.gambling_streak += 1
+        - stat.happiness += 10
+        - "journal(\"Won a big lottery prize at age {age}.\")"
+    - weight: 10
+      text: "Five numbers. A life-changing prize."
+      effects:
+        - money += 9999800
+        - quality.gambling_wagered += 200
+        - quality.gambling_streak += 1
+        - stat.happiness += 10
+        - "journal(\"Won a big lottery prize at age {age}.\")"
+    - weight: 1000
+      text: "Four numbers and a very nice bonus."
+      effects:
+        - money += 99800
+        - quality.gambling_wagered += 200
+        - quality.gambling_streak += 1
+        - stat.happiness += 2
+    - weight: 20000
+      text: "Three numbers and a decent prize."
+      effects:
+        - money += 4800
+        - quality.gambling_wagered += 200
+        - quality.gambling_streak += 1
+        - stat.happiness += 2
+    - weight: 500000
+      text: "A two-number win, enough for a couple more tickets."
+      effects:
+        - money += 200
+        - quality.gambling_wagered += 200
+        - quality.gambling_streak += 1
+        - stat.happiness += 2
+    - weight: 9478989
+      text: "Not a winner, but the dream was nice for a day."
+      effects:
+        - money -= 200
+        - quality.gambling_wagered += 200
+        - stat.happiness += 1
+
+- id: play-blackjack
+  label: "Play blackjack"
+  icon: ♠️
+  trigger: action
+  menu: activities/casino
+  tags: [casino, gambling]
+  when: age >= 18 and age >= quality.gambling_banned_until
+  repeatable: true
+  amount:
+    min: 1000
+    max: "min(money, quality.gambling_vip ? 500000 : 50000)"
+    step: 100
+  text: "A blackjack table with a dealer in a waistcoat. Blackjack: minimum $10, table limit $500 ($5,000 in the VIP room)."
+  outcomes:
+    - weight: 473
+      text: "Blackjack! The dealer pays three to two."
+      effects:
+        - money += amount * 3 / 2
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - quality.gambling_streak += 1
+        - stat.happiness += 3
+    - weight: 1148
+      text: "You are dealt 12. The dealer's hole card is down. Hit or stand?"
+      next: blackjack-play
+      effects:
+        - money -= amount
+        - quality.gambling_pot = amount
+        - quality.gambling_hand = 12
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+    - weight: 1099
+      text: "You are dealt 13. The dealer's hole card is down. Hit or stand?"
+      next: blackjack-play
+      effects:
+        - money -= amount
+        - quality.gambling_pot = amount
+        - quality.gambling_hand = 13
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+    - weight: 1046
+      text: "You are dealt 14. The dealer's hole card is down. Hit or stand?"
+      next: blackjack-play
+      effects:
+        - money -= amount
+        - quality.gambling_pot = amount
+        - quality.gambling_hand = 14
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+    - weight: 989
+      text: "You are dealt 15. The dealer's hole card is down. Hit or stand?"
+      next: blackjack-play
+      effects:
+        - money -= amount
+        - quality.gambling_pot = amount
+        - quality.gambling_hand = 15
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+    - weight: 928
+      text: "You are dealt 16. The dealer's hole card is down. Hit or stand?"
+      next: blackjack-play
+      effects:
+        - money -= amount
+        - quality.gambling_pot = amount
+        - quality.gambling_hand = 16
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+    - weight: 862
+      text: "You are dealt 17. The dealer's hole card is down. Hit or stand?"
+      next: blackjack-play
+      effects:
+        - money -= amount
+        - quality.gambling_pot = amount
+        - quality.gambling_hand = 17
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+    - weight: 944
+      text: "You are dealt 18. The dealer's hole card is down. Hit or stand?"
+      next: blackjack-play
+      effects:
+        - money -= amount
+        - quality.gambling_pot = amount
+        - quality.gambling_hand = 18
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+    - weight: 884
+      text: "You are dealt 19. The dealer's hole card is down. Hit or stand?"
+      next: blackjack-play
+      effects:
+        - money -= amount
+        - quality.gambling_pot = amount
+        - quality.gambling_hand = 19
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+    - weight: 1350
+      text: "You are dealt 20. The dealer's hole card is down. Hit or stand?"
+      next: blackjack-play
+      effects:
+        - money -= amount
+        - quality.gambling_pot = amount
+        - quality.gambling_hand = 20
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+    - weight: 277
+      text: "You are dealt twenty-one in three cards. You stand."
+      next: blackjack-play
+      effects:
+        - money -= amount
+        - quality.gambling_pot = amount
+        - quality.gambling_hand = 21
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+
+- id: blackjack-play
+  icon: ♠️
+  trigger: event
+  tags: [gambling]
+  chance: 0%
+  text: "The dealer waits. Hit for one more card, or stand?"
+  choices:
+    - label: "Stand"
+      outcomes:
+        - weight: "quality.gambling_hand == 12 ? 2816 : quality.gambling_hand == 13 ? 2816 : quality.gambling_hand == 14 ? 2816 : quality.gambling_hand == 15 ? 2816 : quality.gambling_hand == 16 ? 2816 : quality.gambling_hand == 17 ? 2816 : quality.gambling_hand == 18 ? 4267 : quality.gambling_hand == 19 ? 5662 : quality.gambling_hand == 20 ? 6997 : 8799"
+          text: "The dealer's hand falls short or busts. You win."
+          effects:
+            - money += quality.gambling_pot * 2
+            - quality.gambling_streak += 1
+        - weight: "quality.gambling_hand == 12 ? 0 : quality.gambling_hand == 13 ? 0 : quality.gambling_hand == 14 ? 0 : quality.gambling_hand == 15 ? 0 : quality.gambling_hand == 16 ? 0 : quality.gambling_hand == 17 ? 1451 : quality.gambling_hand == 18 ? 1395 : quality.gambling_hand == 19 ? 1335 : quality.gambling_hand == 20 ? 1803 : 1201"
+          text: "A push. Your stake is returned."
+          effects:
+            - money += quality.gambling_pot
+        - weight: "quality.gambling_hand == 12 ? 7184 : quality.gambling_hand == 13 ? 7184 : quality.gambling_hand == 14 ? 7184 : quality.gambling_hand == 15 ? 7184 : quality.gambling_hand == 16 ? 7184 : quality.gambling_hand == 17 ? 5733 : quality.gambling_hand == 18 ? 4338 : quality.gambling_hand == 19 ? 3003 : quality.gambling_hand == 20 ? 1200 : 0"
+          text: "The dealer turns over a better hand."
+          effects:
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += quality.gambling_pot
+            - stat.happiness -= 1
+    - label: "Hit"
+      when: quality.gambling_hand < 21
+      outcomes:
+        - weight: "quality.gambling_hand == 12 ? 3062 : quality.gambling_hand == 13 ? 2845 : quality.gambling_hand == 14 ? 2629 : quality.gambling_hand == 15 ? 2412 : quality.gambling_hand == 16 ? 2195 : quality.gambling_hand == 17 ? 1979 : quality.gambling_hand == 18 ? 1651 : quality.gambling_hand == 19 ? 1215 : quality.gambling_hand == 20 ? 677 : 0"
+          text: "A good card, and the dealer cannot match it. You win."
+          effects:
+            - money += quality.gambling_pot * 2
+            - quality.gambling_streak += 1
+        - weight: "quality.gambling_hand == 12 ? 553 : quality.gambling_hand == 13 ? 553 : quality.gambling_hand == 14 ? 553 : quality.gambling_hand == 15 ? 553 : quality.gambling_hand == 16 ? 553 : quality.gambling_hand == 17 ? 441 : quality.gambling_hand == 18 ? 334 : quality.gambling_hand == 19 ? 231 : quality.gambling_hand == 20 ? 92 : 0"
+          text: "A push. Your stake is returned."
+          effects:
+            - money += quality.gambling_pot
+        - weight: "quality.gambling_hand == 12 ? 6385 : quality.gambling_hand == 13 ? 6602 : quality.gambling_hand == 14 ? 6818 : quality.gambling_hand == 15 ? 7035 : quality.gambling_hand == 16 ? 7252 : quality.gambling_hand == 17 ? 7580 : quality.gambling_hand == 18 ? 8015 : quality.gambling_hand == 19 ? 8554 : quality.gambling_hand == 20 ? 9231 : 10000"
+          text: "You bust or the dealer beats you."
+          effects:
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += quality.gambling_pot
+            - stat.happiness -= 1
+
+- id: play-poker
+  label: "Play poker"
+  icon: ♣️
+  trigger: action
+  menu: activities/casino
+  tags: [casino, gambling]
+  when: age >= 18 and age >= quality.gambling_banned_until
+  repeatable: true
+  amount:
+    min: 5000
+    max: "min(money, quality.gambling_vip ? 1000000 : 100000)"
+    step: 100
+  text: "A friendly cash game, buy-in on the table. Poker: minimum $50, table limit $1,000 ($10,000 in the VIP room). Your buy-in goes in the pot."
+  outcomes:
+    - weight: 4000
+      text: "You are dealt ace-high and nothing else. Fold, call or raise?"
+      next: poker-play
+      effects:
+        - money -= amount
+        - quality.gambling_pot = amount
+        - quality.gambling_hand = 1
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+    - weight: 4000
+      text: "You are dealt a pair of nines. Fold, call or raise?"
+      next: poker-play
+      effects:
+        - money -= amount
+        - quality.gambling_pot = amount
+        - quality.gambling_hand = 2
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+    - weight: 2000
+      text: "You are dealt three queens. Fold, call or raise?"
+      next: poker-play
+      effects:
+        - money -= amount
+        - quality.gambling_pot = amount
+        - quality.gambling_hand = 3
+        - quality.gambling_bets_year += 1
+        - quality.gambling_wagered += amount
+        - stat.happiness += 1
+
+- id: poker-play
+  icon: ♣️
+  trigger: event
+  tags: [gambling]
+  chance: 0%
+  text: "It is on you. Fold, call, or raise?"
+  choices:
+    - label: "Fold (get 30% of your buy-in back)"
+      outcomes:
+        - weight: 1
+          text: "You muck your cards and take what is left."
+          effects:
+            - money += quality.gambling_pot * 3 / 10
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += quality.gambling_pot * 7 / 10
+    - label: "Call"
+      outcomes:
+        - weight: "(quality.gambling_hand == 1 ? 3000 : quality.gambling_hand == 2 ? 5000 : 6800) + stat.smarts * 5"
+          text: "Your hand holds up and you rake in the pot."
+          effects:
+            - money += quality.gambling_pot * 19 / 10
+            - quality.gambling_streak += 1
+        - weight: "10000 - ((quality.gambling_hand == 1 ? 3000 : quality.gambling_hand == 2 ? 5000 : 6800) + stat.smarts * 5)"
+          text: "Your hand does not hold up."
+          effects:
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += quality.gambling_pot
+            - stat.happiness -= 1
+    - label: "Raise (adds half your buy-in)"
+      when: money >= quality.gambling_pot / 2
+      outcomes:
+        - weight: "(quality.gambling_hand == 1 ? 3000 : quality.gambling_hand == 2 ? 5000 : 6800) + stat.smarts * 5"
+          text: "The table folds or loses to you. A big pot is yours."
+          effects:
+            - money += quality.gambling_pot * 14 / 5 - quality.gambling_pot / 2
+            - quality.gambling_streak += 1
+        - weight: "10000 - ((quality.gambling_hand == 1 ? 3000 : quality.gambling_hand == 2 ? 5000 : 6800) + stat.smarts * 5)"
+          text: "They call and show a better hand."
+          effects:
+            - money -= quality.gambling_pot / 2
+            - quality.gambling_streak = 0
+            - quality.gambling_lost += quality.gambling_pot * 3 / 2
+            - stat.happiness -= 1

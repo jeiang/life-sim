@@ -156,6 +156,18 @@ _Avoid_: Grind, spam, cooldown (the opposite rule)
 A solo vacation or cruise, a priced repeatable action in the `activities/travel` submenu. The player picks a **price tier** (1-5 steps of the amount picker, cheapest first; only affordable tiers are offered) and, for a vacation, a destination type (beach, city, mountains, theme park, abroad); better tiers shift weight from bad events to great ones. A trip's death outcome (about 1 in 10,000) has the cause "travel accident". Under 16 only a **family trip** decision exists (living with a parent; raises closeness with each living parent).
 _Avoid_: Holiday (use Trip), tier (alone)
 
+**Table limit**:
+The most a casino game takes per bet, set per game by the gambling Pack (a minimum too). The amount picker never offers more than the player's cash or the limit. The **VIP room** raises every limit ten-fold; it opens once, from lifetime losses or from wealth that has gambled. Gambling is never on credit.
+_Avoid_: Bet cap, max stake
+
+**Gambling habit**:
+The hidden `gambling_heat` quality, 0-100. Four or more casino bets in a year raise it, lighter years lower it. A high habit can tip into **addiction** (urges, withdrawal, yearly happiness hits), ended by three clean steps (a year away from the tables or a free support meeting each count one).
+_Avoid_: Gambling problem, gambling stat
+
+**Casino ban**:
+A multi-year refusal at every casino, set by the "suspected of cheating" event after a streak of five or more wins in a row. It does not close the lottery.
+_Avoid_: Blacklist
+
 **Expression**:
 A short formula in the pack language, used for conditions, weights, chances, and effect statements.
 _Avoid_: Script, code, rule

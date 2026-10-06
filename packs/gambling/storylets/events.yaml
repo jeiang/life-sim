@@ -1,0 +1,283 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Habit, addiction, cheating suspicion and the social side of gambling.
+
+- id: year-at-the-tables
+  icon: 🎰
+  trigger: event
+  tags: [gambling]
+  chance: 100%
+  when: quality.gambling_bets_year > 0 or quality.gambling_heat > 0 or quality.gambling_addicted
+  text: "The year's betting settles into a habit, or fades."
+  outcomes:
+    # Habit grows from 4 casino bets in a year; lighter betting lets it fade.
+    - weight: 1
+      when: quality.gambling_bets_year >= 4 and not quality.gambling_addicted
+      effects:
+        - quality.gambling_heat += 8 + 2 * quality.gambling_bets_year
+        - quality.gambling_bets_year = 0
+    - weight: 1
+      when: quality.gambling_bets_year >= 1 and quality.gambling_bets_year < 4 and not quality.gambling_addicted
+      effects:
+        - quality.gambling_heat += -5
+        - quality.gambling_bets_year = 0
+    - weight: 1
+      when: quality.gambling_bets_year == 0 and not quality.gambling_addicted
+      effects:
+        - quality.gambling_heat += -20
+    # Addicted and still betting: no recovery, and the habit weighs on you.
+    - weight: 1
+      when: quality.gambling_bets_year >= 1 and quality.gambling_addicted
+      effects:
+        - quality.gambling_recovery = 0
+        - quality.gambling_bets_year = 0
+        - stat.happiness -= 3
+    # Addicted and away from the tables for the whole year: withdrawal, but progress.
+    - weight: 1
+      when: quality.gambling_bets_year == 0 and quality.gambling_addicted
+      effects:
+        - quality.gambling_recovery += 1
+        - quality.gambling_heat += -10
+        - stat.happiness -= 4
+        - journal("A year away from the tables was hard going at age {age}.")
+
+- id: gambling-hooked
+  icon: 🎲
+  trigger: event
+  tags: [gambling]
+  chance: (quality.gambling_heat - 20) * 40
+  when: not quality.gambling_addicted and quality.gambling_heat > 20
+  text: "{player.first_name} thinks about the next bet all the time now. Skipping the tables feels like missing a meal."
+  outcomes:
+    - weight: 1
+      effects:
+        - quality.gambling_addicted = true
+        - quality.gambling_recovery = 0
+        - stat.happiness -= 4
+        - journal("Became addicted to gambling at age {age}.")
+
+- id: gambling-urge
+  icon: 😰
+  trigger: event
+  tags: [gambling]
+  chance: 25%
+  when: quality.gambling_addicted and quality.gambling_recovery < 3
+  text: "The urge to gamble hits hard. A casino is only a short drive away."
+  choices:
+    - label: "Resist it"
+      outcomes:
+        - weight: 1
+          text: "It is a miserable evening, but you stay home."
+          effects:
+            - stat.happiness -= 2
+    - label: "Give in"
+      outcomes:
+        - weight: 1
+          text: "You tell yourself it is just one hand, and it is not."
+          effects:
+            - quality.gambling_lost += min(money / 10, 50000)
+            - quality.gambling_wagered += min(money / 10, 50000)
+            - quality.gambling_heat += 10
+            - quality.gambling_recovery = 0
+            - quality.gambling_bets_year += 1
+            - quality.gambling_streak = 0
+            - stat.happiness -= 3
+            - money -= min(money / 10, 50000)
+
+- id: gambling-recovered
+  icon: 🌱
+  trigger: event
+  tags: [gambling]
+  chance: 100%
+  when: quality.gambling_addicted and quality.gambling_recovery >= 3
+  text: "The urges have faded. {player.first_name} has not placed a bet in a long while, and the tables no longer call."
+  outcomes:
+    - weight: 1
+      effects:
+        - quality.gambling_addicted = false
+        - quality.gambling_recovery = 0
+        - quality.gambling_heat = 0
+        - stat.happiness += 6
+        - journal("Beat the gambling habit at age {age}.")
+
+- id: gambling-support-meeting
+  label: Go to a support meeting
+  icon: 🤝
+  trigger: action
+  menu: activities
+  tags: [gambling, custody-ok]
+  when: quality.gambling_addicted
+  cooldown: 1
+  text: "A free peer support meeting for people who gamble too much, in a church hall."
+  outcomes:
+    - weight: 1
+      text: "You sit in the circle and, eventually, you speak. It helps to hear it is not just you."
+      effects:
+        - quality.gambling_recovery += 1
+        - stat.happiness += 2
+        - journal("Went to a gambling support meeting at age {age}.")
+
+- id: gambling-suspected-cheating
+  icon: 🕵️
+  trigger: event
+  tags: [gambling]
+  chance: 30%
+  when: quality.gambling_streak >= 5 and age >= quality.gambling_banned_until
+  text: "Security has been watching {player.first_name}'s streak. A manager takes you aside: nobody wins that often unless something is going on."
+  outcomes:
+    - weight: 3
+      text: "You are escorted out and banned from the casinos for three years."
+      effects:
+        - quality.gambling_banned_until = age + 3
+        - quality.gambling_streak = 0
+        - stat.happiness -= 4
+        - journal("Banned from the casinos for suspected cheating at age {age}.")
+    - weight: 5
+      text: "You are escorted out and banned from the casinos for five years."
+      effects:
+        - quality.gambling_banned_until = age + 5
+        - quality.gambling_streak = 0
+        - stat.happiness -= 5
+        - journal("Banned from the casinos for suspected cheating at age {age}.")
+    - weight: 2
+      text: "You are escorted out and banned from the casinos for ten years."
+      effects:
+        - quality.gambling_banned_until = age + 10
+        - quality.gambling_streak = 0
+        - stat.happiness -= 6
+        - journal("Banned from the casinos for suspected cheating at age {age}.")
+
+- id: gambling-vip-invite
+  icon: 🥂
+  trigger: event
+  tags: [gambling]
+  chance: 100%
+  once: true
+  when: quality.gambling_vip == false and age >= quality.gambling_banned_until and (quality.gambling_lost >= 2000000 or (money >= 10000000 and quality.gambling_wagered >= 50000))
+  text: "A host in a good suit finds {player.first_name} at the table and offers a private room with far higher limits."
+  outcomes:
+    - weight: 1
+      text: "The VIP room is open to you."
+      effects:
+        - quality.gambling_vip = true
+        - journal("Invited to the casino VIP room at age {age}.")
+
+- id: casino-night-invite
+  icon: 🎉
+  trigger: event
+  tags: [gambling]
+  weight: 6
+  cooldown: 4
+  when: age >= 18 and money >= 20000 and age >= quality.gambling_banned_until
+  text: "A friend is organising a casino night and has saved {player.first_name} a seat."
+  choices:
+    - label: "Go along (stake about 5% of your cash)"
+      outcomes:
+        - weight: 4750
+          text: "You have a lucky night and cash out ahead."
+          effects:
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += min(money / 20, 200000)
+            - quality.gambling_streak += 1
+            - stat.happiness += 3
+            - money += min(money / 20, 200000)
+        - weight: 5250
+          text: "The cards run cold. It is still a fun night out."
+          effects:
+            - quality.gambling_bets_year += 1
+            - quality.gambling_wagered += min(money / 20, 200000)
+            - quality.gambling_lost += min(money / 20, 200000)
+            - quality.gambling_streak = 0
+            - stat.happiness += 1
+            - money -= min(money / 20, 200000)
+    - label: "Pass"
+      outcomes:
+        - weight: 1
+          text: "You stay home. Your friend sends photos of everyone having a great time."
+
+- id: betting-pool-invite
+  icon: 🏈
+  trigger: event
+  tags: [gambling]
+  weight: 6
+  cooldown: 3
+  when: age >= 18 and money >= 10000
+  text: "A coworker is running a betting pool on the big game. Ten people each put in a share, and the winner takes the pot minus a cut."
+  choices:
+    - label: "Join the pool (stake about 10% of your cash)"
+      outcomes:
+        - weight: 10
+          text: "Your pick comes in and you take the pot."
+          effects:
+            - quality.gambling_wagered += min(money / 10, 100000)
+            - quality.gambling_streak += 1
+            - stat.happiness += 4
+            - money += min(money / 10, 100000) * 8
+        - weight: 90
+          text: "Your pick loses and the stake is gone."
+          effects:
+            - quality.gambling_wagered += min(money / 10, 100000)
+            - quality.gambling_lost += min(money / 10, 100000)
+            - quality.gambling_streak = 0
+            - stat.happiness -= 1
+            - money -= min(money / 10, 100000)
+    - label: "Sit this one out"
+      outcomes:
+        - weight: 1
+          text: "You watch the game for free."
+
+- id: hot-tip
+  icon: 🔥
+  trigger: event
+  tags: [gambling]
+  weight: 5
+  cooldown: 4
+  when: age >= 18 and money >= 10000
+  text: "A guy at the bar swears he has a sure thing in the fourth race and can get {player.first_name} on it."
+  choices:
+    - label: "Back the tip (stake about 10% of your cash)"
+      outcomes:
+        - weight: 25
+          text: "The horse romps home and the guy at the bar looks very smug."
+          effects:
+            - quality.gambling_wagered += min(money / 10, 100000)
+            - quality.gambling_streak += 1
+            - stat.happiness += 3
+            - money += min(money / 10, 100000) * 27 / 10
+        - weight: 75
+          text: "It was never a sure thing."
+          effects:
+            - quality.gambling_wagered += min(money / 10, 100000)
+            - quality.gambling_lost += min(money / 10, 100000)
+            - quality.gambling_streak = 0
+            - stat.happiness -= 2
+            - money -= min(money / 10, 100000)
+    - label: "Ignore him"
+      outcomes:
+        - weight: 1
+          text: "There are no sure things."
+          effects:
+            - stat.smarts += 1
+
+- id: big-win-splurge
+  icon: 💸
+  trigger: event
+  tags: [gambling]
+  chance: 20%
+  cooldown: 5
+  when: quality.gambling_streak >= 3 and money >= 100000
+  text: "{player.first_name} is on a lucky run, and the cash in pocket is burning a hole in it."
+  choices:
+    - label: "Splurge on a night out"
+      outcomes:
+        - weight: 1
+          text: "Dinner, drinks and a car home. It is a night to remember."
+          effects:
+            - money -= min(money / 10, 500000)
+            - stat.happiness += 8
+            - journal("Splurged a gambling win at age {age}.")
+    - label: "Keep it"
+      outcomes:
+        - weight: 1
+          text: "A tidy mind and a tidier bank balance."
+          effects:
+            - stat.happiness += 1

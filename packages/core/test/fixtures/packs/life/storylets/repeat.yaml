@@ -1,0 +1,40 @@
+- id: train
+  trigger: action
+  menu: activities
+  repeatable: true
+  text: "Rep {uses_this_year}."
+  outcomes:
+    - text: Trained.
+      effects:
+        - stat.happiness += 8
+        - stat.health -= 3
+        - quality.lucky += 1
+        - money += 1000
+        - money -= 50
+
+- id: train-small
+  trigger: action
+  menu: activities
+  repeatable: true
+  outcomes:
+    - effects:
+        - stat.happiness += 4
+
+- id: train-short
+  trigger: action
+  menu: activities
+  repeatable: true
+  repeat: { full: 1, reduced: 2, factor: 50% }
+  outcomes:
+    - effects:
+        - stat.happiness += 9
+
+- id: hug
+  trigger: action
+  menu: relationships
+  scope: person
+  repeatable: true
+  outcomes:
+    - effects:
+        - relationship(person).closeness += 8
+        - relationship(person).closeness += -1

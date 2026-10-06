@@ -71,6 +71,13 @@ function applyEffect(
       const target = e[1];
       const delta = evalInt(e[2], w, idx, scope);
       const sign = e[0] === "sub" ? -1 : 1;
+      // Diminishing returns (repeatable actions): only positive stat and closeness deltas shrink.
+      const gain = (): number => {
+        const d = sign * delta;
+        return d > 0 && scope.factorBp !== undefined
+          ? Math.trunc((d * scope.factorBp) / 10000)
+          : d;
+      };
       if (typeof target !== "string") {
         const pid =
           bound.get(target[1]) ??
@@ -81,7 +88,7 @@ function applyEffect(
           if (r.from === who && r.to === pid)
             out = putRelationship(out, {
               ...r,
-              closeness: clamp(r.closeness + sign * delta, 0, 100),
+              closeness: clamp(r.closeness + gain(), 0, 100),
             });
         }
         return out;
@@ -94,7 +101,7 @@ function applyEffect(
       if (target.startsWith("stat.")) {
         const id = target.slice(5);
         const cur = getPerson(w, who).stats[id] ?? 0;
-        return setStat(w, who, id, e[0] === "set" ? delta : cur + sign * delta);
+        return setStat(w, who, id, e[0] === "set" ? delta : cur + gain());
       }
       const id = target.slice(8);
       const decl = idx.qualities.get(id);

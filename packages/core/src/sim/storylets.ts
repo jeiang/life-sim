@@ -1,5 +1,9 @@
 import { evaluate } from "../expr/index.ts";
-import type { CompiledOutcome, CompiledStorylet } from "../pack.ts";
+import type {
+  CompiledOutcome,
+  CompiledStorylet,
+  RepeatCurve,
+} from "../pack.ts";
 import type { PersonId, QueuedEvent, ScopeRef, World } from "../state/types.ts";
 import { addJournalLine, getPerson, nextStream } from "../state/world.ts";
 import { applyEffects } from "./effects.ts";
@@ -16,12 +20,30 @@ export const CUSTODY_OK = "custody-ok";
 /** A `next:` chain longer than this stops silently (guards against authored cycles). */
 const MAX_CHAIN = 32;
 
-export function scopeFor(world: World, ref: ScopeRef | undefined): Scope {
+export function scopeFor(
+  world: World,
+  ref: ScopeRef | undefined,
+  storyletId?: string,
+): Scope {
   const subject = world.playerId;
-  if (!ref) return { subject };
-  if (ref.kind === "person") return { subject, person: ref.id };
+  const base: Scope =
+    storyletId === undefined
+      ? { subject }
+      : { subject, uses: world.uses[logKey(storyletId, ref)] ?? 0 };
+  if (!ref) return base;
+  if (ref.kind === "person") return { ...base, person: ref.id };
   const loan = getPerson(world, subject).loans.find((l) => l.id === ref.id);
-  return loan ? { subject, loan } : { subject };
+  return loan ? { ...base, loan } : base;
+}
+
+/** Share of gains kept for use number `n` in a year under a curve, basis points. */
+export function repeatFactorBp(c: RepeatCurve, n: number): number {
+  return n <= c.full ? 10000 : n <= c.reduced ? c.factorBp : 0;
+}
+
+/** The curve of a repeatable action (its overrides over the manifest default); else undefined. */
+function curveOf(idx: PackIndex, s: CompiledStorylet): RepeatCurve | undefined {
+  return s.repeatable ? { ...idx.repeat, ...s.repeat } : undefined;
 }
 
 export function logKey(
@@ -81,7 +103,7 @@ export function ineligibility(
     if (s.cooldown !== undefined && clockAge(world) - rec.lastAge < s.cooldown)
       return `Again at age ${rec.lastAge + s.cooldown}`;
   }
-  const env = scopeFor(world, scope);
+  const env = scopeFor(world, scope, s.id);
   return evalBool(s.when, world, idx, env)
     ? null
     : s.when === undefined
@@ -140,6 +162,12 @@ function deltas(
   return parts.join(", ");
 }
 
+/** The note a repeatable action adds to its outcome once its returns diminish. */
+function wearNote(c: RepeatCurve, n: number): string {
+  if (n > c.reduced) return "It no longer helps this year.";
+  return n > c.full ? "You are getting tired of this." : "";
+}
+
 function pickOutcome(
   world: World,
   idx: PackIndex,
@@ -164,7 +192,10 @@ function runOutcome(
   ref: ScopeRef | undefined,
   depth: number,
 ): World {
-  const scope = scopeFor(world, ref);
+  const curve = curveOf(idx, s);
+  const base = scopeFor(world, ref, s.id);
+  const bp = curve ? repeatFactorBp(curve, base.uses ?? 0) : 10000;
+  const scope: Scope = bp < 10000 ? { ...base, factorBp: bp } : base;
   const [w0, outcome] = pickOutcome(world, idx, s.id, outcomes, scope);
   if (!outcome) return w0;
   const bound = new Map<string, PersonId>();
@@ -172,10 +203,14 @@ function runOutcome(
   const withBound: Scope = { ...scope, bound };
   // Effects run first so a `spawn_person ... as n` binding exists for the outcome text.
   w = applyEffects(w, idx, outcome.effects, scope, bound);
-  if (outcome.text !== undefined && !w.ended) {
-    const text = renderText(outcome.text, w, idx, withBound);
-    const d = deltas(w0, w, idx, scope.subject);
-    w = say(w, d ? `${text} (${d})` : text);
+  if (!w.ended) {
+    const note = curve ? wearNote(curve, base.uses ?? 0) : "";
+    if (outcome.text !== undefined) {
+      const text = renderText(outcome.text, w, idx, withBound);
+      const d = deltas(w0, w, idx, scope.subject);
+      const said = note ? `${text} ${note}` : text;
+      w = say(w, d ? `${said} (${d})` : said);
+    } else if (note) w = say(w, note);
   }
   if (w.ended || !outcome.next) return w;
   const next = idx.storylets.get(outcome.next);
@@ -206,9 +241,13 @@ export function open(
   const s = idx.storylets.get(ev.storyletId);
   if (!s) throw new RangeError(`unknown storylet '${ev.storyletId}'`);
   let w = record(world, logKey(s.id, ev.scope));
+  if (s.repeatable) {
+    const key = logKey(s.id, ev.scope);
+    w = { ...w, uses: { ...w.uses, [key]: (w.uses[key] ?? 0) + 1 } };
+  }
   if (s.choices.length > 0) {
     if (ev.scope?.kind === "person" && s.trigger === "event") {
-      const scope = scopeFor(w, ev.scope);
+      const scope = scopeFor(w, ev.scope, s.id);
       const c = s.choices.find((x) => evalBool(x.when, w, idx, scope));
       if (!c) return w;
       if (s.text !== undefined) w = say(w, renderText(s.text, w, idx, scope));
@@ -220,7 +259,7 @@ export function open(
     };
   }
   if (s.text !== undefined)
-    w = say(w, renderText(s.text, w, idx, scopeFor(w, ev.scope)));
+    w = say(w, renderText(s.text, w, idx, scopeFor(w, ev.scope, s.id)));
   return runOutcome(w, idx, s, s.outcomes, ev.scope, depth);
 }
 
@@ -235,7 +274,7 @@ export function resolveChoice(
   const choice = s.choices[choiceIndex];
   if (!choice)
     throw new RangeError(`storylet '${s.id}' has no choice ${choiceIndex}`);
-  const scope = scopeFor(world, ref);
+  const scope = scopeFor(world, ref, s.id);
   if (!evalBool(choice.when, world, idx, scope))
     throw new RangeError(`choice ${choiceIndex} of '${s.id}' is not available`);
   let w = world;

@@ -111,7 +111,11 @@ const ACCEPT = /^(accept|yes|take|say yes|apply|sign)/i;
 const studious: Profile = {
   maxMoves: () => 2,
   nextMove(w, ctx, rng) {
-    const rows = unlockedActions(w, ctx);
+    // Repeatable actions never lock, so the diligent player does each at most once a year,
+    // as the old one-year cooldown made it; otherwise it would study forever and never work.
+    const rows = unlockedActions(w, ctx).filter(
+      (r) => !w.uses[r.target === undefined ? r.id : `${r.id}#${r.target}`],
+    );
     const age = [...w.persons.values()].find((p) => p.id === w.playerId)?.age;
     if ((age ?? 0) >= 65) {
       const retire = rows.find((r) => short(r.id) === "retire");

@@ -82,6 +82,8 @@ export interface LifeResult {
     /** Slots that fired with nothing eligible to draw. */
     readonly empty: number;
   }[];
+  /** Per age-up: uses of repeatable actions in the year just ended, keyed like `World.uses`. */
+  readonly yearUses: readonly Readonly<Record<string, number>>[];
   readonly samples: readonly YearSample[];
   readonly loansOpened: number;
   readonly loansDefaulted: number;
@@ -189,6 +191,7 @@ export function runLife(
   for (const b of bundles)
     for (const st of b.storylets)
       if (st.trigger === "event" && st.choices.length > 0) choiceIds.add(st.id);
+  const yearUses: Record<string, number>[] = [];
   const samples: YearSample[] = [];
   const loanIds = new Set<number>();
   const defaulted = new Set<number>();
@@ -280,6 +283,7 @@ export function runLife(
       const firesBefore = totalFires(w);
       const choicesBefore = firesIn(w, choiceIds);
       lastDraw = null;
+      yearUses.push({ ...w.uses });
       w = ageUp(w, bundles).world;
       age = playerOf(w).age;
       const draw = lastDraw as { queued: number; empty: number } | null;
@@ -337,6 +341,7 @@ export function runLife(
     yearEvents,
     yearChoices,
     yearDecisions,
+    yearUses,
     samples,
     loansOpened: loanIds.size,
     loansDefaulted: defaulted.size,

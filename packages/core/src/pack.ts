@@ -49,6 +49,23 @@ export interface CompiledChoice {
   readonly outcomes: readonly CompiledOutcome[];
 }
 
+/**
+ * Diminishing returns for a repeatable action: uses 1..`full` in a year give the full effect,
+ * uses up to `reduced` give `factorBp` of every gain (basis points), later uses give none.
+ */
+export interface RepeatCurve {
+  readonly full: number;
+  readonly reduced: number;
+  readonly factorBp: number;
+}
+
+/** Curve used when neither the storylet nor any manifest sets one. */
+export const DEFAULT_REPEAT: RepeatCurve = {
+  full: 10,
+  reduced: 20,
+  factorBp: 2500,
+};
+
 export interface CompiledStorylet {
   readonly id: string;
   /** Actions: the menu label; absent: derived from the id. */
@@ -69,6 +86,10 @@ export interface CompiledStorylet {
   /** Years between occurrences. */
   readonly cooldown?: number;
   readonly maxPerLife?: number;
+  /** Actions only: may be repeated within a year, with diminishing returns. Excludes `cooldown`. */
+  readonly repeatable?: true;
+  /** Overrides of the manifest's curve, field by field (repeatable actions only). */
+  readonly repeat?: Partial<RepeatCurve>;
   readonly text?: string;
   /** Empty when the storylet has a single `outcomes` list. */
   readonly choices: readonly CompiledChoice[];
@@ -255,6 +276,8 @@ export interface PackBundle {
   };
   /** Living costs; needs `standards`. */
   readonly living?: LivingDecl;
+  /** Default diminishing-returns curve for repeatable actions. */
+  readonly repeat?: RepeatCurve;
   /** Starting family; ids are full. The first Pack that declares one wins. */
   readonly family?: FamilyDecl;
   readonly migrations: PackMigrations;

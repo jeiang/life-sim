@@ -61,6 +61,36 @@ export const QualitySchema = Type.Union([
   }),
 ]);
 
+const PERCENT = "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$";
+
+/** A repeat curve; every field is optional because a storylet overrides the manifest's field by field. */
+const repeatCurve = (what: string) =>
+  obj(
+    {
+      full: Type.Optional(
+        Type.Integer({
+          minimum: 0,
+          description: "Uses per year that give the full effect",
+        }),
+      ),
+      reduced: Type.Optional(
+        Type.Integer({
+          minimum: 0,
+          description:
+            "Uses per year up to which gains are reduced; later uses give none",
+        }),
+      ),
+      factor: Type.Optional(
+        Type.String({
+          pattern: PERCENT,
+          description:
+            "Share of each gain kept in the reduced range, for example `25%`",
+        }),
+      ),
+    },
+    what,
+  );
+
 export const ManifestSchema = obj(
   {
     id: Type.String({ pattern: PACK_ID_PATTERN }),
@@ -77,6 +107,9 @@ export const ManifestSchema = obj(
     stats: Type.Optional(Type.Array(StatSchema)),
     qualities: Type.Optional(Type.Array(QualitySchema)),
     exclusivity: Type.Optional(Type.Array(Id)),
+    repeat: Type.Optional(
+      repeatCurve("Default diminishing-returns curve for repeatable actions"),
+    ),
     year: Type.Optional(
       obj({
         slots: Type.Tuple(
@@ -213,6 +246,15 @@ export const StoryletSchema = obj(
     once: Type.Optional(Type.Boolean()),
     cooldown: Type.Optional(Type.Integer({ minimum: 1 })),
     max_per_life: Type.Optional(Type.Integer({ minimum: 1 })),
+    repeatable: Type.Optional(
+      Type.Boolean({
+        description:
+          "Actions only: may be done many times a year with diminishing returns; excludes `cooldown`",
+      }),
+    ),
+    repeat: Type.Optional(
+      repeatCurve("Overrides the manifest's repeat curve for this action"),
+    ),
     text: Type.Optional(Type.String()),
     choices: Type.Optional(Type.Array(Choice)),
     outcomes: Type.Optional(Type.Array(Outcome)),

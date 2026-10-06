@@ -368,7 +368,7 @@ export function ageUp(world: World, bundles: readonly PackBundle[]): SimResult {
   for (const p of personsInIdOrder(w)) {
     if (p.alive) w = updatePerson(w, p.id, (x) => ({ ...x, age: x.age + 1 }));
   }
-  w = pruneCounters(w);
+  w = pruneCounters({ ...w, uses: {} });
   w = settle(w, idx);
   const [w2, events] = drawEvents(w, idx);
   return result(world, ensureYearEntry(advance(w2, idx, events, true), idx));
@@ -445,7 +445,7 @@ export function describePending(
   const idx = indexBundles(bundles);
   const s = idx.storylets.get(p.storyletId);
   if (!s) throw new RangeError(`unknown storylet '${p.storyletId}'`);
-  const scope = scopeFor(world, p.scope);
+  const scope = scopeFor(world, p.scope, s.id);
   return {
     storyletId: s.id,
     ...(s.icon ? { icon: s.icon } : {}),

@@ -19,9 +19,10 @@ import type {
   PackBundle,
   PackMigrations,
   QualityDecl,
+  RepeatCurve,
   StatDecl,
 } from "@life/core";
-import { PACK_BUNDLE_FORMAT } from "@life/core";
+import { DEFAULT_REPEAT, PACK_BUNDLE_FORMAT } from "@life/core";
 import type { TSchema } from "@sinclair/typebox";
 import { buildCredits, type CreditsManifest } from "./credits.ts";
 import type { Diagnostic } from "./diagnostics.ts";
@@ -556,6 +557,7 @@ class PackCompiler {
             },
           }
         : {}),
+      ...(m.repeat ? { repeat: this.manifestRepeat(m.repeat) } : {}),
       ...(m.family ? { family: this.family(m.family) } : {}),
       ...(m.living ? { living: this.living(m.living) } : {}),
       migrations,
@@ -814,9 +816,41 @@ class PackCompiler {
     return {};
   }
 
+  /** Manifest curve: missing fields take the Core defaults. */
+  private manifestRepeat(c: {
+    full?: number;
+    reduced?: number;
+    factor?: string;
+  }): RepeatCurve {
+    const curve = { ...DEFAULT_REPEAT, ...this.repeatCurve(c, ["repeat"]) };
+    if (
+      curve.reduced < curve.full &&
+      !(c.full !== undefined && c.reduced !== undefined)
+    )
+      this.err(["repeat"], "'reduced' must not be below 'full'");
+    return curve;
+  }
+
+  /** Field-wise compile of a (partial) repeat curve; checks the ordering of the fields present. */
+  private repeatCurve(
+    c: { full?: number; reduced?: number; factor?: string },
+    path: Path,
+  ): Partial<RepeatCurve> {
+    if (c.full !== undefined && c.reduced !== undefined && c.reduced < c.full)
+      this.err([...path, "reduced"], "'reduced' must not be below 'full'");
+    return {
+      ...(c.full !== undefined ? { full: c.full } : {}),
+      ...(c.reduced !== undefined ? { reduced: c.reduced } : {}),
+      ...(c.factor !== undefined ? { factorBp: percentBp(c.factor) } : {}),
+    };
+  }
+
   private storylet(it: LoadedItem, s: StoryletSrc): CompiledStorylet {
     void it;
-    const scopeNames = this.scopeNames(s.scope);
+    const scopeNames: Names = {
+      ...this.scopeNames(s.scope),
+      uses_this_year: "int",
+    };
     const out: {
       -readonly [K in keyof CompiledStorylet]: CompiledStorylet[K];
     } = {
@@ -875,6 +909,22 @@ class PackCompiler {
     }
     if (s.cooldown !== undefined) out.cooldown = s.cooldown;
     if (s.max_per_life !== undefined) out.maxPerLife = s.max_per_life;
+    if (s.repeatable) {
+      if (s.trigger !== "action")
+        this.err(
+          ["repeatable"],
+          "'repeatable' is only valid on action storylets",
+        );
+      if (s.cooldown !== undefined)
+        this.err(["cooldown"], "a repeatable action has no 'cooldown'");
+      out.repeatable = true;
+    }
+    if (s.repeat !== undefined) {
+      if (!s.repeatable)
+        this.err(["repeat"], "'repeat' needs 'repeatable: true'");
+      const curve = this.repeatCurve(s.repeat, ["repeat"]);
+      if (Object.keys(curve).length > 0) out.repeat = curve;
+    }
     const names = { ...this.baseNames, ...scopeNames };
     if (s.text !== undefined) {
       out.text = s.text;

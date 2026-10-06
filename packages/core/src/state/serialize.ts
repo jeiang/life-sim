@@ -343,6 +343,7 @@ export function deserializeWorld(text: string): World {
     pending: o.pending === null ? null : pending(o.pending, "$.pending"),
     ended: o.ended === null ? null : obituary(o.ended, "$.ended"),
     storyletLog: storyletLog(o.storyletLog, "$.storyletLog"),
+    uses: intRecord(o.uses, "$.uses"),
     choiceLog: choiceLog(o.choiceLog, "$.choiceLog"),
     packVersions: arr(o.packVersions, "$.packVersions").map((x, i) => {
       const v = obj(x, `$.packVersions[${i}]`);

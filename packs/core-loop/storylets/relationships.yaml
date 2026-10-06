@@ -10,7 +10,7 @@
   menu: relationships
   scope: person
   tags: [relationship, spend-time]
-  cooldown: 1
+  repeatable: true
   text: "You set aside an afternoon for {person.first_name}."
   outcomes:
     - weight: 70
@@ -38,7 +38,7 @@
   scope: person
   tags: [relationship, conversation]
   when: age >= 3 and person.age >= 3
-  cooldown: 1
+  repeatable: true
   text: "You strike up a conversation with {person.first_name}."
   outcomes:
     - weight: 60

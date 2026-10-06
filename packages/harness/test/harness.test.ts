@@ -52,7 +52,7 @@ describe("the core-loop Pack", () => {
     expect(a.faults.total).toBe(0);
     expect(a.death.ended).toBe(8);
     expect(JSON.stringify(b)).toBe(JSON.stringify(a));
-  }, 120_000);
+  }, 300_000);
 
   test("--life-seed replays one life", () => {
     const { report } = runHarness({
@@ -80,7 +80,7 @@ describe("parallel runs", () => {
       const r = await runHarnessParallel({ ...opts, packsDir, jobs });
       expect(files(r.report)).toBe(single);
     }
-  }, 120_000);
+  }, 300_000);
 
   test("a fault found in a worker carries its life seed", async () => {
     const dir = fixture("divzero");

@@ -12,8 +12,8 @@ import {
   type World,
 } from "../state/types.ts";
 import { getPerson } from "../state/world.ts";
-import { countKin, kinshipLabel, kinshipOf } from "./kinship.ts";
 import { incomeTier } from "./careers.ts";
+import { countKin, kinshipLabel, kinshipOf } from "./kinship.ts";
 import {
   confinementOf,
   costIndexOf,

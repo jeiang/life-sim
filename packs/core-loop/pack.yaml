@@ -28,6 +28,11 @@ exclusivity: [school, full-time, part-time]
 year:
   slots: [1, 3]
   cap: 6
+  quiet:
+    - A quiet year.
+    - Nothing much happened this year.
+    - An uneventful year goes by.
+    - A calm, ordinary year.
 family:
   player: sibling-gen
   parent: { role: parent, generator: parent-gen, count: 2 }

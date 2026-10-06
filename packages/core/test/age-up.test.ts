@@ -282,14 +282,18 @@ describe("pending storylets", () => {
     const seen = [w1.pending?.storyletId];
     let step = choose(w1, bundles, 0);
     seen.push(step.world.pending?.storyletId);
-    expect(step.lines).toEqual(["Step one.", "One done."]);
+    expect(step.lines).toEqual(["Step one.", "You chose: Go on", "One done."]);
     step = choose(step.world, bundles, 0);
     seen.push(step.world.pending?.storyletId);
-    expect(step.lines).toEqual(["Step two.", "Two done."]);
+    expect(step.lines).toEqual(["Step two.", "You chose: Go on", "Two done."]);
     expect(player(step.world).qualities.lucky).toBe(0);
     step = choose(step.world, bundles, 0);
     expect(seen).toEqual(["life/chain-1", "life/chain-2", "life/chain-3"]);
-    expect(step.lines.slice(0, 2)).toEqual(["Step three.", "Three done."]);
+    expect(step.lines.slice(0, 3)).toEqual([
+      "Step three.",
+      "You chose: Finish",
+      "Three done.",
+    ]);
     expect(step.world.pending).toBeNull();
     expect(player(step.world).qualities.lucky).toBe(5); // clamped to the declared max
     expect(canAgeUp(step.world)).toBe(true);

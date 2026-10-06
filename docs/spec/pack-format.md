@@ -27,7 +27,7 @@ packs/<pack-id>/
 | `stats` | Declared stats: id, label, icon, start range. Always 0 to 100. |
 | `qualities` | Declared qualities: id, type (`int` with optional min/max, or `flag`), default. |
 | `exclusivity` | Occupation exclusivity groups (for example `school`, `full-time`). |
-| `year` | Event draw settings: flavour slot count range and the yearly event cap. |
+| `year` | Event draw settings: flavour slot count range and the yearly event cap, plus optional `quiet` lines the Core journals for a year in which nothing else happened (every age gets a journal group). |
 | `migrations` | Renamed ids (`old -> new`) and removed ids (with a fallback). |
 
 ## Composition

@@ -7,6 +7,7 @@ import type {
   World,
 } from "../state/types.ts";
 import {
+  addJournalLine,
   getPerson,
   nextStream,
   personsInIdOrder,
@@ -147,6 +148,23 @@ function asEvent(c: Candidate): QueuedEvent {
   return { storyletId: c.storylet.id, ...(c.scope ? { scope: c.scope } : {}) };
 }
 
+/** A year with nothing journaled still gets its group: a Pack `quiet` line, else an empty group. */
+function ensureYearEntry(world: World, idx: PackIndex): World {
+  if (world.ended || world.pending) return world;
+  const age = clockAge(world);
+  if (world.journal.some((e) => e.age === age)) return world;
+  const quiet = idx.year.quiet;
+  if (!quiet || quiet.length === 0)
+    return {
+      ...world,
+      journal: [...world.journal, { age, lines: [] }].sort(
+        (a, b) => a.age - b.age,
+      ),
+    };
+  const [w, rng] = nextStream(world, age, "year/quiet");
+  return addJournalLine(w, age, quiet[rng.int(quiet.length)] as string);
+}
+
 /** The player's events for this age-up: chance events first, then flavour slots, under the cap. */
 function drawEvents(world: World, idx: PackIndex): [World, QueuedEvent[]] {
   const cands = [
@@ -259,7 +277,7 @@ export function ageUp(world: World, bundles: readonly PackBundle[]): SimResult {
   w = pruneCounters(w);
   w = settle(w, idx);
   const [w2, events] = drawEvents(w, idx);
-  return result(world, advance(w2, idx, events, true));
+  return result(world, ensureYearEntry(advance(w2, idx, events, true), idx));
 }
 
 /**
@@ -319,10 +337,8 @@ export function choose(
       pending: { ...w.pending, ...(p.rest ? { rest: p.rest } : {}) },
     });
   }
-  return result(
-    world,
-    advance(w, idx, p.rest?.events ?? [], p.rest !== undefined),
-  );
+  const done = advance(w, idx, p.rest?.events ?? [], p.rest !== undefined);
+  return result(world, p.rest ? ensureYearEntry(done, idx) : done);
 }
 
 /** The open storylet's prompt and choices, or null. */

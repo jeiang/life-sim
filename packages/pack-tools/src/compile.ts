@@ -472,7 +472,13 @@ class PackCompiler {
       qualities,
       exclusivity: [...(m.exclusivity ?? [])],
       ...(m.year
-        ? { year: { slots: m.year.slots as [number, number], cap: m.year.cap } }
+        ? {
+            year: {
+              slots: m.year.slots as [number, number],
+              cap: m.year.cap,
+              ...(m.year.quiet ? { quiet: [...m.year.quiet] } : {}),
+            },
+          }
         : {}),
       ...(m.family ? { family: this.family(m.family) } : {}),
       migrations,

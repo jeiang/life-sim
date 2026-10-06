@@ -84,6 +84,13 @@ export const ManifestSchema = obj(
           { description: "Flavour slot count range [min, max]" },
         ),
         cap: Type.Integer({ minimum: 0 }),
+        quiet: Type.Optional(
+          Type.Array(Type.String({ minLength: 1 }), {
+            minItems: 1,
+            description:
+              "Neutral journal lines for a year with no events; one is picked per quiet year",
+          }),
+        ),
       }),
     ),
     family: Type.Optional(

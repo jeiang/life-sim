@@ -2,10 +2,12 @@ import {
   ageUp,
   canAgeUp,
   choose,
+  costIndexOf,
   describePending,
   indexBundles,
   type Loan,
   livesWithParents,
+  livingBreakdown,
   netWorth,
   newLife,
   type PackBundle,
@@ -61,6 +63,17 @@ export interface YearSample {
   readonly withParents: boolean;
   /** Standard of living id while on their own; null with parents or without standards. */
   readonly standard: string | null;
+  /**
+   * Yearly living cost against income while on their own, minor units, with what a child at
+   * home and a moved-in partner would change (the bots have neither); null with parents, a
+   * guardian, or without standards.
+   */
+  readonly household: {
+    readonly income: number;
+    readonly cost: number;
+    readonly child: number;
+    readonly partner: number;
+  } | null;
 }
 
 export interface LifeResult {
@@ -311,7 +324,30 @@ export function runLife(
       );
       if (employed) everEmployed = true;
       if (me.occupations.some((o) => isRetired(o.kindId))) retired = true;
+      const index = indexBundles(bundles);
+      const lived = standardOf(me, index);
+      const hh = index.living?.household;
+      const bill =
+        lived && hh && me.age >= 18 && !livesWithParents(me) && !me.withGuardian
+          ? livingBreakdown(w, index, me, lived)
+          : null;
       samples.push({
+        household:
+          bill && hh
+            ? {
+                income: Math.max(
+                  0,
+                  me.occupations.reduce((n, o) => n + o.pay, 0),
+                ),
+                cost: bill.total,
+                child: Math.trunc(
+                  (hh.dependentCost * costIndexOf(me, index)) / 10000,
+                ),
+                partner: Math.trunc(
+                  (bill.standard * hh.partnerShareBp) / 10000,
+                ),
+              }
+            : null,
         age: me.age,
         stats: me.stats,
         netWorth: netWorth(me),

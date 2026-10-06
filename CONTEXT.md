@@ -81,7 +81,11 @@ A Pack-defined place to live, with a cost index (cost of living relative to the 
 _Avoid_: Town, location, region
 
 **Living situation**:
-Whether a person lives with their parents (free) or on their own. Ends for the player by moving out, being asked to leave by the parents, or the last parent dying; the player is never forced out by age.
+Whether a person lives with their parents (free), with a guardian, or on their own. Ends for the player by moving out, being asked to leave by the parents, or the last parent dying; the player is never forced out by age. Living on their own never applies under 18: a minor with no living parent lives with a guardian instead.
+
+**With guardian**:
+The living situation of a minor with no living parent (a minor heir, a murdered or deceased parent): a relative is guardian, no living cost is charged, and money and assets sit in trust until 18.
+_Avoid_: Foster care, orphanage
 _Avoid_: Housing status, residence
 
 **Confinement**:
@@ -89,7 +93,7 @@ A state of the player, held through an occupation that declares `confines` (pris
 _Avoid_: Imprisonment, lockout
 
 **Standard of living**:
-A Pack-defined level of spending (homeless to ultra-rich) with a base yearly cost, yearly happiness and health effects and an illness and death risk multiplier. The player on their own chooses one and pays its cost, scaled by the city cost index, each settlement; short of savings they live the best one they can afford that year.
+A Pack-defined level of spending (homeless to ultra-rich) with a base yearly cost, yearly happiness and health effects and an illness and death risk multiplier. The player on their own chooses one and pays its cost, scaled by the city cost index, each settlement; short of savings they live the best one they can afford that year. The cost includes a dependents term for each child living at home, less the share a partner who moved in pays; a spouse whose money was merged pays no separate share.
 _Avoid_: Lifestyle, rent, tier
 
 **Money**:

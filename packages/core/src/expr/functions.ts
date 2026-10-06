@@ -41,8 +41,15 @@ export const EFFECTS = {
   die: { params: ["string"], returns: "bool" },
   /** Move the player to a city (family and others stay where they are). */
   move_to: { params: ["id"], returns: "bool" },
-  /** Stop living with parents; takes the default standard of living or the best affordable. */
+  /**
+   * Stop living with parents; takes the default standard of living or the best affordable.
+   * Never applies under 18: a minor goes to live with a guardian instead.
+   */
   move_out: { params: [], returns: "bool" },
+  /** In `scope: person`: that partner moves in, so they pay a share of the living cost. */
+  move_in: { params: [], returns: "bool" },
+  /** In `scope: person`: that spouse's money merges into the player's; no separate share. */
+  merge_money: { params: [], returns: "bool" },
   /** Choose a standard of living (ignored while living with parents). */
   set_standard: { params: ["id"], returns: "bool" },
 } as const satisfies Record<string, Signature>;

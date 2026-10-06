@@ -187,6 +187,8 @@ const PLAYER_NAMES: Record<string, ExprType> = {
   "city.country": "string",
   "living.with_parents": "bool",
   confined: "bool",
+  "living.with_guardian": "bool",
+  "living.dependents": "int",
   "player.first_name": "string",
   "player.last_name": "string",
   ...pronounNames("player"),
@@ -615,11 +617,30 @@ class PackCompiler {
   }
 
   private living(l: NonNullable<Manifest["living"]>): LivingDecl {
+    const role = (key: string | (string | number)[], raw: string) =>
+      this.ref(
+        raw,
+        ["role"],
+        ["living", "household", ...(Array.isArray(key) ? key : [key])],
+      ) ?? raw;
     return {
       defaultStandard:
         this.ref(l.default, ["standard"], ["living", "default"]) ?? l.default,
       housingShareBp: percentBp(l.housing_share),
       homeCategory: l.home_category,
+      ...(l.household
+        ? {
+            household: {
+              dependentRole: role("dependent_role", l.household.dependent_role),
+              dependentCost: l.household.dependent_cost,
+              partnerRole: role("partner_role", l.household.partner_role),
+              partnerShareBp: percentBp(l.household.partner_share),
+              guardianRoles: l.household.guardian_roles.map((r, i) =>
+                role(["guardian_roles", i], r),
+              ),
+            },
+          }
+        : {}),
     };
   }
 

@@ -176,6 +176,29 @@ export const ManifestSchema = obj(
             minLength: 1,
             description: "Item kind category that counts as a home",
           }),
+          household: Type.Optional(
+            obj(
+              {
+                dependent_role: Ref,
+                dependent_cost: Type.Integer({
+                  minimum: 0,
+                  description:
+                    "Base yearly cost per dependent living at home in minor units, before the city cost index",
+                }),
+                partner_role: Ref,
+                partner_share: Type.String({
+                  pattern: "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$",
+                  description:
+                    "Share of the standard's cost a partner who moved in pays, as a percent literal",
+                }),
+                guardian_roles: Type.Array(Ref, {
+                  description:
+                    "Roles a guardian is drawn from (an adult relative); the first living one is named in the journal",
+                }),
+              },
+              "Household costs and guardians",
+            ),
+          ),
         },
         "Living costs",
       ),

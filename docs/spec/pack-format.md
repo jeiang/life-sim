@@ -29,7 +29,7 @@ packs/<pack-id>/
 | `currency` | Symbol and minor-unit digits (only in the Pack that sets the currency). |
 | `stats` | Declared stats: id, label, icon, start range. Always 0 to 100. |
 | `qualities` | Declared qualities: id, type (`int` with optional min/max, or `flag`), default. |
-| `living` | Living costs: `default` (standard chosen on moving out), `housing_share` (percent of the cost an owned home removes) and `home_category` (item kind category that counts as a home). Needs `standards`. |
+| `living` | Living costs: `default` (standard chosen on moving out), `housing_share` (percent of the cost an owned home removes) `home_category` (item kind category that counts as a home) and an optional `household` block (see Household costs). Needs `standards`. |
 | `exclusivity` | Occupation exclusivity groups (for example `school`, `full-time`). |
 | `repeat` | Default curve for repeatable actions: `{ full: 10, reduced: 20, factor: 25% }` (see Repeatable actions). Any field left out takes the value shown. The first manifest that sets it wins. |
 | `year` | Only Pack `core-loop` may declare this block or the `family` block (any other Pack declaring either is a compile error). Event draw settings: flavour slot count range and the yearly event cap, `decisions` / `decisions_min_age` (decision slots per year, see Year draw), plus optional `quiet` lines the Core journals for a year in which nothing else happened (every age gets a journal group). |
@@ -151,6 +151,30 @@ From use F+1 the Core adds "You are getting tired of this." to the outcome text;
 
 `uses_this_year` (integer, readable in any storylet expression and text) is the number of uses of this storylet (and person) so far this year. In `when` it is the count before this use; once the action opens (its `text`, outcome `when`/`weight`/`text`/effects) it includes the current use, so the 11th use reads 11. It is 0 for non-repeatable storylets.
 
+### Household costs
+
+The optional `living.household` block of `pack.yaml` makes the living cost depend on who lives with the player:
+
+```yaml
+living:
+  default: average
+  housing_share: 40%
+  home_category: homes
+  household:
+    dependent_role: child     # role of the people the player supports at home
+    dependent_cost: 400000    # base yearly cost per dependent at home, minor units, before the city cost index
+    partner_role: partner     # role of a partner who can move in and share costs
+    partner_share: 50%        # share of the standard's cost (after the home's housing share) the partner pays
+    guardian_roles: [sibling] # adult relatives a guardian is drawn from (only named in the journal)
+```
+
+- **Dependents:** each living person the player holds `dependent_role` toward who still lives with their parents (under 18, or `withParents`) adds `dependent_cost x city cost index`. The term disappears when the child moves out or dies.
+- **Partner sharing:** `move_in()` (in a `scope: person` storylet bound to the partner) marks the player's link to that partner as living together. At settlement the partner pays `partner_share` of the standard's cost from their own money, up to what they have; the player pays the rest. `merge_money()` (same scope) moves the partner's money to the player and marks the link merged: no separate share is charged afterwards (marriage without a prenup). A prenup simply never calls it.
+- **With guardian:** a minor with no living parent (the last parent died, god mode with no parents, a minor heir) lives with a guardian (`Person.withGuardian`). `move_out()` never applies under 18, it takes this path instead. The cost is waived (the same hook as `provides_housing`, so no standard, no standard effects, `living.risk` reads 100%), and the minor's money and assets sit in trust: the shop is closed until 18. At 18 the guardian situation ends and the player is on their own with the default (or best affordable) standard.
+- Standard effects and `living.risk` never apply below 18.
+
+Names: `living.dependents` (dependents at home), `living.with_guardian`. `living.cost` and `standard_cost(standard)` include both household terms.
+
 ## Year draw
 
 At each age-up, after settlement (ADR 0003):
@@ -196,12 +220,13 @@ relationship(<person>).closeness += n
 move_to(city)                        move_out()
 set_standard(standard)
 relationship(<person>).role = role   (replaces all the player's role rows toward them; keeps the highest closeness)
+move_in()                            merge_money()
 journal("text")                      die("cause")
 ```
 
 A `kind: generator` item in `people/` sets `first_names` (a list used for every gender, or `{ male: [...], female: [...] }` pools where non-binary people draw from both), `last_names`, `age`, optional `stats`, and an optional `gender`: a fixed value (`gender: female`) or integer weights (`gender: { male: 1, female: 3 }`; omitted genders weigh 0; default male 1, female 1). A spawned person's gender is drawn from these weights and their first name from that gender's pool, so a Pack can spawn a person of a chosen gender.
 
-`move_to(city)` puts the player in a city (family and everyone else stay); `move_out()` ends living with parents and picks the starting standard of living; `set_standard(standard)` chooses one (ignored with parents).
+`move_to(city)` puts the player in a city (family and everyone else stay); `move_in()` and `merge_money()` (in `scope: person`, bound to a partner) move a partner in and merge their money; `move_out()` ends living with parents (under 18 a guardian takes over instead) and picks the starting standard of living; `set_standard(standard)` chooses one (ignored with parents).
 
 ## Text
 

@@ -181,6 +181,32 @@ function applyEffect(
         }
         case "move_out":
           return startLivingOnOwn(w, idx, who);
+        case "move_in":
+        case "merge_money": {
+          const pid = scope.person;
+          const h = idx.living?.household;
+          const rel = w.relationships.find(
+            (r) => r.from === who && r.to === pid && r.role === h?.partnerRole,
+          );
+          if (!rel || !h) return w;
+          if (e[1] === "move_in")
+            return rel.household === "merged"
+              ? w
+              : putRelationship(w, { ...rel, household: "together" });
+          const partner = getPerson(w, rel.to);
+          const moved = Math.max(0, partner.money);
+          return putRelationship(
+            updatePerson(
+              updatePerson(w, rel.to, (x) => ({
+                ...x,
+                money: x.money - moved,
+              })),
+              who,
+              (x) => ({ ...x, money: x.money + moved }),
+            ),
+            { ...rel, household: "merged" },
+          );
+        }
         case "set_standard": {
           const id = str(args[0], w, idx, scope);
           if (!idx.standardsById.has(id))

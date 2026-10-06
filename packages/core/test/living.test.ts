@@ -59,19 +59,21 @@ describe("cost of living", () => {
       ["riverton", 110],
       ["goldcrest", 180],
     ] as const)
-      expect(livingCost(me(own(city, 9e9)), idx)).toBe(
+      expect(livingCost(own(city, 9e9), idx, me(own(city, 9e9)))).toBe(
         Math.trunc((base * index) / 100),
       );
   });
 
   test("a home in the current city removes the housing share; one elsewhere does not", () => {
     const w = own("riverton", 9e9);
-    const full = livingCost(me(w), idx);
+    const full = livingCost(w, idx, me(w));
     const [withHome] = grantAsset(w, idx, w.playerId, std("house"));
     const owner = me(withHome);
     const share = (idx.living?.housingShareBp as number) / 10000;
-    expect(livingCost(owner, idx)).toBe(full - Math.trunc(full * share));
-    expect(livingCost(owner, idx)).toBeLessThan(full);
+    expect(livingCost(withHome, idx, owner)).toBe(
+      full - Math.trunc(full * share),
+    );
+    expect(livingCost(withHome, idx, owner)).toBeLessThan(full);
     const moved = updatePerson(withHome, w.playerId, (p) => ({
       ...p,
       cityId: std("goldcrest"),
@@ -87,15 +89,15 @@ describe("cost of living", () => {
     expect(cost("goldcrest")).toBeGreaterThan(
       Math.trunc(cost("riverton") * 1.5),
     );
-    const noHomeHere = livingCost(me(moved), idx);
-    const sameCityNoHome = livingCost({ ...me(moved), assets: [] }, idx);
+    const noHomeHere = livingCost(moved, idx, me(moved));
+    const sameCityNoHome = livingCost(moved, idx, { ...me(moved), assets: [] });
     expect(noHomeHere).toBe(sameCityNoHome);
   });
 
   test("a minor on their own (last parent dead) is never charged or downgraded", () => {
     let w = own("riverton", 1_000, "wealthy");
     w = updatePerson(w, 0, (p) => ({ ...p, age: 15 }));
-    expect(livingCost(me(w), idx)).toBe(0);
+    expect(livingCost(w, idx, me(w))).toBe(0);
     const after = settle(w);
     expect(me(after).money).toBe(1_000);
     expect(me(after).livedStandardId).toBe(std("wealthy"));
@@ -107,7 +109,7 @@ describe("cost of living", () => {
       ...p,
       withParents: true,
     }));
-    expect(livingCost(me(w), idx)).toBe(0);
+    expect(livingCost(w, idx, me(w))).toBe(0);
     expect(me(settle(w)).money).toBe(1e6);
   });
 });
@@ -193,7 +195,7 @@ describe("settlement", () => {
         },
       ],
     }));
-    expect(livingCost(me(w), index)).toBe(0);
+    expect(livingCost(w, index, me(w))).toBe(0);
     const after = settle(w, b);
     expect(me(after).money).toBe(1_000_000);
     expect(me(after).stats).toMatchObject({ happiness: 50, health: 50 });
@@ -245,6 +247,6 @@ describe("moving out and choosing", () => {
     }
     const old = deserializeWorld(JSON.stringify(raw));
     expect(standardOf(me(old), idx)?.id).toBe(std("average"));
-    expect(livingCost(me(old), idx)).toBeGreaterThan(0);
+    expect(livingCost(old, idx, me(old))).toBeGreaterThan(0);
   });
 });

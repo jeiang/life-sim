@@ -1,6 +1,8 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/people.schema.json
 - { kind: role, id: parent, label: Parent }
 - { kind: role, id: sibling, label: Sibling }
+- { kind: role, id: child, label: Child }
+- { kind: role, id: partner, label: Partner }
 - { kind: role, id: classmate, label: Classmate }
 - { kind: role, id: coworker, label: Coworker }
 - { kind: role, id: friend, label: Friend }

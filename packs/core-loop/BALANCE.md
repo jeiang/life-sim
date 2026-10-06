@@ -79,3 +79,9 @@ Years lived on their own that were homeless: 45.5% overall (idle 100%, random 47
 `take_loan` credits the principal to the player, and `tuition_by_loan` zeroes yearly tuition, so enrolling with a loan handed the player $28k-$40k of spendable cash. Each of the four enrol choices now runs `money -= N` right after `take_loan`, so money is unchanged at enrolment and the loan balance is N (pack version 6).
 
 10,000 lives, seed 20260101, all profiles, 0 faults, before -> after: degree rate 36.2% -> 36.0%; median net worth at 65 $1.042M -> $1.007M; median age at death 73 -> 73. Side effect: loans with a missed payment 13.7% -> 20.4% (loan count 57,197 -> 57,209), because the player no longer holds the loan as cash to service it.
+
+## Household costs (#133, pack v8)
+
+Per child at home $4,000 a year at a 100% cost index (about a fifth of the average standard); a partner who moved in pays 50% of the standard's cost. A minor with no living parent lives with a guardian: no cost, no standard effects, no risk multiplier, assets in trust until 18. The bots have no children or partners yet, so the harness applies the terms to their own years.
+
+10,000 lives, seed 20260101, all profiles: no faults, median age at death 73 (unchanged). Living cost as a percent of income, person-years aged 25-64 on their own with income (median / p90): alone 18.7 / 53.1; one child 27.4 / 67.7; two children 33.6 / 104; partner sharing 9.3 / 26.6; two children and a partner sharing 23.8 / 99.4. Target: a child at home adds about 8-10 points to the median share and a sharing partner removes about half of the base; the p90 above 100% is the low earners the standard already outprices.

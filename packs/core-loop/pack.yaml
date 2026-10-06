@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
 id: core-loop
-version: 7
+version: 8
 currency:
   symbol: "$"
   digits: 2
@@ -44,4 +44,10 @@ living:
   default: average
   housing_share: 40%
   home_category: homes
+  household:
+    dependent_role: child
+    dependent_cost: 400000
+    partner_role: partner
+    partner_share: 50%
+    guardian_roles: [sibling]
 migrations: {}

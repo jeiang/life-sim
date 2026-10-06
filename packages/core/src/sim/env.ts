@@ -15,10 +15,12 @@ import { getPerson } from "../state/world.ts";
 import {
   confinementOf,
   costIndexOf,
-  housingProvided,
+  dependentsOf,
+  livesWithGuardian,
   livesWithParents,
+  livingBreakdown,
   livingCost,
-  standardCost,
+  riskBpOf,
   standardOf,
   wageIndexOf,
 } from "./living.ts";
@@ -206,12 +208,9 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
       if (path === "city.cost_index") return costIndexOf(subject, idx);
       if (path === "city.wage_index") return wageIndexOf(subject, idx);
       if (path === "confined") return confinementOf(subject, idx) !== undefined;
-      if (path === "living.cost") return livingCost(subject, idx);
+      if (path === "living.cost") return livingCost(world, idx, subject);
       if (path === "living.standard") return standardOf(subject, idx)?.id ?? "";
-      if (path === "living.risk")
-        return housingProvided(subject, idx)
-          ? 10000
-          : (standardOf(subject, idx)?.riskBp ?? 10000);
+      if (path === "living.risk") return riskBpOf(subject, idx);
       if (path === "city.label")
         return (subject.cityId && idx.cities.get(subject.cityId)?.label) || "";
       if (path === "city.country")
@@ -220,6 +219,9 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
         );
       if (path === "city.id") return subject.cityId ?? "";
       if (path === "living.with_parents") return livesWithParents(subject);
+      if (path === "living.with_guardian") return livesWithGuardian(subject);
+      if (path === "living.dependents")
+        return dependentsOf(world, idx, subject);
       if (path.startsWith("loan.") && scope.loan) {
         const f = path.slice(5);
         if (f === "balance") return scope.loan.balance;
@@ -256,7 +258,7 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
         case "standard_cost": {
           const std = idx.standardsById.get(id);
           if (!std) throw new RangeError(`unknown standard '${id}'`);
-          return standardCost(subject, idx, std);
+          return livingBreakdown(world, idx, subject, std).total;
         }
         case "role_closeness": {
           const alive = world.relationships.filter(

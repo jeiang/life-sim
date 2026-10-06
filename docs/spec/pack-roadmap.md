@@ -17,7 +17,7 @@ Decided in [Later Pack roadmap](https://github.com/jeiang/life-sim/issues/21). T
 | 3 | Gambling | Casino games and horse races | An `amount` input on action storylets, bound for expressions and chosen through the amount picker | `core-loop` |
 | 4 | Investing | Stocks, bonds, funds with price history | Per-item-kind price series updated at settlement, with history; buying and selling by amount (the `trade` effect and holdings); the chart screen for any series. It shares the amount picker with Gambling but does not depend on that Pack | `core-loop` |
 | 5 | Crime and prison | Crimes, arrests, sentences, escape | Occupations that lock other menus while held | `core-loop` |
-| 6 | Vacations | Trips and cruises as happiness purchases | None: trips are priced actions (the `amount` picker is the price tier), as with doctor visits and the driving test. Built as Pack `vacations` (see its [BALANCE.md](../../packs/vacations/BALANCE.md)) | `core-loop` |
+| 6 | Vacations | Trips and cruises as happiness purchases | None: trips are repeatable actions whose choices are five named price tiers, chained (`next`) to a destination step. Built as Pack `vacations` (see its [BALANCE.md](../../packs/vacations/BALANCE.md)) | `core-loop` |
 | 7 | Grad school | Medical, law, and business school off university majors; top careers | Group checks: `in_group(g)` and `years_in_group(g)` (no `end_group`) | `core-loop` |
 | 8 | Relocation | Moving cities and countries | None beyond the cities of [Cities and moving out](https://github.com/jeiang/life-sim/issues/108): countries extend them with an optional city `country` field. One currency, no multi-currency | `core-loop` |
 

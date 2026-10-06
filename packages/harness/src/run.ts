@@ -37,6 +37,7 @@ import {
   PROFILES,
   type ProfileName,
 } from "./profiles.ts";
+import { TRIP_TIER_STEP } from "./vacations.ts";
 
 /** Lives still alive at this age are cut off and reported as stuck. */
 export const AGE_CAP = 130;
@@ -121,7 +122,7 @@ export interface LifeResult {
   readonly kickedOut: boolean;
   /** Sum of positive occupation pay over the life (gross, minor units). */
   readonly earnings: number;
-  /** Voluntary actions with an amount: per action id, times done per grid slot (index 0 is slot 1) and money put in. */
+  /** Voluntary actions with an amount, and trip tier picks: per action id, times done per grid slot (index 0 is slot 1) and money put in. */
   readonly amountActions: Readonly<
     Record<
       string,
@@ -298,7 +299,16 @@ export function runLife(
         );
         return false;
       }
-      w = choose(w, bundles, profile.pickChoice(view, enabled, rng)).world;
+      const pick = profile.pickChoice(view, enabled, rng);
+      const step = TRIP_TIER_STEP[view.storyletId];
+      if (step !== undefined) {
+        const a = amountActions[view.storyletId] ?? { slots: [], spent: 0 };
+        amountActions[view.storyletId] = a;
+        while (a.slots.length <= pick) a.slots.push(0);
+        a.slots[pick] = (a.slots[pick] as number) + 1;
+        a.spent += (pick + 1) * step;
+      }
+      w = choose(w, bundles, pick).world;
     }
     return true;
   };

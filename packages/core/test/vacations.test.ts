@@ -5,6 +5,7 @@ import { compilePacks } from "../../pack-tools/src/index.ts";
 import {
   ageUp,
   choose,
+  describePending,
   evaluate,
   getPerson,
   indexBundles,
@@ -30,9 +31,10 @@ const PLAYER = newLife(bundles, 5).playerId;
 
 const VAC = "vacations/take-vacation";
 const CRUISE = "vacations/go-on-cruise";
+const DEST = "vacations/vacation-destination";
+const VOYAGE = "vacations/cruise-voyage";
 const FAMILY = "vacations/family-trip";
 const BOND = "vacations/family-trip-bond";
-const STEP: Record<string, number> = { [VAC]: 50000, [CRUISE]: 120000 };
 const DESTS = ["beach", "city", "mountains", "theme-park", "abroad"];
 
 const me = (w: World) => getPerson(w, w.playerId);
@@ -51,6 +53,17 @@ function at(age: number, money: number, seed = 5): World {
 
 const row = (w: World, id: string) =>
   listActions(w, bundles, "activities/travel").find((r) => r.id === id);
+
+/** `w` with the trip tier quality set, as the tier step leaves it. */
+const withTier = (w: World, tier: number): World =>
+  updatePerson(w, w.playerId, (p) => ({
+    ...p,
+    qualities: { ...p.qualities, vac_tier: tier },
+  }));
+
+/** Run trip action `id`, pick named tier `tier` (1-5), leaving the destination (or voyage) step open. */
+const pickTier = (w: World, b: PackBundle[], id: string, tier: number) =>
+  choose(runAction(w, b, id).world, b, tier - 1).world;
 
 /** The bundles with every outcome of `storyletId` (in `choice`, or the storylet's own list) weighted 0 except `pick`. */
 function only(
@@ -85,14 +98,29 @@ describe("trip gating", () => {
     expect(row(at(18, 120000), CRUISE)?.locked).toBe(false);
   });
 
-  test("only affordable tiers are offered, up to five", () => {
-    expect(row(at(30, 130000), VAC)?.amount).toEqual({
-      min: 50000,
-      max: 130000,
-      step: 50000,
-    });
-    expect(row(at(30, 99_000_000), VAC)?.amount?.max).toBe(250000);
-    expect(row(at(30, 99_000_000), CRUISE)?.amount?.max).toBe(600000);
+  test("only affordable tiers are enabled, five named tiers in all", () => {
+    const tiers = (money: number, id: string) => {
+      const view = describePending(
+        runAction(at(30, money), bundles, id).world,
+        bundles,
+      );
+      return view?.choices.map((c) => [c.label, c.enabled]);
+    };
+    expect(tiers(130000, VAC)).toEqual([
+      ["Backpacking ($500)", true],
+      ["Budget ($1,000)", true],
+      ["Standard ($1,500)", false],
+      ["Luxury ($2,000)", false],
+      ["Private jet ($2,500)", false],
+    ]);
+    expect(tiers(99_000_000, VAC)?.every(([, on]) => on)).toBe(true);
+    expect(tiers(99_000_000, CRUISE)).toEqual([
+      ["Shared cabin ($1,200)", true],
+      ["Inside cabin ($2,400)", true],
+      ["Ocean view ($3,600)", true],
+      ["Balcony suite ($4,800)", true],
+      ["Royal suite ($6,000)", true],
+    ]);
   });
 
   test("loan arrears do not block a trip", () => {
@@ -105,7 +133,8 @@ describe("trip gating", () => {
   });
 
   test("teens cannot go abroad, adults can", () => {
-    const when = idx.storylets.get(VAC)?.choices[DESTS.indexOf("abroad")]?.when;
+    const when =
+      idx.storylets.get(DEST)?.choices[DESTS.indexOf("abroad")]?.when;
     for (const [age, enabled] of [
       [17, false],
       [18, true],
@@ -113,19 +142,19 @@ describe("trip gating", () => {
       expect(
         evaluate(
           when as never,
-          makeEnv(at(age, 1_000_000), idx, { subject: PLAYER, amount: 50000 }),
+          makeEnv(withTier(at(age, 1_000_000), 1), idx, { subject: PLAYER }),
         ),
       ).toBe(enabled);
     for (const d of ["beach", "city", "mountains", "theme-park"])
       expect(
-        idx.storylets.get(VAC)?.choices[DESTS.indexOf(d)]?.when,
+        idx.storylets.get(DEST)?.choices[DESTS.indexOf(d)]?.when,
       ).toBeUndefined();
   });
 });
 
 describe("trip outcomes", () => {
   test("every trip's weights sum to 10000 with one death outcome", () => {
-    const sum = (id: string, outs: readonly { weight: unknown }[], t: number) =>
+    const sum = (outs: readonly { weight: unknown }[], t: number) =>
       outs.reduce(
         (n, o) =>
           n +
@@ -133,41 +162,40 @@ describe("trip outcomes", () => {
             0,
             evaluate(
               o.weight as never,
-              makeEnv(at(30, 99_000_000), idx, {
+              makeEnv(withTier(at(30, 99_000_000), t), idx, {
                 subject: PLAYER,
-                amount: t * (STEP[id] as number),
               }),
             ) as number,
           ),
         0,
       );
-    for (const [id, groups] of [
-      [VAC, idx.storylets.get(VAC)?.choices.map((c) => c.outcomes)],
-      [CRUISE, [idx.storylets.get(CRUISE)?.outcomes]],
-    ] as const)
+    for (const groups of [
+      idx.storylets.get(DEST)?.choices.map((c) => c.outcomes),
+      [idx.storylets.get(VOYAGE)?.outcomes],
+    ])
       for (const outs of groups ?? [])
         for (let t = 1; t <= 5; t++) {
-          expect(sum(id, outs ?? [], t)).toBe(10000);
+          expect(sum(outs ?? [], t)).toBe(10000);
           const last = outs?.at(-1);
           expect(
             evaluate(
               last?.weight as never,
-              makeEnv(at(30, 1), idx, { subject: PLAYER, amount: t * 50000 }),
+              makeEnv(withTier(at(30, 1), t), idx, { subject: PLAYER }),
             ),
           ).toBe(1);
         }
   });
 
   test("bad events get rarer with the tier", () => {
-    const s = idx.storylets.get(VAC);
+    const s = idx.storylets.get(DEST);
     const bad = s?.choices[0]?.outcomes[3]?.weight as never;
     const at1 = evaluate(
       bad,
-      makeEnv(at(30, 1), idx, { subject: PLAYER, amount: 50000 }),
+      makeEnv(withTier(at(30, 1), 1), idx, { subject: PLAYER }),
     ) as number;
     const at5 = evaluate(
       bad,
-      makeEnv(at(30, 1), idx, { subject: PLAYER, amount: 250000 }),
+      makeEnv(withTier(at(30, 1), 5), idx, { subject: PLAYER }),
     ) as number;
     expect(at1).toBeGreaterThan(at5);
   });
@@ -221,8 +249,8 @@ describe("trip outcomes", () => {
     test(`${d}: effects of every non-fatal outcome`, () => {
       const choice = DESTS.indexOf(d);
       for (const [i, [hap, hp, sm, lk, div]] of rows.entries()) {
-        const b = only(VAC, choice, i);
-        let w = runAction(at(30, 1_000_000), b, VAC, undefined, 150000).world;
+        const b = only(DEST, choice, i);
+        let w = pickTier(at(30, 1_000_000), b, VAC, 3);
         w = choose(w, b, choice).world;
         expect(me(w).alive).not.toBe(false);
         expect(w.ended).toBeNull();
@@ -237,9 +265,9 @@ describe("trip outcomes", () => {
 
   test("each destination's last outcome is a fatal travel accident", () => {
     for (const [choice, d] of DESTS.entries()) {
-      const outs = idx.storylets.get(VAC)?.choices[choice]?.outcomes ?? [];
-      const b = only(VAC, choice, outs.length - 1);
-      let w = runAction(at(30, 1_000_000), b, VAC, undefined, 50000).world;
+      const outs = idx.storylets.get(DEST)?.choices[choice]?.outcomes ?? [];
+      const b = only(DEST, choice, outs.length - 1);
+      let w = pickTier(at(30, 1_000_000), b, VAC, 1);
       w = choose(w, b, choice).world;
       expect(w.ended?.cause, d).toBe("travel accident");
       expect(me(w).money).toBe(950000);
@@ -258,8 +286,8 @@ describe("trip outcomes", () => {
       [-5, 0, 0],
     ];
     for (const [i, [hap, hp, div]] of rows.entries()) {
-      const b = only(CRUISE, null, i);
-      let w = runAction(at(30, 1_000_000), b, CRUISE, undefined, 240000).world;
+      const b = only(VOYAGE, null, i);
+      let w = pickTier(at(30, 1_000_000), b, CRUISE, 2);
       expect(w.pending).toBeNull();
       const lost = div === 0 ? 0 : Math.trunc(240000 / (div as number));
       expect(me(w).money).toBe(1_000_000 - 240000 - lost);
@@ -267,22 +295,22 @@ describe("trip outcomes", () => {
       expect(stat(w, "health")).toBe(50 + (hp as number));
       w = at(30, 1);
     }
-    const last = (idx.storylets.get(CRUISE)?.outcomes.length ?? 0) - 1;
-    const b = only(CRUISE, null, last);
-    const w = runAction(at(30, 1_000_000), b, CRUISE, undefined, 120000).world;
+    const last = (idx.storylets.get(VOYAGE)?.outcomes.length ?? 0) - 1;
+    const b = only(VOYAGE, null, last);
+    const w = pickTier(at(30, 1_000_000), b, CRUISE, 1);
     expect(w.ended?.cause).toBe("travel accident");
     expect(me(w).money).toBe(880000);
   });
 
   test("a money loss never drives cash below zero", () => {
-    const b = only(VAC, 1, 3);
-    let w = runAction(at(30, 50000), b, VAC, undefined, 50000).world;
+    const b = only(DEST, 1, 3);
+    let w = pickTier(at(30, 50000), b, VAC, 1);
     w = choose(w, b, 1).world;
     expect(me(w).money).toBe(0);
   });
 
   test("repeats keep the cost and bad events, but shrink happiness gains", () => {
-    const b = only(VAC, 0, 0); // beach, great: +12 at tier 3
+    const b = only(DEST, 0, 0); // beach, great: +12 at tier 3
     let w = at(30, 100_000_000);
     const gains: number[] = [];
     for (let n = 1; n <= 21; n++) {
@@ -291,7 +319,7 @@ describe("trip outcomes", () => {
         stats: { ...p.stats, happiness: 20 },
       }));
       const before = me(w).money;
-      w = runAction(w, b, VAC, undefined, 150000).world;
+      w = pickTier(w, b, VAC, 3);
       w = choose(w, b, 0).world;
       expect(me(w).money).toBe(before - 150000);
       gains.push(stat(w, "happiness") - 20);
@@ -302,8 +330,8 @@ describe("trip outcomes", () => {
     expect(gains[8]).toBe(0);
     expect(gains[20]).toBe(0);
     // A bad outcome stays full at use 21.
-    const bad = only(VAC, 0, 3);
-    const w2 = runAction(w, bad, VAC, undefined, 150000).world;
+    const bad = only(DEST, 0, 3);
+    const w2 = pickTier(w, bad, VAC, 3);
     const hp = stat(w2, "health");
     const w3 = choose(w2, bad, 0).world;
     expect(stat(w3, "health")).toBe(hp - 4);

@@ -4,6 +4,11 @@ import type { LifeResult } from "./run.ts";
 export const VACATIONS_PACK = "vacations";
 /** Cause of death every trip outcome uses (`die("travel accident")`). */
 const TRAVEL_DEATH = "travel accident";
+/** Trip actions open a choice of five price tiers; tier `n` (1-based) costs `n` times this step. */
+export const TRIP_TIER_STEP: Readonly<Record<string, number>> = {
+  [`${VACATIONS_PACK}/take-vacation`]: 50000,
+  [`${VACATIONS_PACK}/go-on-cruise`]: 120000,
+};
 /** Net worth is compared at these ages. */
 const AGES = [40, 65] as const;
 
@@ -160,7 +165,7 @@ const major = (n: number | null): string =>
 export function renderVacations(v: VacationsReport): string[] {
   const L: string[] = ["", "## Vacations", ""];
   L.push(
-    "Trips per life by price tier (tier 1 is the cheapest step of the amount picker), spending against gross earnings, and travel deaths. Only the `random` profile takes trips; the others never open the travel menu.",
+    "Trips per life by price tier (tier 1 is the cheapest named tier, picked from the trip action's choices), spending against gross earnings, and travel deaths. Only the `random` profile takes trips; the others never open the travel menu.",
     "",
     "| profile | lives | travellers | trips per life | tier 1 | tier 2 | tier 3 | tier 4 | tier 5 | action |",
     "|---|---|---|---|---|---|---|---|---|---|",

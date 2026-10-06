@@ -4,10 +4,10 @@ Tuned with the [harness](../../docs/spec/harness.md): `pnpm harness --jobs 4 --l
 
 ## Design numbers
 
-- `activities/travel` holds two repeatable actions. The amount picker is the price tier: five steps, so a trip costs 1-5 times the tier price. **Vacation** (age 16+): $500 per step ($500-$2,500). **Cruise** (age 18+): $1,200 per step ($1,200-$6,000). Only affordable tiers are offered; missed loan payments do not block a trip.
-- Every trip's outcome weights sum to 10,000 at every tier: great `1500 + 500 x tier`, good 4000, fine 1499, bad events `base x (6 - tier)` (500 in total at the base, so 25% at tier 1 down to 5% at tier 5) and one death outcome at weight 1 (1 in 10,000 trips, cause "travel accident").
+- `activities/travel` holds two repeatable actions. Each opens a choice of five named price tiers with the price in the label (enabled only when `money >= price`; missed loan payments do not block a trip), which sets `quality.vac_tier` (1-5) and chains (`next`) to the destination step (`vacation-destination`, five destinations) or `cruise-voyage`. **Vacation** (age 16+): Backpacking $500, Budget $1,000, Standard $1,500, Luxury $2,000, Private jet $2,500. **Cruise** (age 18+): Shared cabin $1,200, Inside cabin $2,400, Ocean view $3,600, Balcony suite $4,800, Royal suite $6,000. Prices, odds and gains are those of v1 (pack version 1 used a 1-5x amount slider); the cost is charged in the chained step.
+- Every trip's outcome weights sum to 10,000 at every tier: great `1500 + 500 x tier` (tier is `quality.vac_tier`), good 4000, fine 1499, bad events `base x (6 - tier)` (500 in total at the base, so 25% at tier 1 down to 5% at tier 5) and one death outcome at weight 1 (1 in 10,000 trips, cause "travel accident").
 - Gains: vacation great `+6 + 2 x tier` happiness (good `+3 + tier`, fine +1); cruise great `+8 + 3 x tier` (good `+4 + tier`). Destinations add a small stat bonus on great trips (beach and mountains health, city and abroad smarts) and tilt the bad-event pool (health, happiness, or money lost, never below zero cash).
-- Repeating uses the default curve (full to 10 uses a year, a quarter to 20, then none); the cost and every bad event stay full.
+- Repeating uses core-loop's curve; the chained step keeps the action's factor, so gains shrink at the same use count while the cost and every bad event stay full.
 - Family trip (ages 6-17, living with a living parent, weight 6, cooldown 2 years): `+8 / +4` happiness on a good trip, bad outcomes cost health, happiness or up to $30 pocket money, 1 in 10,000 death; every parent then gains 8 closeness through `family-trip-bond` (per-parent event, same year).
 
 ## Targets
@@ -17,7 +17,7 @@ Tuned with the [harness](../../docs/spec/harness.md): `pnpm harness --jobs 4 --l
 | Faults | 0 | blocking |
 | Travel deaths | about 1 per 10,000 trips | too rare to see below ~10,000 trips; checked by the weight-sum unit test |
 | Spend share of earnings | `random` under 2% of gross earnings | `random` makes 0-2 moves a year over every menu, so its trips are rare |
-| Trips by tier | every tier used; no tier more than twice another | the picker draws tiers uniformly |
+| Trips by tier | every tier used; no tier more than twice another | `random` picks tiers uniformly among the affordable ones |
 | Net worth of travellers | no collapse: travellers' median at 65 within the same order as non-travellers of the same profile | the non-traveller group is confounded (they are mostly lives that never acted or died young) |
 | Never-fired storylets | none | |
 | Decisions | at least 1 / 2 / 3 per year stay within 3 points of 90 / 50 / 30% | `family-trip` joins the decision pool at weight 6 |

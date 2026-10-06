@@ -153,7 +153,7 @@ An action that can be done many times a year with diminishing returns: uses up t
 _Avoid_: Grind, spam, cooldown (the opposite rule)
 
 **Trip** (Vacations Pack):
-A solo vacation or cruise, a priced repeatable action in the `activities/travel` submenu. The player picks a **price tier** (1-5 steps of the amount picker, cheapest first; only affordable tiers are offered) and, for a vacation, a destination type (beach, city, mountains, theme park, abroad); better tiers shift weight from bad events to great ones. A trip's death outcome (about 1 in 10,000) has the cause "travel accident". Under 16 only a **family trip** decision exists (living with a parent; raises closeness with each living parent).
+A solo vacation or cruise, a repeatable action in the `activities/travel` submenu. The player picks a **price tier** (five named choices with the price in the label, cheapest first, such as Backpacking to Private jet; only affordable tiers are enabled) and, for a vacation, a destination type (beach, city, mountains, theme park, abroad); better tiers shift weight from bad events to great ones. A trip's death outcome (about 1 in 10,000) has the cause "travel accident". Under 16 only a **family trip** decision exists (living with a parent; raises closeness with each living parent).
 _Avoid_: Holiday (use Trip), tier (alone)
 
 **Table limit**:

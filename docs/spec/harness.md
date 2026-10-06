@@ -48,7 +48,7 @@ It **reports** without failing, in `report.md` and `report.json` in the check ou
 - invariant (fault `minor-living-cost`): no living cost is charged while the player is under 18;
 - housing: age at moving out, share moved out and kicked out (of lives reaching 18), and share still living with their parents at 30 and 40, overall and per profile;
 - repeated activities: per repeatable action, uses per year lived, mean and maximum uses in a year it was used, and the share of those years past the full-effect and reduced ranges;
-- Vacations (only when Pack `vacations` is loaded): trips per life by price tier, trip spending as a share of gross earnings, travel deaths per 10,000 trips, and median net worth of travellers against non-travellers within each profile;
+- Vacations (only when Pack `vacations` is loaded): trips per life by named price tier, trip spending as a share of gross earnings, travel deaths per 10,000 trips, and median net worth of travellers against non-travellers within each profile;
 - stats at 100: share of living lives at the cap, per stat, by decade of age;
 - gambling (when the Gambling Pack is loaded): share of lives that staked anything and share ever addicted, per profile; addiction and recovery rates, bans and VIP rooms; lifetime stakes per gambler; and per game the bets, stakes, net change of cash and realised return (stakes plus net, over stakes). A gambling action that leaves cash below zero is an assertion fault;
 - stat distributions by age.

@@ -1,0 +1,476 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# More choice events across the life stages (issue #91). Chances are tuned with the harness (see BALANCE.md).
+
+- id: corner-lemonade-stall
+  icon: 🍋
+  trigger: event
+  chance: 6%
+  when: age >= 5 and age <= 12
+  text: "A hot afternoon and a spare table give {player.first_name} an idea: a lemonade stand by the gate."
+  choices:
+    - label: Set up the stand
+      outcomes:
+        - weight: 60
+          text: The whole street stops by, and the jar fills up.
+          effects:
+            - money += 1500
+            - stat.happiness += 3
+        - weight: 40
+          text: Few customers come, and the lemons go sour.
+          effects:
+            - stat.happiness -= 1
+    - label: Play outside instead
+      outcomes:
+        - weight: 1
+          text: A carefree afternoon of running around.
+          effects:
+            - stat.happiness += 2
+
+- id: pocket-money
+  icon: 🐷
+  trigger: event
+  chance: 5%
+  when: age >= 6 and age <= 13
+  text: "Pocket money has piled up in a drawer, and the corner shop has a lot of sweets."
+  choices:
+    - label: Spend it all
+      outcomes:
+        - weight: 1
+          text: A sugar rush, then a stomach ache.
+          effects:
+            - stat.happiness += 2
+            - stat.health -= 1
+    - label: Save it up
+      outcomes:
+        - weight: 1
+          text: The pile grows, and so does a sense of pride.
+          effects:
+            - money += 500
+            - stat.smarts += 1
+
+- id: playground-dare
+  icon: 🧗
+  trigger: event
+  chance: 5%
+  when: age >= 6 and age <= 12
+  text: "Older kids dare {player.first_name} to jump off the top of the climbing frame."
+  choices:
+    - label: Take the jump
+      outcomes:
+        - weight: 65
+          text: A perfect landing and a round of cheers.
+          effects:
+            - stat.happiness += 4
+        - weight: 35
+          text: A hard landing and a scraped knee.
+          effects:
+            - stat.health -= 4
+            - stat.happiness -= 2
+    - label: Refuse and walk away
+      outcomes:
+        - weight: 1
+          text: A few eye-rolls, but nobody stays cross for long.
+          effects:
+            - stat.smarts += 1
+
+- id: new-kid-in-class
+  icon: 🎒
+  trigger: event
+  chance: 5%
+  when: age >= 6 and age <= 15
+  text: "A new classmate sits alone at lunch, looking lost."
+  choices:
+    - label: Sit with them
+      outcomes:
+        - weight: 70
+          text: A friendship begins over shared crisps.
+          effects:
+            - stat.happiness += 4
+        - weight: 30
+          text: They are shy, but the effort is noticed.
+          effects:
+            - stat.happiness += 1
+    - label: Stay with your usual group
+      outcomes:
+        - weight: 1
+          text: Lunch goes on as always.
+
+- id: school-play-audition
+  icon: 🎭
+  trigger: event
+  chance: 4%
+  when: age >= 8 and age <= 17
+  text: "The school is staging a play, and auditions are open to everyone."
+  choices:
+    - label: Audition
+      outcomes:
+        - weight: 50
+          text: A lead role, and weeks of happy rehearsals.
+          effects:
+            - stat.happiness += 5
+            - stat.looks += 1
+        - weight: 50
+          text: A tiny part, but backstage is its own fun.
+          effects:
+            - stat.happiness += 2
+    - label: Watch from the audience
+      outcomes:
+        - weight: 1
+          text: The show is good, if a little envy-inducing.
+
+- id: broken-window
+  icon: 🪟
+  trigger: event
+  chance: 4%
+  when: age >= 8 and age <= 15
+  text: "A stray ball goes through the neighbour's window."
+  choices:
+    - label: Own up
+      outcomes:
+        - weight: 70
+          text: The neighbour laughs it off, and a small chore settles it.
+          effects:
+            - stat.happiness += 1
+            - stat.smarts += 1
+        - weight: 30
+          text: There is a stern talking-to and a month of lost pocket money.
+          effects:
+            - stat.happiness -= 3
+    - label: Run home
+      outcomes:
+        - weight: 75
+          text: Nobody ever finds out, but the guilt lingers.
+          effects:
+            - stat.happiness -= 2
+        - weight: 25
+          text: A curtain twitches, and the secret comes out.
+          effects:
+            - stat.happiness -= 5
+
+- id: teen-party
+  icon: 🎉
+  trigger: event
+  chance: 6%
+  when: age >= 14 and age <= 19
+  text: "A classmate is throwing a party while their parents are away."
+  choices:
+    - label: Go
+      outcomes:
+        - weight: 60
+          text: Loud music, good company, and a late night.
+          effects:
+            - stat.happiness += 5
+            - stat.health -= 1
+        - weight: 40
+          text: It gets out of hand, and the morning after is miserable.
+          effects:
+            - stat.happiness -= 3
+            - stat.health -= 3
+    - label: Stay in and study
+      outcomes:
+        - weight: 1
+          text: A quiet evening and a head start on the week.
+          effects:
+            - stat.smarts += 2
+
+- id: late-night-study
+  icon: 📚
+  trigger: event
+  chance: 5%
+  when: age >= 14 and age <= 24
+  text: "A big deadline looms, and the night is short."
+  choices:
+    - label: Pull an all-nighter
+      outcomes:
+        - weight: 60
+          text: The work gets done, and it is good.
+          effects:
+            - stat.smarts += 2
+            - stat.health -= 2
+        - weight: 40
+          text: Exhaustion wins halfway through.
+          effects:
+            - stat.health -= 3
+            - stat.happiness -= 2
+    - label: Get some sleep
+      outcomes:
+        - weight: 1
+          text: A rested mind is a steadier one.
+          effects:
+            - stat.health += 1
+
+- id: road-trip-invite
+  icon: 🚗
+  trigger: event
+  chance: 5%
+  when: age >= 17 and age <= 32
+  text: "Friends are planning a spontaneous road trip for the weekend."
+  choices:
+    - label: Pack a bag
+      outcomes:
+        - weight: 75
+          text: Open roads, bad songs, and stories to tell for years.
+          effects:
+            - money -= min(money, 6000)
+            - stat.happiness += 6
+        - weight: 25
+          text: The car breaks down, and the trip becomes an expensive adventure.
+          effects:
+            - money -= min(money, 15000)
+            - stat.happiness += 1
+    - label: Stay home
+      outcomes:
+        - weight: 1
+          text: The weekend passes quietly, and the photos make you wonder.
+          effects:
+            - stat.happiness -= 1
+
+- id: impulse-sale
+  icon: 🛍️
+  trigger: event
+  chance: 5%
+  when: age >= 18 and age <= 75 and money >= 10000
+  text: "A shop window shows a sale that looks too good to pass up."
+  choices:
+    - label: Splurge
+      outcomes:
+        - weight: 70
+          text: The purchase brings real joy.
+          effects:
+            - money -= 10000
+            - stat.happiness += 4
+        - weight: 30
+          text: It turns out to be less of a bargain than it looked.
+          effects:
+            - money -= 10000
+            - stat.happiness -= 1
+    - label: Walk on
+      outcomes:
+        - weight: 1
+          text: The wallet stays closed and the conscience clear.
+          effects:
+            - stat.happiness += 1
+
+- id: gym-membership
+  icon: 🏋️
+  trigger: event
+  chance: 5%
+  when: age >= 18 and age <= 65 and money >= 6000
+  text: "A new gym opens nearby with a cheap sign-up offer."
+  choices:
+    - label: Join
+      outcomes:
+        - weight: 60
+          text: The routine sticks, and so do the results.
+          effects:
+            - money -= 6000
+            - stat.health += 4
+            - stat.looks += 1
+        - weight: 40
+          text: After two enthusiastic weeks, the card gathers dust.
+          effects:
+            - money -= 6000
+    - label: Not for me
+      outcomes:
+        - weight: 1
+          text: The sofa remains undefeated.
+
+- id: adopt-a-pet
+  icon: 🐕
+  trigger: event
+  chance: 4%
+  when: age >= 20 and age <= 75
+  text: "A rescue centre has a pet that has clearly chosen {player.first_name}."
+  choices:
+    - label: Take them home
+      outcomes:
+        - weight: 80
+          text: A loyal companion who makes the house feel full.
+          effects:
+            - money -= min(money, 5000)
+            - stat.happiness += 6
+        - weight: 20
+          text: The pet is a handful and the vet bills are steep.
+          effects:
+            - money -= min(money, 15000)
+            - stat.happiness += 2
+    - label: Not right now
+      outcomes:
+        - weight: 1
+          text: A twinge of regret, but life is busy.
+
+- id: old-friend-message
+  icon: 🥂
+  trigger: event
+  chance: 4%
+  when: age >= 25 and age <= 80
+  text: "An old friend from years ago sends a message: can we catch up?"
+  choices:
+    - label: Meet up
+      outcomes:
+        - weight: 75
+          text: Hours of laughter, as though no time had passed.
+          effects:
+            - stat.happiness += 5
+        - weight: 25
+          text: The conversation is stiff, and the old spark is gone.
+          effects:
+            - stat.happiness -= 1
+    - label: Reply later, maybe
+      outcomes:
+        - weight: 1
+          text: The message is left on read, and the chance drifts away.
+          effects:
+            - stat.happiness -= 1
+
+- id: career-seminar
+  icon: 📈
+  trigger: event
+  chance: 5%
+  when: age >= 22 and age <= 60 and money >= 8000
+  text: "A weekend seminar promises to sharpen career skills."
+  choices:
+    - label: Attend
+      outcomes:
+        - weight: 60
+          text: A few useful ideas and a handful of new contacts.
+          effects:
+            - money -= min(money, 8000)
+            - stat.smarts += 3
+        - weight: 40
+          text: A lot of slides and not much else.
+          effects:
+            - money -= min(money, 8000)
+            - stat.smarts += 1
+    - label: Skip it
+      outcomes:
+        - weight: 1
+          text: A weekend of rest instead.
+          effects:
+            - stat.happiness += 1
+
+- id: health-checkup
+  icon: 🩺
+  trigger: event
+  chance: 5%
+  when: age >= 35 and age <= 85
+  text: "A reminder letter says a routine check-up is overdue."
+  choices:
+    - label: Book it
+      outcomes:
+        - weight: 75
+          text: The doctor finds nothing worrying and offers a few tips.
+          effects:
+            - stat.health += 3
+        - weight: 25
+          text: A small issue is caught early and treated in time.
+          effects:
+            - stat.health += 5
+            - money -= min(money, 5000)
+    - label: Put it off
+      outcomes:
+        - weight: 80
+          text: Nothing happens, for now.
+        - weight: 20
+          text: A nagging ache gets worse in the meantime.
+          effects:
+            - stat.health -= 4
+
+- id: neighbourhood-board
+  icon: 🏘️
+  trigger: event
+  chance: 4%
+  when: age >= 30 and age <= 75
+  text: "The residents' board is short of volunteers and looks to {player.first_name}."
+  choices:
+    - label: Join the board
+      outcomes:
+        - weight: 60
+          text: Meetings are long, but the street improves.
+          effects:
+            - stat.happiness += 3
+            - stat.smarts += 1
+        - weight: 40
+          text: Endless arguments over parking spaces.
+          effects:
+            - stat.happiness -= 3
+    - label: Leave it to others
+      outcomes:
+        - weight: 1
+          text: Someone else takes the seat.
+
+- id: travel-deal
+  icon: ✈️
+  trigger: event
+  chance: 4%
+  when: age >= 25 and age <= 78 and money >= 40000
+  text: "A last-minute travel deal lands in the inbox."
+  choices:
+    - label: Book the trip
+      outcomes:
+        - weight: 80
+          text: Sun, sights and a stack of new memories.
+          effects:
+            - money -= 40000
+            - stat.happiness += 7
+        - weight: 20
+          text: The trip is plagued by delays and lost luggage.
+          effects:
+            - money -= 40000
+            - stat.happiness += 1
+    - label: Keep saving
+      outcomes:
+        - weight: 1
+          text: The deal expires, and the savings stay put.
+
+- id: hobby-class
+  icon: 🎨
+  trigger: event
+  chance: 5%
+  when: age >= 55 and age <= 90
+  text: "The community centre starts a new class for beginners."
+  choices:
+    - label: Sign up
+      outcomes:
+        - weight: 70
+          text: A fresh skill, new faces, and a reason to leave the house.
+          effects:
+            - money -= min(money, 3000)
+            - stat.happiness += 4
+            - stat.smarts += 1
+        - weight: 30
+          text: The class is crowded, but there is a nice cup of tea afterwards.
+          effects:
+            - money -= min(money, 3000)
+            - stat.happiness += 1
+    - label: Stay at home
+      outcomes:
+        - weight: 1
+          text: The days stay familiar and quiet.
+
+- id: family-visit
+  icon: 👨‍👩‍👧
+  trigger: event
+  chance: 5%
+  when: age >= 55 and age <= 90
+  text: "The family wants to descend on {player.first_name} for the weekend."
+  choices:
+    - label: Host everyone
+      outcomes:
+        - weight: 80
+          text: A noisy, joyful house, and a table full of food.
+          effects:
+            - money -= min(money, 5000)
+            - stat.happiness += 5
+        - weight: 20
+          text: Tempers fray, and the cleanup takes days.
+          effects:
+            - money -= min(money, 5000)
+            - stat.happiness -= 2
+    - label: Suggest a restaurant
+      outcomes:
+        - weight: 1
+          text: Everyone is fed, and the house stays calm.
+          effects:
+            - money -= min(money, 8000)
+            - stat.happiness += 2

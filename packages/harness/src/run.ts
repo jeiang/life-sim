@@ -64,6 +64,8 @@ export interface LifeResult {
   readonly fires: Readonly<Record<string, number>>;
   /** Events opened by each age-up (voluntary actions excluded). */
   readonly yearEvents: readonly number[];
+  /** Choice events (event storylets that ask the player to pick) opened by each age-up, with the age reached. */
+  readonly yearChoices: readonly { readonly age: number; readonly n: number }[];
   readonly samples: readonly YearSample[];
   readonly loansOpened: number;
   readonly loansDefaulted: number;
@@ -82,6 +84,14 @@ const playerOf = (w: World) => {
 function totalFires(w: World): number {
   let n = 0;
   for (const r of Object.values(w.storyletLog)) n += r.count;
+  return n;
+}
+
+/** Opens of storylets whose ids are in `ids`. */
+function firesIn(w: World, ids: ReadonlySet<string>): number {
+  let n = 0;
+  for (const [k, r] of Object.entries(w.storyletLog))
+    if (ids.has(k.split("#")[0] as string)) n += r.count;
   return n;
 }
 
@@ -149,6 +159,11 @@ export function runLife(
   setAssertSink((m) => fault("assertion", `expression ${m}`));
 
   const yearEvents: number[] = [];
+  const yearChoices: { age: number; n: number }[] = [];
+  const choiceIds = new Set<string>();
+  for (const b of bundles)
+    for (const st of b.storylets)
+      if (st.trigger === "event" && st.choices.length > 0) choiceIds.add(st.id);
   const samples: YearSample[] = [];
   const loanIds = new Set<number>();
   const defaulted = new Set<number>();
@@ -230,10 +245,12 @@ export function runLife(
       // The year.
       const loansBefore = playerOf(w).loans;
       const firesBefore = totalFires(w);
+      const choicesBefore = firesIn(w, choiceIds);
       w = ageUp(w, bundles).world;
       age = playerOf(w).age;
       if (!resolve()) break;
       yearEvents.push(totalFires(w) - firesBefore);
+      yearChoices.push({ age, n: firesIn(w, choiceIds) - choicesBefore });
       trackLoans(loansBefore, w);
       if (w.ended) break;
       const me = playerOf(w);
@@ -276,6 +293,7 @@ export function runLife(
         : null,
     fires: final ? firesById(final) : {},
     yearEvents,
+    yearChoices,
     samples,
     loansOpened: loanIds.size,
     loansDefaulted: defaulted.size,

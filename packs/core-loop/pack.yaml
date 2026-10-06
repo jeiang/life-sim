@@ -25,7 +25,7 @@ qualities:
   - { id: applying_for, type: int, min: 0, default: 0 }
   - { id: interview_score, type: int, min: 0, default: 0 }
 exclusivity: [school, full-time, part-time]
-repeat: { full: 10, reduced: 20, factor: 25% }
+repeat: { full: 3, reduced: 8, factor: 25% }
 year:
   slots: [1, 3]
   cap: 6

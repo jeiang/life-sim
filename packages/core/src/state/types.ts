@@ -183,6 +183,8 @@ export interface Pending {
   readonly scope?: ScopeRef;
   /** The picked amount, bound as `amount` in the choices and outcomes. */
   readonly amount?: number;
+  /** Repeat factor (basis points, below 10000) inherited through `next:` from a repeatable action. */
+  readonly factorBp?: number;
   readonly rest?: { readonly events: readonly QueuedEvent[] };
 }
 

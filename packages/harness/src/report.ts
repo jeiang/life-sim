@@ -196,6 +196,8 @@ export interface Report {
   readonly vacations?: VacationsReport;
   /** Decade ages: stat id -> age -> distribution. */
   readonly statsByAge: Record<string, Record<string, Dist | null>>;
+  /** Decade ages: stat id -> age -> percent of living lives with the stat at 100. */
+  readonly statsAt100: Record<string, Record<string, number>>;
 }
 
 /** Storylets reached only through `next` and never rolled themselves. */
@@ -512,6 +514,7 @@ export class Aggregate {
       ageHist[k] = (ageHist[k] ?? 0) + 1;
     }
     const statsByAge: Report["statsByAge"] = {};
+    const statsAt100: Report["statsAt100"] = {};
     for (const [id, byAge] of [...this.stats].sort((a, b) =>
       a[0] < b[0] ? -1 : 1,
     )) {
@@ -519,6 +522,12 @@ export class Aggregate {
       for (const a of DECADES)
         if (byAge.has(a)) row[String(a)] = dist(byAge.get(a) as number[]);
       statsByAge[id] = row;
+      statsAt100[id] = Object.fromEntries(
+        DECADES.filter((a) => byAge.has(a)).map((a) => {
+          const v = byAge.get(a) as number[];
+          return [String(a), pct(v.filter((x) => x >= 100).length, v.length)];
+        }),
+      );
     }
     const profiles: Report["profiles"] = {};
     for (const [name, p] of [...this.profile].sort((a, b) =>
@@ -691,6 +700,7 @@ export class Aggregate {
       },
       ...(vacations ? { vacations } : {}),
       statsByAge,
+      statsAt100,
     };
   }
 }
@@ -939,7 +949,19 @@ export function renderMarkdown(
     }
   }
   if (r.vacations) L.push(...renderVacations(r.vacations), "");
-  L.push("## Stats by age", "");
+  L.push(
+    "## Stats at 100",
+    "",
+    "Percent of living lives with the stat at its cap, by decade age.",
+    "",
+  );
+  for (const [id, row] of Object.entries(r.statsAt100))
+    L.push(
+      `- ${id}: ${Object.entries(row)
+        .map(([a, v]) => `${a}: ${v}%`)
+        .join(", ")}`,
+    );
+  L.push("", "## Stats by age", "");
   for (const [id, row] of Object.entries(r.statsByAge)) {
     L.push(`### ${id}`, "", DHEAD);
     for (const [a, d] of Object.entries(row)) L.push(dRow(`age ${a}`, d));

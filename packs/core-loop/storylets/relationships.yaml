@@ -45,7 +45,6 @@
       text: "You have a warm, honest talk and learn something."
       effects:
         - stat.happiness += 2
-        - stat.smarts += 1
         - relationship(person).closeness += 4
     - weight: 30
       text: "Small talk, but friendly."

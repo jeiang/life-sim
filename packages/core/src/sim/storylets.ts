@@ -236,10 +236,15 @@ function runOutcome(
   ref: ScopeRef | undefined,
   depth: number,
   amount?: number,
+  carryBp = 10000,
 ): World {
   const curve = curveOf(idx, s);
   const base = scopeFor(world, ref, s.id, amount);
-  const bp = curve ? repeatFactorBp(curve, base.uses ?? 0) : 10000;
+  // A `next:` step keeps the repeat factor of the action that led to it.
+  const bp = Math.min(
+    carryBp,
+    curve ? repeatFactorBp(curve, base.uses ?? 0) : 10000,
+  );
   const scope: Scope = bp < 10000 ? { ...base, factorBp: bp } : base;
   const [w0, outcome] = pickOutcome(world, idx, s.id, outcomes, scope);
   if (!outcome) return w0;
@@ -273,6 +278,7 @@ function runOutcome(
       ...(next.scope && ref?.kind === next.scope ? { scope: ref } : {}),
     },
     depth + 1,
+    bp,
   );
 }
 
@@ -286,6 +292,7 @@ export function open(
   idx: PackIndex,
   ev: QueuedEvent,
   depth = 0,
+  carryBp = 10000,
 ): World {
   if (world.ended || depth > MAX_CHAIN) return world;
   const s = idx.storylets.get(ev.storyletId);
@@ -307,7 +314,16 @@ export function open(
           w,
           renderText(pickText(w, s.text, s.matureText), w, idx, scope),
         );
-      return runOutcome(w, idx, s, c.outcomes, ev.scope, depth);
+      return runOutcome(
+        w,
+        idx,
+        s,
+        c.outcomes,
+        ev.scope,
+        depth,
+        ev.amount,
+        carryBp,
+      );
     }
     return {
       ...w,
@@ -315,6 +331,7 @@ export function open(
         storyletId: s.id,
         ...(ev.scope ? { scope: ev.scope } : {}),
         ...(ev.amount === undefined ? {} : { amount: ev.amount }),
+        ...(carryBp < 10000 ? { factorBp: carryBp } : {}),
       },
     };
   }
@@ -328,7 +345,7 @@ export function open(
         scopeFor(w, ev.scope, s.id),
       ),
     );
-  return runOutcome(w, idx, s, s.outcomes, ev.scope, depth, ev.amount);
+  return runOutcome(w, idx, s, s.outcomes, ev.scope, depth, ev.amount, carryBp);
 }
 
 /** Resolve a choice of the open storylet (journals its text and the outcome, runs effects). */
@@ -339,6 +356,7 @@ export function resolveChoice(
   ref: ScopeRef | undefined,
   choiceIndex: number,
   amount?: number,
+  carryBp = 10000,
 ): World {
   const choice = s.choices[choiceIndex];
   if (!choice)
@@ -350,5 +368,5 @@ export function resolveChoice(
   if (s.text !== undefined)
     w = say(w, renderText(pickText(w, s.text, s.matureText), w, idx, scope));
   w = say(w, `You chose: ${pickText(w, choice.label, choice.matureLabel)}`);
-  return runOutcome(w, idx, s, choice.outcomes, ref, 0, amount);
+  return runOutcome(w, idx, s, choice.outcomes, ref, 0, amount, carryBp);
 }

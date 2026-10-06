@@ -65,7 +65,7 @@
 - id: everyday-stress
   icon: 😮‍💨
   trigger: event
-  chance: 60%
+  chance: 85%
   when: age >= 6 and stat.happiness > 55
   text: "Deadlines, bills and small frustrations pile up for {player.first_name}."
   outcomes:
@@ -255,3 +255,36 @@
         - stat.health -= 14
         - stat.happiness -= 5
         - money -= min(money, 60000)
+
+- id: mind-wanders
+  icon: 🌫️
+  trigger: event
+  chance: 50%
+  when: age >= 10 and stat.smarts > 65
+  text: "Skills go unused and facts slip away from {player.first_name}."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.smarts -= 2
+
+- id: looks-fade
+  icon: 🪞
+  trigger: event
+  chance: 40%
+  when: age >= 30 and stat.looks > 60
+  text: "The years start to show on {player.first_name}."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.looks -= 1
+
+- id: wear-and-tear
+  icon: 🩹
+  trigger: event
+  chance: 40%
+  when: age >= 30 and stat.health > 90
+  text: "Aches and small strains catch up with {player.first_name}."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.health -= 3

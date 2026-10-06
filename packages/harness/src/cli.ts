@@ -5,10 +5,14 @@ import { parseArgs } from "node:util";
 import { compilePacks, formatDiagnostic } from "@life/pack-tools";
 import { runHarness } from "./harness.ts";
 import { resolveJobs, runHarnessParallel } from "./parallel.ts";
-import { PROFILE_NAMES, type ProfileName } from "./profiles.ts";
+import {
+  EXTRA_PROFILE_NAMES,
+  PROFILE_NAMES,
+  type ProfileName,
+} from "./profiles.ts";
 import { renderMarkdown } from "./report.ts";
 
-const USAGE = `usage: pnpm harness --lives N [--profile random|studious|spender|idle|all|a,b] [--seed S] [--out dir] [--packs dir] [--life-seed X] [--jobs N]
+const USAGE = `usage: pnpm harness --lives N [--profile random|studious|spender|idle|grinder|all|a,b] [--seed S] [--out dir] [--packs dir] [--life-seed X] [--jobs N]
   --lives      lives to simulate (default 100)
   --profile    simulated player profile(s); several are dealt to lives in turn (default all)
   --seed       base seed, uint32 (default 1)
@@ -53,7 +57,9 @@ const profiles: ProfileName[] =
   a.profile === undefined || a.profile === "all"
     ? [...PROFILE_NAMES]
     : a.profile.split(",").map((p) => {
-        if (!(PROFILE_NAMES as readonly string[]).includes(p))
+        if (
+          ![...PROFILE_NAMES, ...EXTRA_PROFILE_NAMES].includes(p as ProfileName)
+        )
           fail(`unknown profile '${p}'`);
         return p as ProfileName;
       });

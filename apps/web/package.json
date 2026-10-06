@@ -10,18 +10,19 @@
   },
   "dependencies": {
     "@life/core": "workspace:*",
-    "preact": "11.0.0",
     "@preact/signals": "2.11.3",
+    "bcryptjs": "3.0.3",
     "lucide-preact": "1.52.0",
+    "preact": "11.0.0",
     "workbox-window": "7.4.1"
   },
   "devDependencies": {
     "@life/pack-tools": "workspace:*",
     "@preact/preset-vite": "2.10.6",
-    "vite": "8.3.2",
-    "vite-plugin-pwa": "2.0.0",
-    "tailwindcss": "4.3.3",
     "@tailwindcss/vite": "4.3.3",
-    "typescript": "7.0.2"
+    "tailwindcss": "4.3.3",
+    "typescript": "7.0.2",
+    "vite": "8.3.2",
+    "vite-plugin-pwa": "2.0.0"
   }
 }

@@ -27,7 +27,7 @@
             src = depsSrc;
             pnpm = pkgs.pnpm_10;
             fetcherVersion = 4;
-            hash = "sha256-0GJGxfHm43n1LBei1poDInFyV88Blae6ZBn7TI2IZTo=";
+            hash = "sha256-8U22C85FvcHN/34A3XI2ZNgMbIiBuLAVi79hgWxxV9g=";
           };
 
           # The deployed app: $out/dist is served as-is by Caddy (docs/spec/deploy.md).
@@ -50,6 +50,7 @@
             nativeBuildInputs = [ pkgs.nodejs_24 pkgs.pnpm_10 pkgs.pnpmConfigHook ];
             # Baked into the bundle by Vite `define` (Settings > About this install).
             LIFE_SIM_REV = self.shortRev or self.dirtyShortRev or "dev";
+            # Hidden options code (bcrypt hash): unset here, so this build has no code field. The cluster sets it with overrideAttrs (docs/spec/deploy.md).
             buildPhase = ''
               runHook preBuild
               pnpm --filter @life/web build

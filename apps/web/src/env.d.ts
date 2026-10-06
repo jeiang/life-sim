@@ -24,3 +24,8 @@ declare module "virtual:packs" {
 
 /** Git short revision baked in at build time (LIFE_SIM_REV, or "dev"). */
 declare const __BUILD_REV__: string;
+
+interface ImportMetaEnv {
+  /** bcrypt hash of the hidden-options code (build input); unset means no code field. */
+  readonly VITE_HIDDEN_CODE_HASH?: string;
+}

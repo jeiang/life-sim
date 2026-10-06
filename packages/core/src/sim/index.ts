@@ -11,6 +11,7 @@ export {
   setAssertSink,
   setChanceDropSink,
   setDecisionSink,
+  setMature,
 } from "./env.ts";
 export { playFixedLife } from "./fixed-life.ts";
 export {

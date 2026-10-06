@@ -187,6 +187,7 @@ const PLAYER_NAMES: Record<string, ExprType> = {
   "city.country": "string",
   "living.with_parents": "bool",
   confined: "bool",
+  mature: "bool",
   "player.first_name": "string",
   "player.last_name": "string",
   ...pronounNames("player"),

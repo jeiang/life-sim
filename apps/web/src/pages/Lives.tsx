@@ -3,7 +3,7 @@ import { Plus } from "lucide-preact";
 import { GodBadge } from "../components/GodFields.tsx";
 import { PageShell } from "../components/PageShell.tsx";
 import { money } from "../game/format.ts";
-import { godMode } from "../game/god.ts";
+import { godMode } from "../game/hidden.ts";
 import {
   continueLife,
   lives,

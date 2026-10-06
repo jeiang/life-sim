@@ -2,7 +2,15 @@ import { bundles } from "virtual:packs";
 import { useRef, useState } from "preact/hooks";
 import { ExportPanel } from "../components/ExportPanel.tsx";
 import { PageShell } from "../components/PageShell.tsx";
-import { godMode, setGodMode, tryUnlock } from "../game/god.ts";
+import {
+  godMode,
+  hasCodeField,
+  matureMode,
+  setGodMode,
+  setMatureMode,
+  tryUnlock,
+  unlocked,
+} from "../game/hidden.ts";
 import {
   currentLifeId,
   getLifeStore,
@@ -113,7 +121,7 @@ function AboutInstall() {
           </div>
         ))}
       </dl>
-      {taps >= UNLOCK_TAPS && !godMode.value && (
+      {hasCodeField && taps >= UNLOCK_TAPS && !unlocked.value && (
         <form
           class="space-y-2"
           onSubmit={(e) => {
@@ -151,26 +159,42 @@ function AboutInstall() {
   );
 }
 
-function GodSection() {
-  if (!godMode.value) return null;
+function Switch({
+  label,
+  on,
+  onToggle,
+}: {
+  label: string;
+  on: boolean;
+  onToggle: (on: boolean) => void;
+}) {
+  return (
+    <label class="flex min-h-11 items-center justify-between gap-4">
+      <span class="font-bold">{label}</span>
+      <input
+        type="checkbox"
+        role="switch"
+        aria-checked={on}
+        checked={on}
+        onChange={() => onToggle(!on)}
+        class="size-6"
+      />
+    </label>
+  );
+}
+
+function HiddenOptions() {
+  if (!unlocked.value) return null;
   return (
     <section class="space-y-2 rounded-xl bg-surface-raised p-4">
-      <label class="flex min-h-11 items-center justify-between gap-4">
-        <span class="font-bold">God mode</span>
-        <input
-          type="checkbox"
-          role="switch"
-          aria-checked="true"
-          checked
-          onChange={() => setGodMode(false)}
-          class="size-6"
-        />
-      </label>
-      {currentLifeId.value !== null && !world.value.ended && (
+      <h2 class="font-bold">Hidden options</h2>
+      <Switch label="God mode" on={godMode.value} onToggle={setGodMode} />
+      {godMode.value && currentLifeId.value !== null && !world.value.ended && (
         <button type="button" class={linkClass} onClick={() => openPage("god")}>
           Edit this life
         </button>
       )}
+      <Switch label="18+ mode" on={matureMode.value} onToggle={setMatureMode} />
     </section>
   );
 }
@@ -212,7 +236,7 @@ export function SettingsPage() {
       >
         Credits
       </button>
-      <GodSection />
+      <HiddenOptions />
       <AboutInstall />
     </PageShell>
   );

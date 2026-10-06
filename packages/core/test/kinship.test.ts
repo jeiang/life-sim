@@ -270,7 +270,9 @@ describe("expressions and targets", () => {
   test("the kinship label is a text placeholder", () => {
     const lines = (w: World) => w.journal.flatMap((j) => j.lines);
     const w = runAction(t.w, bundles, "life/kin-adopt-in-law").world;
-    expect(lines(w).some((l) => /^Met (mother|father) \w+\.$/.test(l))).toBe(true);
+    expect(lines(w).some((l) => /^Met (mother|father) \w+\.$/.test(l))).toBe(
+      true,
+    );
     expect(env(t.ids.uncle as number).get("person.kin_label")).toBe(
       "aunt or uncle",
     );

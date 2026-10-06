@@ -65,3 +65,19 @@
   outcomes:
     - effects:
         - money += 10000
+
+- id: tenure-bonus
+  trigger: action
+  menu: occupation
+  when: in_group("full-time") and years_in_group("full-time") >= 3
+  outcomes:
+    - effects:
+        - money += 777
+
+- id: student-perk
+  trigger: action
+  menu: occupation
+  when: in_group(school)
+  outcomes:
+    - effects:
+        - money += 5

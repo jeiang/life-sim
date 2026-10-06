@@ -27,6 +27,7 @@ const TYPE_NAME: Record<Type, string> = {
   bool: "a boolean",
   string: "a string",
   id: "a content id",
+  group: "an exclusivity group name",
 };
 
 const MAX_SUGGEST = 2;
@@ -85,8 +86,17 @@ export class Checker {
     return r;
   }
 
-  /** Like `expr` for a parameter of type `want`: a bare undeclared word is a content id. */
+  /**
+   * Like `expr` for a parameter of type `want`: a bare undeclared word is a content id, or a
+   * group name for a `group` parameter (which also takes a string literal, for `"full-time"`).
+   */
   param(n: Node, want: Type): Checked {
+    if (want === "group") {
+      if (n.k === "str") return ["group", ["id", n.v]];
+      if (n.k === "name" && !n.v.includes(".") && !(n.v in this.env.names))
+        return ["group", ["id", n.v]];
+      return this.err(n, "expected an exclusivity group name, such as school");
+    }
     if (
       want === "id" &&
       n.k === "name" &&

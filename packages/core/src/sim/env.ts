@@ -94,6 +94,14 @@ function yearsIn(p: Person, kindId: string): number {
   return n;
 }
 
+/** Total years across every occupation (held or past) whose exclusivity group is `group`. */
+function yearsInGroup(p: Person, group: string): number {
+  let n = 0;
+  for (const o of p.occupations) if (o.group === group) n += o.years;
+  for (const o of p.occupationHistory) if (o.group === group) n += o.years;
+  return n;
+}
+
 let assertSink: ((message: string) => void) | null = null;
 
 /**
@@ -228,6 +236,10 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
               )
             : 0;
         }
+        case "in_group":
+          return subject.occupations.some((o) => o.group === id);
+        case "years_in_group":
+          return yearsInGroup(subject, id);
         case "has":
           return (
             subject.occupations.some((o) => o.kindId === id) ||

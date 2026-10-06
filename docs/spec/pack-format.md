@@ -84,6 +84,46 @@ packs/<pack-id>/
 | `outcomes` | Weighted list. Each has `weight`, optional `when`, `text`, `effects`, and optional `next`. |
 | `next` | Storylet id opened immediately after this outcome, for multi-step scenes. |
 
+## Market kinds
+
+An item kind with a `market` block is traded by amount instead of bought (no `price`, `value` or `loan`; `requires` gates buying). The shop never lists it. Its price series lives on the world, one point per **world year** (a function of the seed and year only, so an heir does not replay prices), and the next year's return is drawn in advance and stored (`forecast`).
+
+```yaml
+# items/market.yaml
+- id: total-market
+  label: Total market fund
+  category: investments
+  market:
+    start: 10000        # price of one whole unit, minor units
+    drift: 5%           # mean yearly return (may be negative)
+    vol: 15%            # standard deviation of the yearly return
+    crash: { chance: 5%, drop: 30% }       # optional
+- id: acme
+  label: Acme
+  category: investments
+  market:
+    start: 2500
+    drift: 1%
+    vol: 25%
+    beta: { of: total-market, factor: 120% }   # adds 120% of that kind's return; no loops
+    jump: { chance: 2%, multiple: 10 }          # optional: price x10
+    delist: 3%                                  # optional: price falls to 0 for good
+- id: gov-bond-5
+  label: Government bond (5 years)
+  category: investments
+  market:
+    start: 10000
+    drift: 0%
+    vol: 1%
+    bond: { term: 5, coupon: 3%, default: 0.5%, loss: 100% }
+```
+
+Return of a year: `drift + vol x shock + factor x (return of beta.of)`, minus `crash.drop` when the crash rolls, then the price is multiplied by `jump.multiple` when the jump rolls. All of it is the stored forecast. At settlement the price applies the forecast, then `delist` and the bond `default` roll (not part of the forecast).
+
+**Government bonds** (`bond`): each settlement pays `coupon` on the remaining principal (`units x start`); the holding records its maturity (world year of the first purchase + `term`) and at maturity the principal is paid and the holding closes. A bond sells early at the market price. The issuer's yearly `default` chance is Pack data (a later country can set its own); a default takes `loss` (default 100%) off the remaining principal and the price, and coupons and principal follow the reduced figure. Buying more of a held bond keeps the first maturity.
+
+Units are fixed point, 10,000 per whole unit. Names: `portfolio` (value of all the player's holdings). Functions (market kind ids): `price(k)`, `change(k)` (one-year change, basis points), `units(k)`, `holding_value(k)`, `cost_basis(k)`, `holding_years(k)`, `forecast(k)` (basis points). Effects: `trade(k, amount)`, and `grant_asset` / `remove_asset` accept market kinds.
+
 ## Cities
 
 ```yaml

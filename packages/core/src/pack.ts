@@ -148,6 +148,37 @@ export interface CompiledOccupationKind {
   readonly loan?: string;
 }
 
+/**
+ * A tradable market kind (an item kind with a `market` block). Price series per world year:
+ * the next return is `drift + factor * (return of beta.of) + vol * shock`, with the optional
+ * crash and jump rolled on top; all of it is drawn a year in advance (`forecast`). All numbers
+ * are constants (basis points unless noted).
+ */
+export interface CompiledMarket {
+  /** Starting price of one whole unit, minor units (above 0). */
+  readonly start: number;
+  /** Mean yearly return; may be negative. */
+  readonly driftBp: number;
+  /** Standard deviation of the yearly return. */
+  readonly volBp: number;
+  /** Follows another market kind (full item id): its return, scaled by `factorBp`, is added. */
+  readonly beta?: { readonly of: string; readonly factorBp: number };
+  /** Yearly chance of a crash that takes `dropBp` off the return. */
+  readonly crash?: { readonly chanceBp: number; readonly dropBp: number };
+  /** Yearly chance the price is multiplied by `multiple` (a whole number, 2 or more). */
+  readonly jump?: { readonly chanceBp: number; readonly multiple: number };
+  /** Yearly chance the issuer is delisted: the price falls to 0 for good. */
+  readonly delistBp?: number;
+  /** Government bond: fixed coupon on the principal, principal back at maturity, issuer default chance. */
+  readonly bond?: {
+    readonly termYears: number;
+    readonly couponBp: number;
+    /** Yearly chance the issuer defaults, losing `lossBp` of the remaining principal. */
+    readonly defaultBp: number;
+    readonly lossBp: number;
+  };
+}
+
 export interface CompiledItemKind {
   readonly id: string;
   readonly label: string;
@@ -164,6 +195,11 @@ export interface CompiledItemKind {
   readonly requires?: Expr;
   /** Loan kind that can finance it. */
   readonly loan?: string;
+  /**
+   * Present: a market kind, traded by amount (`trade`) instead of bought as an asset. Its
+   * `price` and `value` are unused (0) and the shop does not list it.
+   */
+  readonly market?: CompiledMarket;
 }
 
 export interface CompiledLoanKind {

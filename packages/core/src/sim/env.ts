@@ -24,6 +24,13 @@ import {
   standardOf,
   wageIndexOf,
 } from "./living.ts";
+import {
+  changeBp,
+  forecastBp,
+  holdingValue,
+  portfolioValue,
+  priceNow,
+} from "./market.ts";
 import type { PackIndex } from "./pack-index.ts";
 
 /** What names resolve against: the subject person (the player) and optional bindings. */
@@ -124,6 +131,9 @@ function personField(
   throw new RangeError(`unknown name '${path}'`);
 }
 
+const heldOf = (p: Person, kindId: string) =>
+  p.holdings.find((h) => h.kindId === kindId);
+
 /** Total years the person has spent in an occupation kind, held now or in history. */
 function yearsIn(p: Person, kindId: string): number {
   let n = 0;
@@ -207,6 +217,7 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
         return personField(world, idx, scope.subject, path.slice(7), path);
       if (path === "city.cost_index") return costIndexOf(subject, idx);
       if (path === "city.wage_index") return wageIndexOf(subject, idx);
+      if (path === "portfolio") return portfolioValue(world, scope.subject);
       if (path === "confined") return confinementOf(subject, idx) !== undefined;
       if (path === "living.cost") return livingCost(world, idx, subject);
       if (path === "living.standard") return standardOf(subject, idx)?.id ?? "";
@@ -279,6 +290,24 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
           return yearsInGroup(subject, id);
         case "count_role":
           return countRole(world, id, args[1] as number, args[2] as number);
+        case "price":
+          return priceNow(world, idx, id);
+        case "change":
+          return changeBp(world, id);
+        case "forecast":
+          return forecastBp(world, id);
+        case "units":
+          return heldOf(subject, id)?.units ?? 0;
+        case "cost_basis":
+          return heldOf(subject, id)?.basis ?? 0;
+        case "holding_value": {
+          const h = heldOf(subject, id);
+          return h ? holdingValue(world, h) : 0;
+        }
+        case "holding_years": {
+          const h = heldOf(subject, id);
+          return h ? subject.age - h.firstAge : 0;
+        }
         case "has":
           return (
             subject.occupations.some((o) => o.kindId === id) ||

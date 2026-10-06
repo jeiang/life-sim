@@ -56,6 +56,40 @@ export interface Asset {
   readonly qualities: Readonly<Record<string, QualityValue>>;
 }
 
+/**
+ * What a person holds of one market kind (`Person.holdings`, one per kind, in kind id order).
+ * Units are fixed point, 10^4 per whole unit; money is minor units.
+ */
+export interface Holding {
+  readonly kindId: string;
+  /** Units held, x10^4. Always above 0 while the holding exists. */
+  readonly units: number;
+  /** Cash paid for the units still held (average cost basis = basis / units). */
+  readonly basis: number;
+  /** Age of the holder when the holding was opened (a full sale closes it). */
+  readonly firstAge: number;
+  /** Government bonds: the world year the principal comes back; absent for other kinds. */
+  readonly maturesYear?: number;
+}
+
+/** Whole-unit scale of `Holding.units`. */
+export const UNIT_SCALE = 10000;
+
+/**
+ * One market kind's price series on the world, drawn per world year (never per player age).
+ * `prices[i]` is the price of one whole unit, minor units, at world year `from + i`; the last
+ * entry is the current price.
+ */
+export interface Series {
+  /** World year of `prices[0]`. */
+  readonly from: number;
+  readonly prices: readonly number[];
+  /** Return in basis points the next settlement applies; drawn a year in advance (`forecast`). */
+  readonly next: number;
+  /** Government bonds after an issuer default: share of the principal still owed, basis points. Absent: all of it. */
+  readonly face?: number;
+}
+
 /** Set on generated people and chosen in god mode; absent on people from old saves. */
 export type Gender = "male" | "female" | "nonbinary";
 export const GENDERS: readonly Gender[] = ["male", "female", "nonbinary"];
@@ -114,6 +148,8 @@ export interface Person {
   readonly assets: readonly Asset[];
   /** In id order. */
   readonly loans: readonly Loan[];
+  /** Market holdings, in kind id order. */
+  readonly holdings: readonly Holding[];
   /** Pack city id the person lives in; absent in lives made before cities existed. */
   readonly cityId?: string;
   /**
@@ -251,6 +287,8 @@ export type ChoiceEntry =
       readonly mode: "cash" | "loan";
     }
   | { readonly t: "sell"; readonly asset: number }
+  /** Market screen: buy (positive) or sell (negative) `amount` of cash worth of a market kind. */
+  | { readonly t: "trade"; readonly kind: string; readonly amount: number }
   /** Succession: the player pointer moves to a living heir. */
   | { readonly t: "succeed"; readonly heir: PersonId }
   /** 18+ mode was on when the life began: entry 0 (before any `start`); replay feeds it to `newLife`. */
@@ -280,6 +318,8 @@ export interface World {
   readonly worldYear: number;
   /** Next id to allocate for persons, occupations, loans and assets. */
   readonly nextId: number;
+  /** Market price series by item kind id (full), updated at every settlement. */
+  readonly market: Readonly<Record<string, Series>>;
   readonly persons: ReadonlyMap<PersonId, Person>;
   /** Kept sorted by (from, to, role). */
   readonly relationships: readonly Relationship[];
@@ -304,4 +344,4 @@ export interface World {
   readonly packVersions: readonly PackVersion[];
 }
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;

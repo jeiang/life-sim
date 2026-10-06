@@ -387,7 +387,7 @@ export function runLife(
             : null,
         age: me.age,
         stats: me.stats,
-        netWorth: netWorth(me),
+        netWorth: netWorth(w, me),
         employed,
         withParents: livesWithParents(me),
         standard: livesWithParents(me)

@@ -2,6 +2,7 @@ import {
   type ChoiceEntry,
   GENDERS,
   type Gender,
+  type Holding,
   type Obituary,
   type ObituaryOccupation,
   type Occupation,
@@ -10,6 +11,7 @@ import {
   type QualityValue,
   type QueuedEvent,
   type ScopeRef,
+  type Series,
   type StoryletRecord,
   type World,
 } from "./types.ts";
@@ -102,6 +104,35 @@ function occupation(v: unknown, p: string): Occupation {
   };
 }
 
+function holding(v: unknown, p: string): Holding {
+  const o = obj(v, p);
+  const maturesYear = optInt(o.maturesYear, `${p}.maturesYear`);
+  return {
+    kindId: str(o.kindId, `${p}.kindId`),
+    units: int(o.units, `${p}.units`),
+    basis: int(o.basis, `${p}.basis`),
+    firstAge: int(o.firstAge, `${p}.firstAge`),
+    ...(maturesYear === undefined ? {} : { maturesYear }),
+  };
+}
+
+function market(v: unknown, p: string): Record<string, Series> {
+  const out: Record<string, Series> = {};
+  for (const [k, x] of Object.entries(obj(v, p))) {
+    const o = obj(x, `${p}.${k}`);
+    const face = optInt(o.face, `${p}.${k}.face`);
+    out[k] = {
+      from: int(o.from, `${p}.${k}.from`),
+      prices: arr(o.prices, `${p}.${k}.prices`).map((n, i) =>
+        int(n, `${p}.${k}.prices[${i}]`),
+      ),
+      next: int(o.next, `${p}.${k}.next`),
+      ...(face === undefined ? {} : { face }),
+    };
+  }
+  return out;
+}
+
 function gender(v: unknown, p: string): Gender {
   return GENDERS.includes(v as Gender) ? (v as Gender) : fail(p, "gender");
 }
@@ -165,6 +196,10 @@ function person(v: unknown, p: string): Person {
         qualities: qualities(a.qualities, `${q}.qualities`),
       };
     }),
+    holdings: (o.holdings === undefined
+      ? []
+      : arr(o.holdings, `${p}.holdings`)
+    ).map((x, i) => holding(x, `${p}.holdings[${i}]`)),
     loans: arr(o.loans, `${p}.loans`).map((x, i) => {
       const l = obj(x, `${p}.loans[${i}]`);
       const q = `${p}.loans[${i}]`;
@@ -293,6 +328,12 @@ function choiceLog(v: unknown, p: string): ChoiceEntry[] {
       }
       case "sell":
         return { t, asset: int(o.asset, `${q}.asset`) };
+      case "trade":
+        return {
+          t,
+          kind: str(o.kind, `${q}.kind`),
+          amount: int(o.amount, `${q}.amount`),
+        };
       case "succeed":
         return { t, heir: int(o.heir, `${q}.heir`) };
       case "start": {
@@ -320,7 +361,7 @@ function choiceLog(v: unknown, p: string): ChoiceEntry[] {
       default:
         return fail(
           `${q}.t`,
-          "age, choose, action, buy, sell, mature, start, god-stat or god-money",
+          "age, choose, action, buy, sell, trade, mature, start, god-stat or god-money",
         );
     }
   });
@@ -345,6 +386,8 @@ export function deserializeWorld(text: string): World {
       persons.get(int(o.playerId, "$.playerId"))?.age ??
       0,
     nextId: int(o.nextId, "$.nextId"),
+    // Saves from before markets: no series yet (they start at the next settlement).
+    market: o.market === undefined ? {} : market(o.market, "$.market"),
     persons,
     relationships: arr(o.relationships, "$.relationships").map((x, i) => {
       const r = obj(x, `$.relationships[${i}]`);

@@ -6,6 +6,7 @@ import type {
   CompiledGenerator,
   CompiledItemKind,
   CompiledLoanKind,
+  CompiledMarket,
   CompiledOccupationKind,
   CompiledOutcome,
   CompiledPeopleItem,
@@ -68,6 +69,11 @@ function percentBp(text: string): number {
   return Number(whole) * 100 + Number(frac.padEnd(2, "0"));
 }
 
+/** `"-2.5%"` to signed basis points. */
+function signedPercentBp(text: string): number {
+  return text.startsWith("-") ? -percentBp(text.slice(1)) : percentBp(text);
+}
+
 /** The one Pack allowed to declare the singleton `year` and `family` blocks. */
 const CORE_LOOP = "core-loop";
 
@@ -75,6 +81,7 @@ export type Kind =
   | "storylet"
   | "occupation"
   | "item"
+  | "market"
   | "loan"
   | "city"
   | "standard"
@@ -141,6 +148,7 @@ const TOP_RESERVED = new Set([
   "player",
   "person",
   "asset",
+  "portfolio",
 ]);
 
 /** Kinds each id-typed function parameter accepts; `undefined` accepts any content id. */
@@ -156,8 +164,16 @@ const CALL_KINDS: Record<string, Kind[][] | undefined> = {
   set_standard: [["standard"]],
   standard_cost: [["standard"]],
   role_closeness: [["role"]],
-  grant_asset: [["item"]],
-  remove_asset: [["item"]],
+  grant_asset: [["item", "market"]],
+  remove_asset: [["item", "market"]],
+  trade: [["market"]],
+  price: [["market"]],
+  change: [["market"]],
+  units: [["market"]],
+  holding_value: [["market"]],
+  cost_basis: [["market"]],
+  holding_years: [["market"]],
+  forecast: [["market"]],
   spawn_person: [["role"], ["generator"]],
 };
 
@@ -189,6 +205,7 @@ const PLAYER_NAMES: Record<string, ExprType> = {
   confined: "bool",
   "living.with_guardian": "bool",
   "living.dependents": "int",
+  portfolio: "int",
   "player.first_name": "string",
   "player.last_name": "string",
   ...pronounNames("player"),
@@ -322,7 +339,7 @@ class Compiler {
     > = {
       storylets: [StoryletSchema, () => "storylet"],
       occupations: [OccupationSchema, () => "occupation"],
-      items: [ItemSchema, () => "item"],
+      items: [ItemSchema, (x) => (x.market ? "market" : "item")],
       loans: [LoanSchema, () => "loan"],
       cities: [CitySchema, () => "city"],
       standards: [StandardSchema, () => "standard"],
@@ -522,6 +539,7 @@ class PackCompiler {
           );
           break;
         case "item":
+        case "market":
           bundle.items.push(this.item(it, it.data as unknown as ItemSrc));
           break;
         case "loan":
@@ -1276,6 +1294,24 @@ class PackCompiler {
       value: 0,
     };
     if (i.icon) Object.assign(out, this.iconField(i.icon, ["icon"]));
+    if (i.requires !== undefined) {
+      const r = this.expr(i.requires, "bool", ["requires"]);
+      if (r !== undefined) out.requires = r;
+    }
+    if (i.market) {
+      for (const f of ["price", "value", "loan"] as const)
+        if (i[f] !== undefined)
+          this.err([f], `a market kind has no '${f}' (it is traded by amount)`);
+      out.market = this.market(i.market);
+      return out;
+    }
+    if (i.price === undefined || i.value === undefined) {
+      this.err(
+        [],
+        "an item kind needs 'price' and 'value' (or a 'market' block)",
+      );
+      return out;
+    }
     const price = this.expr(i.price, "int", ["price"]);
     if (price !== undefined) out.price = price;
     const value = this.expr(i.value, "int", ["value"], {
@@ -1284,13 +1320,69 @@ class PackCompiler {
       "asset.years": "int",
     });
     if (value !== undefined) out.value = value;
-    if (i.requires !== undefined) {
-      const r = this.expr(i.requires, "bool", ["requires"]);
-      if (r !== undefined) out.requires = r;
-    }
     if (i.loan !== undefined) {
       const r = this.ref(i.loan, ["loan"], ["loan"]);
       if (r) out.loan = r;
+    }
+    return out;
+  }
+
+  private market(src: NonNullable<ItemSrc["market"]>): CompiledMarket {
+    const out: { -readonly [K in keyof CompiledMarket]: CompiledMarket[K] } = {
+      start: src.start,
+      driftBp: signedPercentBp(src.drift),
+      volBp: percentBp(src.vol),
+    };
+    if (src.beta) {
+      const of = this.ref(src.beta.of, ["market"], ["market", "beta", "of"]);
+      if (of) {
+        out.beta = { of, factorBp: signedPercentBp(src.beta.factor) };
+        // Same-Pack chains are the only ones that can loop (dependencies never point back).
+        const items = new Map(
+          this.pack.items.map((x) => [`${this.pack.id}/${x.id}`, x]),
+        );
+        let cur: string | undefined = of;
+        for (let n = 0; cur !== undefined && n <= items.size; n++) {
+          if (cur === this.owner) {
+            this.err(
+              ["market", "beta", "of"],
+              "beta chain loops back to this kind",
+            );
+            break;
+          }
+          const raw: string | undefined = (
+            items.get(cur)?.data.market as { beta?: { of: string } } | undefined
+          )?.beta?.of;
+          cur =
+            raw === undefined
+              ? undefined
+              : raw.includes("/")
+                ? raw
+                : `${this.pack.id}/${raw}`;
+        }
+      }
+    }
+    if (src.crash)
+      out.crash = {
+        chanceBp: percentBp(src.crash.chance),
+        dropBp: percentBp(src.crash.drop),
+      };
+    if (src.jump)
+      out.jump = {
+        chanceBp: percentBp(src.jump.chance),
+        multiple: src.jump.multiple,
+      };
+    if (src.delist !== undefined) out.delistBp = percentBp(src.delist);
+    if (src.bond) {
+      const lossBp = percentBp(src.bond.loss ?? "100%");
+      if (lossBp > 10000 || percentBp(src.bond.default) > 10000)
+        this.err(["market", "bond"], "'default' and 'loss' are at most 100%");
+      out.bond = {
+        termYears: src.bond.term,
+        couponBp: percentBp(src.bond.coupon),
+        defaultBp: percentBp(src.bond.default),
+        lossBp,
+      };
     }
     return out;
   }

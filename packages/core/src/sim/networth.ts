@@ -8,7 +8,7 @@ export interface NetWorthPoint {
 }
 
 /**
- * Record the player's current net worth (cash plus asset values minus loan balances) at the
+ * Record the player's current net worth (cash plus asset values and holdings minus loan balances) at the
  * player's current age. A point already recorded for that age is replaced, so calling after
  * every action keeps one point per age. Returns `history` unchanged when the player is missing.
  */
@@ -18,7 +18,7 @@ export function recordNetWorth(
 ): readonly NetWorthPoint[] {
   const p = world.persons.get(world.playerId);
   if (!p) return history;
-  const point = { age: p.age, value: netWorth(p) };
+  const point = { age: p.age, value: netWorth(world, p) };
   const last = history[history.length - 1];
   if (last && last.age > point.age) return history;
   if (last && last.age === point.age) {

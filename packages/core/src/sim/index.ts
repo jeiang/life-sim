@@ -43,6 +43,17 @@ export {
   startLivingOnOwn,
   wageIndexOf,
 } from "./living.ts";
+export {
+  changeBp,
+  forecastBp,
+  holdingValue,
+  MAX_HISTORY,
+  portfolioValue,
+  priceNow,
+  tradeHolding,
+  unitsFor,
+  unitsValue,
+} from "./market.ts";
 export { type NetWorthPoint, recordNetWorth } from "./networth.ts";
 export {
   DEFAULT_FAMILY,
@@ -69,3 +80,9 @@ export { REPOSSESSION_MISSES } from "./settle.ts";
 export type { AmountRange } from "./storylets.ts";
 export { succeed } from "./succession.ts";
 export { formatMoney, isMature, pickText, renderText } from "./text.ts";
+export {
+  listMarket,
+  type MarketRow,
+  marketSeries,
+  trade,
+} from "./trade.ts";

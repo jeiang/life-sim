@@ -64,6 +64,18 @@ _Avoid_: Connection, bond
 An owned instance of a Pack-defined item kind, with a purchase price, a current value, and its own qualities.
 _Avoid_: Item (for the owned thing), possession, inventory
 
+**Market kind**:
+An item kind with a `market` block. It is traded by amount (`trade`), not bought as an asset, and has a price series on the world, one point per world year.
+_Avoid_: Stock (only one kind of market kind)
+
+**Holding**:
+What a person holds of one market kind: units (x10^4), the cash paid for them (cost basis) and the age first invested. One per kind; a full sale closes it. Net worth includes holdings at the current price.
+_Avoid_: Position, portfolio entry
+
+**Forecast**:
+The return the next settlement will apply to a market kind, drawn a year in advance and stored with the series, read by `forecast(kind)`.
+_Avoid_: Prediction, tip
+
 **Item kind**:
 A Pack-defined template from which assets are created, such as a car model or a house type.
 _Avoid_: Product, SKU

@@ -13,6 +13,7 @@ import {
   personsInIdOrder,
   updatePerson,
 } from "../state/world.ts";
+import { updateMarket } from "./market.ts";
 import {
   drawGender,
   NAME_ROLL_RANGE,
@@ -159,6 +160,7 @@ export function newLife(
       ...(x.id === w.playerId ? { withParents: true } : {}),
     }));
   }
+  w = updateMarket(w, idx)[0];
   const head: ChoiceEntry[] = [
     ...(opts.mature ? [{ t: "mature" } as const] : []),
     ...(custom ? [{ t: "start", ...custom } as const] : []),

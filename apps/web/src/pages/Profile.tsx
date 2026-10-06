@@ -173,7 +173,7 @@ export function Profile() {
             <Row label="Bank balance" value={money(p.money)} />
             <Row
               label="Net worth"
-              value={money(netWorth(p))}
+              value={money(netWorth(w, p))}
               testid="net-worth"
             />
             <button

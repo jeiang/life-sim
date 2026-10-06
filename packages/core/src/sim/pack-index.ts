@@ -24,6 +24,8 @@ export interface PackIndex {
   readonly events: readonly CompiledStorylet[];
   readonly occupations: ReadonlyMap<string, CompiledOccupationKind>;
   readonly items: ReadonlyMap<string, CompiledItemKind>;
+  /** Market kinds (items with a `market` block), a subset of `items`. */
+  readonly markets: ReadonlyMap<string, CompiledItemKind>;
   readonly loans: ReadonlyMap<string, CompiledLoanKind>;
   readonly cities: ReadonlyMap<string, CompiledCity>;
   /** In ascending cost order. */
@@ -129,6 +131,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     events,
     occupations,
     items,
+    markets: new Map([...items].filter(([, i]) => i.market !== undefined)),
     loans,
     cities,
     standards: standards.sort((a, b) => a.cost - b.cost || cmp(a.id, b.id)),

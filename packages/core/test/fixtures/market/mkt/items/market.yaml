@@ -1,0 +1,41 @@
+- id: index
+  label: Index fund
+  category: investments
+  market:
+    start: 10000
+    drift: 5%
+    vol: 15%
+    crash: { chance: 20%, drop: 35% }
+- id: stock
+  label: Stock
+  category: investments
+  market:
+    start: 2500
+    drift: 0%
+    vol: 0%
+    beta: { of: index, factor: 120% }
+- id: penny
+  label: Penny stock
+  category: investments
+  market:
+    start: 50
+    drift: -10%
+    vol: 60%
+    jump: { chance: 10%, multiple: 10 }
+    delist: 25%
+- id: bond
+  label: Government bond
+  category: investments
+  market:
+    start: 10000
+    drift: 0%
+    vol: 0%
+    bond: { term: 3, coupon: 4%, default: 0% }
+- id: shaky-bond
+  label: Shaky bond
+  category: investments
+  market:
+    start: 10000
+    drift: 0%
+    vol: 0%
+    bond: { term: 10, coupon: 5%, default: 100%, loss: 40% }

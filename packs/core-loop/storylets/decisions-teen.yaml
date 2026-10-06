@@ -1,0 +1,490 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Decisions for teenage years (about 13-19): weighted choice events (issue #99), drawn into the yearly decision slots.
+# `chance: 0%` entries are follow-up scenes reached only through `next:`.
+
+- id: prom-invite
+  icon: 💃
+  trigger: event
+  weight: 9
+  when: age >= 16 and age <= 18
+  once: true
+  text: "The school dance is coming, and someone has asked {player.first_name} to go."
+  choices:
+    - label: "Say yes"
+      outcomes:
+        - weight: 70
+          text: "A night of bad dancing and good photos."
+          effects:
+            - stat.happiness += 5
+            - stat.looks += 1
+            - money -= 2500
+        - weight: 30
+          text: "Feet get trodden on, but the company is nice."
+          effects:
+            - stat.happiness += 2
+            - money -= 2500
+    - label: "Go with friends instead"
+      outcomes:
+        - weight: 1
+          text: "A noisy, joyful group night."
+          effects:
+            - stat.happiness += 3
+            - money -= 1000
+    - label: "Skip it"
+      outcomes:
+        - weight: 1
+          text: "A quiet night in with a film."
+          effects:
+            - stat.happiness += 1
+
+- id: study-night
+  icon: 📖
+  trigger: event
+  weight: 12
+  when: age >= 13 and age <= 19 and has_occupation(core-loop/high-school)
+  cooldown: 3
+  text: "A big exam is next week, and a friend invites {player.first_name} to a late-night study session."
+  choices:
+    - label: "Join the session"
+      outcomes:
+        - weight: 70
+          text: "Notes shared, snacks munched, and the topics finally click."
+          effects:
+            - stat.smarts += 3
+            - stat.health -= 1
+        - weight: 30
+          text: "More giggling than studying, but fun."
+          effects:
+            - stat.happiness += 3
+    - label: "Study alone"
+      outcomes:
+        - weight: 1
+          text: "A quiet night of focus."
+          effects:
+            - stat.smarts += 2
+    - label: "Go to bed early"
+      outcomes:
+        - weight: 1
+          text: "A well-rested morning, if not a well-prepared one."
+          effects:
+            - stat.health += 1
+
+- id: part-time-weekend-job
+  icon: 🧾
+  trigger: event
+  weight: 11
+  when: age >= 14 and age <= 19 and not (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director))
+  cooldown: 5
+  text: "A cafe on the corner needs weekend help, and {player.first_name} is old enough to ask."
+  choices:
+    - label: "Apply for the weekend shifts"
+      outcomes:
+        - weight: 70
+          text: "A few busy weekends bring in good pocket money."
+          effects:
+            - money += 20000
+            - stat.happiness += 1
+        - weight: 30
+          text: "The rota clashes with homework, and the cafe lets {player.first_name} go."
+          effects:
+            - money += 4000
+            - stat.happiness -= 1
+    - label: "Keep weekends free"
+      outcomes:
+        - weight: 1
+          text: "Weekends stay for friends and sport."
+          effects:
+            - stat.happiness += 2
+
+- id: learn-to-drive
+  icon: 🚗
+  trigger: event
+  weight: 10
+  when: age >= 16 and age <= 24 and not quality.has_drivers_license and money >= 30000
+  cooldown: 4
+  text: "A driving school has a quiet slot open this month."
+  choices:
+    - label: "Book the lessons"
+      outcomes:
+        - weight: 65
+          text: "A shaky first month, a test pass, and a card in the wallet."
+          effects:
+            - money -= 30000
+            - quality.has_drivers_license = true
+            - stat.happiness += 5
+        - weight: 35
+          text: "The test pass takes two tries, but it counts."
+          effects:
+            - money -= 36000
+            - quality.has_drivers_license = true
+            - stat.happiness += 2
+    - label: "Not yet"
+      outcomes:
+        - weight: 1
+          text: "The bus will do for now."
+          effects:
+            - stat.health += 1
+
+- id: band-formation
+  icon: 🎸
+  trigger: event
+  weight: 10
+  when: age >= 13 and age <= 22
+  cooldown: 8
+  text: "Friends are forming a band and need a drummer, a bassist, or at least some noise."
+  choices:
+    - label: "Join the band"
+      outcomes:
+        - weight: 40
+          text: "A few garage gigs, a lot of noise, and a bond that lasts."
+          effects:
+            - stat.happiness += 6
+            - stat.looks += 1
+          next: band-first-gig
+        - weight: 60
+          text: "A single awkward show and a quick split, but good stories came out of it."
+          effects:
+            - stat.happiness += 3
+    - label: "Be the manager"
+      outcomes:
+        - weight: 1
+          text: "Posters are pasted, and the band books more shows than it can play."
+          effects:
+            - stat.smarts += 1
+            - stat.happiness += 2
+    - label: "Decline"
+      outcomes:
+        - weight: 1
+          text: "The band plays on without {player.first_name}."
+          effects:
+            - stat.smarts += 1
+
+- id: teen-curfew
+  icon: 🌙
+  trigger: event
+  weight: 12
+  when: age >= 13 and age <= 17
+  cooldown: 4
+  text: "A party is on the same night as curfew, and the rule is firm."
+  choices:
+    - label: "Sneak out"
+      outcomes:
+        - weight: 40
+          text: "A dazzling night, and nobody finds out."
+          effects:
+            - stat.happiness += 5
+        - weight: 60
+          text: "A parent is waiting at the door, and the grounding is long."
+          effects:
+            - stat.happiness -= 4
+    - label: "Ask permission"
+      outcomes:
+        - weight: 40
+          text: "A grudging yes, with a lift home."
+          effects:
+            - stat.happiness += 3
+        - weight: 60
+          text: "A firm no, but the honesty earns respect."
+          effects:
+            - stat.happiness -= 1
+            - stat.smarts += 1
+    - label: "Stay in"
+      outcomes:
+        - weight: 1
+          text: "A boring evening, but no trouble."
+          effects:
+            - stat.health += 1
+
+- id: college-fair
+  icon: 🎓
+  trigger: event
+  weight: 10
+  when: age >= 16 and age <= 18 and has_occupation(core-loop/high-school)
+  once: true
+  text: "A careers fair comes to school, with stalls from every kind of industry."
+  choices:
+    - label: "Talk to the engineers"
+      outcomes:
+        - weight: 1
+          text: "Pamphlets, ideas, and a new interest in how things work."
+          effects:
+            - stat.smarts += 2
+            - stat.happiness += 1
+    - label: "Chat with the nurses"
+      outcomes:
+        - weight: 1
+          text: "An inspiring conversation about caring work."
+          effects:
+            - stat.smarts += 1
+            - stat.happiness += 2
+    - label: "Browse the arts stall"
+      outcomes:
+        - weight: 1
+          text: "Portfolio tips and a flush of creative ambition."
+          effects:
+            - stat.happiness += 3
+
+- id: school-election
+  icon: 🗳️
+  trigger: event
+  weight: 9
+  when: age >= 13 and age <= 18
+  once: true
+  text: "The student council election is open, and friends think {player.first_name} should run."
+  choices:
+    - label: "Run with a bold manifesto"
+      outcomes:
+        - weight: 40
+          text: "A win by a whisker, and a chance to change the vending machines."
+          effects:
+            - stat.happiness += 5
+            - stat.smarts += 1
+        - weight: 60
+          text: "A narrow loss, but the posters were great."
+          effects:
+            - stat.happiness += 1
+    - label: "Run the campaign for a friend"
+      outcomes:
+        - weight: 1
+          text: "The friend wins, and credits {player.first_name} loudly."
+          effects:
+            - stat.happiness += 3
+    - label: "Stay out of it"
+      outcomes:
+        - weight: 1
+          text: "Politics are for the keen."
+          effects:
+            - stat.happiness += 1
+
+- id: holiday-job-offer
+  icon: 🏖️
+  trigger: event
+  weight: 9
+  when: age >= 15 and age <= 22 and not (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director))
+  cooldown: 4
+  text: "A summer seasonal job is on offer at the beach kiosk."
+  choices:
+    - label: "Take the job"
+      outcomes:
+        - weight: 70
+          text: "Sun, sand, and a decent stack of notes by September."
+          effects:
+            - money += 40000
+            - stat.happiness += 2
+            - stat.looks += 1
+        - weight: 30
+          text: "A rainy summer means fewer customers and fewer hours."
+          effects:
+            - money += 12000
+    - label: "Travel with friends"
+      outcomes:
+        - weight: 1
+          text: "A cheap and cheerful road trip."
+          effects:
+            - money -= min(money, 15000)
+            - stat.happiness += 5
+    - label: "Laze about"
+      outcomes:
+        - weight: 1
+          text: "A whole summer of doing nothing at all."
+          effects:
+            - stat.happiness += 2
+
+- id: heartbreak
+  icon: 💔
+  trigger: event
+  weight: 9
+  when: age >= 14 and age <= 24
+  cooldown: 6
+  text: "A first romance ends badly, and {player.first_name} is miserable."
+  choices:
+    - label: "Talk to a friend"
+      outcomes:
+        - weight: 75
+          text: "A long talk over hot chocolate, and the clouds clear."
+          effects:
+            - stat.happiness += 2
+        - weight: 25
+          text: "The friend is busy, and it takes longer to heal."
+          effects:
+            - stat.happiness -= 2
+    - label: "Throw yourself into hobbies"
+      outcomes:
+        - weight: 1
+          text: "Busy hands mend a heavy heart, little by little."
+          effects:
+            - stat.smarts += 1
+            - stat.happiness += 1
+    - label: "Wallow"
+      outcomes:
+        - weight: 1
+          text: "A month of sad songs."
+          effects:
+            - stat.happiness -= 5
+
+- id: new-haircut
+  icon: 💇
+  trigger: event
+  weight: 10
+  when: age >= 13 and age <= 40
+  cooldown: 6
+  text: "A bold new hairstyle is tempting."
+  choices:
+    - label: "Go for the dramatic cut"
+      outcomes:
+        - weight: 55
+          text: "It turns heads for all the right reasons."
+          effects:
+            - stat.looks += 3
+            - stat.happiness += 3
+            - money -= 3500
+        - weight: 45
+          text: "It will grow out eventually."
+          effects:
+            - stat.looks -= 2
+            - money -= 3500
+    - label: "Just a trim"
+      outcomes:
+        - weight: 1
+          text: "Neat and sensible."
+          effects:
+            - stat.looks += 1
+            - money -= 2000
+
+- id: gap-year-dream
+  icon: 🌍
+  trigger: event
+  weight: 8
+  when: age >= 17 and age <= 19 and money >= 50000
+  once: true
+  text: "A friend suggests a gap year of travelling before the next chapter."
+  choices:
+    - label: "Go travelling"
+      outcomes:
+        - weight: 80
+          text: "Hostels, trains, and stories to tell for decades."
+          effects:
+            - money -= 50000
+            - stat.happiness += 8
+            - stat.smarts += 2
+        - weight: 20
+          text: "A stolen bag and a wobbly return, but it was worth it."
+          effects:
+            - money -= 50000
+            - stat.happiness += 3
+    - label: "Start the next step now"
+      outcomes:
+        - weight: 1
+          text: "Straight ahead, and a head start."
+          effects:
+            - stat.smarts += 1
+
+- id: lottery-ticket
+  icon: 🎟️
+  trigger: event
+  weight: 10
+  when: age >= 18 and age <= 95 and money >= 500
+  cooldown: 3
+  text: "The corner shop is selling lottery tickets for a big rollover jackpot."
+  choices:
+    - label: "Buy a ticket"
+      outcomes:
+        - weight: 95
+          text: "Not a winner, but the dream was nice for a day."
+          effects:
+            - money -= 500
+            - stat.happiness += 1
+        - weight: 5
+          text: "A small win, and a very big grin."
+          effects:
+            - money += 20000
+            - stat.happiness += 4
+    - label: "Keep the money"
+      outcomes:
+        - weight: 1
+          text: "A sensible choice, and a free evening."
+          effects:
+            - stat.smarts += 1
+
+- id: stranger-help
+  icon: 🆘
+  trigger: event
+  weight: 8
+  when: age >= 18 and age <= 85
+  cooldown: 8
+  text: "A stranger's car has broken down in the rain, and nobody is stopping."
+  choices:
+    - label: "Stop and help"
+      outcomes:
+        - weight: 80
+          text: "A thankful driver and a warm feeling."
+          effects:
+            - stat.happiness += 4
+            - stat.health -= 1
+        - weight: 20
+          text: "A soggy hour for nothing much, though a thank-you card arrives."
+          effects:
+            - stat.happiness += 1
+            - stat.health -= 2
+    - label: "Call a tow truck for them"
+      outcomes:
+        - weight: 1
+          text: "A helpful phone call, and the stranger is on their way."
+          effects:
+            - stat.happiness += 2
+    - label: "Drive on"
+      outcomes:
+        - weight: 1
+          text: "The rain keeps falling."
+          effects:
+            - stat.happiness -= 1
+
+- id: kitchen-rush
+  icon: 🍳
+  trigger: event
+  weight: 10
+  when: age >= 18 and age <= 60 and (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager))
+  cooldown: 6
+  text: "A huge group books a table minutes before closing."
+  choices:
+    - label: "Serve them with a smile"
+      outcomes:
+        - weight: 70
+          text: "A mountain of tips and a happy room."
+          effects:
+            - money += 8000
+            - stat.happiness += 2
+            - stat.health -= 1
+        - weight: 30
+          text: "The kitchen is slammed, and the tips never come."
+          effects:
+            - stat.happiness -= 2
+    - label: "Turn them away politely"
+      outcomes:
+        - weight: 1
+          text: "A quiet close and a tidy kitchen."
+          effects:
+            - stat.happiness += 1
+
+- id: band-first-gig
+  icon: 🎤
+  trigger: event
+  chance: 0%
+  text: "The band has a slot at the local pub, and the crowd is gathering."
+  choices:
+    - label: "Give it everything"
+      outcomes:
+        - weight: 60
+          text: "The crowd sings along, and a legend is born."
+          effects:
+            - stat.happiness += 6
+        - weight: 40
+          text: "A broken string and a dropped beat, but the cheers keep coming."
+          effects:
+            - stat.happiness += 3
+    - label: "Play it safe"
+      outcomes:
+        - weight: 1
+          text: "A tidy set and polite applause."
+          effects:
+            - stat.happiness += 2

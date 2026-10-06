@@ -1,0 +1,448 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Decisions for later life (about 55-100): weighted choice events (issue #99), drawn into the yearly decision slots.
+# `chance: 0%` entries are follow-up scenes reached only through `next:`.
+
+- id: retire-party
+  icon: 🎉
+  trigger: event
+  weight: 12
+  when: age >= 60 and age <= 70 and has_occupation(core-loop/retired)
+  once: true
+  text: "Old workmates throw a retirement party and invite {player.first_name} back."
+  choices:
+    - label: "Go and swap stories"
+      outcomes:
+        - weight: 1
+          text: "Laughter, cake, and old memories."
+          effects:
+            - stat.happiness += 5
+    - label: "Send best wishes"
+      outcomes:
+        - weight: 1
+          text: "A kind note, and a quiet evening in."
+          effects:
+            - stat.happiness += 1
+
+- id: grandchild-babysit
+  icon: 👶
+  trigger: event
+  weight: 11
+  when: age >= 55 and age <= 85
+  cooldown: 6
+  text: "A relative asks {player.first_name} to look after their toddler for the weekend."
+  choices:
+    - label: "Say yes with a smile"
+      outcomes:
+        - weight: 75
+          text: "Tiny hugs and sticky fingers, and the house is alive again."
+          effects:
+            - stat.happiness += 5
+            - stat.health -= 1
+        - weight: 25
+          text: "A very tiring weekend, but the bond is sweet."
+          effects:
+            - stat.happiness += 2
+            - stat.health -= 3
+    - label: "Offer a short visit instead"
+      outcomes:
+        - weight: 1
+          text: "A pleasant afternoon with the little one."
+          effects:
+            - stat.happiness += 3
+
+- id: bridge-club
+  icon: 🃏
+  trigger: event
+  weight: 10
+  when: age >= 60 and age <= 95
+  cooldown: 10
+  text: "The local card club is looking for new members."
+  choices:
+    - label: "Join the club"
+      outcomes:
+        - weight: 70
+          text: "A cuppa, a deck of cards, and a lot of friendly rivalry."
+          effects:
+            - stat.happiness += 4
+            - stat.smarts += 1
+        - weight: 30
+          text: "Too many rules, but the biscuits are good."
+          effects:
+            - stat.happiness += 1
+    - label: "Stay home"
+      outcomes:
+        - weight: 1
+          text: "A solitary evening with the radio."
+          effects:
+            - stat.happiness -= 1
+
+- id: garden-allotment
+  icon: 🥕
+  trigger: event
+  weight: 10
+  when: age >= 55 and age <= 95
+  cooldown: 10
+  text: "An allotment plot has come up on the village waiting list."
+  choices:
+    - label: "Take the plot"
+      outcomes:
+        - weight: 75
+          text: "A bumper harvest and sore knees, in the best way."
+          effects:
+            - stat.health += 2
+            - stat.happiness += 4
+            - money -= min(money, 3000)
+        - weight: 25
+          text: "The slugs eat everything, but the fresh air does wonders."
+          effects:
+            - stat.health += 1
+            - stat.happiness += 1
+            - money -= min(money, 3000)
+    - label: "Grow herbs on the windowsill"
+      outcomes:
+        - weight: 1
+          text: "A small, fragrant patch."
+          effects:
+            - stat.happiness += 2
+
+- id: memoir-writing
+  icon: ✍️
+  trigger: event
+  weight: 9
+  when: age >= 60 and age <= 95
+  cooldown: 10
+  text: "A friend suggests writing down the story of a life."
+  choices:
+    - label: "Start writing"
+      outcomes:
+        - weight: 70
+          text: "Pages build up, and so do old memories."
+          effects:
+            - stat.smarts += 2
+            - stat.happiness += 4
+        - weight: 30
+          text: "The pen dries up after a few chapters, but the memories flowed freely."
+          effects:
+            - stat.happiness += 2
+    - label: "Record it aloud"
+      outcomes:
+        - weight: 1
+          text: "Stories told to a microphone, with a lot of tangents."
+          effects:
+            - stat.happiness += 2
+
+- id: senior-walk-group
+  icon: 🚶
+  trigger: event
+  weight: 11
+  when: age >= 60 and age <= 95 and stat.health >= 30
+  cooldown: 8
+  text: "A walking group meets every morning in the park."
+  choices:
+    - label: "Join the group"
+      outcomes:
+        - weight: 75
+          text: "Steps, chat, and healthier lungs."
+          effects:
+            - stat.health += 3
+            - stat.happiness += 3
+        - weight: 25
+          text: "A fall on a wet path, but it ends in a laugh."
+          effects:
+            - stat.health -= 3
+            - stat.happiness += 1
+    - label: "Walk alone"
+      outcomes:
+        - weight: 1
+          text: "A quiet stroll with the birds."
+          effects:
+            - stat.health += 1
+
+- id: old-photo-box
+  icon: 📷
+  trigger: event
+  weight: 9
+  when: age >= 60 and age <= 100
+  cooldown: 10
+  text: "A box of old photographs turns up in the attic."
+  choices:
+    - label: "Sort through it"
+      outcomes:
+        - weight: 70
+          text: "Faces, places, and a tide of memories."
+          effects:
+            - stat.happiness += 4
+            - stat.smarts += 1
+        - weight: 30
+          text: "A bittersweet afternoon, with a few tears."
+          effects:
+            - stat.happiness -= 1
+    - label: "Seal the box and move on"
+      outcomes:
+        - weight: 1
+          text: "Some memories are best left in the attic."
+          effects:
+            - stat.happiness += 1
+
+- id: scam-call
+  icon: ☎️
+  trigger: event
+  weight: 11
+  when: age >= 60 and age <= 100 and money >= 20000
+  cooldown: 7
+  text: "A smooth-talking caller says there is a problem with the bank account."
+  choices:
+    - label: "Hang up and call the bank"
+      outcomes:
+        - weight: 1
+          text: "A fraud attempt avoided, and the bank is grateful."
+          effects:
+            - stat.smarts += 1
+            - stat.happiness += 1
+    - label: "Follow the caller's instructions"
+      outcomes:
+        - weight: 30
+          text: "The caller disappears without a trace."
+          effects:
+            - money -= min(money, 100000)
+            - stat.happiness -= 5
+        - weight: 70
+          text: "A hunch at the last second ends the call."
+          effects:
+            - stat.happiness -= 1
+
+- id: moving-to-care
+  icon: 🏡
+  trigger: event
+  weight: 8
+  when: age >= 75 and age <= 100 and stat.health < 60
+  once: true
+  text: "The house feels too big, and a relative suggests a smaller place with some care."
+  choices:
+    - label: "Move to a smaller place"
+      outcomes:
+        - weight: 70
+          text: "A tidy flat with friendly neighbours, and less to look after."
+          effects:
+            - money -= min(money, 40000)
+            - stat.health += 3
+            - stat.happiness += 2
+        - weight: 30
+          text: "Packing is exhausting, but the new place is bright."
+          effects:
+            - money -= min(money, 40000)
+            - stat.health -= 1
+            - stat.happiness += 2
+    - label: "Stay put"
+      outcomes:
+        - weight: 1
+          text: "Home is home, with its creaks and memories."
+          effects:
+            - stat.happiness += 1
+
+- id: church-fete
+  icon: ⛪
+  trigger: event
+  weight: 9
+  when: age >= 60 and age <= 100
+  cooldown: 6
+  text: "The village fete needs volunteers to run the cake stall."
+  choices:
+    - label: "Volunteer"
+      outcomes:
+        - weight: 80
+          text: "A sweet day, plenty of gossip, and a small donation made."
+          effects:
+            - stat.happiness += 4
+            - money -= min(money, 1000)
+        - weight: 20
+          text: "Rain ruins the stall, but the spirit holds."
+          effects:
+            - stat.happiness += 1
+    - label: "Attend as a customer"
+      outcomes:
+        - weight: 1
+          text: "A nice slice of lemon cake."
+          effects:
+            - stat.happiness += 1
+            - money -= min(money, 500)
+
+- id: old-rival-letter
+  icon: ✉️
+  trigger: event
+  weight: 8
+  when: age >= 60 and age <= 100
+  once: true
+  text: "A letter arrives from someone {player.first_name} fell out with decades ago."
+  choices:
+    - label: "Reply warmly"
+      outcomes:
+        - weight: 70
+          text: "An old grudge dissolves in a page and a half."
+          effects:
+            - stat.happiness += 6
+        - weight: 30
+          text: "No reply comes, but the gesture lifts a burden."
+          effects:
+            - stat.happiness += 2
+    - label: "Leave it unanswered"
+      outcomes:
+        - weight: 1
+          text: "The letter ends up in a drawer."
+          effects:
+            - stat.happiness -= 2
+
+- id: senior-trip
+  icon: 🚂
+  trigger: event
+  weight: 10
+  when: age >= 62 and age <= 90 and money >= 50000
+  cooldown: 8
+  text: "A slow scenic rail trip is advertised for the autumn."
+  choices:
+    - label: "Book it"
+      outcomes:
+        - weight: 85
+          text: "Rolling hills, afternoon tea, and plenty of postcards."
+          effects:
+            - money -= 50000
+            - stat.happiness += 6
+        - weight: 15
+          text: "A cancelled train and a long wait, with a nice cafe at the end of it."
+          effects:
+            - money -= 50000
+            - stat.happiness += 2
+    - label: "Watch a documentary instead"
+      outcomes:
+        - weight: 1
+          text: "The scenery without the legwork."
+          effects:
+            - stat.happiness += 1
+
+- id: pet-adoption-senior
+  icon: 🐕
+  trigger: event
+  weight: 9
+  when: age >= 60 and age <= 90
+  cooldown: 12
+  text: "A rescue centre has a quiet, older dog that needs a home."
+  choices:
+    - label: "Adopt the dog"
+      outcomes:
+        - weight: 80
+          text: "A loyal friend and two daily walks."
+          effects:
+            - stat.happiness += 5
+            - stat.health += 2
+            - money -= min(money, 10000)
+          next: dog-first-walk
+        - weight: 20
+          text: "The dog has a few quirks, but a devoted bond forms."
+          effects:
+            - stat.happiness += 3
+            - money -= min(money, 10000)
+    - label: "Visit now and then"
+      outcomes:
+        - weight: 1
+          text: "A sweet, furry afternoon every few weeks."
+          effects:
+            - stat.happiness += 2
+
+- id: senior-fitness-class
+  icon: 🧘
+  trigger: event
+  weight: 10
+  when: age >= 60 and age <= 95
+  cooldown: 8
+  text: "A gentle fitness class at the community hall is welcoming newcomers."
+  choices:
+    - label: "Sign up"
+      outcomes:
+        - weight: 75
+          text: "Stretches, balance, and surprising stamina."
+          effects:
+            - stat.health += 3
+            - stat.happiness += 2
+            - money -= min(money, 2000)
+        - weight: 25
+          text: "Not quite the right class, but the company is good."
+          effects:
+            - stat.happiness += 1
+            - money -= min(money, 2000)
+    - label: "Do chair stretches at home"
+      outcomes:
+        - weight: 1
+          text: "Gentle, free, and flexible."
+          effects:
+            - stat.health += 1
+
+- id: will-and-testament
+  icon: 📜
+  trigger: event
+  weight: 8
+  when: age >= 65 and age <= 100 and money >= 100000
+  once: true
+  text: "A friend suggests it is time to sort out the paperwork for the future."
+  choices:
+    - label: "See a solicitor"
+      outcomes:
+        - weight: 1
+          text: "Everything is neatly in order, and the mind is at ease."
+          effects:
+            - money -= min(money, 15000)
+            - stat.happiness += 3
+    - label: "Write it yourself"
+      outcomes:
+        - weight: 1
+          text: "A scribbled note in a drawer, and a faint worry."
+          effects:
+            - stat.happiness -= 1
+
+- id: tell-old-stories
+  icon: 🔥
+  trigger: event
+  weight: 9
+  when: age >= 70 and age <= 100
+  cooldown: 8
+  text: "The grandchildren gather around, wanting to hear how things used to be."
+  choices:
+    - label: "Tell the great stories"
+      outcomes:
+        - weight: 80
+          text: "The room is hushed, then roars with laughter."
+          effects:
+            - stat.happiness += 5
+        - weight: 20
+          text: "A few facts get muddled, but the children giggle anyway."
+          effects:
+            - stat.happiness += 3
+    - label: "Show them photographs"
+      outcomes:
+        - weight: 1
+          text: "The old pictures spark more questions than answers."
+          effects:
+            - stat.happiness += 3
+
+- id: dog-first-walk
+  icon: 🦮
+  trigger: event
+  chance: 0%
+  text: "On the first walk the dog spots a squirrel and pulls hard on the lead."
+  choices:
+    - label: "Hold on tight"
+      outcomes:
+        - weight: 60
+          text: "The squirrel escapes, and the dog is delighted."
+          effects:
+            - stat.happiness += 3
+        - weight: 40
+          text: "A stumble in the mud and a loud laugh."
+          effects:
+            - stat.health -= 2
+            - stat.happiness += 2
+    - label: "Let go of the lead"
+      outcomes:
+        - weight: 1
+          text: "The dog trots back proudly, empty-pawed."
+          effects:
+            - stat.happiness += 2

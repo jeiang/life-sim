@@ -15,10 +15,10 @@ Decided in [Later Pack roadmap](https://github.com/jeiang/life-sim/issues/21). T
 | 1 | Dating, marriage, kids | Partners, dating, weddings, divorce, pregnancy, children | Partner, spouse, and child relationship roles; spawning a child; household costs at settlement if needed | `core-loop` |
 | 2 | Generations | Inheritance and continuing as your child | Estate transfer on death (money, assets, loans); moving the player pointer to an heir (ADR 0002); heir picker on the obituary | 1 |
 | 3 | Gambling | Casino games and horse races | An `amount` input on action storylets, bound for expressions and chosen through the amount picker | `core-loop` |
-| 4 | Investing | Stocks, bonds, funds with price history | Per-item-kind price series updated at settlement, with history; buying and selling by amount; the chart screen for any series | 3 (amount input) |
+| 4 | Investing | Stocks, bonds, funds with price history | Per-item-kind price series updated at settlement, with history; buying and selling by amount (the `trade` effect and holdings); the chart screen for any series. It shares the amount picker with Gambling but does not depend on that Pack | `core-loop` |
 | 5 | Crime and prison | Crimes, arrests, sentences, escape | Occupations that lock other menus while held | `core-loop` |
-| 6 | Vacations | Trips and cruises as happiness purchases | Consumable (non-asset) purchases through the purchase dialog | `core-loop` |
-| 7 | Grad school | Medical, law, and business school off university majors; top careers | None | `core-loop` |
-| 8 | Relocation | Moving cities and countries | Country model and multi-currency (a Core release, ADR 0002) | `core-loop` |
+| 6 | Vacations | Trips and cruises as happiness purchases | None: trips are priced actions, as with doctor visits and the driving test | `core-loop` |
+| 7 | Grad school | Medical, law, and business school off university majors; top careers | Group checks: `in_group(g)` and `years_in_group(g)` (no `end_group`) | `core-loop` |
+| 8 | Relocation | Moving cities and countries | None beyond the cities of [Cities and moving out](https://github.com/jeiang/life-sim/issues/108): countries extend them with an optional city `country` field. One currency, no multi-currency | `core-loop` |
 
 The order is a preference, not a hard sequence, except for the dependencies in the last column.

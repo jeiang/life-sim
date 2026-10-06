@@ -9,7 +9,13 @@ import {
   type World,
 } from "@life/core";
 
-export const PROFILE_NAMES = ["random", "studious", "spender", "idle", "gambler"] as const;
+export const PROFILE_NAMES = [
+  "random",
+  "studious",
+  "spender",
+  "idle",
+  "gambler",
+] as const;
 /** Profiles that only run when asked for by name (`--profile grinder`), never in `all`. */
 export const EXTRA_PROFILE_NAMES = ["grinder"] as const;
 export type ProfileName =

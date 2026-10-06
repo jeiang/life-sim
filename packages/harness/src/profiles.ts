@@ -201,7 +201,9 @@ const gambler: Profile = {
     const rows = unlockedActions(w, ctx);
     const me = w.persons.get(w.playerId);
     const quitting = me?.qualities.gambling_addicted === true && rng.int(5) > 0;
-    const meeting = rows.find((r) => r.id === "gambling/gambling-support-meeting");
+    const meeting = rows.find(
+      (r) => r.id === "gambling/gambling-support-meeting",
+    );
     if (quitting && meeting) return asMove(meeting, rng);
     const bets = rows.filter(
       (r) => GAMBLING.test(r.id) && GAMBLE.test(short(r.id)),

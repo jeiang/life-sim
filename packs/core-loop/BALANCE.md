@@ -16,7 +16,7 @@ The profiles are deliberately crude, so judge each metric against the profile th
 | Degree rate | 25-45% for `random`; higher for `studious` | University enrolment is open from 18 to 24 |
 | Employment (25-64) | high for lives that look for work | `idle` never applies, so it is 0% by construction |
 | Loans | some defaults, rare repossessions | repossessions come almost entirely from `spender`, who loans for every car and home |
-| Mood | stats spread, not pinned at 100 | `everyday-stress` pulls happiness down 7 points in 60% of years while it is above 55 |
+| Mood | stats spread, not pinned at 100 | see Stat saturation (#146): `random` has no stat over 10% at 100 from age 30 to 60 (age 20: 15%) |
 | Events per year | about 3-4 | |
 | Decisions | at least 1 / 2 / 3 decisions in 90 / 50 / 30% of years from age 5 (within 3 points); empty slots under 5% of years; no storylet over 3% of decisions | the `year.decisions` slot draw; `Decision slots` in the harness report |
 | Housing | `random` (which moves out at will) mostly moved out by 40; passive profiles (`idle`, `studious`, `spender` never use Move out) are asked to leave eventually | kick-out pressure in `parents-ask-you-to-leave`: with a passive player about 55-60% still live with their parents at 30 and about 15% at 40; median age at moving out about 33 for all profiles, a real player who chooses to leave moves earlier |
@@ -85,3 +85,21 @@ Years lived on their own that were homeless: 45.5% overall (idle 100%, random 47
 Per child at home $4,000 a year at a 100% cost index (about a fifth of the average standard); a partner who moved in pays 50% of the standard's cost. A minor with no living parent lives with a guardian: no cost, no standard effects, no risk multiplier, assets in trust until 18. The bots have no children or partners yet, so the harness applies the terms to their own years.
 
 10,000 lives, seed 20260101, all profiles: no faults, median age at death 73 (unchanged). Living cost as a percent of income, person-years aged 25-64 on their own with income (median / p90): alone 16.2 / 50.4; one child 25 / 64.9; two children 31.3 / 104.8; partner sharing 8.1 / 25.2; two children and a partner sharing 22.6 / 100. Target: a child at home adds about 8-9 points to the median share and a sharing partner removes about half of the base; the p90 above 100% is the low earners the standard already outprices.
+
+## Stat saturation (#146)
+
+Harness: `Stats at 100` (share of living lives at the cap, per stat, by decade) and the opt-in `grinder` profile (12 random repeatable uses a year; `--profile grinder`, never in `all`).
+
+Targets: `random`: no stat over 10% at 100 at ages 30-60 and over 15% at age 20 (age 10 is excluded: stats start anywhere in their range and childhood decisions push them up). `grinder`: a stress case that spends every move on repeatables; no stat over 35% at 100 at ages 30-60. Existing targets unchanged.
+
+Baseline (pre-#106, commit 0fbc9f76 plus the metric; `random`, 3,000 lives, seed 20260101): share at 100 at ages 20 / 30 / 50 / 70: happiness 29 / 20 / 16 / 30%, health 2.5 / 5 / 5 / 3%, looks 0.8 / 1 / 8 / 17%, smarts 19 / 26 / 40 / 51%. With repeatables untuned (#122, same run) it was almost identical (happiness 30 / 25 / 23 / 40%, smarts 19 / 27 / 40 / 51%), so the repeatables did not cause the saturation: stats start at random values, nothing pulled them down, and decisions and events only add. `grinder` untuned: happiness 46 / 45 / 45%, health 49 / 56 / 54%, smarts 95-100% from age 20 (ages 20 / 30 / 50).
+
+Changes (pack version 7):
+- Default curve `repeat` is now `{ full: 3, reduced: 8, factor: 25% }` (was 10 / 20): a year of 10 library visits is no longer 10 full uses.
+- `have-a-conversation` no longer gives `smarts +1`; the biggest sink for grinders (every relative counts apart).
+- Three new yearly events that pull a high stat down: `mind-wanders` (age 10+, smarts over 65, 50%, -2), `looks-fade` (age 30+, looks over 60, 40%, -1), `wear-and-tear` (age 30+, health over 90, 40%, -3); `everyday-stress` rises from 60% to 85%.
+- The repeat factor now carries through `next:` chains (including across a pending choice and a save), so chained steps of a repeatable action diminish with it.
+
+Result, `random` (2,000 lives, seed 20260101) share at 100 at ages 20 / 30 / 40 / 50 / 60: happiness 12.6 / 6.2 / 6.1 / 4.7 / 5.1%; health 2.1 / 2.3 / 0.4 / 0.3 / 0.4%; looks 1.2 / 0.8 / 0.6 / 1.1 / 1.2%; smarts 1.1 / 0.1 / 0 / 0 / 0%. Medians stay spread (smarts about 65, looks 47-60, health 81 at 20 falling to 71 at 60). `grinder` (2,000 lives) at ages 30 / 40 / 50 / 60: happiness 31 / 26 / 24 / 26%, health 34 / 22 / 23 / 23%, looks 3 / 7 / 9 / 11%, smarts 11 / 12 / 13 / 17%; median age at death 81.
+
+All profiles (10,000 lives, seed 20260101, 0 faults): median age at death 72 (`random` 74); net worth at 65 median $1.019M (p10 0, p90 $2.86M); degree 36.3%; employment 63.7%; decisions 89.9 / 49.7 / 29.1%; events per year 5.34; every storylet fires. Share at 100 over all profiles at ages 30-60: happiness 2-3%, health 0.1-1.3%, looks under 1%, smarts 10-12% (the `studious` profile; only it exceeds 10%).

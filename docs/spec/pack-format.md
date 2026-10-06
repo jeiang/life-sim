@@ -182,6 +182,10 @@ One small custom language is used for `when`, `weight`, `chance`, and effect sta
 - Integer-only. `/` truncates toward zero. A constant zero divisor is a build error. At runtime, division by zero gives 0 and overflow clamps to the safe-integer range. Dev builds and the balance harness assert on both.
 - No randomness inside expressions. Rolls happen only for `chance` and `weight`, and each roll site's RNG purpose key comes from the content id.
 
+### Text variants for 18+ mode
+
+`mature_text` on a storylet or an outcome, and `mature_label` on a choice, replace `text` / `label` in a life that began with the player's 18+ mode switch on. The switch is recorded in the life at its start (a leading `mature` choice log entry), never read live, so replay is unaffected by later changes to the setting. There is no `mature` expression name: using it in `when`, `weight`, `chance`, effects or a placeholder is a compile error ("unknown name 'mature'"). Variants take the same `{placeholders}` as the plain text.
+
 ### Effect statements
 
 Each statement maps to one effect in the closed Core set (ADR 0002):

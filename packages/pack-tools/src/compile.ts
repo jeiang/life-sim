@@ -1018,6 +1018,10 @@ class PackCompiler {
       out.text = s.text;
       this.text(s.text, names, ["text"]);
     }
+    if (s.mature_text !== undefined) {
+      out.matureText = s.mature_text;
+      this.text(s.mature_text, names, ["mature_text"]);
+    }
     if (s.choices && s.outcomes)
       this.err(
         ["outcomes"],
@@ -1031,6 +1035,10 @@ class PackCompiler {
         outcomes: [],
       };
       this.text(ch.label, names, ["choices", ci, "label"]);
+      if (ch.mature_label !== undefined) {
+        choice.matureLabel = ch.mature_label;
+        this.text(ch.mature_label, names, ["choices", ci, "mature_label"]);
+      }
       if (ch.when !== undefined) {
         const w = this.expr(
           ch.when,
@@ -1127,6 +1135,15 @@ class PackCompiler {
           ...path,
           "text",
         ]);
+    }
+    if (o.mature_text !== undefined) {
+      out.matureText = o.mature_text;
+      if (!failed)
+        this.text(
+          o.mature_text,
+          { ...this.baseNames, ...scopeNames, ...bound },
+          [...path, "mature_text"],
+        );
     }
     if (o.next !== undefined) {
       const full = this.ref(o.next, ["storylet"], [...path, "next"]);

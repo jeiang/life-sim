@@ -264,6 +264,7 @@ function choiceLog(v: unknown, p: string): ChoiceEntry[] {
     const t = str(o.t, `${q}.t`);
     switch (t) {
       case "age":
+      case "mature":
         return { t };
       case "choose":
         return { t, i: int(o.i, `${q}.i`) };
@@ -311,7 +312,7 @@ function choiceLog(v: unknown, p: string): ChoiceEntry[] {
       default:
         return fail(
           `${q}.t`,
-          "age, choose, action, buy, sell, start, god-stat or god-money",
+          "age, choose, action, buy, sell, mature, start, god-stat or god-money",
         );
     }
   });

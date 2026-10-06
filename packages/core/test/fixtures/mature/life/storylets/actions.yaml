@@ -1,0 +1,13 @@
+- id: night
+  trigger: action
+  menu: activities
+  text: A quiet night.
+  mature_text: A wild night.
+  choices:
+    - label: Stay in
+      mature_label: Go out
+      outcomes:
+        - text: You rest.
+          mature_text: You party.
+          effects:
+            - stat.happiness += 1

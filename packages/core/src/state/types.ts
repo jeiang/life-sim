@@ -240,7 +240,9 @@ export type ChoiceEntry =
   | { readonly t: "sell"; readonly asset: number }
   /** Succession: the player pointer moves to a living heir. */
   | { readonly t: "succeed"; readonly heir: PersonId }
-  /** God mode: always entry 0 of a custom life; replay feeds it to `newLife`. */
+  /** 18+ mode was on when the life began: entry 0 (before any `start`); replay feeds it to `newLife`. */
+  | { readonly t: "mature" }
+  /** God mode: a custom life's `start` is the first entry after any `mature`; replay feeds it to `newLife`. */
   | ({ readonly t: "start" } & CustomStart)
   /** God mode: set one of the player's stats (0-100). */
   | { readonly t: "god-stat"; readonly stat: string; readonly value: number }

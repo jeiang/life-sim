@@ -1,5 +1,10 @@
 import type { FamilyDecl, PackBundle } from "../pack.ts";
-import type { CustomStart, PersonId, World } from "../state/types.ts";
+import type {
+  ChoiceEntry,
+  CustomStart,
+  PersonId,
+  World,
+} from "../state/types.ts";
 import {
   addJournalLine,
   clamp,
@@ -44,6 +49,11 @@ export interface NewLifeOptions {
    * `start` entry as choice 0 so `replay` rebuilds it.
    */
   readonly custom?: CustomStart;
+  /**
+   * 18+ mode was on when the life began: records a `mature` entry as choice 0, so `isMature`
+   * (and `replay`) read it from the life, never from settings.
+   */
+  readonly mature?: boolean;
 }
 
 function resolve(
@@ -149,9 +159,11 @@ export function newLife(
       ...(x.id === w.playerId ? { withParents: true } : {}),
     }));
   }
-  return custom
-    ? { ...w, choiceLog: [...w.choiceLog, { t: "start", ...custom }] }
-    : w;
+  const head: ChoiceEntry[] = [
+    ...(opts.mature ? [{ t: "mature" } as const] : []),
+    ...(custom ? [{ t: "start", ...custom } as const] : []),
+  ];
+  return head.length > 0 ? { ...w, choiceLog: [...w.choiceLog, ...head] } : w;
 }
 
 function spawnFamily(

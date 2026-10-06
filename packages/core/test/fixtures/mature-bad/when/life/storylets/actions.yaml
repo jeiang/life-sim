@@ -1,0 +1,7 @@
+- id: night
+  trigger: action
+  menu: activities
+  when: mature
+  outcomes:
+    - effects:
+        - stat.happiness += 1

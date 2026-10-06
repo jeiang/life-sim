@@ -12,7 +12,7 @@ import { confinementOf } from "./living.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import type { PackIndex } from "./pack-index.ts";
 import { explainFalse } from "./reason.ts";
-import { formatMoney, renderText } from "./text.ts";
+import { formatMoney, pickText, renderText } from "./text.ts";
 
 /** Core-owned storylet tag: the only content that runs while a confinement locks its trigger kind. */
 export const CUSTODY_OK = "custody-ok";
@@ -251,7 +251,12 @@ function runOutcome(
   if (!w.ended) {
     const note = curve ? wearNote(curve, base.uses ?? 0) : "";
     if (outcome.text !== undefined) {
-      const text = renderText(outcome.text, w, idx, withBound);
+      const text = renderText(
+        pickText(w, outcome.text, outcome.matureText),
+        w,
+        idx,
+        withBound,
+      );
       const d = deltas(w0, w, idx, scope.subject);
       const said = note ? `${text} ${note}` : text;
       w = say(w, d ? `${said} (${d})` : said);
@@ -297,7 +302,11 @@ export function open(
       const scope = scopeFor(w, ev.scope, s.id);
       const c = s.choices.find((x) => evalBool(x.when, w, idx, scope));
       if (!c) return w;
-      if (s.text !== undefined) w = say(w, renderText(s.text, w, idx, scope));
+      if (s.text !== undefined)
+        w = say(
+          w,
+          renderText(pickText(w, s.text, s.matureText), w, idx, scope),
+        );
       return runOutcome(w, idx, s, c.outcomes, ev.scope, depth);
     }
     return {
@@ -310,7 +319,15 @@ export function open(
     };
   }
   if (s.text !== undefined)
-    w = say(w, renderText(s.text, w, idx, scopeFor(w, ev.scope, s.id)));
+    w = say(
+      w,
+      renderText(
+        pickText(w, s.text, s.matureText),
+        w,
+        idx,
+        scopeFor(w, ev.scope, s.id),
+      ),
+    );
   return runOutcome(w, idx, s, s.outcomes, ev.scope, depth, ev.amount);
 }
 
@@ -330,7 +347,8 @@ export function resolveChoice(
   if (!evalBool(choice.when, world, idx, scope))
     throw new RangeError(`choice ${choiceIndex} of '${s.id}' is not available`);
   let w = world;
-  if (s.text !== undefined) w = say(w, renderText(s.text, w, idx, scope));
-  w = say(w, `You chose: ${choice.label}`);
+  if (s.text !== undefined)
+    w = say(w, renderText(pickText(w, s.text, s.matureText), w, idx, scope));
+  w = say(w, `You chose: ${pickText(w, choice.label, choice.matureLabel)}`);
   return runOutcome(w, idx, s, choice.outcomes, ref, 0, amount);
 }

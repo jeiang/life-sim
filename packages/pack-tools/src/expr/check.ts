@@ -13,6 +13,10 @@ import type { ExprError } from "./errors.ts";
 import type { Node, Pos, Stmt } from "./parser.ts";
 
 /** The declared environment an expression is checked against. */
+/** 18+ mode is chosen at life start and only picks text, so it is no expression name. */
+const MATURE_HINT =
+  " (18+ mode only picks text: use mature_text or mature_label, not an expression)";
+
 export interface CheckEnv {
   /** Dotted name -> type, for example `{ age: "int", "stat.smarts": "int" }`. */
   names: Readonly<Record<string, Type>>;
@@ -123,7 +127,7 @@ export class Checker {
         if (t === undefined || !Object.hasOwn(this.env.names, n.v)) {
           return this.err(
             n,
-            `unknown name '${n.v}'${suggest(n.v, Object.keys(this.env.names))}`,
+            `unknown name '${n.v}'${n.v === "mature" ? MATURE_HINT : suggest(n.v, Object.keys(this.env.names))}`,
           );
         }
         return [t, ["v", n.v]];
@@ -239,7 +243,7 @@ export function checkStmt(c: Checker, env: CheckEnv, s: Stmt): Effect | null {
       return err(
         c,
         s.target,
-        `unknown name '${path}'${suggest(path, Object.keys(env.names))}`,
+        `unknown name '${path}'${path === "mature" ? MATURE_HINT : suggest(path, Object.keys(env.names))}`,
       );
     }
     if (!ops.includes(s.op)) {

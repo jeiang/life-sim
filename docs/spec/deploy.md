@@ -44,6 +44,24 @@ Observed after the first deploy: Cloudflare's Browser Cache TTL rewrites `/sw.js
 
 Agents prepare cornn-flaek PRs. Merging and deploying stay your explicit actions.
 
+## Hidden options code
+
+The code that opens Settings > Hidden options (god mode, 18+ mode) is checked in the browser with bcrypt against a hash given to the build as `VITE_HIDDEN_CODE_HASH`. The plain code is never in the repo, bundle, PRs or logs; the hash is in the bundle. A build without the variable shows no code field. The default package and the buildbot build leave it unset.
+
+Make a hash (cost 10 verifies in well under a second on a phone; `bcryptjs` is already a dependency):
+
+```
+nix develop -c pnpm --filter @life/web exec node -e 'require("bcryptjs").hash(process.argv[1], 10).then(console.log)' 'the code'
+```
+
+The cluster build (cornn-flaek `modules/edge/default.nix`) passes it by overriding the package:
+
+```nix
+lifeSim = "${inputs.life-sim.packages.${system}.default.overrideAttrs (_: { VITE_HIDDEN_CODE_HASH = "$2b$10$..."; })}/dist";
+```
+
+That derivation is not the one buildbot pushed to garret, so `just deploy alda --skip-checks --remote-build` builds it on the target (the pnpm dependencies still come from the cache). The e2e build uses a throwaway code and hash (`e2e/playwright.config.ts`).
+
 ## Version skew
 
 Workbox precaches the whole build when the service worker installs, so an open client keeps running entirely from its cache after a deploy removes the old hashed files. Clients switch only when the user accepts the "Update available, reload" prompt (ADR 0003). The server keeps no older releases.

@@ -1,0 +1,6 @@
+- id: night
+  trigger: action
+  menu: activities
+  outcomes:
+    - effects:
+        - 'journal(mature ? "a" : "b")'

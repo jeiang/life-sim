@@ -1,0 +1,8 @@
+id: life
+version: 1
+currency:
+  symbol: "$"
+  digits: 2
+stats:
+  - { id: happiness, label: Happiness, start: [50, 100] }
+  - { id: health, label: Health, start: [80, 100] }

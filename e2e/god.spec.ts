@@ -1,7 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 
-// The unlock code is held as char codes so the plain text is not in the repo.
-const CODE = String.fromCharCode(73, 68, 68, 81, 68);
+// Throwaway code whose bcrypt hash the e2e build gets (playwright.config.ts).
+const CODE = "e2e-throwaway-code";
 
 async function tapVersion(page: Page, times: number): Promise<void> {
   const version = page.getByRole("term").filter({ hasText: "Build version" });
@@ -35,13 +35,24 @@ test("six taps show no code field, and a wrong code does not unlock", async ({
   await page.getByRole("button", { name: "Back" }).click();
   await page.getByRole("button", { name: "Settings" }).click();
   await expect(page.getByRole("switch", { name: "God mode" })).toHaveCount(0);
+  await expect(page.getByRole("switch", { name: "18+ mode" })).toHaveCount(0);
 });
 
 test("unlock, custom life, stat edit survives a reload; switching off hides god mode", async ({
   page,
 }) => {
   await openSettings(page);
-  await unlock(page, CODE.toLowerCase());
+  await unlock(page, CODE);
+  await expect(
+    page.getByRole("heading", { name: "Hidden options" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("switch", { name: "God mode" }),
+  ).not.toBeChecked();
+  await expect(
+    page.getByRole("switch", { name: "18+ mode" }),
+  ).not.toBeChecked();
+  await page.getByRole("switch", { name: "God mode" }).click();
   await expect(page.getByRole("switch", { name: "God mode" })).toBeChecked();
 
   // Custom life from the life list.
@@ -79,12 +90,59 @@ test("unlock, custom life, stat edit survives a reload; switching off hides god 
     page.getByRole("img", { name: "Health, 33 percent" }),
   ).toBeVisible();
 
-  // Off again: the switch and the custom option disappear.
+  // Off again: the custom option and edit link disappear; the menu stays unlocked.
   await page.getByRole("button", { name: "Settings" }).click();
   await page.getByRole("switch", { name: "God mode" }).click();
-  await expect(page.getByRole("switch", { name: "God mode" })).toHaveCount(0);
+  await expect(
+    page.getByRole("switch", { name: "God mode" }),
+  ).not.toBeChecked();
+  await expect(
+    page.getByRole("button", { name: "Edit this life" }),
+  ).toHaveCount(0);
   await page.reload();
   await page.getByRole("button", { name: /Ada Lovelace/ }).click();
   await page.getByRole("button", { name: "Settings" }).click();
-  await expect(page.getByRole("switch", { name: "God mode" })).toHaveCount(0);
+  await expect(
+    page.getByRole("switch", { name: "God mode" }),
+  ).not.toBeChecked();
+});
+
+test("18+ mode and god mode switches persist across a reload", async ({
+  page,
+}) => {
+  await openSettings(page);
+  await unlock(page, CODE);
+  await expect(
+    page.getByText(/applies to lives you start from now on/),
+  ).toBeVisible();
+  await page.getByRole("switch", { name: "18+ mode" }).click();
+  await page.getByRole("switch", { name: "God mode" }).click();
+  await expect(page.getByRole("switch", { name: "18+ mode" })).toBeChecked();
+  await page.reload();
+  await page.getByRole("button", { name: "Settings" }).click();
+  await expect(page.getByRole("switch", { name: "18+ mode" })).toBeChecked();
+  await expect(page.getByRole("switch", { name: "God mode" })).toBeChecked();
+  await page.getByRole("switch", { name: "18+ mode" }).click();
+  await page.reload();
+  await page.getByRole("button", { name: "Settings" }).click();
+  await expect(
+    page.getByRole("switch", { name: "18+ mode" }),
+  ).not.toBeChecked();
+  await expect(page.getByRole("switch", { name: "God mode" })).toBeChecked();
+});
+
+test("an install unlocked with the old code stays unlocked with god mode on", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    if (!localStorage.getItem("seeded")) {
+      localStorage.setItem("seeded", "1");
+      localStorage.setItem("life-sim:god-mode", "1");
+    }
+  });
+  await openSettings(page);
+  await expect(page.getByRole("switch", { name: "God mode" })).toBeChecked();
+  await expect(
+    page.getByRole("switch", { name: "18+ mode" }),
+  ).not.toBeChecked();
 });

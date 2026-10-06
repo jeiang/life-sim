@@ -164,9 +164,17 @@ _Avoid_: Tab, section
 
 ### Persistence
 
+**Hidden options**:
+A hidden Settings section, unlocked per install by tapping the build version 7 times and entering a code (checked with bcrypt against a build-time hash). Holds the switches God mode and 18+ mode. An app feature, not a Pack.
+_Avoid_: Secret menu, cheat menu
+
 **God mode**:
-A hidden, per-install unlock that lets the player pick a life's starting options (a custom life) and edit the player's stats and money mid-life. Each choice or edit is a choice log entry, so replay reproduces the life; such lives show an Edited badge. An app feature plus Core log entry types, not a Pack.
+A Hidden options switch that lets the player pick a life's starting options (a custom life) and edit the player's stats and money mid-life. Each choice or edit is a choice log entry, so replay reproduces the life; such lives show an Edited badge. An app feature plus Core log entry types, not a Pack.
 _Avoid_: Cheat mode, debug mode
+
+**18+ mode**:
+A Hidden options switch, off by default. Its state is recorded in a life when the life begins (a leading `mature` entry in the choice log), so it affects new lives only; Packs give such lives explicit text through `mature_text` / `mature_label`. It picks text only; it is not an expression name.
+_Avoid_: NSFW mode, adult mode
 
 **Graveyard**:
 The archive of finished lives, kept as obituaries only.

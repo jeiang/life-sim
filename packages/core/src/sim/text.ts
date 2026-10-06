@@ -21,6 +21,20 @@ export function formatMoney(
   return `${neg ? "-" : ""}${currency.symbol}${grouped}${tail}`;
 }
 
+/** Whether 18+ mode was on when the life began (the leading `mature` log entry). */
+export function isMature(world: World): boolean {
+  return world.choiceLog[0]?.t === "mature";
+}
+
+/** A text and its optional 18+ variant: the variant when the life is a mature one. */
+export function pickText(
+  world: World,
+  plain: string,
+  mature: string | undefined,
+): string {
+  return mature !== undefined && isMature(world) ? mature : plain;
+}
+
 const MONEY_NAMES = new Set([
   "amount",
   "money",

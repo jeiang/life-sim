@@ -39,6 +39,8 @@ export interface CompiledOutcome {
   readonly weight: Expr;
   readonly when?: Expr;
   readonly text?: string;
+  /** Replaces `text` in a life begun with 18+ mode on. */
+  readonly matureText?: string;
   readonly effects: readonly Effect[];
   /** Full storylet id opened immediately after this outcome. */
   readonly next?: string;
@@ -46,6 +48,8 @@ export interface CompiledOutcome {
 
 export interface CompiledChoice {
   readonly label: string;
+  /** Replaces `label` in a life begun with 18+ mode on. */
+  readonly matureLabel?: string;
   readonly when?: Expr;
   readonly outcomes: readonly CompiledOutcome[];
 }
@@ -105,6 +109,8 @@ export interface CompiledStorylet {
    * `amount` in choice and outcome `when`, `weight`, effects and text, and nowhere else.
    */
   readonly amount?: CompiledAmount;
+  /** Replaces `text` in a life begun with 18+ mode on. */
+  readonly matureText?: string;
   /** Empty when the storylet has a single `outcomes` list. */
   readonly choices: readonly CompiledChoice[];
   /** Used when `choices` is empty. */

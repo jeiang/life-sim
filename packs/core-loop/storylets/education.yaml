@@ -138,6 +138,7 @@
           text: "You enrol and sign for a student loan."
           effects:
             - take_loan(core-loop/student-loan, 3600000)
+            - money -= 3600000
             - quality.tuition_by_loan = true
             - start_occupation(core-loop/university-business)
             - journal("Enrolled in business at university with a student loan at age {age}.")
@@ -167,6 +168,7 @@
           text: "You enrol and sign for a student loan."
           effects:
             - take_loan(core-loop/student-loan, 4000000)
+            - money -= 4000000
             - quality.tuition_by_loan = true
             - start_occupation(core-loop/university-engineering)
             - journal("Enrolled in engineering at university with a student loan at age {age}.")
@@ -196,6 +198,7 @@
           text: "You enrol and sign for a student loan."
           effects:
             - take_loan(core-loop/student-loan, 3200000)
+            - money -= 3200000
             - quality.tuition_by_loan = true
             - start_occupation(core-loop/university-nursing)
             - journal("Enrolled in nursing at university with a student loan at age {age}.")
@@ -225,6 +228,7 @@
           text: "You enrol and sign for a student loan."
           effects:
             - take_loan(core-loop/student-loan, 2800000)
+            - money -= 2800000
             - quality.tuition_by_loan = true
             - start_occupation(core-loop/university-arts)
             - journal("Enrolled in arts at university with a student loan at age {age}.")

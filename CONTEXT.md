@@ -104,6 +104,10 @@ _Avoid_: Random event, rare event
 One of the few places per age-up filled by drawing a weighted event from the eligible pool.
 _Avoid_: Filler, random slot
 
+**Decision slot**:
+One of a Pack's per-year chances for the player to face a choice event, filled by drawing an eligible choice event by weight. Slots chain (slot 2 rolls only if slot 1 fired) so the odds of "at least 1, 2, 3 decisions" match the manifest's `year.decisions`; chance choice events count toward the slots.
+_Avoid_: Prompt slot, choice slot
+
 **Expression**:
 A short formula in the pack language, used for conditions, weights, chances, and effect statements.
 _Avoid_: Script, code, rule

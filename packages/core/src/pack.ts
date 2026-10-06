@@ -182,6 +182,13 @@ export interface PackBundle {
   readonly year?: {
     readonly slots: readonly [number, number];
     readonly cap: number;
+    /**
+     * Decision slots: basis points per slot of "at least k+1 decisions this year", in
+     * non-increasing order. Absent: choice events draw as ordinary flavour.
+     */
+    readonly decisions?: readonly number[];
+    /** Age reached from which decision slots roll (default 0). */
+    readonly decisionsMinAge?: number;
     /** Neutral lines for a year in which nothing else was journaled. */
     readonly quiet?: readonly string[];
   };

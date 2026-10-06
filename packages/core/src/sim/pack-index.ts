@@ -32,6 +32,8 @@ export interface PackIndex {
   readonly year: {
     readonly slots: readonly [number, number];
     readonly cap: number;
+    readonly decisions?: readonly number[];
+    readonly decisionsMinAge?: number;
     readonly quiet?: readonly string[];
   };
 }

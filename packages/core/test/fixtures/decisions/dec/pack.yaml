@@ -1,0 +1,12 @@
+id: dec
+version: 1
+stats:
+  - { id: happiness, label: Happiness, start: [50, 100] }
+qualities:
+  - { id: dry, type: flag, default: false }
+year:
+  slots: [0, 0]
+  cap: 10
+  decisions: [90%, 50%, 30%]
+  decisions_min_age: 5
+migrations: {}

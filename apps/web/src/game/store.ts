@@ -253,6 +253,43 @@ export function startNewLife(): void {
 
 // Test hook for the e2e suite; the flag is set only by the e2e build, so it is tree-shaken out of releases.
 if (import.meta.env.VITE_E2E) {
+  /**
+   * Fixture storylets cloned from an interview question and appended to the loaded Pack:
+   * `<id>-1..n`, text `<label> n`, step n opening `nexts[n-1]` (null: no link). Returns the ids.
+   */
+  const fixtureSteps = (
+    id: string,
+    label: string,
+    nexts: readonly (string | null)[],
+  ): string[] => {
+    const storylets = packIndex.storylets as Map<string, CompiledStorylet>;
+    const src = [...storylets.values()].find((x) =>
+      x.id.endsWith("interview-question-2"),
+    );
+    if (!src) throw new Error("interview chain missing");
+    const rewire = (v: unknown, next: string | null): unknown => {
+      if (Array.isArray(v)) return v.map((x) => rewire(x, next));
+      if (v && typeof v === "object") {
+        const o: Record<string, unknown> = {};
+        for (const [k, x] of Object.entries(v)) {
+          if (k === "next") {
+            if (next !== null) o[k] = next;
+          } else o[k] = rewire(x, next);
+        }
+        return o;
+      }
+      return v;
+    };
+    return nexts.map((next, i) => {
+      const f = {
+        ...(rewire(src, next) as object),
+        id: `${id}-${i + 1}`,
+        text: `${label} ${i + 1}`,
+      };
+      storylets.set(f.id, f as CompiledStorylet);
+      return f.id;
+    });
+  };
   const hook = {
     /** Run an action (e.g. start a `next:` chain). */
     runAction(id: string): void {
@@ -269,32 +306,30 @@ if (import.meta.env.VITE_E2E) {
      * fixture storylets cloned from the interview questions, appended to the loaded Pack.
      */
     startChain3(): void {
-      const storylets = packIndex.storylets as Map<string, CompiledStorylet>;
-      const src = [...storylets.values()].find((x) =>
-        x.id.endsWith("interview-question-2"),
-      );
-      if (!src) throw new Error("interview chain missing");
-      const rewire = (v: unknown, next: string | null): unknown => {
-        if (Array.isArray(v)) return v.map((x) => rewire(x, next));
-        if (v && typeof v === "object") {
-          const o: Record<string, unknown> = {};
-          for (const [k, x] of Object.entries(v)) {
-            if (k === "next") {
-              if (next !== null) o[k] = next;
-            } else o[k] = rewire(x, next);
-          }
-          return o;
-        }
-        return v;
+      const [one] = fixtureSteps("e2e-chain", "Chain step", [
+        "e2e-chain-2",
+        "e2e-chain-3",
+        null,
+      ]);
+      world.value = { ...world.value, pending: { storyletId: one as string } };
+    },
+    /**
+     * Queue three separate decisions as an age-up would: the first is open, the other two wait
+     * in `pending.rest` (no `next:` links between them).
+     */
+    queueDecisions(): void {
+      const [one, two, three] = fixtureSteps("e2e-decision", "Decision", [
+        null,
+        null,
+        null,
+      ]) as [string, string, string];
+      world.value = {
+        ...world.value,
+        pending: {
+          storyletId: one,
+          rest: { events: [{ storyletId: two }, { storyletId: three }] },
+        },
       };
-      const mk = (n: number, next: string | null) => ({
-        ...(rewire(src, next) as object),
-        id: `e2e-chain-${n}`,
-        text: `Chain step ${n}`,
-      });
-      for (const f of [mk(1, "e2e-chain-2"), mk(2, "e2e-chain-3"), mk(3, null)])
-        storylets.set(f.id, f as CompiledStorylet);
-      world.value = { ...world.value, pending: { storyletId: "e2e-chain-1" } };
     },
     /** End the player's life now (the obituary shows and the life moves to the graveyard). */
     die(): void {

@@ -1,0 +1,36 @@
+- id: dec-a
+  trigger: event
+  weight: 10
+  when: not quality.dry
+  text: Decision A.
+  choices:
+    - label: Ok
+      outcomes:
+        - { weight: 1, text: A done. }
+- id: dec-b
+  trigger: event
+  weight: 10
+  when: not quality.dry
+  text: Decision B.
+  choices:
+    - label: Ok
+      outcomes:
+        - { weight: 1, text: B done. }
+- id: dec-c
+  trigger: event
+  weight: 10
+  when: not quality.dry
+  text: Decision C.
+  choices:
+    - label: Ok
+      outcomes:
+        - { weight: 1, text: C done. }
+- id: dec-d
+  trigger: event
+  weight: 10
+  when: not quality.dry
+  text: Decision D.
+  choices:
+    - label: Ok
+      outcomes:
+        - { weight: 1, text: D done. }

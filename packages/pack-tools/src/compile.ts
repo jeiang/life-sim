@@ -47,6 +47,12 @@ import {
   validate,
 } from "./yaml.ts";
 
+/** `"12.5%"` to basis points out of 10,000 (the schema already checked the shape). */
+function percentBp(text: string): number {
+  const [whole, frac = ""] = text.slice(0, -1).split(".");
+  return Number(whole) * 100 + Number(frac.padEnd(2, "0"));
+}
+
 export type Kind =
   | "storylet"
   | "occupation"
@@ -476,6 +482,12 @@ class PackCompiler {
             year: {
               slots: m.year.slots as [number, number],
               cap: m.year.cap,
+              ...(m.year.decisions
+                ? { decisions: m.year.decisions.map(percentBp) }
+                : {}),
+              ...(m.year.decisions_min_age !== undefined
+                ? { decisionsMinAge: m.year.decisions_min_age }
+                : {}),
               ...(m.year.quiet ? { quiet: [...m.year.quiet] } : {}),
             },
           }
@@ -536,6 +548,15 @@ class PackCompiler {
     }
     if (m.year && m.year.slots[0] > m.year.slots[1])
       this.err(["year", "slots"], "slot range minimum exceeds maximum");
+    if (m.year?.decisions) {
+      const bps = m.year.decisions.map(percentBp);
+      for (const [i, bp] of bps.entries())
+        if (i > 0 && bp > (bps[i - 1] as number))
+          this.err(
+            ["year", "decisions", i],
+            "decision slot probabilities must not increase",
+          );
+    }
     for (const [i, dep] of (m.depends ?? []).entries()) {
       if ((m.depends ?? []).indexOf(dep) !== i)
         this.err(["depends", i], `duplicate dependency '${dep}'`);

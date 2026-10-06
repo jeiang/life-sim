@@ -27,7 +27,7 @@ packs/<pack-id>/
 | `stats` | Declared stats: id, label, icon, start range. Always 0 to 100. |
 | `qualities` | Declared qualities: id, type (`int` with optional min/max, or `flag`), default. |
 | `exclusivity` | Occupation exclusivity groups (for example `school`, `full-time`). |
-| `year` | Event draw settings: flavour slot count range and the yearly event cap, plus optional `quiet` lines the Core journals for a year in which nothing else happened (every age gets a journal group). |
+| `year` | Event draw settings: flavour slot count range and the yearly event cap, `decisions` / `decisions_min_age` (decision slots per year, see Year draw), plus optional `quiet` lines the Core journals for a year in which nothing else happened (every age gets a journal group). |
 | `migrations` | Renamed ids (`old -> new`) and removed ids (with a fallback). |
 
 ## Composition
@@ -81,8 +81,19 @@ packs/<pack-id>/
 At each age-up, after settlement (ADR 0003):
 
 1. Every eligible event with `chance` rolls independently.
-2. The Core then draws flavour slots (count from the manifest range) by `weight` from the eligible weighted events.
-3. The yearly cap from the manifest limits the total. When the cap is reached, chance events are kept before flavour events, in id order.
+2. If the manifest declares `year.decisions`, the Core draws **decision slots** (below). Choice events (storylets with `choices`) then no longer compete for flavour slots; they come only from chance rolls and decision slots.
+3. The Core then draws flavour slots (count from the manifest range) by `weight` from the eligible weighted events.
+4. The yearly cap from the manifest limits the total. When the cap is reached, chance events are kept first, then decisions, then flavour events, in id order.
+
+### Decision slots
+
+`year.decisions` is the list of "at least" probabilities: `[90%, 50%, 30%]` means P(at least 1 decision) = 90%, P(at least 2) = 50%, P(at least 3) = 30%. Probabilities must not increase. `year.decisions_min_age` (default 0) is the age reached from which slots roll; before it there are no decision slots.
+
+Slots chain. Slot 1 fires with probability p1. Slot k rolls only if slot k-1 fired, and fires with probability p_k / p_(k-1) (slot 2: 50/90, slot 3: 30/50), so the run of fired slots reaches k with probability exactly p_k. Each roll has its own stable RNG purpose key, `decision-slot/<k>`.
+
+Choice events that hit in the chance pass count toward the fired slots. Each remaining fired slot draws one eligible choice event with a `weight` (respecting `when`, `once`, `cooldown`, `max_per_life`; no storylet twice in a year; purpose key `decision-pick/<n>`). A fired slot with nothing eligible stays empty. Chance events can add decisions beyond the slots, so the delivered 'at least' rates are never below the targets.
+
+The queued decisions open one after another: the player resolves each (and its `next:` chain) and the next opens. The life cannot age up until the queue is empty.
 
 ## Expressions
 

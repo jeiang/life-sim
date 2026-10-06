@@ -156,6 +156,27 @@
                 "maxItems": 2
               }
             }
+          },
+          "jobs": {
+            "minItems": 1,
+            "description": "Static job labels with income tiers; a spawned person gets one at random (no simulated career)",
+            "type": "array",
+            "items": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": ["label", "tier"],
+              "properties": {
+                "label": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "tier": {
+                  "minimum": 0,
+                  "description": "Static income tier, 0 up to the number of `npc_careers.tiers`",
+                  "type": "integer"
+                }
+              }
+            }
           }
         }
       }

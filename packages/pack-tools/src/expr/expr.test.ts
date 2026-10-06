@@ -168,6 +168,19 @@ describe("effect statements", () => {
     expect(eff(src)).toEqual({ ok: true, ast });
   });
 
+  test("person.money moves with += and -= only", () => {
+    const e = {
+      ...env,
+      names: { ...env.names, "person.money": "int" as const },
+    };
+    expect(compileExpr("person.money -= 5", e, "effect")).toEqual({
+      ok: true,
+      ast: ["sub", "person.money", 5],
+    });
+    const bad = compileExpr("person.money = 5", e, "effect");
+    expect(!bad.ok && bad.errors[0]?.message).toContain("'=' is not allowed");
+  });
+
   test.each([
     ["money = 5", "'=' is not allowed on 'money'"],
     ["quality.licensed -= 1", "'-=' is not allowed on 'quality'"],

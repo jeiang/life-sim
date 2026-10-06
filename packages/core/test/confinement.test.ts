@@ -134,7 +134,7 @@ describe("confinement and housing", () => {
         stats: { ...p.stats, happiness: 50, health: 50 },
       }),
     );
-    expect(livingCost(me(w), index)).toBeGreaterThan(0);
+    expect(livingCost(w, index, me(w))).toBeGreaterThan(0);
     w = updatePerson(w, 0, (p) => ({
       ...p,
       occupations: [
@@ -150,7 +150,7 @@ describe("confinement and housing", () => {
         },
       ],
     }));
-    expect(livingCost(me(w), index)).toBe(0);
+    expect(livingCost(w, index, me(w))).toBe(0);
     const after = settleLiving(w, index);
     expect(me(after).money).toBe(1_000_000);
     expect(me(after).stats).toMatchObject({ happiness: 50, health: 50 });

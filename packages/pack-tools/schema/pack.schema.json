@@ -294,6 +294,49 @@
           "minLength": 1,
           "description": "Item kind category that counts as a home",
           "type": "string"
+        },
+        "household": {
+          "additionalProperties": false,
+          "title": "Household costs and guardians",
+          "type": "object",
+          "required": [
+            "dependent_role",
+            "dependent_cost",
+            "partner_role",
+            "partner_share",
+            "guardian_roles"
+          ],
+          "properties": {
+            "dependent_role": {
+              "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+              "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+              "type": "string"
+            },
+            "dependent_cost": {
+              "minimum": 0,
+              "description": "Base yearly cost per dependent living at home in minor units, before the city cost index",
+              "type": "integer"
+            },
+            "partner_role": {
+              "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+              "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+              "type": "string"
+            },
+            "partner_share": {
+              "pattern": "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$",
+              "description": "Share of the standard's cost a partner who moved in pays, as a percent literal",
+              "type": "string"
+            },
+            "guardian_roles": {
+              "description": "Roles a guardian is drawn from (an adult relative); the first living one is named in the journal",
+              "type": "array",
+              "items": {
+                "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+                "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+                "type": "string"
+              }
+            }
+          }
         }
       }
     },

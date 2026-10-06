@@ -38,7 +38,8 @@ It **reports** without failing, in `report.md` and `report.json` in the check ou
 - net worth at ages 18, 40, and 65;
 - degree rate, employment rate, and retirement rate;
 - loan defaults and repossessions;
-- living standards: share of lives with parents or at each standard by decade of age, and the homeless share of years lived on their own, overall and per profile;
+- living standards: share of lives with parents or at each standard by decade of age, and the homeless share of years lived on their own, overall and per profile, and the living cost as a percent of income by household shape (alone, with children, with a partner sharing);
+- invariant (fault `minor-living-cost`): no living cost is charged while the player is under 18;
 - housing: age at moving out, share moved out and kicked out (of lives reaching 18), and share still living with their parents at 30 and 40, overall and per profile;
 - repeated activities: per repeatable action, uses per year lived, mean and maximum uses in a year it was used, and the share of those years past the full-effect and reduced ranges;
 - Vacations (only when Pack `vacations` is loaded): trips per life by price tier, trip spending as a share of gross earnings, travel deaths per 10,000 trips, and median net worth of travellers against non-travellers within each profile;

@@ -72,7 +72,7 @@ About 10 item kinds, bought through the purchase dialog:
 - Six cities with cost indexes from 70% to 180% and birth weights. A life is born in a weighted-random city; its parents and siblings live there. The cost index scales [living costs](#standards-of-living-standards-assetshousing); the wage index scales pay.
 - Living situation: with parents (free) or on your own. Actions in `assets/housing`: **Move out** (age 18+, while living with parents) and **Move to another city** (on your own, one-off $2,500, one choice per other city, or stay).
 - **Kicked out:** from 18, while living with parents, the yearly chance (`parents-ask-you-to-leave`) is 1% plus 0.04% per point of missing parent closeness, plus 0.75% per living sibling, plus 1.5% per step of parental impatience (one step per year after 30, capped at 10 steps, so +15%). The player is never forced out automatically. All of these numbers sit in that storylet's `chance`, so a later cultural pack can change them.
-- When no parent is alive, living with parents ends at the next age-up.
+- When no parent is alive, living with parents ends at the next age-up: an adult is on their own, a minor goes to live with a guardian (below).
 - The profile shows the city and the living situation. Journal lines: moved out, asked to leave, moved to a city.
 - Siblings are not modelled as leaving home: every living sibling counts as still at home.
 
@@ -83,6 +83,13 @@ About 10 item kinds, bought through the purchase dialog:
 - Charged at age-up while on your own, after pay. Short of savings, the player lives the best standard they can afford that year (a journal line), and the chosen standard is tried again next year. Money never goes negative.
 - Salaries are gross pay (about $6k for a teen cashier to $115k for a senior engineer at a 100% wage index), multiplied by the current city's wage index (80% to 150%). Pensions, raises and the windfall raise bonus are scaled the same way.
 - The profile shows the current standard and its yearly cost. Harness numbers and targets are in [BALANCE.md](../../packs/core-loop/BALANCE.md).
+
+### Household costs
+
+- A child living at home adds $4,000 a year (scaled by the city cost index) to the player's living cost; it stops when the child moves out or dies.
+- A partner who moved in pays 50% of the standard's cost from their own money (up to what they have). Merging a spouse's money into the player's (marriage without a prenup) ends the separate share.
+- A minor with no living parent lives **with a guardian**: no living cost, no standard, no illness-risk penalty, and money and assets in trust (no shopping) until 18, when the player is on their own. Moving out never applies under 18. The first living adult sibling is named as guardian in the journal, else just "a guardian".
+- The profile lists the dependents and the partner's share in the living cost, and shows "With guardian". Harness: living cost as a share of income by household shape ([BALANCE.md](../../packs/core-loop/BALANCE.md)).
 
 ## Confinement
 

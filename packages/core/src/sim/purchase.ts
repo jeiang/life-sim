@@ -89,7 +89,10 @@ function rejection(
   if (world.ended) return "This life is over";
   if (world.pending) return "Finish the open choice first";
   if (q.requiresReason) return q.requiresReason;
-  const money = getPerson(world, world.playerId).money;
+  const player = getPerson(world, world.playerId);
+  if (player.withGuardian)
+    return "Your assets are held in trust until you are 18";
+  const money = player.money;
   if (mode === "cash") return money >= q.price ? null : "Can't afford it";
   if (q.down === undefined) return "No loan available";
   return money >= q.down ? null : "Can't afford the down payment";

@@ -2,7 +2,9 @@ import { bundles } from "virtual:packs";
 import {
   isGodLife,
   listActions,
+  livesWithGuardian,
   livesWithParents,
+  livingBreakdown,
   livingCost,
   netWorth,
   standardOf,
@@ -49,6 +51,7 @@ export function Profile() {
     );
 
   const standard = standardOf(p, packIndex);
+  const bill = standard && livingBreakdown(w, packIndex, p, standard);
 
   const rel = w.relationships.find(
     (r) =>
@@ -106,10 +109,16 @@ export function Profile() {
             />
             <Row
               label="Living"
-              value={livesWithParents(p) ? "With parents" : "On your own"}
+              value={
+                livesWithGuardian(p)
+                  ? "With guardian"
+                  : livesWithParents(p)
+                    ? "With parents"
+                    : "On your own"
+              }
               testid="profile-living"
             />
-            {!livesWithParents(p) && standard && (
+            {!livesWithParents(p) && !livesWithGuardian(p) && standard && (
               <>
                 <Row
                   label="Standard of living"
@@ -118,9 +127,23 @@ export function Profile() {
                 />
                 <Row
                   label="Yearly cost"
-                  value={money(livingCost(p, packIndex))}
+                  value={money(livingCost(w, packIndex, p))}
                   testid="profile-living-cost"
                 />
+                {bill && bill.dependents > 0 && (
+                  <Row
+                    label={`Dependents (${bill.dependents})`}
+                    value={money(bill.dependentsCost)}
+                    testid="profile-living-dependents"
+                  />
+                )}
+                {bill && bill.partnerShare > 0 && (
+                  <Row
+                    label="Partner pays"
+                    value={`-${money(bill.partnerShare)}`}
+                    testid="profile-living-partner"
+                  />
+                )}
               </>
             )}
           </Section>

@@ -2,10 +2,14 @@ import {
   ageUp,
   canAgeUp,
   choose,
+  costIndexOf,
   describePending,
+  getPerson,
   indexBundles,
   type Loan,
   livesWithParents,
+  livingBreakdown,
+  livingCost,
   netWorth,
   newLife,
   type PackBundle,
@@ -20,6 +24,7 @@ import {
   setAssertSink,
   setChanceDropSink,
   setDecisionSink,
+  settleLiving,
   standardOf,
   streamFor,
   type World,
@@ -40,7 +45,12 @@ const CHAIN_CAP = 64;
 /** Chance (1 in N) per year of a save round-trip check, besides the final world. */
 const SAVE_CHECK_ONE_IN = 8;
 
-export type FaultKind = "exception" | "assertion" | "stuck" | "save-mismatch";
+export type FaultKind =
+  | "exception"
+  | "assertion"
+  | "stuck"
+  | "save-mismatch"
+  | "minor-living-cost";
 
 export interface Fault {
   readonly kind: FaultKind;
@@ -61,6 +71,17 @@ export interface YearSample {
   readonly withParents: boolean;
   /** Standard of living id while on their own; null with parents or without standards. */
   readonly standard: string | null;
+  /**
+   * Yearly living cost against income while on their own, minor units, with what a child at
+   * home and a moved-in partner would change (the bots have neither); null with parents, a
+   * guardian, or without standards.
+   */
+  readonly household: {
+    readonly income: number;
+    readonly cost: number;
+    readonly child: number;
+    readonly partner: number;
+  } | null;
 }
 
 export interface LifeResult {
@@ -330,7 +351,40 @@ export function runLife(
       );
       if (employed) everEmployed = true;
       if (me.occupations.some((o) => isRetired(o.kindId))) retired = true;
+      const index = indexBundles(bundles);
+      if (me.age < 18) {
+        // Invariant: no living cost is ever charged to a minor.
+        const settled = getPerson(settleLiving(w, index), me.id);
+        if (
+          livingCost(w, index, me) !== 0 ||
+          settled.money !== me.money ||
+          settled.livedStandardId !== me.livedStandardId
+        )
+          fault("minor-living-cost", `living cost charged at age ${me.age}`);
+      }
+      const lived = standardOf(me, index);
+      const hh = index.living?.household;
+      const bill =
+        lived && hh && me.age >= 18 && !livesWithParents(me) && !me.withGuardian
+          ? livingBreakdown(w, index, me, lived)
+          : null;
       samples.push({
+        household:
+          bill && hh
+            ? {
+                income: Math.max(
+                  0,
+                  me.occupations.reduce((n, o) => n + o.pay, 0),
+                ),
+                cost: bill.total,
+                child: Math.trunc(
+                  (hh.dependentCost * costIndexOf(me, index)) / 10000,
+                ),
+                partner: Math.trunc(
+                  (bill.standard * hh.partnerShareBp) / 10000,
+                ),
+              }
+            : null,
         age: me.age,
         stats: me.stats,
         netWorth: netWorth(me),

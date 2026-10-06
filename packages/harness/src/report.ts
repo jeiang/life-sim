@@ -186,6 +186,11 @@ export interface Report {
     readonly onOwnYearShare: number;
     /** The homeless share of own years, per profile. */
     readonly homelessByProfile: Record<string, number>;
+    /**
+     * Living cost as a percent of income by household shape, over person-years aged 25-64
+     * with income, on their own (Packs with `living.household`).
+     */
+    readonly costShare: Record<string, Dist | null>;
   };
   /** Vacations metrics; present only when the Pack is loaded and a trip was taken. */
   readonly vacations?: VacationsReport;
@@ -292,6 +297,7 @@ export class Aggregate {
   private readonly profileOwn = new Map<string, [number, number]>();
   private ownYears = 0;
   private homelessYears = 0;
+  private readonly shares: Record<string, number[]> = {};
   private adultYears = 0;
   /** Per profile (and "all"): [reached18, movedOut, kickedOut, reached30, with30, reached40, with40]. */
   private readonly home = new Map<string, number[]>();
@@ -410,6 +416,19 @@ export class Aggregate {
       if (s.age >= 25 && s.age <= 64) {
         this.workYears++;
         if (s.employed) this.workingYears++;
+      }
+      const hh = s.household;
+      if (hh && hh.income > 0 && s.age >= 25 && s.age <= 64) {
+        const add = (shape: string, cost: number): void => {
+          const list = this.shares[shape] ?? [];
+          this.shares[shape] = list;
+          list.push(Math.round((Math.max(0, cost) / hh.income) * 1000) / 10);
+        };
+        add("alone", hh.cost);
+        add("1 child", hh.cost + hh.child);
+        add("2 children", hh.cost + 2 * hh.child);
+        add("partner shares", hh.cost - hh.partner);
+        add("2 children + partner shares", hh.cost + 2 * hh.child - hh.partner);
       }
       if (s.age >= 18) {
         this.adultYears++;
@@ -666,6 +685,9 @@ export class Aggregate {
             .sort((a, b) => (a[0] < b[0] ? -1 : 1))
             .map(([k, v]) => [k, pct(v[1], v[0])]),
         ),
+        costShare: Object.fromEntries(
+          Object.entries(this.shares).map(([k, v]) => [k, dist(v)]),
+        ),
       },
       ...(vacations ? { vacations } : {}),
       statsByAge,
@@ -903,6 +925,18 @@ export function renderMarkdown(
       "Each row is the share of lives at that age, with parents or at each standard.",
       "",
     );
+    const shapes = Object.entries(lv.costShare);
+    if (shapes.length > 0) {
+      L.push(
+        "### Living cost share of income by household shape",
+        "",
+        "Percent of income, person-years aged 25-64 on their own with income. The bots have no children or partners, so the extra terms are applied to their own years: a child at home adds the dependent cost, a partner who moved in pays their share of the standard.",
+        "",
+        DHEAD,
+      );
+      for (const [shape, d] of shapes) L.push(dRow(shape, d));
+      L.push("");
+    }
   }
   if (r.vacations) L.push(...renderVacations(r.vacations), "");
   L.push("## Stats by age", "");

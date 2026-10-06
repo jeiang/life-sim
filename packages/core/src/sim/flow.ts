@@ -14,7 +14,13 @@ import {
   updatePerson,
 } from "../state/world.ts";
 import { reportChanceDrops, reportDecisions } from "./env.ts";
-import { livesWithParents, startLivingOnOwn } from "./living.ts";
+import {
+  ADULT_AGE,
+  guardianOf,
+  livesWithGuardian,
+  livesWithParents,
+  startLivingOnOwn,
+} from "./living.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import { indexBundles, type PackIndex } from "./pack-index.ts";
 import { settle } from "./settle.ts";
@@ -331,11 +337,23 @@ function npcPass(world: World, idx: PackIndex): World {
   return w.ended ? w : endLivingWithParents(w, idx);
 }
 
-/** Living with parents ends when no parent is left alive. */
+/**
+ * Living with parents ends when no parent is left alive: an adult is on their own, a minor
+ * goes to a guardian, and a guardian's care ends at 18.
+ */
 function endLivingWithParents(world: World, idx: PackIndex): World {
   const player = getPerson(world, world.playerId);
+  if (livesWithGuardian(player))
+    return player.age < ADULT_AGE
+      ? world
+      : addJournalLine(
+          startLivingOnOwn(world, idx, player.id),
+          player.age,
+          "You are 18: your guardian hands over your assets and you are on your own now.",
+        );
   const role = idx.family?.parent.role;
-  if (!role || !livesWithParents(player)) return world;
+  if (!role || (!livesWithParents(player) && player.age >= ADULT_AGE))
+    return world;
   const parentAlive = world.relationships.some(
     (r) =>
       r.from === world.playerId &&
@@ -343,10 +361,18 @@ function endLivingWithParents(world: World, idx: PackIndex): World {
       world.persons.get(r.to)?.alive,
   );
   if (parentAlive) return world;
+  const next = startLivingOnOwn(world, idx, player.id);
+  if (!livesWithGuardian(getPerson(next, player.id)))
+    return addJournalLine(
+      next,
+      player.age,
+      "With no parent left, you are on your own now.",
+    );
+  const guardian = guardianOf(world, idx, player);
   return addJournalLine(
-    startLivingOnOwn(world, idx, player.id),
+    next,
     player.age,
-    "With no parent left, you are on your own now.",
+    `With no parent left, ${guardian ? `${guardian.givenName} ${guardian.familyName} becomes your guardian` : "a guardian takes you in"}. Your assets are held in trust until you are 18.`,
   );
 }
 
@@ -408,6 +434,7 @@ export function ageUp(world: World, bundles: readonly PackBundle[]): SimResult {
     if (p.alive) w = updatePerson(w, p.id, (x) => ({ ...x, age: x.age + 1 }));
   }
   w = pruneCounters({ ...w, uses: {} });
+  w = endLivingWithParents(w, idx);
   w = settle(w, idx);
   const [w2, events] = drawEvents(w, idx);
   return result(world, ensureYearEntry(advance(w2, idx, events, true), idx));

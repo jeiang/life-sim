@@ -227,6 +227,22 @@ export interface LivingDecl {
   readonly housingShareBp: number;
   /** Item kind category that counts as a home. */
   readonly homeCategory: string;
+  /** Costs and rules that depend on who lives with the player; absent: none apply. */
+  readonly household?: HouseholdDecl;
+}
+
+/** Household settings of a Pack (`living.household`); role ids are full. */
+export interface HouseholdDecl {
+  /** Role of a person the player supports while they live at home (children). */
+  readonly dependentRole: string;
+  /** Base yearly cost per dependent at home, minor units, before the city cost index. */
+  readonly dependentCost: number;
+  /** Role of a partner who can share the living cost when moved in. */
+  readonly partnerRole: string;
+  /** Share of the standard's cost a moved-in partner pays, basis points. */
+  readonly partnerShareBp: number;
+  /** Roles a guardian is drawn from (an adult relative); only names them in the journal. */
+  readonly guardianRoles: readonly string[];
 }
 
 export interface CompiledRole {

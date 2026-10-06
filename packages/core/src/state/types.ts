@@ -131,6 +131,11 @@ export interface Person {
    * they could afford at settlement. Absent: the chosen one.
    */
   readonly livedStandardId?: string;
+  /**
+   * True while a minor with no living parent lives with a guardian: no living cost is
+   * charged, no standard applies, and money and assets sit in trust (no shopping) until 18.
+   */
+  readonly withGuardian?: boolean;
 }
 
 export interface Relationship {
@@ -140,6 +145,12 @@ export interface Relationship {
   readonly role: string;
   /** 0-100. */
   readonly closeness: number;
+  /**
+   * Set on the player's link to a partner: `together` when they live together (the partner
+   * pays a share of the living cost), `merged` when their money was merged into the player's
+   * (no separate share). Absent: they live apart.
+   */
+  readonly household?: "together" | "merged";
 }
 
 export interface JournalEntry {

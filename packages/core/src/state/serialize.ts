@@ -118,6 +118,10 @@ function person(v: unknown, p: string): Person {
     o.livedStandardId === undefined
       ? undefined
       : str(o.livedStandardId, `${p}.livedStandardId`);
+  const withGuardian =
+    o.withGuardian === undefined
+      ? undefined
+      : bool(o.withGuardian, `${p}.withGuardian`);
   const withParents =
     o.withParents === undefined
       ? undefined
@@ -125,6 +129,7 @@ function person(v: unknown, p: string): Person {
   return {
     ...(cityId === undefined ? {} : { cityId }),
     ...(withParents === undefined ? {} : { withParents }),
+    ...(withGuardian === undefined ? {} : { withGuardian }),
     ...(standardId === undefined ? {} : { standardId }),
     ...(livedStandardId === undefined ? {} : { livedStandardId }),
     id: int(o.id, `${p}.id`),
@@ -340,7 +345,15 @@ export function deserializeWorld(text: string): World {
     persons,
     relationships: arr(o.relationships, "$.relationships").map((x, i) => {
       const r = obj(x, `$.relationships[${i}]`);
+      const household = r.household;
+      if (
+        household !== undefined &&
+        household !== "together" &&
+        household !== "merged"
+      )
+        throw new RangeError(`$.relationships[${i}].household: bad value`);
       return {
+        ...(household === undefined ? {} : { household }),
         from: int(r.from, `$.relationships[${i}].from`),
         to: int(r.to, `$.relationships[${i}].to`),
         role: str(r.role, `$.relationships[${i}].role`),

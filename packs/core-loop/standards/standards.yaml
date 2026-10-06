@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/standards.schema.json
+# Standards of living, cheapest first. `cost` is the base yearly cost (cents) before the city
+# cost index; `happiness` and `health` change each year (positive changes stop at `cap`);
+# `risk` multiplies the chances of illness and death (read as `living.risk`).
+- { id: homeless, label: Homeless, icon: ⛺, cost: 0, happiness: -2, health: 0, risk: 115% }
+- { id: thrifty, label: Thrifty, icon: 🥫, cost: 900000, happiness: 0, health: 0, risk: 103% }
+- { id: average, label: Average, icon: 🏘️, cost: 1800000, happiness: 0, health: 0, risk: 100% }
+- { id: above-average, label: Above average, icon: 🛋️, cost: 3200000, happiness: 1, health: 1, cap: 85, risk: 95% }
+- { id: wealthy, label: Wealthy, icon: 🍷, cost: 6000000, happiness: 2, health: 1, cap: 90, risk: 90% }
+- { id: rich, label: Rich, icon: 💎, cost: 12000000, happiness: 3, health: 2, cap: 95, risk: 85% }
+- { id: ultra-rich, label: Ultra-rich, icon: 🛥️, cost: 30000000, happiness: 4, health: 3, cap: 100, risk: 80% }

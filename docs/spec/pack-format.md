@@ -13,6 +13,7 @@ packs/<pack-id>/
   people/<topic>.yaml        # people-generation data (names, stat ranges, roles)
   loans/<topic>.yaml         # loan kinds
   cities/<topic>.yaml        # cities (see Cities)
+  standards/<topic>.yaml     # standards of living (see Standards of living)
 ```
 
 - YAML 1.2 only, read with a strict parser (no implicit `yes`/`no` booleans, no duplicate keys).
@@ -28,6 +29,7 @@ packs/<pack-id>/
 | `currency` | Symbol and minor-unit digits (only in the Pack that sets the currency). |
 | `stats` | Declared stats: id, label, icon, start range. Always 0 to 100. |
 | `qualities` | Declared qualities: id, type (`int` with optional min/max, or `flag`), default. |
+| `living` | Living costs: `default` (standard chosen on moving out), `housing_share` (percent of the cost an owned home removes) and `home_category` (item kind category that counts as a home). Needs `standards`. |
 | `exclusivity` | Occupation exclusivity groups (for example `school`, `full-time`). |
 | `year` | Event draw settings: flavour slot count range and the yearly event cap, `decisions` / `decisions_min_age` (decision slots per year, see Year draw), plus optional `quiet` lines the Core journals for a year in which nothing else happened (every age gets a journal group). |
 | `migrations` | Renamed ids (`old -> new`) and removed ids (with a fallback). |
@@ -88,14 +90,37 @@ packs/<pack-id>/
   icon: ⚓
   cost_index: 85%     # cost of living relative to the baseline (compiled to basis points, must be above 0%)
   weight: 18          # share of the birth-city draw (integer, 1 or more)
+  wage_index: 90%     # optional pay multiplier for working here, default 100%
   country: us         # optional; a plain string for now, countries are not content yet
 ```
 
 Every life has a city (`Person.cityId`) and a living situation (`Person.withParents`). A new life draws its birth city by `weight` (purpose key `birth/city`), or takes the `cityId` start option (full id; god mode uses it). The family is placed in the same city and the player starts living with their parents. A city is a place only: countries, a wage index and law tags belong to the Relocation Pack, which extends this kind.
 
-Names: `city.cost_index` (basis points, 10000 = 100%; 10000 when the life has no city), `city.id` (an id, compare with `==`), `city.label`, `city.country` (the optional `country` string, empty when unset), and `living.with_parents` (bool, true while the life lives with its parents). The names `city` and `living` are reserved.
+Names: `city.cost_index` (basis points, 10000 = 100%; 10000 when the life has no city), `city.id` (an id, compare with `==`), `city.label`, `city.wage_index` (basis points, 10000 when unset; pay expressions multiply by it), `city.country` (the optional `country` string, empty when unset), and `living.with_parents` (bool, true while the life lives with its parents). The names `city` and `living` are reserved.
 
 Living with parents also ends by itself, with a journal line, once no parent is alive (checked after the NPC pass of each age-up). Nothing else moves the player out: kicks and moves are storylets.
+
+## Standards of living
+
+```yaml
+# packs/core-loop/standards/standards.yaml
+- { id: average, label: Average, icon: 🏘️, cost: 1800000, happiness: 0, health: 0, risk: 100% }
+- { id: wealthy, label: Wealthy, icon: 🍷, cost: 6000000, happiness: 2, health: 1, cap: 90, risk: 90% }
+```
+
+| Field | Meaning |
+|---|---|
+| `cost` | Base yearly cost, minor units, before the city cost index. `0` for homeless. Standards are ordered by `cost`. |
+| `happiness`, `health` | Change to the player's stat each year. A positive change stops at `cap` (default 100; a stat already above it is left alone); a negative one always applies. |
+| `risk` | Multiplier for illness and death chances, as a percent (100% is neutral). Expressions read it as `living.risk` (basis points), for example `chance: 900 * living.risk / 10000`. |
+
+The player on their own pays at settlement (after occupations pay, before loans): `cost x city cost index`, less `living.housing_share` of it when they own a home (an item of category `living.home_category`) in their current city. Homes record the city they were bought in; older saves read it as the owner's city. Moving does not sell a home, and a home in another city gives no waiver.
+
+The player chooses a standard (`set_standard(id)`, or the **Standard of living** action); moving out takes `living.default`, or the best standard they can afford. When savings cannot cover the chosen standard, they live the best one they can afford for that year, down to the cheapest (journaled), and the next age-up tries the chosen one again. Living costs never make money negative. Nothing is charged with parents or to a player under 18 (a minor whose last parent has died is not charged; a guardian situation comes later). The lived standard's `happiness` and `health` then apply.
+
+An occupation with `provides_housing: true` (for prison, boarding school, military) waives all of this while it is held: no cost, no standard effects, and `living.risk` reads 100%.
+
+Names: `living.standard` (id of the lived standard), `living.cost` (this year's cost, 0 with parents or provided housing), `living.risk`. Function `standard_cost(standard)`: what that standard would cost the player now (city index and home waiver applied), for example `when: standard_cost(core-loop/rich) <= money`.
 
 ## Year draw
 
@@ -139,10 +164,11 @@ start_occupation(kind) | end_occupation(kind)
 spawn_person(role, generator) as <name>
 relationship(<person>).closeness += n
 move_to(city)                        move_out()
+set_standard(standard)
 journal("text")                      die("cause")
 ```
 
-`move_to(city)` puts the player in a city (family and everyone else stay); `move_out()` ends living with parents.
+`move_to(city)` puts the player in a city (family and everyone else stay); `move_out()` ends living with parents and picks the starting standard of living; `set_standard(standard)` chooses one (ignored with parents).
 
 ## Text
 

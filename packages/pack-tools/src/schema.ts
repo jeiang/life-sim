@@ -130,6 +130,23 @@ export const ManifestSchema = obj(
         "Starting family",
       ),
     ),
+    living: Type.Optional(
+      obj(
+        {
+          default: Ref,
+          housing_share: Type.String({
+            pattern: "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$",
+            description:
+              "Share of the living cost an owned home in the current city removes, as a percent literal",
+          }),
+          home_category: Type.String({
+            minLength: 1,
+            description: "Item kind category that counts as a home",
+          }),
+        },
+        "Living costs",
+      ),
+    ),
     migrations: Type.Optional(
       obj({
         rename: Type.Optional(
@@ -216,6 +233,12 @@ export const OccupationSchema = obj(
     promotes_to: Type.Optional(Ref),
     promotion_years: Type.Optional(Type.Integer({ minimum: 1 })),
     loan: Type.Optional(Ref),
+    provides_housing: Type.Optional(
+      Type.Boolean({
+        description:
+          "While held, no living cost is charged and the standard's effects do not apply (for example prison)",
+      }),
+    ),
   },
   "Occupation kind",
 );
@@ -270,6 +293,13 @@ export const CitySchema = obj(
       minimum: 1,
       description: "Relative weight when a life picks its birth city",
     }),
+    wage_index: Type.Optional(
+      Type.String({
+        pattern: "^\\d+(\\.\\d{1,2})?%$",
+        description:
+          "Pay multiplier for working here, as a percent literal (default `100%`); read by pay expressions as `city.wage_index`",
+      }),
+    ),
     country: Type.Optional(
       Type.String({
         minLength: 1,
@@ -279,6 +309,35 @@ export const CitySchema = obj(
     ),
   },
   "City",
+);
+
+export const StandardSchema = obj(
+  {
+    id: Id,
+    label: Label,
+    icon: Type.Optional(Icon),
+    cost: Type.Integer({
+      minimum: 0,
+      description:
+        "Base yearly cost in minor units, before the city cost index (0 for homeless)",
+    }),
+    happiness: Type.Integer({ description: "Yearly change to happiness" }),
+    health: Type.Integer({ description: "Yearly change to health" }),
+    cap: Type.Optional(
+      Type.Integer({
+        minimum: 0,
+        maximum: 100,
+        description:
+          "Positive happiness and health changes stop at this stat value (default 100)",
+      }),
+    ),
+    risk: Type.String({
+      pattern: "^\\d+(\\.\\d{1,2})?%$",
+      description:
+        "Multiplier for illness and death chances as a percent literal (100% is neutral); read as `living.risk`",
+    }),
+  },
+  "Standard of living",
 );
 
 export const PeopleSchema = Type.Union(
@@ -307,6 +366,7 @@ export const FILE_SCHEMAS = {
   "items.schema.json": list(ItemSchema, "Item kinds"),
   "loans.schema.json": list(LoanSchema, "Loan kinds"),
   "cities.schema.json": list(CitySchema, "Cities"),
+  "standards.schema.json": list(StandardSchema, "Standards of living"),
   "people.schema.json": list(PeopleSchema, "People data"),
 } as const;
 
@@ -316,4 +376,5 @@ export type OccupationSrc = Static<typeof OccupationSchema>;
 export type ItemSrc = Static<typeof ItemSchema>;
 export type LoanSrc = Static<typeof LoanSchema>;
 export type CitySrc = Static<typeof CitySchema>;
+export type StandardSrc = Static<typeof StandardSchema>;
 export type PeopleSrc = Static<typeof PeopleSchema>;

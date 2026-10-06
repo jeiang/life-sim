@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
 id: core-loop
-version: 2
+version: 3
 currency:
   symbol: "$"
   digits: 2
@@ -39,4 +39,8 @@ family:
   player: sibling-gen
   parent: { role: parent, generator: parent-gen, count: 2 }
   sibling: { role: sibling, generator: sibling-gen, count: [0, 2] }
+living:
+  default: average
+  housing_share: 40%
+  home_category: homes
 migrations: {}

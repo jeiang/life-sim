@@ -11,6 +11,15 @@ import type {
   World,
 } from "../state/types.ts";
 import { getPerson } from "../state/world.ts";
+import {
+  costIndexOf,
+  housingProvided,
+  livesWithParents,
+  livingCost,
+  standardCost,
+  standardOf,
+  wageIndexOf,
+} from "./living.ts";
 import type { PackIndex } from "./pack-index.ts";
 
 /** What names resolve against: the subject person (the player) and optional bindings. */
@@ -29,16 +38,6 @@ export interface Scope {
   };
   /** Persons bound by `spawn_person(...) as <name>` in the running outcome. */
   readonly bound?: ReadonlyMap<string, PersonId>;
-}
-
-/** True while the person lives with their parents (see `Person.withParents`). */
-export function livesWithParents(p: Person): boolean {
-  return p.withParents ?? p.age < 18;
-}
-
-/** Cost index (basis points, 10000 = 100%) of the person's city; 10000 without one. */
-export function costIndexOf(p: Person, idx: PackIndex): number {
-  return (p.cityId && idx.cities.get(p.cityId)?.costIndexBp) || 10000;
 }
 
 export function qualityOf(p: Person, idx: PackIndex, id: string): QualityValue {
@@ -140,6 +139,13 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
       if (path.startsWith("player."))
         return personField(world, idx, scope.subject, path.slice(7), path);
       if (path === "city.cost_index") return costIndexOf(subject, idx);
+      if (path === "city.wage_index") return wageIndexOf(subject, idx);
+      if (path === "living.cost") return livingCost(subject, idx);
+      if (path === "living.standard") return standardOf(subject, idx)?.id ?? "";
+      if (path === "living.risk")
+        return housingProvided(subject, idx)
+          ? 10000
+          : (standardOf(subject, idx)?.riskBp ?? 10000);
       if (path === "city.label")
         return (subject.cityId && idx.cities.get(subject.cityId)?.label) || "";
       if (path === "city.country")
@@ -181,6 +187,11 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
           return subject.assets.some((a) => a.kindId === id);
         case "years_in":
           return yearsIn(subject, id);
+        case "standard_cost": {
+          const std = idx.standardsById.get(id);
+          if (!std) throw new RangeError(`unknown standard '${id}'`);
+          return standardCost(subject, idx, std);
+        }
         case "role_closeness":
         case "role_count": {
           const alive = world.relationships.filter(

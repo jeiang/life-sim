@@ -12,7 +12,7 @@ The profiles are deliberately crude, so judge each metric against the profile th
 |---|---|---|
 | Faults | 0 | the only blocking harness result |
 | Median age at death | 72-82 | all profiles, 10,000 lives |
-| Net worth at 65 | mostly positive, wide spread | `random` roughly $200k-400k median, `studious` about $1M, `idle` near zero |
+| Net worth at 65 | mostly positive, wide spread | gross pay and living costs (v3): all-profile median about $1.0M, p10 $0 (`idle` stays at zero), p90 about $2.8M |
 | Degree rate | 25-45% for `random`; higher for `studious` | University enrolment is open from 18 to 24 |
 | Employment (25-64) | high for lives that look for work | `idle` never applies, so it is 0% by construction |
 | Loans | some defaults, rare repossessions | repossessions come almost entirely from `spender`, who loans for every car and home |
@@ -20,11 +20,12 @@ The profiles are deliberately crude, so judge each metric against the profile th
 | Events per year | about 3-4 | |
 | Decisions | at least 1 / 2 / 3 decisions in 90 / 50 / 30% of years from age 5 (within 3 points); empty slots under 5% of years; no storylet over 3% of decisions | the `year.decisions` slot draw; `Decision slots` in the harness report |
 | Housing | `random` (which moves out at will) mostly moved out by 40; passive profiles (`idle`, `studious`, `spender` never use Move out) are asked to leave eventually | kick-out pressure in `parents-ask-you-to-leave`: with a passive player about 55-60% still live with their parents at 30 and about 15% at 40; median age at moving out about 33 for all profiles, a real player who chooses to leave moves earlier |
+| Living standards | A diligent player (`studious`) is on average living or better most years; homelessness tracks unemployment (`idle` never works, `random` seldom applies) | harness `Living standards`: homeless share of own years ≤ 15% for `studious`, 100% for `idle` by construction |
 | Never-fired storylets in 10,000 lives | none | see below for the rare ones |
 
 ## What was tuned
 
-- Salaries are take-home after living costs (the sim has no rent or bills), cut to about half of the first draft. Ladders now run roughly $4k (cashier) to $33k (art director, senior engineer) a year.
+- Salaries are gross pay (v3), at a 100% wage index and multiplied by the current city's wage index (80% to 150%). Ladders run from $6k (teen cashier) and $24k (server) to $115k (senior engineer); the pension is `min($30k, $8k + $600 x years worked)`. Earlier versions paid take-home after living costs ($4k to $33k).
 - Tuition is $7k-$10k a year (student loans $28k-$40k); homes cost $120k, $250k and $600k; the mortgage runs 30 years at 4.5% and the auto loan 6 years at 6%.
 - Mortality: `age^4 / 90000` (was `/ 68000`).
 - University enrolment closes at age 24 (a random-choice player previously enrolled at some point in 97% of lives).
@@ -52,3 +53,15 @@ These fired at least once in 10,000 lives but are rare on purpose:
 ## Housing (cities and moving out, #108)
 
 10,000 lives, seed 20260101, all profiles: no faults. Age at moving out (any cause): p10 20, median 33, p90 42. Share of lives reaching 18 that moved out 97.5%, kicked out 88.1% (`random` 66.5%, the others 95-96%: they never choose to leave). Still with parents at 30: 58.7% (`random` 50.2%); at 40: 14.8% (`random` 11.5%). The kick-out chance is 1% + 0.04% per missing closeness point + 0.75% per living sibling + 1.5% per impatience step (age 31 onward, 10 steps at most). A first draft with double those weights kicked out 92% and moved the median to 27, too fast for a player who is never forced out.
+
+## Living standards (cost of living, #109)
+
+Pay moved from take-home to gross at a realistic scale, and the player on their own pays a standard of living each year. The nominal prices of homes and events were left alone (homes $120k-$600k).
+
+Standards at a 100% cost index: homeless $0, thrifty $9k, average $18k, above average $32k, wealthy $60k, rich $120k, ultra-rich $300k; happiness and health per year: homeless -2/0, thrifty 0/0, average 0/0, above average +1/+1 (cap 85), wealthy +2/+1 (cap 90), rich +3/+2 (cap 95), ultra-rich +4/+3. Illness and death risk multipliers: homeless 115%, thrifty 103%, average 100%, then 95%, 90%, 85%, 80%. They multiply the flu and serious-illness chances and `natural-mortality`. An owned home in the current city removes 40%.
+
+First drafts (health -3/-2 and risk 200-250% for homeless) put the median age at death at 62-66; milder homelessness (health 0, risk 115%) restores it to 73. The harness never picks a standard, so everyone who can pay lives on the default `average`; the upper standards show up only through the chosen-standard action.
+
+10,000 lives, seed 20260101, all profiles: no faults. Median age at death 73 (`idle` 73, `random` 75, `spender` 72, `studious` 73); p10 49, p90 93. Net worth (major units): age 18 median 150; age 40 median 220k (p10 0, p90 800k); age 65 median 1.04M (p10 0, p90 2.85M). Employment 64% of person-years aged 25-64.
+
+Years lived on their own that were homeless: 45.5% overall (idle 100%, random 47.7%, spender 25.2%, studious 8.8%). Standard by age (share of lives, with parents / homeless / thrifty / average / higher): age 30 58.8 / 22.7 / 5.0 / 13.3 / 0.1; age 40 14.9 / 39.8 / 7.4 / 37.2 / 0.7; age 60 0.2 / 43.7 / 8.6 / 44.6 / 2.9; age 80 0 / 39.6 / 9.5 / 44.9 / 6.0. Loans: 57,197 opened, 13.7% had a missed payment, 2,017 repossessions.

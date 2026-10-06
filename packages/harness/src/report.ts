@@ -142,6 +142,19 @@ export interface Report {
       }
     >;
   };
+  /** Standards of living (Packs with `standards`). */
+  readonly living: {
+    /** Standard ids, cheapest first. */
+    readonly standards: readonly string[];
+    /** Decade age -> share (percent) of lives at that age with parents, or at each standard. */
+    readonly byAge: Record<string, Record<string, number>>;
+    /** Percent of person-years aged 18+ spent on their own that were homeless. */
+    readonly homelessYearShare: number;
+    /** Percent of person-years aged 18+ spent on their own, among all years aged 18+. */
+    readonly onOwnYearShare: number;
+    /** The homeless share of own years, per profile. */
+    readonly homelessByProfile: Record<string, number>;
+  };
   /** Decade ages: stat id -> age -> distribution. */
   readonly statsByAge: Record<string, Record<string, Dist | null>>;
 }
@@ -233,6 +246,12 @@ export class Aggregate {
   private repossessions = 0;
   private readonly stats = new Map<string, Map<number, number[]>>();
   private readonly moveOutAges: number[] = [];
+  /** Decade age -> standard id (or "parents") -> lives. */
+  private readonly standardAt = new Map<number, Map<string, number>>();
+  private readonly profileOwn = new Map<string, [number, number]>();
+  private ownYears = 0;
+  private homelessYears = 0;
+  private adultYears = 0;
   /** Per profile (and "all"): [reached18, movedOut, kickedOut, reached30, with30, reached40, with40]. */
   private readonly home = new Map<string, number[]>();
 
@@ -318,7 +337,24 @@ export class Aggregate {
         this.workYears++;
         if (s.employed) this.workingYears++;
       }
+      if (s.age >= 18) {
+        this.adultYears++;
+        if (!s.withParents) {
+          this.ownYears++;
+          const po = this.profileOwn.get(r.profile) ?? [0, 0];
+          this.profileOwn.set(r.profile, po);
+          po[0]++;
+          if (s.standard?.endsWith("/homeless")) {
+            this.homelessYears++;
+            po[1]++;
+          }
+        }
+      }
       if (s.age % 10 === 0) {
+        const at = this.standardAt.get(s.age) ?? new Map<string, number>();
+        this.standardAt.set(s.age, at);
+        const key = s.withParents ? "parents" : (s.standard ?? "none");
+        at.set(key, (at.get(key) ?? 0) + 1);
         for (const [id, v] of Object.entries(s.stats)) {
           let byAge = this.stats.get(id);
           if (!byAge) {
@@ -504,6 +540,32 @@ export class Aggregate {
             .filter(([k]) => k !== "all")
             .sort((a, b) => (a[0] < b[0] ? -1 : 1))
             .map(([k, v]) => [k, homeShares(v)]),
+        ),
+      },
+      living: {
+        standards: this.bundles
+          .flatMap((b) => b.standards)
+          .sort((a, b) => a.cost - b.cost || (a.id < b.id ? -1 : 1))
+          .map((s) => s.id),
+        byAge: Object.fromEntries(
+          [...this.standardAt]
+            .sort((a, b) => a[0] - b[0])
+            .map(([age, m]) => {
+              const total = [...m.values()].reduce((n, x) => n + x, 0);
+              return [
+                String(age),
+                Object.fromEntries(
+                  [...m].sort().map(([k, n]) => [k, pct(n, total)]),
+                ),
+              ];
+            }),
+        ),
+        homelessYearShare: pct(this.homelessYears, this.ownYears),
+        onOwnYearShare: pct(this.ownYears, this.adultYears),
+        homelessByProfile: Object.fromEntries(
+          [...this.profileOwn]
+            .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+            .map(([k, v]) => [k, pct(v[1], v[0])]),
         ),
       },
       statsByAge,
@@ -698,6 +760,30 @@ export function renderMarkdown(
     "Moved out and kicked out are shares of lives reaching 18; with parents is the share of lives reaching that age.",
     "",
   );
+  const lv = r.living;
+  if (lv.standards.length > 0) {
+    const cols = ["parents", ...lv.standards, "none"];
+    const short = (id: string): string => id.split("/").pop() ?? id;
+    L.push(
+      "## Living standards",
+      "",
+      `Homeless: ${lv.homelessYearShare}% of years lived on their own (aged 18+); by profile ${Object.entries(
+        lv.homelessByProfile,
+      )
+        .map(([k, v]) => `${k} ${v}%`)
+        .join(" · ")}. On their own: ${lv.onOwnYearShare}% of years aged 18+.`,
+      "",
+      `| age | ${cols.map(short).join(" | ")} |`,
+      `|---|${cols.map(() => "---").join("|")}|`,
+    );
+    for (const [age, row] of Object.entries(lv.byAge))
+      L.push(`| ${age} | ${cols.map((c) => `${row[c] ?? 0}%`).join(" | ")} |`);
+    L.push(
+      "",
+      "Each row is the share of lives at that age, with parents or at each standard.",
+      "",
+    );
+  }
   L.push("## Stats by age", "");
   for (const [id, row] of Object.entries(r.statsByAge)) {
     L.push(`### ${id}`, "", DHEAD);

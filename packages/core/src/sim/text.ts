@@ -25,6 +25,7 @@ const MONEY_NAMES = new Set([
   "money",
   "loan.balance",
   "loan.payment",
+  "living.cost",
   "asset.value",
   "asset.purchase_price",
 ]);

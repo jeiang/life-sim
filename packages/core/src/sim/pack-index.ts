@@ -5,8 +5,10 @@ import type {
   CompiledLoanKind,
   CompiledOccupationKind,
   CompiledRole,
+  CompiledStandard,
   CompiledStorylet,
   FamilyDecl,
+  LivingDecl,
   PackBundle,
   QualityDecl,
   StatDecl,
@@ -22,6 +24,10 @@ export interface PackIndex {
   readonly items: ReadonlyMap<string, CompiledItemKind>;
   readonly loans: ReadonlyMap<string, CompiledLoanKind>;
   readonly cities: ReadonlyMap<string, CompiledCity>;
+  /** In ascending cost order. */
+  readonly standards: readonly CompiledStandard[];
+  readonly standardsById: ReadonlyMap<string, CompiledStandard>;
+  readonly living: LivingDecl | undefined;
   readonly roles: ReadonlyMap<string, CompiledRole>;
   readonly generators: ReadonlyMap<string, CompiledGenerator>;
   /** Bundle order (dependencies first). */
@@ -77,6 +83,8 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
   let currency = { symbol: "", digits: 0 };
   let year: PackIndex["year"] | undefined;
   let family: FamilyDecl | undefined;
+  let living: LivingDecl | undefined;
+  const standards: CompiledStandard[] = [];
   const owners = new Map<string, string>();
   for (const b of bundles) {
     const put = <T>(map: Map<string, T>, kind: string, id: string, v: T) =>
@@ -86,6 +94,8 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     for (const i of b.items) put(items, "item", i.id, i);
     for (const l of b.loans) put(loans, "loan", l.id, l);
     for (const c of b.cities) put(cities, "city", c.id, c);
+    standards.push(...b.standards);
+    if (!living && b.living) living = b.living;
     for (const p of b.people) {
       if (p.type === "role") put(roles, "role", p.id, p);
       else put(generators, "generator", p.id, p);
@@ -115,6 +125,9 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     items,
     loans,
     cities,
+    standards: standards.sort((a, b) => a.cost - b.cost || cmp(a.id, b.id)),
+    standardsById: new Map(standards.map((s) => [s.id, s])),
+    living,
     roles,
     generators,
     stats,

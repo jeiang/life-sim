@@ -1,12 +1,12 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/occupations.schema.json
-# Generated-style data: pay is cents per year plus the player's accumulated raise bonus.
+# Pay is gross cents per year at a 100% wage index plus the player's accumulated raise bonus, scaled by the current city's wage index.
 - id: cashier
   label: Cashier
   icon: 🛒
   group: part-time
   ladder: teen
   requires: age >= 14
-  pay: 400000 + quality.raise_bonus
+  pay: (600000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: barista
   promotion_years: 2
 - id: barista
@@ -15,14 +15,14 @@
   group: part-time
   ladder: teen
   requires: age >= 14
-  pay: 500000 + quality.raise_bonus
+  pay: (800000 + quality.raise_bonus) * city.wage_index / 10000
 - id: server
   label: Server
   icon: 🍽️
   group: full-time
   ladder: service
   requires: age >= 18
-  pay: 900000 + quality.raise_bonus
+  pay: (2400000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: shift-lead
   promotion_years: 2
 - id: shift-lead
@@ -31,7 +31,7 @@
   group: full-time
   ladder: service
   requires: age >= 18
-  pay: 1200000 + quality.raise_bonus
+  pay: (3200000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: restaurant-manager
   promotion_years: 3
 - id: restaurant-manager
@@ -40,14 +40,14 @@
   group: full-time
   ladder: service
   requires: age >= 18
-  pay: 1800000 + quality.raise_bonus
+  pay: (4800000 + quality.raise_bonus) * city.wage_index / 10000
 - id: apprentice
   label: Electrician's apprentice
   icon: 🔧
   group: full-time
   ladder: trades
   requires: age >= 18 and quality.graduated_high_school
-  pay: 1000000 + quality.raise_bonus
+  pay: (2800000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: electrician
   promotion_years: 3
 - id: electrician
@@ -56,7 +56,7 @@
   group: full-time
   ladder: trades
   requires: age >= 18 and quality.graduated_high_school
-  pay: 1800000 + quality.raise_bonus
+  pay: (5200000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: master-electrician
   promotion_years: 4
 - id: master-electrician
@@ -65,14 +65,14 @@
   group: full-time
   ladder: trades
   requires: age >= 18 and quality.graduated_high_school
-  pay: 2700000 + quality.raise_bonus
+  pay: (7200000 + quality.raise_bonus) * city.wage_index / 10000
 - id: junior-analyst
   label: Junior analyst
   icon: 📈
   group: full-time
   ladder: professional
   requires: age >= 18 and quality.has_degree_business
-  pay: 1400000 + quality.raise_bonus
+  pay: (5200000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: analyst
   promotion_years: 2
 - id: analyst
@@ -81,7 +81,7 @@
   group: full-time
   ladder: professional
   requires: age >= 18 and quality.has_degree_business
-  pay: 2000000 + quality.raise_bonus
+  pay: (7000000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: senior-analyst
   promotion_years: 3
 - id: senior-analyst
@@ -90,14 +90,14 @@
   group: full-time
   ladder: professional
   requires: age >= 18 and quality.has_degree_business
-  pay: 3000000 + quality.raise_bonus
+  pay: (9500000 + quality.raise_bonus) * city.wage_index / 10000
 - id: junior-engineer
   label: Junior engineer
   icon: 📐
   group: full-time
   ladder: professional
   requires: age >= 18 and quality.has_degree_engineering
-  pay: 1400000 + quality.raise_bonus
+  pay: (6200000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: engineer
   promotion_years: 2
 - id: engineer
@@ -106,7 +106,7 @@
   group: full-time
   ladder: professional
   requires: age >= 18 and quality.has_degree_engineering
-  pay: 2200000 + quality.raise_bonus
+  pay: (8500000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: senior-engineer
   promotion_years: 3
 - id: senior-engineer
@@ -115,14 +115,14 @@
   group: full-time
   ladder: professional
   requires: age >= 18 and quality.has_degree_engineering
-  pay: 3300000 + quality.raise_bonus
+  pay: (11500000 + quality.raise_bonus) * city.wage_index / 10000
 - id: staff-nurse
   label: Staff nurse
   icon: 🩺
   group: full-time
   ladder: professional
   requires: age >= 18 and quality.has_degree_nursing
-  pay: 1400000 + quality.raise_bonus
+  pay: (6000000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: charge-nurse
   promotion_years: 2
 - id: charge-nurse
@@ -131,7 +131,7 @@
   group: full-time
   ladder: professional
   requires: age >= 18 and quality.has_degree_nursing
-  pay: 2000000 + quality.raise_bonus
+  pay: (7800000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: nurse-manager
   promotion_years: 3
 - id: nurse-manager
@@ -140,14 +140,14 @@
   group: full-time
   ladder: professional
   requires: age >= 18 and quality.has_degree_nursing
-  pay: 2800000 + quality.raise_bonus
+  pay: (10000000 + quality.raise_bonus) * city.wage_index / 10000
 - id: studio-assistant
   label: Studio assistant
   icon: 🎨
   group: full-time
   ladder: professional
   requires: age >= 18 and quality.has_degree_arts
-  pay: 1000000 + quality.raise_bonus
+  pay: (2800000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: designer
   promotion_years: 2
 - id: designer
@@ -156,7 +156,7 @@
   group: full-time
   ladder: professional
   requires: age >= 18 and quality.has_degree_arts
-  pay: 1600000 + quality.raise_bonus
+  pay: (4800000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: art-director
   promotion_years: 3
 - id: art-director
@@ -165,11 +165,11 @@
   group: full-time
   ladder: professional
   requires: age >= 18 and quality.has_degree_arts
-  pay: 2600000 + quality.raise_bonus
+  pay: (8000000 + quality.raise_bonus) * city.wage_index / 10000
 - id: retired
   label: Retired
   icon: 🏖️
   group: full-time
   ladder: retirement
   requires: age >= 60
-  pay: min(1800000, 400000 + quality.years_worked * 35000)
+  pay: min(3000000, 800000 + quality.years_worked * 60000) * city.wage_index / 10000

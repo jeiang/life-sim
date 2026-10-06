@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Standards of living (list)",
+  "type": "array",
+  "items": {
+    "additionalProperties": false,
+    "title": "Standard of living",
+    "type": "object",
+    "required": ["id", "label", "cost", "happiness", "health", "risk"],
+    "properties": {
+      "id": {
+        "pattern": "^[a-z][a-z0-9_-]*$",
+        "description": "Content id",
+        "type": "string"
+      },
+      "label": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "icon": {
+        "description": "A literal emoji (Twemoji subset) or `gameicons/<author>/<name>`",
+        "type": "string"
+      },
+      "cost": {
+        "minimum": 0,
+        "description": "Base yearly cost in minor units, before the city cost index (0 for homeless)",
+        "type": "integer"
+      },
+      "happiness": {
+        "description": "Yearly change to happiness",
+        "type": "integer"
+      },
+      "health": {
+        "description": "Yearly change to health",
+        "type": "integer"
+      },
+      "cap": {
+        "minimum": 0,
+        "maximum": 100,
+        "description": "Positive happiness and health changes stop at this stat value (default 100)",
+        "type": "integer"
+      },
+      "risk": {
+        "pattern": "^\\d+(\\.\\d{1,2})?%$",
+        "description": "Multiplier for illness and death chances as a percent literal (100% is neutral); read as `living.risk`",
+        "type": "string"
+      }
+    }
+  }
+}

@@ -6,9 +6,7 @@ export {
   runAction,
 } from "./actions.ts";
 export {
-  costIndexOf,
   type DecisionDraw,
-  livesWithParents,
   makeEnv,
   setAssertSink,
   setDecisionSink,
@@ -24,6 +22,18 @@ export {
   startStorylet,
 } from "./flow.ts";
 export { godSetMoney, godSetStat, isGodLife } from "./god.ts";
+export {
+  assetCityId,
+  chosenStandardOf,
+  costIndexOf,
+  housingProvided,
+  livesWithParents,
+  livingCost,
+  settleLiving,
+  standardCost,
+  standardOf,
+  wageIndexOf,
+} from "./living.ts";
 export { type NetWorthPoint, recordNetWorth } from "./networth.ts";
 export {
   DEFAULT_FAMILY,

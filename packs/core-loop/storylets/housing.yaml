@@ -47,3 +47,21 @@
         - move_out()
         - stat.happiness -= 5
         - journal("Your parents asked you to move out at age {age}.")
+
+- id: choose-standard
+  label: Standard of living
+  icon: 🏷️
+  trigger: action
+  menu: assets/housing
+  tags: [housing]
+  when: age >= 18 and not living.with_parents
+  text: "How do you want to live? You pay for it every year."
+  choices:
+    - { label: Homeless, when: "living.standard != core-loop/homeless and standard_cost(core-loop/homeless) <= money", outcomes: [{ weight: 1, text: "You live a homeless life from now on.", effects: ["set_standard(core-loop/homeless)", "journal(\"Changed your standard of living to homeless at age {age}.\")"] }] }
+    - { label: Thrifty, when: "living.standard != core-loop/thrifty and standard_cost(core-loop/thrifty) <= money", outcomes: [{ weight: 1, text: "You live a thrifty life from now on.", effects: ["set_standard(core-loop/thrifty)", "journal(\"Changed your standard of living to thrifty at age {age}.\")"] }] }
+    - { label: Average, when: "living.standard != core-loop/average and standard_cost(core-loop/average) <= money", outcomes: [{ weight: 1, text: "You live a average life from now on.", effects: ["set_standard(core-loop/average)", "journal(\"Changed your standard of living to average at age {age}.\")"] }] }
+    - { label: Above average, when: "living.standard != core-loop/above-average and standard_cost(core-loop/above-average) <= money", outcomes: [{ weight: 1, text: "You live a above average life from now on.", effects: ["set_standard(core-loop/above-average)", "journal(\"Changed your standard of living to above average at age {age}.\")"] }] }
+    - { label: Wealthy, when: "living.standard != core-loop/wealthy and standard_cost(core-loop/wealthy) <= money", outcomes: [{ weight: 1, text: "You live a wealthy life from now on.", effects: ["set_standard(core-loop/wealthy)", "journal(\"Changed your standard of living to wealthy at age {age}.\")"] }] }
+    - { label: Rich, when: "living.standard != core-loop/rich and standard_cost(core-loop/rich) <= money", outcomes: [{ weight: 1, text: "You live a rich life from now on.", effects: ["set_standard(core-loop/rich)", "journal(\"Changed your standard of living to rich at age {age}.\")"] }] }
+    - { label: Ultra-rich, when: "living.standard != core-loop/ultra-rich and standard_cost(core-loop/ultra-rich) <= money", outcomes: [{ weight: 1, text: "You live a ultra-rich life from now on.", effects: ["set_standard(core-loop/ultra-rich)", "journal(\"Changed your standard of living to ultra-rich at age {age}.\")"] }] }
+    - label: Keep things as they are

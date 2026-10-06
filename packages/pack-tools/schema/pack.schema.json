@@ -252,6 +252,29 @@
         }
       }
     },
+    "living": {
+      "additionalProperties": false,
+      "title": "Living costs",
+      "type": "object",
+      "required": ["default", "housing_share", "home_category"],
+      "properties": {
+        "default": {
+          "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+          "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+          "type": "string"
+        },
+        "housing_share": {
+          "pattern": "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$",
+          "description": "Share of the living cost an owned home in the current city removes, as a percent literal",
+          "type": "string"
+        },
+        "home_category": {
+          "minLength": 1,
+          "description": "Item kind category that counts as a home",
+          "type": "string"
+        }
+      }
+    },
     "migrations": {
       "additionalProperties": false,
       "type": "object",

@@ -48,6 +48,11 @@ export interface Asset {
   readonly value: number;
   /** Player age when acquired; `asset.years` is the age gap. Absent means 0 years. */
   readonly acquiredAge?: number;
+  /**
+   * City the asset is in (a home only counts where it stands), set at acquisition to the
+   * owner's city. Absent in older saves: read as the owner's city, see `assetCityId`.
+   */
+  readonly cityId?: string;
   readonly qualities: Readonly<Record<string, QualityValue>>;
 }
 
@@ -82,6 +87,16 @@ export interface Person {
    * situations existed (read as: with parents under 18, on their own from 18).
    */
   readonly withParents?: boolean;
+  /**
+   * The standard of living (full id) the person chose while on their own. Absent: the Pack's
+   * default standard, so lives made before standards existed pay for it from the next age-up.
+   */
+  readonly standardId?: string;
+  /**
+   * The standard they actually live (and paid for) this year: the chosen one, or the best
+   * they could afford at settlement. Absent: the chosen one.
+   */
+  readonly livedStandardId?: string;
 }
 
 export interface Relationship {

@@ -9,11 +9,13 @@ import type {
   CompiledOccupationKind,
   CompiledOutcome,
   CompiledPeopleItem,
+  CompiledStandard,
   CompiledStorylet,
   Effect,
   Expr,
   Type as ExprType,
   FamilyDecl,
+  LivingDecl,
   PackBundle,
   PackMigrations,
   QualityDecl,
@@ -39,6 +41,8 @@ import {
   type OccupationSrc,
   PeopleSchema,
   type PeopleSrc,
+  StandardSchema,
+  type StandardSrc,
   StoryletSchema,
   type StoryletSrc,
 } from "./schema.ts";
@@ -62,6 +66,7 @@ export type Kind =
   | "item"
   | "loan"
   | "city"
+  | "standard"
   | "role"
   | "generator";
 
@@ -72,6 +77,7 @@ export const CONTENT_DIRS = {
   items: "item",
   loans: "loan",
   cities: "city",
+  standards: "standard",
   people: "people",
 } as const;
 
@@ -135,6 +141,8 @@ const CALL_KINDS: Record<string, Kind[][] | undefined> = {
   end_occupation: [["occupation"]],
   take_loan: [["loan"]],
   move_to: [["city"]],
+  set_standard: [["standard"]],
+  standard_cost: [["standard"]],
   role_closeness: [["role"]],
   role_count: [["role"]],
   grant_asset: [["item"]],
@@ -148,6 +156,10 @@ const PLAYER_NAMES: Record<string, ExprType> = {
   "city.cost_index": "int",
   "city.id": "id",
   "city.label": "string",
+  "city.wage_index": "int",
+  "living.cost": "int",
+  "living.standard": "id",
+  "living.risk": "int",
   "city.country": "string",
   "living.with_parents": "bool",
   "player.first_name": "string",
@@ -285,6 +297,7 @@ class Compiler {
       items: [ItemSchema, () => "item"],
       loans: [LoanSchema, () => "loan"],
       cities: [CitySchema, () => "city"],
+      standards: [StandardSchema, () => "standard"],
       people: [PeopleSchema, (x) => (x.kind === "role" ? "role" : "generator")],
     };
     for (const [sub, [schema, kindOf]] of Object.entries(schemas)) {
@@ -462,6 +475,7 @@ class PackCompiler {
       items: [] as CompiledItemKind[],
       loans: [] as CompiledLoanKind[],
       cities: [] as CompiledCity[],
+      standards: [] as CompiledStandard[],
       people: [] as CompiledPeopleItem[],
     };
     for (const it of pack.items) {
@@ -487,6 +501,11 @@ class PackCompiler {
           break;
         case "city":
           bundle.cities.push(this.city(it.data as unknown as CitySrc));
+          break;
+        case "standard":
+          bundle.standards.push(
+            this.standard(it.data as unknown as StandardSrc),
+          );
           break;
         default:
           bundle.people.push(this.people(it, it.data as unknown as PeopleSrc));
@@ -537,6 +556,7 @@ class PackCompiler {
           }
         : {}),
       ...(m.family ? { family: this.family(m.family) } : {}),
+      ...(m.living ? { living: this.living(m.living) } : {}),
       migrations,
       ...bundle,
     };
@@ -564,6 +584,15 @@ class PackCompiler {
         generator: at("sibling", "generator", f.sibling.generator, "generator"),
         count: f.sibling.count as [number, number],
       },
+    };
+  }
+
+  private living(l: NonNullable<Manifest["living"]>): LivingDecl {
+    return {
+      defaultStandard:
+        this.ref(l.default, ["standard"], ["living", "default"]) ?? l.default,
+      housingShareBp: percentBp(l.housing_share),
+      homeCategory: l.home_category,
     };
   }
 
@@ -1027,6 +1056,7 @@ class PackCompiler {
     const pay = this.expr(o.pay, "int", ["pay"]);
     if (pay !== undefined) out.pay = pay;
     if (o.duration_years !== undefined) out.durationYears = o.duration_years;
+    if (o.provides_housing) out.providesHousing = true;
     if (o.promotes_to !== undefined) {
       const r = this.ref(o.promotes_to, ["occupation"], ["promotes_to"]);
       if (r) out.promotesTo = r;
@@ -1101,12 +1131,42 @@ class PackCompiler {
   private city(c: CitySrc): CompiledCity {
     const out: {
       -readonly [K in keyof CompiledCity]: CompiledCity[K];
-    } = { id: this.owner, label: c.label, costIndexBp: 0, weight: c.weight };
+    } = {
+      id: this.owner,
+      label: c.label,
+      costIndexBp: 0,
+      wageIndexBp: 10000,
+      weight: c.weight,
+    };
     if (c.icon) Object.assign(out, this.iconField(c.icon, ["icon"]));
     if (c.country !== undefined) out.country = c.country;
+    if (c.wage_index !== undefined) {
+      const wage = percentBp(c.wage_index);
+      if (wage > 0) out.wageIndexBp = wage;
+      else this.err(["wage_index"], "wage_index must be above 0%");
+    }
     const bp = percentBp(c.cost_index);
     if (bp > 0) out.costIndexBp = bp;
     else this.err(["cost_index"], "cost_index must be above 0%");
+    return out;
+  }
+
+  private standard(s: StandardSrc): CompiledStandard {
+    const out: {
+      -readonly [K in keyof CompiledStandard]: CompiledStandard[K];
+    } = {
+      id: this.owner,
+      label: s.label,
+      cost: s.cost,
+      happiness: s.happiness,
+      health: s.health,
+      cap: s.cap ?? 100,
+      riskBp: 0,
+    };
+    if (s.icon) Object.assign(out, this.iconField(s.icon, ["icon"]));
+    const risk = percentBp(s.risk);
+    if (risk > 0) out.riskBp = risk;
+    else this.err(["risk"], "risk must be above 0%");
     return out;
   }
 

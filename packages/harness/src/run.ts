@@ -3,6 +3,7 @@ import {
   canAgeUp,
   choose,
   describePending,
+  indexBundles,
   type Loan,
   livesWithParents,
   netWorth,
@@ -18,6 +19,7 @@ import {
   serializeSave,
   setAssertSink,
   setDecisionSink,
+  standardOf,
   streamFor,
   type World,
   worldHash,
@@ -56,6 +58,8 @@ export interface YearSample {
   readonly employed: boolean;
   /** Lives with their parents. */
   readonly withParents: boolean;
+  /** Standard of living id while on their own; null with parents or without standards. */
+  readonly standard: string | null;
 }
 
 export interface LifeResult {
@@ -298,6 +302,9 @@ export function runLife(
         netWorth: netWorth(me),
         employed,
         withParents: livesWithParents(me),
+        standard: livesWithParents(me)
+          ? null
+          : (standardOf(me, indexBundles(bundles))?.id ?? null),
       });
       if (rng.int(SAVE_CHECK_ONE_IN) === 0) {
         const bad = checkSave(w, bundles);

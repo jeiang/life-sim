@@ -145,6 +145,9 @@ export function grantAsset(
     purchasePrice: price,
     value: price,
     acquiredAge: getPerson(world, personId).age,
+    ...(getPerson(world, personId).cityId === undefined
+      ? {}
+      : { cityId: getPerson(world, personId).cityId as string }),
     qualities: {},
   };
   return [putAsset(w, personId, asset), id];

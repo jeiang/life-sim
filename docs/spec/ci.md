@@ -38,3 +38,21 @@ The e2e specs and a stub page live in `e2e/`; the app e2e suites extend this set
 
 - `main` is protected. Changes land through pull requests only, and every buildbot check is required to merge. Build subagents work on branches and open pull requests.
 - Running `nix flake check` locally on the Mac (aarch64-darwin) before pushing is optional.
+
+## Project dependency sync
+
+`.github/workflows/project-deps.yml` (script: `.github/scripts/project-deps.cjs`, run by `actions/github-script`, pinned by commit SHA) keeps the Status field of user project #2 in sync with GitHub issue dependencies ("blocked by" links). It is the only GitHub Actions workflow; CI proper stays on buildbot.
+
+- Triggers: `issues` closed/reopened (recomputes the issues the changed issue blocks), hourly `schedule` and `workflow_dispatch` (recompute every open project issue; catches new links and manual edits).
+- Only two transitions, so it is conservative. Blocked becomes Todo when no blocker is open, with one comment, "Unblocked: all blockers are closed (#a, #b).". Todo or empty becomes Blocked when a blocker is open and the issue has no assignee and no open linked pull request. In Progress, Done, and closed issues are never touched. Re-running changes nothing.
+- Token split: the default `GITHUB_TOKEN` (`issues: write`) reads issue data and posts the comment; `PROJECT_TOKEN` is used only for Projects v2 reads and updates.
+- Without the `PROJECT_TOKEN` secret the job logs a notice and skips.
+
+### `PROJECT_TOKEN` setup (one time)
+
+`GITHUB_TOKEN` cannot write user-owned Projects v2, and fine-grained personal access tokens have no Projects permission for user-owned projects, so a classic personal access token is required.
+
+1. GitHub, Settings, Developer settings, Personal access tokens, Tokens (classic), Generate new token (classic).
+2. Scope: `project` only (the repository is public, so no `repo` scope is needed). Set an expiry and generate. Copy the token.
+3. Add it as a repository secret: `gh secret set PROJECT_TOKEN --repo jeiang/life-sim` (paste when prompted), or Settings, Secrets and variables, Actions, New repository secret.
+4. Optionally run it once: `gh workflow run project-deps.yml --repo jeiang/life-sim`.

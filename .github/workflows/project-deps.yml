@@ -1,0 +1,41 @@
+name: Project dependencies
+
+# Keeps the Status field of user project #2 in sync with issue dependencies
+# ("blocked by" links). See docs/spec/ci.md.
+
+on:
+  issues:
+    types: [closed, reopened]
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: project-deps
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+    steps:
+      # actions/checkout v5.0.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        if: env.PROJECT_TOKEN != ''
+        with:
+          sparse-checkout: .github/scripts
+      # actions/github-script v8.0.0
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
+        if: env.PROJECT_TOKEN != ''
+        with:
+          script: |
+            const run = require("./.github/scripts/project-deps.cjs");
+            await run({ github, getOctokit, context, core });
+      - if: env.PROJECT_TOKEN == ''
+        run: echo "::notice::PROJECT_TOKEN secret is not set; skipping project dependency sync. See docs/spec/ci.md."

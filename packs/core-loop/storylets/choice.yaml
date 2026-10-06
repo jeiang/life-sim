@@ -5,8 +5,9 @@
 - id: found-wallet
   icon: 👛
   trigger: event
-  chance: 3%
+  weight: 6
   when: age >= 10
+  cooldown: 6
   text: "{player.first_name} spots a wallet on the pavement. There is cash inside and an ID card."
   choices:
     - label: Hand it in
@@ -35,7 +36,7 @@
 - id: friend-loan-request
   icon: 🙏
   trigger: event
-  chance: 3%
+  weight: 6
   when: age >= 18 and money >= 20000
   cooldown: 5
   text: "A friend asks {player.first_name} to lend $200 until payday."
@@ -78,7 +79,7 @@
 - id: bully-at-school
   icon: 😠
   trigger: event
-  chance: 6%
+  weight: 12
   when: age >= 8 and age <= 16
   cooldown: 4
   text: "A bigger kid at school starts picking on {player.first_name} in the corridors."
@@ -157,8 +158,9 @@
 - id: cheat-on-test
   icon: 📝
   trigger: event
-  chance: 5%
+  weight: 10
   when: age >= 11 and age <= 17
+  cooldown: 6
   text: "The answers to a hard test are sitting open on the desk next to {player.first_name}."
   choices:
     - label: Peek
@@ -207,8 +209,9 @@
 - id: stray-dog
   icon: 🐕
   trigger: event
-  chance: 2.5%
+  weight: 5
   when: age >= 6
+  cooldown: 6
   text: "A scruffy stray dog follows {player.first_name} home and refuses to leave."
   choices:
     - label: Take it in
@@ -229,8 +232,9 @@
 - id: group-project
   icon: 👥
   trigger: event
-  chance: 5%
+  weight: 10
   when: age >= 12 and age <= 22
+  cooldown: 6
   text: "A group project is due and one teammate has done nothing."
   choices:
     - label: Do their share
@@ -260,8 +264,9 @@
 - id: skip-class
   icon: 🛹
   trigger: event
-  chance: 4%
+  weight: 8
   when: age >= 13 and age <= 18
+  cooldown: 6
   text: "Friends invite {player.first_name} to skip the afternoon and head to the skate park."
   choices:
     - label: Go along
@@ -286,8 +291,9 @@
 - id: yard-sale
   icon: 🏷️
   trigger: event
-  chance: 3%
+  weight: 6
   when: age >= 14 and age <= 80
+  cooldown: 6
   text: "An attic full of unused things could fund a yard sale."
   choices:
     - label: Hold a yard sale
@@ -309,8 +315,9 @@
 - id: concert-tickets
   icon: 🎤
   trigger: event
-  chance: 3%
+  weight: 6
   when: age >= 15 and age <= 60 and money >= 15000
+  cooldown: 6
   text: "Tickets for a favourite band go on sale. They are not cheap."
   choices:
     - label: Buy a pair
@@ -335,8 +342,9 @@
 - id: volunteer-weekend
   icon: 🌱
   trigger: event
-  chance: 4%
+  weight: 8
   when: age >= 14
+  cooldown: 6
   text: "A local charity needs hands for a weekend clean-up."
   choices:
     - label: Volunteer
@@ -354,8 +362,9 @@
 - id: overpaid-change
   icon: 🪙
   trigger: event
-  chance: 3%
+  weight: 6
   when: age >= 10
+  cooldown: 6
   text: "A cashier hands {player.first_name} far too much change."
   choices:
     - label: Point it out
@@ -375,8 +384,9 @@
 - id: noisy-neighbour
   icon: 📢
   trigger: event
-  chance: 3%
+  weight: 6
   when: age >= 20
+  cooldown: 6
   text: "The neighbours play music until three in the morning, again."
   choices:
     - label: Knock and ask them to stop

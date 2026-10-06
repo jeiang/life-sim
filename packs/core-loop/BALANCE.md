@@ -18,7 +18,7 @@ The profiles are deliberately crude, so judge each metric against the profile th
 | Loans | some defaults, rare repossessions | repossessions come almost entirely from `spender`, who loans for every car and home |
 | Mood | stats spread, not pinned at 100 | `everyday-stress` pulls happiness down 7 points in 60% of years while it is above 55 |
 | Events per year | about 3-4 | |
-| Choice events | a decision about every 2-3 years from age 5 (35-45% of years have at least one) | `choice events per life` and `years with a choice` in the harness report; every life stage from 5 on should be near this, none far below |
+| Decisions | at least 1 / 2 / 3 decisions in 90 / 50 / 30% of years from age 5 (within 3 points); empty slots under 5% of years; no storylet over 3% of decisions | the `year.decisions` slot draw; `Decision slots` in the harness report |
 | Never-fired storylets in 10,000 lives | none | see below for the rare ones |
 
 ## What was tuned
@@ -32,6 +32,12 @@ The profiles are deliberately crude, so judge each metric against the profile th
 - More decisions (issue #91): 20 new choice storylets in `storylets/decisions.yaml`, 4-6% a year each, spread over ages 5-90 (childhood dares and dilemmas, teen parties and study nights, adult spending/health/community choices, retirement-age hobbies and visits). Before: 19% of years from age 5 had a choice event (one every 4.6 years, 5-12 only 9%). After: see the numbers below.
 
 Result (10,000 lives, seed 20260101, 0 faults, median death age 73): 33.8 choice events per life (p10 19, p90 47) and 26.5 years with a choice (of about 70 from age 5): **39.3% of years from age 5 have a choice event, one decision every 2.0 years**. By stage (share of years with a choice): 5-12 28.4%, 13-17 41.7%, 18-29 38.6%, 30-49 42.0%, 50-64 45.5%, 65+ 35.5%. By profile (events per life): idle 28.6, random 35.0, spender 35.8, studious 36.0. Every storylet still fires.
+
+## Decision content (issue #99)
+
+All choice storylets are now drawn by `weight` into the yearly decision slots (`year.decisions: [90%, 50%, 30%]`, from age 5). 81 new storylets (and 5 `chance: 0%` follow-ups) live in `storylets/decisions-{child,teen,adult,senior}.yaml`; they use `cooldown` (3-12 years) for everyday decisions and `once` for life milestones. The 31 older unscoped choice storylets that rolled by `chance` (`choice.yaml`, `decisions.yaml`) were converted to `weight` (2x their old percentage) with a 6-year cooldown where none was set, because chance-rolled decisions add on top of the slots and pushed the delivered rates to 93 / 53 / 30%.
+
+Result (10,000 lives, seed 20260101, 0 faults, median death age 74): at least 1 / 2 / 3 decisions in **89.9% / 49.9% / 29.8%** of years from age 5 (every profile within 0.3 points of that); slots with nothing eligible **0.2%** of years (1,960 slots); 115 choice events per life and 60 years with a choice. Top storylet 2.70% of decisions (`volunteer-weekend`), then `lottery-ticket` 2.62%; the rarest is `code-review-clash` (needs an office job). Every storylet fires. By stage (share of years with a choice): 5-12 90%, 13-17 90%, 18-29 90%, 30-49 90%, 50-64 88%, 65+ 84%.
 
 ## Intentionally rare storylets
 

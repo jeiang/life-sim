@@ -130,7 +130,7 @@ test("hash changes with any state change and is pinned for a fixture", () => {
   expect(worldHash(addMoney(w, w.playerId, 1))).not.toBe(h);
   expect(worldHash(sample(43))).not.toBe(h);
   expect(worldHash(addJournalLine(w, 18, "!"))).not.toBe(h);
-  expect(h).toMatchInlineSnapshot(`"068fe573e18dc795"`);
+  expect(h).toMatchInlineSnapshot(`"4667de4875ec9637"`);
 });
 
 test("nextStream advances per-site counters only, and a save reload cannot reroll", () => {

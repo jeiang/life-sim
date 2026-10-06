@@ -28,8 +28,8 @@ import {
   updatePerson,
 } from "../state/world.ts";
 import { makeEnv, type Scope } from "./env.ts";
-import { portfolioValue } from "./market.ts";
 import { linkFamilyRole } from "./kinship.ts";
+import { portfolioValue } from "./market.ts";
 import type { PackIndex } from "./pack-index.ts";
 import { nameOf } from "./text.ts";
 

@@ -23,7 +23,7 @@
   trigger: action
   menu: assets/housing
   tags: [housing]
-  when: age >= 18 and not living.with_parents and money >= 250000
+  when: age >= 18 and not living.with_parents and money >= 250000 and city.country == "us"
   text: "Moving costs $2,500."
   choices:
     - { label: Dustwater, when: city.id != core-loop/dustwater and money >= 250000, outcomes: [{ weight: 1, text: "You settle into Dustwater.", effects: [money -= 250000, move_to(core-loop/dustwater), "journal(\"Moved to Dustwater at age {age}.\")"] }] }

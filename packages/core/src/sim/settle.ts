@@ -1,6 +1,7 @@
 import type { Loan, PersonId, World } from "../state/types.ts";
 import {
   addJournalLine,
+  addMoney,
   getPerson,
   personsInIdOrder,
   putAsset,
@@ -8,6 +9,7 @@ import {
   removeLoan,
   updatePerson,
 } from "../state/world.ts";
+import { inCareerRole, isJointSpouse } from "./careers.ts";
 import { settleLiving } from "./living.ts";
 import { settleMarket } from "./market.ts";
 import { dropAsset, endOccupation, evalInt } from "./ops.ts";
@@ -35,15 +37,23 @@ export function settle(world: World, idx: PackIndex): World {
 }
 
 function settleOccupations(w: World, idx: PackIndex, id: PersonId): World {
+  // People outside every career role stop earning (their record is kept, ADR 0003).
+  if (
+    id !== w.playerId &&
+    (getPerson(w, id).occupations.length === 0 || !inCareerRole(w, idx, id))
+  )
+    return w;
+  // A spouse with joint money pays the player instead of themself.
+  const payee = isJointSpouse(w, idx, id) ? w.playerId : id;
   const age = getPerson(w, id).age;
   for (const occ of getPerson(w, id).occupations) {
     const kind = idx.occupations.get(occ.kindId);
     if (!kind) continue;
     const pay = evalInt(kind.pay, w, idx, { subject: id });
     const years = occ.years + 1;
+    w = addMoney(w, payee, pay);
     w = updatePerson(w, id, (p) => ({
       ...p,
-      money: p.money + pay,
       occupations: p.occupations.map((o) =>
         o.id === occ.id ? { ...o, years, pay } : o,
       ),

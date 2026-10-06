@@ -15,6 +15,7 @@ export interface Dist {
   readonly p10: number;
   readonly p50: number;
   readonly p90: number;
+  readonly p99: number;
   readonly max: number;
 }
 
@@ -33,6 +34,7 @@ export function dist(values: readonly number[]): Dist | null {
     p10: rank(s, 0.1),
     p50: rank(s, 0.5),
     p90: rank(s, 0.9),
+    p99: rank(s, 0.99),
     max: s[s.length - 1] as number,
   };
 }
@@ -152,6 +154,12 @@ export interface Report {
     readonly defaulted: number;
     readonly defaultRate: number;
     readonly repossessions: number;
+  };
+  /** Persons per save: how many exist, how many run a career, and the serialized size. */
+  readonly population: {
+    readonly persons: Dist | null;
+    readonly careers: Dist | null;
+    readonly saveBytes: Dist | null;
   };
   /** Living situation: cities and moving out. */
   readonly housing: {
@@ -289,6 +297,9 @@ export class Aggregate {
   private retired = 0;
   private workYears = 0;
   private workingYears = 0;
+  private readonly persons: number[] = [];
+  private readonly careers: number[] = [];
+  private readonly saveBytes: number[] = [];
   private loansOpened = 0;
   private loansDefaulted = 0;
   private repossessions = 0;
@@ -496,6 +507,11 @@ export class Aggregate {
         add(6, withAt(40));
       }
     }
+    if (r.persons !== null) {
+      this.persons.push(r.persons);
+      this.careers.push(r.careers);
+      this.saveBytes.push(r.saveBytes);
+    }
     this.loansOpened += r.loansOpened;
     this.loansDefaulted += r.loansDefaulted;
     this.repossessions += r.repossessions;
@@ -659,6 +675,11 @@ export class Aggregate {
         defaultRate: pct(this.loansDefaulted, this.loansOpened),
         repossessions: this.repossessions,
       },
+      population: {
+        persons: dist(this.persons),
+        careers: dist(this.careers),
+        saveBytes: dist(this.saveBytes),
+      },
       housing: {
         moveOutAge: dist(this.moveOutAges),
         ...homeShares(this.home.get("all")),
@@ -719,6 +740,7 @@ const money = (d: Dist | null, f: (n: number) => number): Dist | null =>
     p10: f(d.p10),
     p50: f(d.p50),
     p90: f(d.p90),
+    p99: f(d.p99),
     max: f(d.max),
   };
 const major = (n: number): number => Math.round(n / 100);
@@ -733,6 +755,17 @@ export function renderMarkdown(
     `Lives: ${r.lives} · profiles: ${meta.profiles.join(", ")} · base seed: ${meta.seed} · faults: **${r.faults.total}**`,
     "",
   );
+  L.push("## Population per save", "");
+  L.push("| | p50 | p99 | max |", "|---|---|---|---|");
+  for (const [label, d] of [
+    ["persons", r.population.persons],
+    ["persons with careers", r.population.careers],
+    ["save bytes", r.population.saveBytes],
+  ] as const)
+    L.push(
+      `| ${label} | ${d?.p50 ?? "-"} | ${d?.p99 ?? "-"} | ${d?.max ?? "-"} |`,
+    );
+  L.push("");
   L.push("## Faults", "");
   if (r.faults.total === 0) L.push("None.", "");
   else {

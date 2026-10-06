@@ -285,7 +285,10 @@ export function spawnPerson(
   const [lo, hi] = gen.age;
   const personAge = lo + rng.int(hi - lo + 1);
   const gender = drawGender(rng, gen);
+  // Drawn last, and only by generators that declare jobs, so no other draw moves.
+  const job = gen.jobs?.length ? gen.jobs[rng.int(gen.jobs.length)] : undefined;
   const [w1, id] = addPerson(w0, {
+    ...(job ? { job: { label: job.label, tier: job.tier } } : {}),
     givenName: pickFirstName(gen, gender, nameRoll),
     familyName: opts.familyName ?? drawn,
     age: personAge,

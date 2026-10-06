@@ -13,6 +13,7 @@ import {
   personsInIdOrder,
   updatePerson,
 } from "../state/world.ts";
+import { npcCareerYear } from "./careers.ts";
 import { reportChanceDrops, reportDecisions } from "./env.ts";
 import {
   ADULT_AGE,
@@ -435,6 +436,7 @@ export function ageUp(world: World, bundles: readonly PackBundle[]): SimResult {
   }
   w = pruneCounters({ ...w, uses: {} });
   w = endLivingWithParents(w, idx);
+  w = npcCareerYear(w, idx);
   w = settle(w, idx);
   const [w2, events] = drawEvents(w, idx);
   return result(world, ensureYearEntry(advance(w2, idx, events, true), idx));

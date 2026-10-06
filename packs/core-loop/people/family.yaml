@@ -15,6 +15,15 @@
     health: [50, 100]
     smarts: [0, 100]
     looks: [0, 100]
+  jobs:
+    - { label: Cleaner, tier: 0 }
+    - { label: Shop assistant, tier: 1 }
+    - { label: Bus driver, tier: 1 }
+    - { label: Teacher, tier: 2 }
+    - { label: Nurse, tier: 2 }
+    - { label: Electrician, tier: 3 }
+    - { label: Accountant, tier: 3 }
+    - { label: Engineer, tier: 4 }
   first_names:
     male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
     female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
@@ -51,6 +60,15 @@
     health: [40, 100]
     smarts: [0, 100]
     looks: [0, 100]
+  jobs:
+    - { label: Cleaner, tier: 0 }
+    - { label: Shop assistant, tier: 1 }
+    - { label: Bus driver, tier: 1 }
+    - { label: Teacher, tier: 2 }
+    - { label: Nurse, tier: 2 }
+    - { label: Electrician, tier: 3 }
+    - { label: Accountant, tier: 3 }
+    - { label: Engineer, tier: 4 }
   first_names:
     male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
     female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]

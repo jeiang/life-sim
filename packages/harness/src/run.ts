@@ -3,11 +3,13 @@ import {
   canAgeUp,
   choose,
   costIndexOf,
+  getPerson,
   describePending,
   indexBundles,
   type Loan,
   livesWithParents,
   livingBreakdown,
+  livingCost,
   netWorth,
   newLife,
   type PackBundle,
@@ -21,6 +23,7 @@ import {
   serializeSave,
   setAssertSink,
   setChanceDropSink,
+  settleLiving,
   setDecisionSink,
   standardOf,
   streamFor,
@@ -42,7 +45,7 @@ const CHAIN_CAP = 64;
 /** Chance (1 in N) per year of a save round-trip check, besides the final world. */
 const SAVE_CHECK_ONE_IN = 8;
 
-export type FaultKind = "exception" | "assertion" | "stuck" | "save-mismatch";
+export type FaultKind = "exception" | "assertion" | "stuck" | "save-mismatch" | "minor-living-cost";
 
 export interface Fault {
   readonly kind: FaultKind;
@@ -325,6 +328,16 @@ export function runLife(
       if (employed) everEmployed = true;
       if (me.occupations.some((o) => isRetired(o.kindId))) retired = true;
       const index = indexBundles(bundles);
+      if (me.age < 18) {
+        // Invariant: no living cost is ever charged to a minor.
+        const settled = getPerson(settleLiving(w, index), me.id);
+        if (
+          livingCost(w, index, me) !== 0 ||
+          settled.money !== me.money ||
+          settled.livedStandardId !== me.livedStandardId
+        )
+          fault("minor-living-cost", `living cost charged at age ${me.age}`);
+      }
       const lived = standardOf(me, index);
       const hh = index.living?.household;
       const bill =

@@ -111,6 +111,30 @@ test("touch targets are at least 44px and layout survives 200% text", async ({
   ).toBeAttached();
 });
 
+test("document does not scroll and the bottom bar stays pinned on a phone", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  for (let i = 0; i < 6; i++) {
+    if (await ageButton(page).isDisabled()) break;
+    await ageButton(page).click();
+    await resolvePending(page);
+  }
+  const noScroll = () =>
+    page.evaluate(
+      () =>
+        (document.scrollingElement?.scrollHeight ?? 0) <= window.innerHeight,
+    );
+  expect(await noScroll()).toBe(true);
+  const bar = await page
+    .getByRole("navigation", { name: "Menus" })
+    .boundingBox();
+  expect((bar?.y ?? 0) + (bar?.height ?? 0)).toBeCloseTo(844, 0);
+  await page.addStyleTag({ content: "html{font-size:200%}" });
+  expect(await noScroll()).toBe(true);
+});
+
 test("profile and net-worth chart open, describe the data", async ({
   page,
 }) => {

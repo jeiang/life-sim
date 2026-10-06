@@ -19,6 +19,8 @@ export type Move =
       readonly id: string;
       readonly target?: PersonId;
       readonly amount?: number;
+      /** 1-based position of `amount` on the action's grid (the price tier, for trips). */
+      readonly slot?: number;
     }
   | {
       readonly t: "buy";
@@ -96,12 +98,20 @@ export function pickAmount(
   return range.min + rng.int(steps) * range.step;
 }
 
-const asMove = (r: ActionRow & { target?: PersonId }, rng: Rng): Move => ({
-  t: "action",
-  id: r.id,
-  ...(r.target === undefined ? {} : { target: r.target }),
-  ...(r.amount ? { amount: pickAmount(r.amount, rng) } : {}),
-});
+const asMove = (r: ActionRow & { target?: PersonId }, rng: Rng): Move => {
+  const amount = r.amount ? pickAmount(r.amount, rng) : undefined;
+  return {
+    t: "action",
+    id: r.id,
+    ...(r.target === undefined ? {} : { target: r.target }),
+    ...(r.amount && amount !== undefined
+      ? {
+          amount,
+          slot: Math.round((amount - r.amount.min) / r.amount.step) + 1,
+        }
+      : {}),
+  };
+};
 
 const pick = <T>(xs: readonly T[], rng: Rng): T => xs[rng.int(xs.length)] as T;
 

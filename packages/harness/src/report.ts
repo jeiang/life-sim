@@ -1,6 +1,12 @@
 import { DEFAULT_REPEAT, type PackBundle, type RepeatCurve } from "@life/core";
 import type { ProfileName } from "./profiles.ts";
 import type { Fault, LifeResult } from "./run.ts";
+import {
+  renderVacations,
+  VACATIONS_PACK,
+  VacationStats,
+  type VacationsReport,
+} from "./vacations.ts";
 
 export interface Dist {
   readonly n: number;
@@ -181,6 +187,8 @@ export interface Report {
     /** The homeless share of own years, per profile. */
     readonly homelessByProfile: Record<string, number>;
   };
+  /** Vacations metrics; present only when the Pack is loaded and a trip was taken. */
+  readonly vacations?: VacationsReport;
   /** Decade ages: stat id -> age -> distribution. */
   readonly statsByAge: Record<string, Record<string, Dist | null>>;
 }
@@ -246,6 +254,7 @@ export class Aggregate {
   private readonly profileChoice = new Map<string, number[]>();
   private readonly bundles: readonly PackBundle[];
   private lives = 0;
+  private readonly vacations: VacationStats | null;
   private readonly profile = new Map<
     string,
     { lives: number; faults: number; deathAges: number[]; nw40: number[] }
@@ -292,6 +301,9 @@ export class Aggregate {
 
   constructor(bundles: readonly PackBundle[]) {
     this.bundles = bundles;
+    this.vacations = bundles.some((b) => b.id === VACATIONS_PACK)
+      ? new VacationStats()
+      : null;
     const base = bundles.find((b) => b.repeat)?.repeat ?? DEFAULT_REPEAT;
     for (const b of bundles)
       for (const s of b.storylets)
@@ -300,6 +312,7 @@ export class Aggregate {
 
   add(r: LifeResult): void {
     this.lives++;
+    this.vacations?.add(r);
     const pf = this.profile.get(r.profile) ?? {
       lives: 0,
       faults: 0,
@@ -498,6 +511,7 @@ export class Aggregate {
         deathAge: dist(p.deathAges),
         netWorth40: dist(p.nw40),
       };
+    const vacations = this.vacations?.report();
     return {
       lives: this.lives,
       profiles,
@@ -653,6 +667,7 @@ export class Aggregate {
             .map(([k, v]) => [k, pct(v[1], v[0])]),
         ),
       },
+      ...(vacations ? { vacations } : {}),
       statsByAge,
     };
   }
@@ -889,6 +904,7 @@ export function renderMarkdown(
       "",
     );
   }
+  if (r.vacations) L.push(...renderVacations(r.vacations), "");
   L.push("## Stats by age", "");
   for (const [id, row] of Object.entries(r.statsByAge)) {
     L.push(`### ${id}`, "", DHEAD);

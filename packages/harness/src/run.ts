@@ -98,6 +98,15 @@ export interface LifeResult {
   readonly moveOutAge: number | null;
   /** The parents asked the player to leave. */
   readonly kickedOut: boolean;
+  /** Sum of positive occupation pay over the life (gross, minor units). */
+  readonly earnings: number;
+  /** Voluntary actions with an amount: per action id, times done per grid slot (index 0 is slot 1) and money put in. */
+  readonly amountActions: Readonly<
+    Record<
+      string,
+      { readonly slots: readonly number[]; readonly spent: number }
+    >
+  >;
 }
 
 const playerOf = (w: World) => {
@@ -209,6 +218,8 @@ export function runLife(
   let everEmployed = false;
   let retired = false;
   let moveOutAge: number | null = null;
+  let earnings = 0;
+  const amountActions: Record<string, { slots: number[]; spent: number }> = {};
   let w: World | null = null;
 
   /** Note the age at which the player first stops living with their parents. */
@@ -241,9 +252,16 @@ export function runLife(
 
   const apply = (m: Move): void => {
     if (!w) return;
-    if (m.t === "action")
+    if (m.t === "action") {
+      if (m.amount !== undefined && m.slot !== undefined) {
+        const a = amountActions[m.id] ?? { slots: [], spent: 0 };
+        amountActions[m.id] = a;
+        while (a.slots.length < m.slot) a.slots.push(0);
+        a.slots[m.slot - 1] = (a.slots[m.slot - 1] as number) + 1;
+        a.spent += m.amount;
+      }
       w = runAction(w, bundles, m.id, m.target, m.amount).world;
-    else if (m.t === "buy") w = purchase(w, bundles, m.kind, m.mode).world;
+    } else if (m.t === "buy") w = purchase(w, bundles, m.kind, m.mode).world;
     else w = sell(w, bundles, m.asset).world;
   };
 
@@ -306,6 +324,7 @@ export function runLife(
       trackLoans(loansBefore, w);
       if (w.ended) break;
       const me = playerOf(w);
+      for (const o of me.occupations) if (o.pay > 0) earnings += o.pay;
       const employed = me.occupations.some(
         (o) => o.group !== "school" && !isRetired(o.kindId),
       );
@@ -370,5 +389,7 @@ export function runLife(
     kickedOut:
       (final?.storyletLog["core-loop/parents-ask-you-to-leave"]?.count ?? 0) >
       0,
+    earnings,
+    amountActions,
   };
 }

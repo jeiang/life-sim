@@ -173,6 +173,7 @@ class Compiler {
 
   run(): CompileOutput {
     this.load();
+    this.checkCrossPackDeclarations();
     const order = this.order();
     const bundles: PackBundle[] = [];
     for (const id of order) {
@@ -341,6 +342,29 @@ class Compiler {
       manifestSrc: src,
       items,
     });
+  }
+
+  /** Stats and qualities are bare ids shared by every Pack, so two Packs may not declare the same one. */
+  private checkCrossPackDeclarations(): void {
+    const owner = new Map<string, string>();
+    for (const id of [...this.packs.keys()].sort()) {
+      const pack = this.packs.get(id) as LoadedPack;
+      for (const [kind, key] of [
+        ["stat", "stats"],
+        ["quality", "qualities"],
+      ] as const) {
+        for (const [i, d] of (pack.manifest[key] ?? []).entries()) {
+          const first = owner.get(`${kind}.${d.id}`);
+          if (first === undefined) owner.set(`${kind}.${d.id}`, id);
+          else if (first !== id)
+            this.diag(
+              pack.manifestSrc,
+              [key, i, "id"],
+              `${kind} '${d.id}' is declared by both Pack '${first}' and Pack '${id}'; prefix Pack-specific ids with the Pack name`,
+            );
+        }
+      }
+    }
   }
 
   /** Topological order; reports unknown dependencies and cycles. */
@@ -580,23 +604,6 @@ class PackCompiler {
     for (const [i, dep] of (m.depends ?? []).entries()) {
       if ((m.depends ?? []).indexOf(dep) !== i)
         this.err(["depends", i], `duplicate dependency '${dep}'`);
-    }
-    // Stats/qualities/groups may not shadow a dependency's declarations.
-    for (const dep of this.depends) {
-      const dm = this.c.packs.get(dep)?.manifest;
-      if (!dm) continue;
-      for (const [i, s] of (m.stats ?? []).entries())
-        if ((dm.stats ?? []).some((x) => x.id === s.id))
-          this.err(
-            ["stats", i, "id"],
-            `stat '${s.id}' is already declared by '${dep}'`,
-          );
-      for (const [i, q] of (m.qualities ?? []).entries())
-        if ((dm.qualities ?? []).some((x) => x.id === q.id))
-          this.err(
-            ["qualities", i, "id"],
-            `quality '${q.id}' is already declared by '${dep}'`,
-          );
     }
   }
 

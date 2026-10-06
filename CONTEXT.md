@@ -45,7 +45,7 @@ A Pack-declared integer from 0 to 100 on a person, shown to the user as a bar (f
 _Avoid_: Attribute, bar
 
 **Quality**:
-A Pack-declared hidden integer or flag on a person (for example has a driving licence, times arrested).
+A Pack-declared hidden integer or flag on a person (for example has a driving licence, times arrested). Ids are shared across Packs: a Pack prefixes its own (`vac_`, `gambling_`), shared ones live in core-loop, and two Packs declaring the same id is a load error.
 _Avoid_: Variable, state flag
 
 **Relationship**:

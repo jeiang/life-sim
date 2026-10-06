@@ -269,6 +269,43 @@ describe("build checks fail", () => {
     );
   });
 
+  test("a quality or stat declared by two Packs names both Packs", () => {
+    const dup = (decl: string) => (t: string) => `${t}${decl}`;
+    // extra depends on base.
+    expectError(
+      {
+        "extra/pack.yaml": dup(
+          "qualities:\n  - { id: has_diploma, type: flag, default: false }\n",
+        ),
+      },
+      "quality 'has_diploma' is declared by both Pack 'base' and Pack 'extra'",
+    );
+    expectError(
+      {
+        "extra/pack.yaml": dup(
+          "stats:\n  - { id: smarts, label: Smarts, start: [0, 100] }\n",
+        ),
+      },
+      "stat 'smarts' is declared by both Pack 'base' and Pack 'extra'",
+    );
+    // No dependency between the Packs.
+    expectError(
+      {
+        "extra/pack.yaml":
+          "id: extra\nversion: 1\nqualities:\n  - { id: has_diploma, type: flag, default: false }\n",
+      },
+      "quality 'has_diploma' is declared by both Pack 'base' and Pack 'extra'",
+    );
+  });
+
+  test("distinct prefixed quality ids across Packs compile", () => {
+    const dir = fixture({
+      "extra/pack.yaml": (t) =>
+        `${t}qualities:\n  - { id: extra_flag, type: flag, default: false }\n`,
+    });
+    expect(compilePacks(dir).diagnostics.map(formatDiagnostic)).toEqual([]);
+  });
+
   test("dangling `next`", () => {
     expectError(
       { "base/storylets/work.yaml": sub("next: job-hunt-tips", "next: nope") },

@@ -42,6 +42,24 @@ export interface PackIndex {
 
 const cache = new WeakMap<readonly PackBundle[], PackIndex>();
 
+/** Add `id` to `map`; two bundles declaring the same id is an error naming both. */
+function declare<T>(
+  map: Map<string, T>,
+  owners: Map<string, string>,
+  kind: string,
+  id: string,
+  value: T,
+  bundle: string,
+): void {
+  const first = owners.get(`${kind}.${id}`);
+  if (first !== undefined && first !== bundle)
+    throw new Error(
+      `${kind} '${id}' is declared by both Pack '${first}' and Pack '${bundle}'`,
+    );
+  owners.set(`${kind}.${id}`, bundle);
+  map.set(id, value);
+}
+
 const cmp = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
@@ -59,18 +77,29 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
   let currency = { symbol: "", digits: 0 };
   let year: PackIndex["year"] | undefined;
   let family: FamilyDecl | undefined;
+  const owners = new Map<string, string>();
   for (const b of bundles) {
-    for (const s of b.storylets) storylets.set(s.id, s);
-    for (const o of b.occupations) occupations.set(o.id, o);
-    for (const i of b.items) items.set(i.id, i);
-    for (const l of b.loans) loans.set(l.id, l);
-    for (const c of b.cities) cities.set(c.id, c);
+    const put = <T>(map: Map<string, T>, kind: string, id: string, v: T) =>
+      declare(map, owners, kind, id, v, b.id);
+    for (const s of b.storylets) put(storylets, "storylet", s.id, s);
+    for (const o of b.occupations) put(occupations, "occupation", o.id, o);
+    for (const i of b.items) put(items, "item", i.id, i);
+    for (const l of b.loans) put(loans, "loan", l.id, l);
+    for (const c of b.cities) put(cities, "city", c.id, c);
     for (const p of b.people) {
-      if (p.type === "role") roles.set(p.id, p);
-      else generators.set(p.id, p);
+      if (p.type === "role") put(roles, "role", p.id, p);
+      else put(generators, "generator", p.id, p);
     }
-    for (const q of b.qualities) qualities.set(q.id, q);
-    stats.push(...b.stats);
+    for (const q of b.qualities) put(qualities, "quality", q.id, q);
+    for (const s of b.stats) {
+      const first = owners.get(`stat.${s.id}`);
+      if (first !== undefined && first !== b.id)
+        throw new Error(
+          `stat '${s.id}' is declared by both Pack '${first}' and Pack '${b.id}'`,
+        );
+      owners.set(`stat.${s.id}`, b.id);
+      stats.push(s);
+    }
     if (b.currency) currency = b.currency;
     if (!year && b.year) year = b.year;
     if (!family && b.family) family = b.family;

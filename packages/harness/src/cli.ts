@@ -4,15 +4,17 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { compilePacks, formatDiagnostic } from "@life/pack-tools";
 import { runHarness } from "./harness.ts";
+import { resolveJobs, runHarnessParallel } from "./parallel.ts";
 import { PROFILE_NAMES, type ProfileName } from "./profiles.ts";
 import { renderMarkdown } from "./report.ts";
 
-const USAGE = `usage: pnpm harness --lives N [--profile random|studious|spender|idle|all|a,b] [--seed S] [--out dir] [--packs dir] [--life-seed X]
+const USAGE = `usage: pnpm harness --lives N [--profile random|studious|spender|idle|all|a,b] [--seed S] [--out dir] [--packs dir] [--life-seed X] [--jobs N]
   --lives      lives to simulate (default 100)
   --profile    simulated player profile(s); several are dealt to lives in turn (default all)
   --seed       base seed, uint32 (default 1)
   --out        write report.md and report.json here
   --packs      Packs directory (default: the repository's packs/)
+  --jobs       worker threads (default: available cores); the report is identical for any N
   --life-seed  run one life with exactly this life seed (to replay a reported fault)
 Exit status 1 when any engine fault is found.
 `;
@@ -38,6 +40,7 @@ const { values: a } = parseArgs({
     out: { type: "string" },
     packs: { type: "string" },
     "life-seed": { type: "string" },
+    jobs: { type: "string" },
     help: { type: "boolean" },
   },
 });
@@ -60,6 +63,7 @@ const lifeSeed =
   a["life-seed"] === undefined
     ? undefined
     : int("life-seed", a["life-seed"], 0);
+const jobs = int("jobs", a.jobs, 0);
 const packsDir = resolve(
   a.packs ?? join(dirname(fileURLToPath(import.meta.url)), "../../../packs"),
 );
@@ -71,20 +75,24 @@ if (!compiled.ok) {
   process.exit(2);
 }
 
-const { report, seconds } = runHarness({
+const run = {
   bundles: compiled.bundles,
   lives,
   profiles,
   seed,
   ...(lifeSeed === undefined ? {} : { lifeSeed }),
-});
-const md = renderMarkdown(report, { seed, profiles, seconds });
+};
+const { report, seconds } =
+  resolveJobs(jobs) === 1
+    ? runHarness(run)
+    : await runHarnessParallel({ ...run, packsDir, jobs });
+const md = renderMarkdown(report, { seed, profiles });
 if (a.out) {
   mkdirSync(a.out, { recursive: true });
   writeFileSync(join(a.out, "report.md"), md);
   writeFileSync(
     join(a.out, "report.json"),
-    `${JSON.stringify({ run: { seed, profiles, seconds }, ...report }, null, 2)}\n`,
+    `${JSON.stringify({ run: { seed, profiles }, ...report }, null, 2)}\n`,
   );
 }
 

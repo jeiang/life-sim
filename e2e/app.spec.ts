@@ -38,10 +38,12 @@ test("ages up ten times, resolving every pending choice", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: new RegExp(`^Age ${years} year`, "i") }),
   ).toBeVisible();
-  // The newest year is scrolled into view.
-  await expect(
-    page.getByRole("heading", { name: new RegExp(`^Age ${years} year`, "i") }),
-  ).toBeInViewport();
+  // The journal sticks to the bottom, so the newest year's last line is in view. Its heading
+  // is not asserted: a busy year can be taller than the journal pane and push it off the top.
+  const newest = page
+    .getByRole("main", { name: "Life journal" })
+    .getByRole("region", { name: new RegExp(`^Age ${years}$`) });
+  await expect(newest.locator("p").last()).toBeInViewport({ ratio: 1 });
 });
 
 test("Age is disabled while a choice is open and menus open a page with Back", async ({

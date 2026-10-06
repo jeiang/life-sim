@@ -13,7 +13,7 @@ import {
   personsInIdOrder,
   updatePerson,
 } from "../state/world.ts";
-import { reportDecisions } from "./env.ts";
+import { livesWithParents, reportDecisions } from "./env.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import { indexBundles, type PackIndex } from "./pack-index.ts";
 import { settle } from "./settle.ts";
@@ -291,7 +291,26 @@ function npcPass(world: World, idx: PackIndex): World {
       w = open(w, idx, asEvent(c));
     }
   }
-  return w;
+  return w.ended ? w : endLivingWithParents(w, idx);
+}
+
+/** Living with parents ends when no parent is left alive. */
+function endLivingWithParents(world: World, idx: PackIndex): World {
+  const player = getPerson(world, world.playerId);
+  const role = idx.family?.parent.role;
+  if (!role || !livesWithParents(player)) return world;
+  const parentAlive = world.relationships.some(
+    (r) =>
+      r.from === world.playerId &&
+      r.role === role &&
+      world.persons.get(r.to)?.alive,
+  );
+  if (parentAlive) return world;
+  return addJournalLine(
+    updatePerson(world, player.id, (p) => ({ ...p, withParents: false })),
+    player.age,
+    "With no parent left, you are on your own now.",
+  );
 }
 
 /** Open the queued events in order, stopping at the first that needs a choice. */

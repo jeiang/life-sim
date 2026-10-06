@@ -146,6 +146,13 @@ function applyEffect(
           );
           return o ? endOccupation(w, who, o.id) : w;
         }
+        case "move_to": {
+          const city = str(args[0], w, idx, scope);
+          if (!idx.cities.has(city)) throw new RangeError("unknown city");
+          return updatePerson(w, who, (p) => ({ ...p, cityId: city }));
+        }
+        case "move_out":
+          return updatePerson(w, who, (p) => ({ ...p, withParents: false }));
         case "journal":
           return addJournalLine(
             w,

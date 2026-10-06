@@ -11,6 +11,8 @@ packs/<pack-id>/
   occupations/<topic>.yaml   # occupation kinds
   items/<topic>.yaml         # item kinds
   people/<topic>.yaml        # people-generation data (names, stat ranges, roles)
+  loans/<topic>.yaml         # loan kinds
+  cities/<topic>.yaml        # cities (see Cities)
 ```
 
 - YAML 1.2 only, read with a strict parser (no implicit `yes`/`no` booleans, no duplicate keys).
@@ -76,6 +78,24 @@ packs/<pack-id>/
 | `outcomes` | Weighted list. Each has `weight`, optional `when`, `text`, `effects`, and optional `next`. |
 | `next` | Storylet id opened immediately after this outcome, for multi-step scenes. |
 
+## Cities
+
+```yaml
+# packs/core-loop/cities/cities.yaml
+- id: harborview
+  label: Harborview
+  icon: ⚓
+  cost_index: 85%     # cost of living relative to the baseline (compiled to basis points, must be above 0%)
+  weight: 18          # share of the birth-city draw (integer, 1 or more)
+  country: us         # optional; a plain string for now, countries are not content yet
+```
+
+Every life has a city (`Person.cityId`) and a living situation (`Person.withParents`). A new life draws its birth city by `weight` (purpose key `birth/city`), or takes the `cityId` start option (full id; god mode uses it). The family is placed in the same city and the player starts living with their parents. A city is a place only: countries, a wage index and law tags belong to the Relocation Pack, which extends this kind.
+
+Names: `city.cost_index` (basis points, 10000 = 100%; 10000 when the life has no city), `city.id` (an id, compare with `==`), `city.label`, `city.country` (the optional `country` string, empty when unset), and `living.with_parents` (bool, true while the life lives with its parents). The names `city` and `living` are reserved.
+
+Living with parents also ends by itself, with a journal line, once no parent is alive (checked after the NPC pass of each age-up). Nothing else moves the player out: kicks and moves are storylets.
+
 ## Year draw
 
 At each age-up, after settlement (ADR 0003):
@@ -102,7 +122,7 @@ One small custom language is used for `when`, `weight`, `chance`, and effect sta
 - Literals: integers, percents (`2.5%`, compiled to basis points out of 10,000), strings, booleans, and content ids (`job/cashier`).
 - Operators: `+ - * /`, `mod` (modulo; `%` is used only by percent literals), comparisons, `and or not`, `in`, and the ternary `a ? b : c`.
 - Names (scope `person` also has `person.role` as a content id, `person.alive`): `age`, `money`, `stat.<id>`, `quality.<id>`, `loan.<field>` (`balance`, `payment`, `missed`) in storylets with `scope: loan`, and other scoped references inside storylets (for example `person.<field>` for a spawned person).
-- Functions: a fixed whitelist (for example `min`, `max`, `clamp`, `has`, `has_occupation`, `owns`, `years_in`). No user-defined functions and no loops.
+- Functions: a fixed whitelist (for example `min`, `max`, `clamp`, `has`, `has_occupation`, `owns`, `years_in`, `role_closeness(role)`: average closeness to the living people the player holds that role toward, 0 with none; `role_count(role)`: how many of them are alive). No user-defined functions and no loops.
 - Integer-only. `/` truncates toward zero. A constant zero divisor is a build error. At runtime, division by zero gives 0 and overflow clamps to the safe-integer range. Dev builds and the balance harness assert on both.
 - No randomness inside expressions. Rolls happen only for `chance` and `weight`, and each roll site's RNG purpose key comes from the content id.
 
@@ -117,8 +137,11 @@ grant_asset(item-kind) | remove_asset(item-kind)
 start_occupation(kind) | end_occupation(kind)
 spawn_person(role, generator) as <name>
 relationship(<person>).closeness += n
+move_to(city)                        move_out()
 journal("text")                      die("cause")
 ```
+
+`move_to(city)` puts the player in a city (family and everyone else stay); `move_out()` ends living with parents.
 
 ## Text
 

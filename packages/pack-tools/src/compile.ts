@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import type {
   CompiledChoice,
+  CompiledCity,
   CompiledGenerator,
   CompiledItemKind,
   CompiledLoanKind,
@@ -26,6 +27,8 @@ import { type CheckEnv, compileExpr } from "./expr/index.ts";
 import { resolveIcon } from "./icons.ts";
 import { readLock } from "./lock.ts";
 import {
+  CitySchema,
+  type CitySrc,
   ItemSchema,
   type ItemSrc,
   LoanSchema,
@@ -58,6 +61,7 @@ export type Kind =
   | "occupation"
   | "item"
   | "loan"
+  | "city"
   | "role"
   | "generator";
 
@@ -67,6 +71,7 @@ export const CONTENT_DIRS = {
   occupations: "occupation",
   items: "item",
   loans: "loan",
+  cities: "city",
   people: "people",
 } as const;
 
@@ -114,6 +119,8 @@ const TOP_RESERVED = new Set([
   "stat",
   "quality",
   "loan",
+  "city",
+  "living",
   "player",
   "person",
   "asset",
@@ -127,6 +134,9 @@ const CALL_KINDS: Record<string, Kind[][] | undefined> = {
   start_occupation: [["occupation"]],
   end_occupation: [["occupation"]],
   take_loan: [["loan"]],
+  move_to: [["city"]],
+  role_closeness: [["role"]],
+  role_count: [["role"]],
   grant_asset: [["item"]],
   remove_asset: [["item"]],
   spawn_person: [["role"], ["generator"]],
@@ -135,6 +145,11 @@ const CALL_KINDS: Record<string, Kind[][] | undefined> = {
 const PLAYER_NAMES: Record<string, ExprType> = {
   age: "int",
   money: "int",
+  "city.cost_index": "int",
+  "city.id": "id",
+  "city.label": "string",
+  "city.country": "string",
+  "living.with_parents": "bool",
   "player.first_name": "string",
   "player.last_name": "string",
 };
@@ -268,6 +283,7 @@ class Compiler {
       occupations: [OccupationSchema, () => "occupation"],
       items: [ItemSchema, () => "item"],
       loans: [LoanSchema, () => "loan"],
+      cities: [CitySchema, () => "city"],
       people: [PeopleSchema, (x) => (x.kind === "role" ? "role" : "generator")],
     };
     for (const [sub, [schema, kindOf]] of Object.entries(schemas)) {
@@ -421,6 +437,7 @@ class PackCompiler {
       occupations: [] as CompiledOccupationKind[],
       items: [] as CompiledItemKind[],
       loans: [] as CompiledLoanKind[],
+      cities: [] as CompiledCity[],
       people: [] as CompiledPeopleItem[],
     };
     for (const it of pack.items) {
@@ -443,6 +460,9 @@ class PackCompiler {
           break;
         case "loan":
           bundle.loans.push(this.loan(it, it.data as unknown as LoanSrc));
+          break;
+        case "city":
+          bundle.cities.push(this.city(it.data as unknown as CitySrc));
           break;
         default:
           bundle.people.push(this.people(it, it.data as unknown as PeopleSrc));
@@ -1068,6 +1088,18 @@ class PackCompiler {
       else
         this.err(["down_payment"], `invalid down payment '${l.down_payment}'`);
     }
+    return out;
+  }
+
+  private city(c: CitySrc): CompiledCity {
+    const out: {
+      -readonly [K in keyof CompiledCity]: CompiledCity[K];
+    } = { id: this.owner, label: c.label, costIndexBp: 0, weight: c.weight };
+    if (c.icon) Object.assign(out, this.iconField(c.icon, ["icon"]));
+    if (c.country !== undefined) out.country = c.country;
+    const bp = percentBp(c.cost_index);
+    if (bp > 0) out.costIndexBp = bp;
+    else this.err(["cost_index"], "cost_index must be above 0%");
     return out;
   }
 

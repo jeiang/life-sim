@@ -1,5 +1,5 @@
 import { bundles } from "virtual:packs";
-import { isGodLife, listActions, netWorth } from "@life/core";
+import { isGodLife, listActions, livesWithParents, netWorth } from "@life/core";
 import { PackIcon } from "../components/Emoji.tsx";
 import { GodBadge } from "../components/GodFields.tsx";
 import { MenuList } from "../components/MenuList.tsx";
@@ -87,6 +87,20 @@ export function Profile() {
 
       {isPlayer && (
         <>
+          <Section title="Home">
+            <Row
+              label="City"
+              value={
+                (p.cityId && packIndex.cities.get(p.cityId)?.label) || "Unknown"
+              }
+              testid="profile-city"
+            />
+            <Row
+              label="Living"
+              value={livesWithParents(p) ? "With parents" : "On your own"}
+              testid="profile-living"
+            />
+          </Section>
           <Section title="Occupations">
             {p.occupations.length === 0 ? (
               <p class="text-text-muted">No occupation</p>

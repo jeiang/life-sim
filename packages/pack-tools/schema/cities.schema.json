@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cities (list)",
+  "type": "array",
+  "items": {
+    "additionalProperties": false,
+    "title": "City",
+    "type": "object",
+    "required": ["id", "label", "cost_index", "weight"],
+    "properties": {
+      "id": {
+        "pattern": "^[a-z][a-z0-9_-]*$",
+        "description": "Content id",
+        "type": "string"
+      },
+      "label": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "icon": {
+        "description": "A literal emoji (Twemoji subset) or `gameicons/<author>/<name>`",
+        "type": "string"
+      },
+      "cost_index": {
+        "pattern": "^\\d+(\\.\\d{1,2})?%$",
+        "description": "Cost of living relative to the baseline, as a percent literal, for example `130%`",
+        "type": "string"
+      },
+      "weight": {
+        "minimum": 1,
+        "description": "Relative weight when a life picks its birth city",
+        "type": "integer"
+      },
+      "country": {
+        "minLength": 1,
+        "description": "Country the city belongs to, a plain string for now (no country content type yet)",
+        "type": "string"
+      }
+    }
+  }
+}

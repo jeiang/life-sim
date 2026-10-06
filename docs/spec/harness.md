@@ -38,6 +38,7 @@ It **reports** without failing, in `report.md` and `report.json` in the check ou
 - net worth at ages 18, 40, and 65;
 - degree rate, employment rate, and retirement rate;
 - loan defaults and repossessions;
+- housing: age at moving out, share moved out and kicked out (of lives reaching 18), and share still living with their parents at 30 and 40, overall and per profile;
 - stat distributions by age.
 
 Balance bands that fail CI (for example a median age at death outside a range) can be added once content settles. Until then, balance findings guide authoring but never block merges.

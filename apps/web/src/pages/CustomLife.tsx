@@ -34,6 +34,8 @@ export function CustomLifePage() {
   const [siblings, setSiblings] = useState(
     String(family?.sibling.count[0] ?? 0),
   );
+  const [cityId, setCityId] = useState("");
+  const cities = [...packIndex.cities.values()];
   const ready = givenName.trim() !== "" && familyName.trim() !== "";
   return (
     <PageShell title="Custom life" onBack={closePage}>
@@ -55,6 +57,7 @@ export function CustomLifePage() {
             ),
             parents: clampInt(Number(parents), 0, maxParents),
             siblings: clampInt(Number(siblings), 0, maxSiblings),
+            ...(cityId === "" ? {} : { cityId }),
           });
         }}
       >
@@ -122,6 +125,23 @@ export function CustomLifePage() {
             class={inputClass}
           />
         </Field>
+        {cities.length > 0 && (
+          <Field label="Birth city">
+            <select
+              value={cityId}
+              onChange={(e) => setCityId(e.currentTarget.value)}
+              class={inputClass}
+              data-testid="custom-city"
+            >
+              <option value="">Random</option>
+              {cities.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
         <button
           type="submit"
           disabled={!ready}

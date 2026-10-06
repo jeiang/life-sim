@@ -65,6 +65,15 @@ About 10 item kinds, bought through the purchase dialog:
 - Settlement (Core) handles default. When cash is short, it takes what cash there is, adds the shortfall to the balance, and increments the loan's consecutive-miss count, which expressions read as `loan.missed`. A full payment resets it to 0. At 3 consecutive misses, settlement repossesses the secured asset: it removes the asset, applies its current value to the balance, and writes a journal line. Any remaining balance stays as debt. An unsecured loan keeps accruing misses.
 - The Pack's "missed payment" event (`when: loan.missed > 0`) supplies the story and the happiness penalty. Repossession itself is Core behaviour, not a storylet effect, so the closed effect set (ADR 0002) needs no new effect.
 
+## Cities and living situation (`cities`, `assets/housing`)
+
+- Six cities with cost indexes from 70% to 180% and birth weights. A life is born in a weighted-random city; its parents and siblings live there. The cost index is read by [living costs](#standards-of-living) later; for now it only shows on the profile.
+- Living situation: with parents (free) or on your own. Actions in `assets/housing`: **Move out** (age 18+, while living with parents) and **Move to another city** (on your own, one-off $2,500, one choice per other city, or stay).
+- **Kicked out:** from 18, while living with parents, the yearly chance (`parents-ask-you-to-leave`) is 1% plus 0.04% per point of missing parent closeness, plus 0.75% per living sibling, plus 1.5% per step of parental impatience (one step per year after 30, capped at 10 steps, so +15%). The player is never forced out automatically. All of these numbers sit in that storylet's `chance`, so a later cultural pack can change them.
+- When no parent is alive, living with parents ends at the next age-up.
+- The profile shows the city and the living situation. Journal lines: moved out, asked to leave, moved to a city.
+- Siblings are not modelled as leaving home: every living sibling counts as still at home.
+
 ## Activities (`activities`)
 
 Gym, library, doctor, meditate, take a walk, and the job board. Each is an action storylet with age gates and stat effects. No casino; the amount picker is first used by the gambling Pack.

@@ -19,6 +19,7 @@ The profiles are deliberately crude, so judge each metric against the profile th
 | Mood | stats spread, not pinned at 100 | `everyday-stress` pulls happiness down 7 points in 60% of years while it is above 55 |
 | Events per year | about 3-4 | |
 | Decisions | at least 1 / 2 / 3 decisions in 90 / 50 / 30% of years from age 5 (within 3 points); empty slots under 5% of years; no storylet over 3% of decisions | the `year.decisions` slot draw; `Decision slots` in the harness report |
+| Housing | `random` (which moves out at will) mostly moved out by 40; passive profiles (`idle`, `studious`, `spender` never use Move out) are asked to leave eventually | kick-out pressure in `parents-ask-you-to-leave`: with a passive player about 55-60% still live with their parents at 30 and about 15% at 40; median age at moving out about 33 for all profiles, a real player who chooses to leave moves earlier |
 | Never-fired storylets in 10,000 lives | none | see below for the rare ones |
 
 ## What was tuned
@@ -47,3 +48,7 @@ These fired at least once in 10,000 lives but are rare on purpose:
 - `core-loop/drop-out-of-university`: needs a player action while enrolled; only the `random` profile picks it.
 - `core-loop/childhood-mortality` (0.03-0.15% a year) and `core-loop/fatal-car-crash` (0.1% a year): deaths.
 - The white-collar `apply-*` and `promote-*` steps (`junior-analyst`, `analyst`, `junior-engineer`, `engineer`, `staff-nurse`, `charge-nurse`, `studio-assistant`, `designer`): gated by a degree, which about a third of lives earn.
+
+## Housing (cities and moving out, #108)
+
+10,000 lives, seed 20260101, all profiles: no faults. Age at moving out (any cause): p10 20, median 33, p90 42. Share of lives reaching 18 that moved out 97.5%, kicked out 88.1% (`random` 66.5%, the others 95-96%: they never choose to leave). Still with parents at 30: 58.7% (`random` 50.2%); at 40: 14.8% (`random` 11.5%). The kick-out chance is 1% + 0.04% per missing closeness point + 0.75% per living sibling + 1.5% per impatience step (age 31 onward, 10 steps at most). A first draft with double those weights kicked out 92% and moved the median to 27, too fast for a player who is never forced out.

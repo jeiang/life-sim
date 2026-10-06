@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/cities.schema.json
+# `cost_index` scales living costs (100% is the baseline); `weight` is the chance share when a life picks its birth city.
+- { id: dustwater, label: Dustwater, icon: 🏜️, cost_index: 70%, weight: 12 }
+- { id: harborview, label: Harborview, icon: ⚓, cost_index: 85%, weight: 18 }
+- { id: maple-falls, label: Maple Falls, icon: 🍁, cost_index: 95%, weight: 22 }
+- { id: riverton, label: Riverton, icon: 🌉, cost_index: 110%, weight: 22 }
+- { id: lakeshore, label: Lakeshore, icon: 🏙️, cost_index: 140%, weight: 16 }
+- { id: goldcrest, label: Goldcrest, icon: 🌆, cost_index: 180%, weight: 10 }

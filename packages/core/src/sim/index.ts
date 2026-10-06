@@ -5,7 +5,14 @@ export {
   listSubmenus,
   runAction,
 } from "./actions.ts";
-export { type DecisionDraw, setAssertSink, setDecisionSink } from "./env.ts";
+export {
+  costIndexOf,
+  type DecisionDraw,
+  livesWithParents,
+  makeEnv,
+  setAssertSink,
+  setDecisionSink,
+} from "./env.ts";
 export { playFixedLife } from "./fixed-life.ts";
 export {
   ageUp,

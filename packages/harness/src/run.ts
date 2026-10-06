@@ -4,6 +4,7 @@ import {
   choose,
   describePending,
   type Loan,
+  livesWithParents,
   netWorth,
   newLife,
   type PackBundle,
@@ -53,6 +54,8 @@ export interface YearSample {
   readonly netWorth: number;
   /** Holds a non-school, non-retired occupation. */
   readonly employed: boolean;
+  /** Lives with their parents. */
+  readonly withParents: boolean;
 }
 
 export interface LifeResult {
@@ -82,6 +85,10 @@ export interface LifeResult {
   readonly everDegree: boolean;
   readonly everEmployed: boolean;
   readonly retired: boolean;
+  /** Age at which living with their parents first ended (any cause); null if it never did. */
+  readonly moveOutAge: number | null;
+  /** The parents asked the player to leave. */
+  readonly kickedOut: boolean;
 }
 
 const playerOf = (w: World) => {
@@ -184,7 +191,14 @@ export function runLife(
   let repossessions = 0;
   let everEmployed = false;
   let retired = false;
+  let moveOutAge: number | null = null;
   let w: World | null = null;
+
+  /** Note the age at which the player first stops living with their parents. */
+  const noteHome = (): void => {
+    if (w && moveOutAge === null && !livesWithParents(playerOf(w)))
+      moveOutAge = playerOf(w).age;
+  };
 
   /** Answer open events until none is left. False when the run is stuck. */
   const resolve = (): boolean => {
@@ -249,6 +263,7 @@ export function runLife(
         if (!m) break;
         apply(m);
         if (!resolve()) break;
+        noteHome();
       }
       if (faults.some((f) => f.kind === "stuck")) break;
       if (!w || w.ended) break;
@@ -266,6 +281,7 @@ export function runLife(
       const draw = lastDraw as { queued: number; empty: number } | null;
       if (draw) yearDecisions.push({ age, ...draw });
       if (!resolve()) break;
+      noteHome();
       yearEvents.push(totalFires(w) - firesBefore);
       yearChoices.push({ age, n: firesIn(w, choiceIds) - choicesBefore });
       trackLoans(loansBefore, w);
@@ -281,6 +297,7 @@ export function runLife(
         stats: me.stats,
         netWorth: netWorth(me),
         employed,
+        withParents: livesWithParents(me),
       });
       if (rng.int(SAVE_CHECK_ONE_IN) === 0) {
         const bad = checkSave(w, bundles);
@@ -324,5 +341,9 @@ export function runLife(
       : false,
     everEmployed,
     retired: retired || all.some((o) => isRetired(o.kindId)),
+    moveOutAge,
+    kickedOut:
+      (final?.storyletLog["core-loop/parents-ask-you-to-leave"]?.count ?? 0) >
+      0,
   };
 }

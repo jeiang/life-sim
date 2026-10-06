@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Living where a language is spoken teaches it: every year, whoever lives in a city whose language
+# they do not yet speak at 100 gains skill (3 plus a tenth of what is missing), alongside "Study a
+# language". Low skill hurts: happiness falls each year below 40, and a worker below 30 may be let go.
+- id: language-immersion
+  trigger: event
+  chance: 100%
+  when: (city.country == "jp" ? quality.lang_japanese : (city.country == "mx" ? quality.lang_spanish : (city.id == relocation/montreal ? quality.lang_french : quality.lang_english))) < 100
+  tags: [relocation, language]
+  outcomes:
+    - { weight: 1, when: 'city.country == "jp"', effects: ["quality.lang_japanese += 3 + (100 - quality.lang_japanese) / 10"] }
+    - { weight: 1, when: 'city.country == "mx"', effects: ["quality.lang_spanish += 3 + (100 - quality.lang_spanish) / 10"] }
+    - { weight: 1, when: 'city.id == relocation/montreal', effects: ["quality.lang_french += 3 + (100 - quality.lang_french) / 10"] }
+    - { weight: 1, when: 'city.country != "jp" and city.country != "mx" and city.id != relocation/montreal', effects: ["quality.lang_english += 3 + (100 - quality.lang_english) / 10"] }
+
+- id: language-barrier
+  icon: 🗯️
+  trigger: event
+  chance: 100%
+  when: (city.country == "jp" ? quality.lang_japanese : (city.country == "mx" ? quality.lang_spanish : (city.id == relocation/montreal ? quality.lang_french : quality.lang_english))) < 40
+  tags: [relocation, language]
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness -= 1 + (40 - (city.country == "jp" ? quality.lang_japanese : (city.country == "mx" ? quality.lang_spanish : (city.id == relocation/montreal ? quality.lang_french : quality.lang_english)))) / 10
+
+- id: language-barrier-job
+  icon: 💼
+  trigger: event
+  chance: (30 - (city.country == "jp" ? quality.lang_japanese : (city.country == "mx" ? quality.lang_spanish : (city.id == relocation/montreal ? quality.lang_french : quality.lang_english)))) * 50
+  when: quality.reloc_abroad and (in_group("full-time") or in_group("part-time")) and (city.country == "jp" ? quality.lang_japanese : (city.country == "mx" ? quality.lang_spanish : (city.id == relocation/montreal ? quality.lang_french : quality.lang_english))) < 30
+  tags: [relocation, language]
+  text: "Your employer lets you go, citing trouble communicating."
+  outcomes:
+    - weight: 1
+      effects:
+        - end_occupation(core-loop/cashier)
+        - end_occupation(core-loop/barista)
+        - end_occupation(core-loop/server)
+        - end_occupation(core-loop/shift-lead)
+        - end_occupation(core-loop/restaurant-manager)
+        - end_occupation(core-loop/apprentice)
+        - end_occupation(core-loop/electrician)
+        - end_occupation(core-loop/master-electrician)
+        - end_occupation(core-loop/junior-analyst)
+        - end_occupation(core-loop/analyst)
+        - end_occupation(core-loop/senior-analyst)
+        - end_occupation(core-loop/junior-engineer)
+        - end_occupation(core-loop/engineer)
+        - end_occupation(core-loop/senior-engineer)
+        - end_occupation(core-loop/staff-nurse)
+        - end_occupation(core-loop/charge-nurse)
+        - end_occupation(core-loop/nurse-manager)
+        - end_occupation(core-loop/studio-assistant)
+        - end_occupation(core-loop/designer)
+        - end_occupation(core-loop/art-director)
+        - stat.happiness -= 4
+        - journal("Lost a job over a language barrier at age {age}.")
+

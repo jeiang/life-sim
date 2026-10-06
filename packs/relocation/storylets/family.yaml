@@ -1,0 +1,391 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Relatives and friends left behind. Nobody has a location in v1: `quality.reloc_abroad` says the
+# player lives outside their home country, and the NPC pass (after the player's year) applies these
+# to every living parent, sibling and friend. Closeness drifts down each year unless you keep up:
+# a call is +4 and a visit home is +10 on the reunion a year later, against a drift of -6 at 75%.
+- id: left-behind-drift
+  trigger: event
+  scope: person
+  target: [core-loop/parent, core-loop/sibling, core-loop/friend]
+  chance: 75%
+  when: quality.reloc_abroad
+  tags: [relocation]
+  outcomes:
+    - weight: 1
+      effects:
+        - relationship(person).closeness += -6
+
+- id: call-home
+  label: Call home
+  icon: 📞
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [core-loop/parent, core-loop/sibling, core-loop/friend]
+  tags: [relocation, relationship]
+  when: quality.reloc_abroad
+  repeatable: true
+  text: "You dial {person.first_name}, across the time zones."
+  outcomes:
+    - weight: 80
+      text: "A long, warm call. It is good to hear a familiar voice."
+      effects:
+        - stat.happiness += 2
+        - relationship(person).closeness += 4
+    - weight: 20
+      text: "A bad line and a short call, but you both tried."
+      effects:
+        - relationship(person).closeness += 1
+
+- id: visit-home
+  label: Visit home
+  icon: 🛬
+  trigger: action
+  menu: assets/relocation
+  tags: [relocation]
+  when: age >= 18 and not confined and quality.reloc_abroad and money >= 120000
+  cooldown: 1
+  text: "A trip home costs $1,200. The people you left behind will want to see you."
+  outcomes:
+    - weight: 1
+      text: "You spend a week at home, back in the old kitchens and streets."
+      effects:
+        - money -= 120000
+        - stat.happiness += 4
+        - quality.reloc_return_age = age
+        - journal("Visited home at age {age}.")
+
+- id: reunion
+  icon: 🫂
+  trigger: event
+  scope: person
+  target: [core-loop/parent, core-loop/sibling, core-loop/friend]
+  chance: 80%
+  when: quality.reloc_return_age > 0 and quality.reloc_return_age == age - 1
+  tags: [relocation]
+  text: "{person.first_name} has not forgotten your time back home."
+  outcomes:
+    - weight: 75
+      text: "You and {person.first_name} pick up like no time has passed."
+      effects:
+        - stat.happiness += 2
+        - relationship(person).closeness += 10
+    - weight: 25
+      text: "{person.first_name} is warm, but the distance shows."
+      effects:
+        - relationship(person).closeness += 4
+
+- id: child-move-domestic
+  icon: 🚚
+  trigger: event
+  chance: 0.7%
+  when: age >= 5 and age < 18 and living.with_parents
+  max_per_life: 2
+  tags: [relocation, school]
+  text: "Your family packs up and moves to another city."
+  outcomes:
+    - weight: 1
+      when: 'city.country == \"us\" and city.id != core-loop/dustwater'
+      text: "The family settles in Dustwater, and you start at a new school."
+      effects:
+        - move_to(core-loop/dustwater)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to Dustwater with the family and changed schools at age {age}.\")"
+    - weight: 1
+      when: 'city.country == \"us\" and city.id != core-loop/harborview'
+      text: "The family settles in Harborview, and you start at a new school."
+      effects:
+        - move_to(core-loop/harborview)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to Harborview with the family and changed schools at age {age}.\")"
+    - weight: 1
+      when: 'city.country == \"us\" and city.id != core-loop/maple-falls'
+      text: "The family settles in Maple Falls, and you start at a new school."
+      effects:
+        - move_to(core-loop/maple-falls)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to Maple Falls with the family and changed schools at age {age}.\")"
+    - weight: 1
+      when: 'city.country == \"us\" and city.id != core-loop/riverton'
+      text: "The family settles in Riverton, and you start at a new school."
+      effects:
+        - move_to(core-loop/riverton)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to Riverton with the family and changed schools at age {age}.\")"
+    - weight: 1
+      when: 'city.country == \"us\" and city.id != core-loop/lakeshore'
+      text: "The family settles in Lakeshore, and you start at a new school."
+      effects:
+        - move_to(core-loop/lakeshore)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to Lakeshore with the family and changed schools at age {age}.\")"
+    - weight: 1
+      when: 'city.country == \"us\" and city.id != core-loop/goldcrest'
+      text: "The family settles in Goldcrest, and you start at a new school."
+      effects:
+        - move_to(core-loop/goldcrest)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to Goldcrest with the family and changed schools at age {age}.\")"
+    - weight: 1
+      when: 'city.country == \"ca\" and city.id != relocation/toronto'
+      text: "The family settles in Toronto, and you start at a new school."
+      effects:
+        - move_to(relocation/toronto)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to Toronto with the family and changed schools at age {age}.\")"
+    - weight: 1
+      when: 'city.country == \"ca\" and city.id != relocation/montreal'
+      text: "The family settles in Montreal, and you start at a new school."
+      effects:
+        - move_to(relocation/montreal)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to Montreal with the family and changed schools at age {age}.\")"
+    - weight: 1
+      when: 'city.country == \"uk\" and city.id != relocation/london'
+      text: "The family settles in London, and you start at a new school."
+      effects:
+        - move_to(relocation/london)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to London with the family and changed schools at age {age}.\")"
+    - weight: 1
+      when: 'city.country == \"uk\" and city.id != relocation/manchester'
+      text: "The family settles in Manchester, and you start at a new school."
+      effects:
+        - move_to(relocation/manchester)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to Manchester with the family and changed schools at age {age}.\")"
+    - weight: 1
+      when: 'city.country == \"jp\" and city.id != relocation/tokyo'
+      text: "The family settles in Tokyo, and you start at a new school."
+      effects:
+        - move_to(relocation/tokyo)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to Tokyo with the family and changed schools at age {age}.\")"
+    - weight: 1
+      when: 'city.country == \"jp\" and city.id != relocation/osaka'
+      text: "The family settles in Osaka, and you start at a new school."
+      effects:
+        - move_to(relocation/osaka)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to Osaka with the family and changed schools at age {age}.\")"
+    - weight: 1
+      when: 'city.country == \"mx\" and city.id != relocation/mexico-city'
+      text: "The family settles in Mexico City, and you start at a new school."
+      effects:
+        - move_to(relocation/mexico-city)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to Mexico City with the family and changed schools at age {age}.\")"
+    - weight: 1
+      when: 'city.country == \"mx\" and city.id != relocation/guadalajara'
+      text: "The family settles in Guadalajara, and you start at a new school."
+      effects:
+        - move_to(relocation/guadalajara)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "journal(\"Moved to Guadalajara with the family and changed schools at age {age}.\")"
+
+- id: child-move-abroad
+  icon: ✈️
+  trigger: event
+  chance: 0.25%
+  when: age >= 5 and age < 18 and living.with_parents
+  max_per_life: 1
+  tags: [relocation, school]
+  text: "Your family moves to another country."
+  outcomes:
+    - weight: 1
+      when: 'city.country != "us"'
+      text: "The family moves to Dustwater. A new school, a new language, and everything else new."
+      effects:
+        - move_to(core-loop/dustwater)
+        - quality.reloc_home_country = 1
+        - quality.lang_english = max(quality.lang_english, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to Dustwater at age {age}, and you started over at a new school.\")"
+    - weight: 1
+      when: 'city.country != "us"'
+      text: "The family moves to Harborview. A new school, a new language, and everything else new."
+      effects:
+        - move_to(core-loop/harborview)
+        - quality.reloc_home_country = 1
+        - quality.lang_english = max(quality.lang_english, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to Harborview at age {age}, and you started over at a new school.\")"
+    - weight: 1
+      when: 'city.country != "us"'
+      text: "The family moves to Maple Falls. A new school, a new language, and everything else new."
+      effects:
+        - move_to(core-loop/maple-falls)
+        - quality.reloc_home_country = 1
+        - quality.lang_english = max(quality.lang_english, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to Maple Falls at age {age}, and you started over at a new school.\")"
+    - weight: 1
+      when: 'city.country != "us"'
+      text: "The family moves to Riverton. A new school, a new language, and everything else new."
+      effects:
+        - move_to(core-loop/riverton)
+        - quality.reloc_home_country = 1
+        - quality.lang_english = max(quality.lang_english, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to Riverton at age {age}, and you started over at a new school.\")"
+    - weight: 1
+      when: 'city.country != "us"'
+      text: "The family moves to Lakeshore. A new school, a new language, and everything else new."
+      effects:
+        - move_to(core-loop/lakeshore)
+        - quality.reloc_home_country = 1
+        - quality.lang_english = max(quality.lang_english, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to Lakeshore at age {age}, and you started over at a new school.\")"
+    - weight: 1
+      when: 'city.country != "us"'
+      text: "The family moves to Goldcrest. A new school, a new language, and everything else new."
+      effects:
+        - move_to(core-loop/goldcrest)
+        - quality.reloc_home_country = 1
+        - quality.lang_english = max(quality.lang_english, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to Goldcrest at age {age}, and you started over at a new school.\")"
+    - weight: 1
+      when: 'city.country != "ca"'
+      text: "The family moves to Toronto, Canada. A new school, a new language, and everything else new."
+      effects:
+        - move_to(relocation/toronto)
+        - quality.reloc_home_country = 2
+        - quality.lang_english = max(quality.lang_english, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to Toronto, Canada at age {age}, and you started over at a new school.\")"
+    - weight: 1
+      when: 'city.country != "ca"'
+      text: "The family moves to Montreal, Canada. A new school, a new language, and everything else new."
+      effects:
+        - move_to(relocation/montreal)
+        - quality.reloc_home_country = 2
+        - quality.lang_french = max(quality.lang_french, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to Montreal, Canada at age {age}, and you started over at a new school.\")"
+    - weight: 1
+      when: 'city.country != "uk"'
+      text: "The family moves to London, the United Kingdom. A new school, a new language, and everything else new."
+      effects:
+        - move_to(relocation/london)
+        - quality.reloc_home_country = 3
+        - quality.lang_english = max(quality.lang_english, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to London, the United Kingdom at age {age}, and you started over at a new school.\")"
+    - weight: 1
+      when: 'city.country != "uk"'
+      text: "The family moves to Manchester, the United Kingdom. A new school, a new language, and everything else new."
+      effects:
+        - move_to(relocation/manchester)
+        - quality.reloc_home_country = 3
+        - quality.lang_english = max(quality.lang_english, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to Manchester, the United Kingdom at age {age}, and you started over at a new school.\")"
+    - weight: 1
+      when: 'city.country != "jp"'
+      text: "The family moves to Tokyo, Japan. A new school, a new language, and everything else new."
+      effects:
+        - move_to(relocation/tokyo)
+        - quality.reloc_home_country = 4
+        - quality.lang_japanese = max(quality.lang_japanese, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to Tokyo, Japan at age {age}, and you started over at a new school.\")"
+    - weight: 1
+      when: 'city.country != "jp"'
+      text: "The family moves to Osaka, Japan. A new school, a new language, and everything else new."
+      effects:
+        - move_to(relocation/osaka)
+        - quality.reloc_home_country = 4
+        - quality.lang_japanese = max(quality.lang_japanese, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to Osaka, Japan at age {age}, and you started over at a new school.\")"
+    - weight: 1
+      when: 'city.country != "mx"'
+      text: "The family moves to Mexico City, Mexico. A new school, a new language, and everything else new."
+      effects:
+        - move_to(relocation/mexico-city)
+        - quality.reloc_home_country = 5
+        - quality.lang_spanish = max(quality.lang_spanish, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to Mexico City, Mexico at age {age}, and you started over at a new school.\")"
+    - weight: 1
+      when: 'city.country != "mx"'
+      text: "The family moves to Guadalajara, Mexico. A new school, a new language, and everything else new."
+      effects:
+        - move_to(relocation/guadalajara)
+        - quality.reloc_home_country = 5
+        - quality.lang_spanish = max(quality.lang_spanish, 40)
+        - quality.reloc_child_move_age = age
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "journal(\"The family moved to Guadalajara, Mexico at age {age}, and you started over at a new school.\")"
+
+# Friends from the old school fade: the NPC pass runs in the year of the move.
+- id: childhood-friends-lose-touch
+  icon: 💔
+  trigger: event
+  scope: person
+  target: [core-loop/friend, core-loop/classmate]
+  chance: 70%
+  when: quality.reloc_child_move_age > 0 and quality.reloc_child_move_age == age
+  tags: [relocation]
+  outcomes:
+    - weight: 1
+      effects:
+        - relationship(person).closeness += -12
+

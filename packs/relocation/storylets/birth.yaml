@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Hidden birth roll: the country a life is raised in (`quality.reloc_home_country`: 1 US, 2 Canada, 3 UK,
+# 4 Japan, 5 Mexico) and its native language. Fires once at the first age-up, like core-loop's rolls,
+# and once for a life from an older save the first time it ages. Textless, so nothing is journaled.
+# A life born outside the US speaks the local language natively and English at a lower level.
+- id: birth-country
+  trigger: event
+  chance: 100%
+  when: age >= 1
+  once: true
+  tags: [relocation]
+  outcomes:
+    - { weight: 1, when: 'city.country == "us"', effects: ["quality.reloc_home_country = 1"] }
+    - { weight: 1, when: 'city.country == "ca" and city.id != relocation/montreal', effects: ["quality.reloc_home_country = 2"] }
+    - { weight: 1, when: 'city.id == relocation/montreal', effects: ["quality.reloc_home_country = 2", "quality.lang_french = 100", "quality.lang_english = 70"] }
+    - { weight: 1, when: 'city.country == "uk"', effects: ["quality.reloc_home_country = 3"] }
+    - { weight: 1, when: 'city.country == "jp"', effects: ["quality.reloc_home_country = 4", "quality.lang_japanese = 100", "quality.lang_english = 30"] }
+    - { weight: 1, when: 'city.country == "mx"', effects: ["quality.reloc_home_country = 5", "quality.lang_spanish = 100", "quality.lang_english = 40"] }
+

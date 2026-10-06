@@ -1,0 +1,1 @@
+WIP: generated storylets, NOT yet compiled. Known TODO: quote when/weight/chance scalars containing "? :" (YAML), fix escaped quotes in child-move-domestic when:, write pack.yaml (qualities reloc_home_country,abroad,dest,return_age,child_move_age,applications,denials,emigrations,returns), cities/cities.yaml, ids.lock, tests, harness section, BALANCE.md, docs/CONTEXT.

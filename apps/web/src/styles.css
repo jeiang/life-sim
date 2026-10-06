@@ -54,8 +54,25 @@
     sans-serif;
 }
 
-html {
+/* Root size: 100% elsewhere; on iOS, -apple-system-body makes the rem base follow
+   Larger Text (Dynamic Type). All sizes are rem/em so they cascade. */
+:root {
   color-scheme: light dark;
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+@supports (font: -apple-system-body) {
+  :root {
+    font: -apple-system-body, sans-serif;
+  }
+}
+
+/* The app shell is exactly the viewport; only inner regions scroll. */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {

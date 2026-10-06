@@ -67,6 +67,35 @@ export function rolesOf(world: World, id: PersonId): string[] {
     .map((r) => r.role);
 }
 
+/** The player's closeness to a person: the maximum over their role rows, 0 with no tie. */
+export function closenessOf(world: World, id: PersonId): number {
+  let best = 0;
+  for (const r of world.relationships)
+    if (r.from === world.playerId && r.to === id && r.closeness > best)
+      best = r.closeness;
+  return best;
+}
+
+/** Living people the player holds `role` toward with closeness in `[min, max]`. */
+function countRole(
+  world: World,
+  role: string,
+  min: number,
+  max: number,
+): number {
+  let n = 0;
+  for (const r of world.relationships)
+    if (
+      r.from === world.playerId &&
+      r.role === role &&
+      r.closeness >= min &&
+      r.closeness <= max &&
+      getPerson(world, r.to).alive
+    )
+      n++;
+  return n;
+}
+
 function personField(
   world: World,
   idx: PackIndex,
@@ -80,6 +109,7 @@ function personField(
   if (field === "age") return p.age;
   if (field === "alive") return p.alive;
   if (field === "role") return roleOf(world, id) ?? "";
+  if (field === "closeness") return closenessOf(world, id);
   if (field.startsWith("stat.")) return p.stats[field.slice(5)] ?? 0;
   if (field.startsWith("quality."))
     return qualityOf(p, idx, field.slice(8)) as Value;
@@ -221,15 +251,13 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
           if (!std) throw new RangeError(`unknown standard '${id}'`);
           return standardCost(subject, idx, std);
         }
-        case "role_closeness":
-        case "role_count": {
+        case "role_closeness": {
           const alive = world.relationships.filter(
             (r) =>
               r.from === world.playerId &&
               r.role === id &&
               world.persons.get(r.to)?.alive,
           );
-          if (name === "role_count") return alive.length;
           return alive.length
             ? Math.trunc(
                 alive.reduce((n, r) => n + r.closeness, 0) / alive.length,
@@ -240,6 +268,8 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
           return subject.occupations.some((o) => o.group === id);
         case "years_in_group":
           return yearsInGroup(subject, id);
+        case "count_role":
+          return countRole(world, id, args[1] as number, args[2] as number);
         case "has":
           return (
             subject.occupations.some((o) => o.kindId === id) ||

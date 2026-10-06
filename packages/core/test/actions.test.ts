@@ -21,6 +21,7 @@ import {
   type World,
   worldHash,
 } from "../src/index.ts";
+import { putRelationship } from "../src/state/world.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const compiled = compilePacks(join(HERE, "fixtures", "packs"));
@@ -359,5 +360,92 @@ describe("the core-loop starting family and labels", () => {
       .filter((s) => s.trigger === "action");
     expect(labelled.length).toBeGreaterThan(0);
     for (const s of labelled) expect(s.label, s.id).toBeTruthy();
+  });
+});
+
+describe("roles and closeness", () => {
+  const rows = (w: World, to: number) =>
+    w.relationships
+      .filter((r) => r.from === w.playerId && r.to === to)
+      .map((r) => [r.role, r.closeness]);
+  const locked = (
+    w: World,
+    menu: "occupation" | "relationships",
+    id: string,
+    target?: number,
+  ) => listActions(w, bundles, menu, target).find((r) => r.id === id)?.locked;
+
+  test("setting a role replaces every row and keeps the highest closeness", () => {
+    let w = grownUp(20);
+    const id = people(w)[0]?.id as number;
+    w = putRelationship(w, {
+      from: w.playerId,
+      to: id,
+      role: "life/neighbour",
+      closeness: 90,
+    });
+    const before = rows(w, id);
+    expect(before).toHaveLength(2);
+    const after = runAction(w, bundles, "life/court", id).world;
+    expect(rows(after, id)).toEqual([["life/partner", 90]]);
+    expect(
+      runAction(after, bundles, "life/marry", id).world.relationships.filter(
+        (r) => r.to === id,
+      ),
+    ).toEqual([
+      { from: w.playerId, to: id, role: "life/spouse", closeness: 90 },
+    ]);
+  });
+
+  test("a role set on a spawned person keeps its closeness", () => {
+    const w = runAction(grownUp(20), bundles, "life/meet-partner").world;
+    const n = people(w).at(-1)?.id as number;
+    expect(rows(w, n)).toEqual([["life/partner", 70]]);
+  });
+
+  test("person.closeness gates an action at its boundary", () => {
+    const w = grownUp(20);
+    const id = people(w)[0]?.id as number;
+    const set = (c: number) =>
+      putRelationship(w, {
+        from: w.playerId,
+        to: id,
+        role: "life/parent",
+        closeness: c,
+      });
+    expect(locked(set(59), "relationships", "life/close-only", id)).toBe(true);
+    expect(locked(set(60), "relationships", "life/close-only", id)).toBe(false);
+  });
+
+  test("count_role counts living people in the closeness range, inclusive", () => {
+    let w = grownUp(20);
+    const [a, b, c] = people(w).map((p) => p.id) as [number, number, number];
+    const partner = (w0: World, to: number, closeness: number) =>
+      putRelationship(w0, {
+        from: w0.playerId,
+        to,
+        role: "life/partner",
+        closeness,
+      });
+    expect(locked(w, "occupation", "life/partner-perk")).toBe(true);
+    w = partner(w, a, 59);
+    w = partner(w, b, 81);
+    expect(locked(w, "occupation", "life/partner-perk")).toBe(true);
+    w = partner(w, c, 60);
+    expect(locked(w, "occupation", "life/partner-perk")).toBe(false);
+    w = partner(w, c, 80);
+    expect(locked(w, "occupation", "life/partner-perk")).toBe(false);
+    // the only in-range partner dies
+    w = updatePerson(w, c, (p) => ({ ...p, alive: false }));
+    expect(getPerson(w, c).alive).toBe(false);
+    expect(locked(w, "occupation", "life/partner-perk")).toBe(true);
+  });
+
+  test("replay reproduces role changes", () => {
+    let w = newLife(bundles, 5);
+    w = runAction(w, bundles, "life/meet-partner").world;
+    const n = people(w).at(-1)?.id as number;
+    w = runAction(w, bundles, "life/marry", n).world;
+    expect(worldHash(replay(w.seed, bundles, w.choiceLog))).toBe(worldHash(w));
   });
 });

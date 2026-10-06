@@ -24,10 +24,9 @@ export const FUNCTIONS = {
   standard_cost: { params: ["id"], returns: "int" },
   /** Average closeness (integer) to the living people the player holds this role toward; 0 with none. */
   role_closeness: { params: ["id"], returns: "int" },
-  /** Living people the player holds this role toward. */
-  role_count: { params: ["id"], returns: "int" },
   in_group: { params: ["group"], returns: "bool" },
   years_in_group: { params: ["group"], returns: "int" },
+  count_role: { params: ["id", "int", "int"], returns: "int" },
 } as const satisfies Record<string, Signature>;
 
 /** Effect calls (statements with arguments). `spawn_person(...) as <name>` is parsed separately. */

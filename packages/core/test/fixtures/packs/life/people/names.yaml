@@ -1,6 +1,8 @@
 - { kind: role, id: parent, label: Parent }
 - { kind: role, id: sibling, label: Sibling }
 - { kind: role, id: neighbour, label: Neighbour }
+- { kind: role, id: partner, label: Partner }
+- { kind: role, id: spouse, label: Spouse }
 - kind: generator
   id: player
   first_names: [Ada, Bo]

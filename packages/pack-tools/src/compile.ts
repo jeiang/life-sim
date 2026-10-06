@@ -140,6 +140,7 @@ const TOP_RESERVED = new Set([
 const CALL_KINDS: Record<string, Kind[][] | undefined> = {
   has_occupation: [["occupation"]],
   years_in: [["occupation"]],
+  count_role: [["role"]],
   owns: [["item"]],
   start_occupation: [["occupation"]],
   end_occupation: [["occupation"]],
@@ -148,7 +149,6 @@ const CALL_KINDS: Record<string, Kind[][] | undefined> = {
   set_standard: [["standard"]],
   standard_cost: [["standard"]],
   role_closeness: [["role"]],
-  role_count: [["role"]],
   grant_asset: [["item"]],
   remove_asset: [["item"]],
   spawn_person: [["role"], ["generator"]],
@@ -833,6 +833,7 @@ class PackCompiler {
         "person.last_name": "string",
         "person.role": "id",
         "person.alive": "bool",
+        "person.closeness": "int",
       };
       for (const s of this.statIds) n[`person.stat.${s}`] = "int";
       return n;
@@ -1044,6 +1045,7 @@ class PackCompiler {
         bound[`${name}.first_name`] = "string";
         bound[`${name}.last_name`] = "string";
         bound[`${name}.age`] = "int";
+        bound[`${name}.closeness`] = "int";
         persons.push(name);
       }
       this.effectText(
@@ -1082,7 +1084,8 @@ class PackCompiler {
       case "set":
       case "add":
       case "sub": {
-        const v = this.resolveExpr(e[2], undefined, path);
+        const isRole = typeof e[1] !== "string" && e[1][2] === "role";
+        const v = this.resolveExpr(e[2], isRole ? ["role"] : undefined, path);
         return v === undefined ? undefined : ([e[0], e[1], v] as Effect);
       }
       case "do": {

@@ -1,0 +1,46 @@
+- id: court
+  trigger: action
+  menu: relationships
+  scope: person
+  text: You start dating {person.first_name}.
+  outcomes:
+    - effects:
+        - relationship(person).role = partner
+
+- id: marry
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [partner]
+  text: You marry {person.first_name}.
+  outcomes:
+    - effects:
+        - relationship(person).role = spouse
+
+- id: meet-partner
+  trigger: action
+  menu: relationships
+  text: You meet someone special.
+  outcomes:
+    - effects:
+        - spawn_person(neighbour, local) as n
+        - relationship(n).closeness += 20
+        - relationship(n).role = partner
+
+- id: close-only
+  trigger: action
+  menu: relationships
+  scope: person
+  when: person.closeness >= 60
+  text: You confide in {person.first_name}.
+  outcomes:
+    - effects:
+        - money += 1
+
+- id: partner-perk
+  trigger: action
+  menu: occupation
+  when: count_role(partner, 60, 80) >= 1
+  outcomes:
+    - effects:
+        - money += 7

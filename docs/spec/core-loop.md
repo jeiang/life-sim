@@ -43,7 +43,8 @@ About 12 jobs in 4 ladders, each rung with pay, requirements, and a promotion ta
 - At school start: 2-3 classmates. At job start: 2 coworkers.
 - Verbs (Relationships menu, profile): spend time, conversation, ask for money (family), befriend (classmates, coworkers).
 - NPC yearly pass: aging, stat drift, and a few NPC storylets (for example a parent's illness or death).
-- No dating, marriage, or children (later Pack).
+- Core-loop declares the roles `partner`, `spouse` and `child` (no content creates them yet), so core-loop content can be guarded on them; a later Pack turns people into them with `relationship(p).role = ...`.
+- No dating, marriage, or children in core-loop itself (later Pack).
 
 ## Shop and assets (`assets/shopping`)
 

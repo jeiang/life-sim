@@ -270,11 +270,17 @@ export function checkStmt(c: Checker, env: CheckEnv, s: Stmt): Effect | null {
         `unknown person '${s.person.name}'${suggest(s.person.name, persons)}`,
       );
     }
+    if (s.field === "role") {
+      if (s.op !== "=")
+        return err(c, s, "relationship(...).role only allows '='");
+      const v = c.param(s.value, "id");
+      return v && ["set", ["relationship", s.person.name, s.field], v[1]];
+    }
     if (s.field !== "closeness")
       return err(
         c,
         s,
-        `unknown relationship field '${s.field}'; only 'closeness' can change`,
+        `unknown relationship field '${s.field}'; only 'closeness' and 'role' can change`,
       );
     if (s.op !== "+=")
       return err(c, s, "relationship(...).closeness only allows '+='");

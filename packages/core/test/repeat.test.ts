@@ -4,11 +4,14 @@ import { describe, expect, test } from "vitest";
 import { compilePacks } from "../../pack-tools/src/index.ts";
 import {
   ageUp,
+  choose,
+  deserializeWorld,
   getPerson,
   newLife,
   personsInIdOrder,
   replay,
   runAction,
+  serializeWorld,
   setStat,
   type World,
   worldHash,
@@ -77,6 +80,25 @@ describe("repeatable actions", () => {
     const w = use(times(zeroed, "life/hug", 12, mom), "life/hug", dad);
     expect(closeness(w, dad)).toBe(7);
     expect(w.uses[`life/hug#${dad}`]).toBe(1);
+  });
+
+  test("a next: chain keeps the repeat factor, through a pending choice and a save", () => {
+    const lastGain = (n: number) => {
+      let w = fresh();
+      let before = 0;
+      for (let i = 0; i < n; i++) {
+        before = player(w).stats.happiness;
+        w = use(w, "life/train-chain");
+        expect(w.pending?.storyletId).toBe("life/chain-ask");
+        w = deserializeWorld(serializeWorld(w));
+        w = choose(w, bundles, 0).world;
+      }
+      return player(w).stats.happiness - before;
+    };
+    // the last use's three +10 steps: all kept, then half (5 each), then nothing
+    expect(lastGain(1)).toBe(30);
+    expect(lastGain(2)).toBe(15);
+    expect(lastGain(3)).toBe(0);
   });
 
   test("counters reset at age-up and survive replay and the hash", () => {

@@ -145,7 +145,7 @@ With the curve `{ full: F, reduced: R, factor: P }`:
 | F+1 to R | P (default 25%) |
 | R+1 and later | none |
 
-Only **gains** shrink: positive `stat.x += n` (and `-= -n`) deltas and positive `relationship(p).closeness +=` deltas, each rounded toward zero. Money never scales (pay, prizes and costs apply in full), nor do costs, negative deltas, quality changes, `stat.x = n`, flags, journal lines, spawned people or any other effect, so repeating never gets safer. Only the outcomes of the repeatable storylet itself scale, not those of a storylet it chains to with `next`.
+Only **gains** shrink: positive `stat.x += n` (and `-= -n`) deltas and positive `relationship(p).closeness +=` deltas, each rounded toward zero. Money never scales (pay, prizes and costs apply in full), nor do costs, negative deltas, quality changes, `stat.x = n`, flags, journal lines, spawned people or any other effect, so repeating never gets safer. A storylet chained with `next` (also across a choice, and in a saved pending choice) keeps the factor of the repeatable action that led to it, so its gains shrink at the same use count; a chained storylet that is itself repeatable takes the smaller of the two factors.
 
 From use F+1 the Core adds "You are getting tired of this." to the outcome text; from use R+1 it adds "It no longer helps this year." Packs can write their own with `uses_this_year`.
 

@@ -296,8 +296,10 @@ describe("trip outcomes", () => {
       expect(me(w).money).toBe(before - 150000);
       gains.push(stat(w, "happiness") - 20);
     }
-    expect(gains.slice(0, 10)).toEqual(Array(10).fill(12));
-    expect(gains.slice(10, 20)).toEqual(Array(10).fill(3));
+    // core-loop's curve: full to use 3, a quarter to use 8, then nothing.
+    expect(gains.slice(0, 3)).toEqual(Array(3).fill(12));
+    expect(gains.slice(3, 8)).toEqual(Array(5).fill(3));
+    expect(gains[8]).toBe(0);
     expect(gains[20]).toBe(0);
     // A bad outcome stays full at use 21.
     const bad = only(VAC, 0, 3);

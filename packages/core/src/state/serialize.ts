@@ -211,6 +211,9 @@ function pending(v: unknown, p: string): Pending {
     storyletId: str(o.storyletId, `${p}.storyletId`),
     ...(o.scope === undefined ? {} : { scope: scope(o.scope, `${p}.scope`) }),
     ...optAmount(o.amount, `${p}.amount`),
+    ...(o.factorBp === undefined
+      ? {}
+      : { factorBp: int(o.factorBp, `${p}.factorBp`) }),
     ...(o.rest === undefined
       ? {}
       : {

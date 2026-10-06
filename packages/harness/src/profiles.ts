@@ -10,7 +10,11 @@ import {
 } from "@life/core";
 
 export const PROFILE_NAMES = ["random", "studious", "spender", "idle"] as const;
-export type ProfileName = (typeof PROFILE_NAMES)[number];
+/** Profiles that only run when asked for by name (`--profile grinder`), never in `all`. */
+export const EXTRA_PROFILE_NAMES = ["grinder"] as const;
+export type ProfileName =
+  | (typeof PROFILE_NAMES)[number]
+  | (typeof EXTRA_PROFILE_NAMES)[number];
 
 /** One voluntary move: an action from a menu, a purchase, or a sale. */
 export type Move =
@@ -188,7 +192,23 @@ const idle: Profile = {
   pickChoice: uniformChoice,
 };
 
+/** Does repeatable actions all year, 12 a year, to stress diminishing returns. */
+const grinder: Profile = {
+  maxMoves: () => 12,
+  nextMove(w, ctx, rng) {
+    const repeatable = new Set(
+      ctx.bundles.flatMap((b) =>
+        b.storylets.filter((s) => s.repeatable).map((s) => s.id),
+      ),
+    );
+    const rows = unlockedActions(w, ctx).filter((r) => repeatable.has(r.id));
+    return rows.length === 0 ? null : asMove(pick(rows, rng), rng);
+  },
+  pickChoice: uniformChoice,
+};
+
 export const PROFILES: Record<ProfileName, Profile> = {
+  grinder,
   random,
   studious,
   spender,

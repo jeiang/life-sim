@@ -22,6 +22,7 @@ Every choice comes from the seeded RNG, so a run is reproducible from its seed.
 | `studious` | Prefers study actions and university; accepts job offers |
 | `spender` | Buys whenever affordable, takes loans when offered |
 | `idle` | Takes no voluntary actions; answers events at random |
+| `grinder` | 12 random repeatable actions a year, to stress diminishing returns; opt-in (`--profile grinder`), not part of `all` |
 
 ## CI check `harness`
 
@@ -47,6 +48,7 @@ It **reports** without failing, in `report.md` and `report.json` in the check ou
 - housing: age at moving out, share moved out and kicked out (of lives reaching 18), and share still living with their parents at 30 and 40, overall and per profile;
 - repeated activities: per repeatable action, uses per year lived, mean and maximum uses in a year it was used, and the share of those years past the full-effect and reduced ranges;
 - Vacations (only when Pack `vacations` is loaded): trips per life by price tier, trip spending as a share of gross earnings, travel deaths per 10,000 trips, and median net worth of travellers against non-travellers within each profile;
+- stats at 100: share of living lives at the cap, per stat, by decade of age;
 - stat distributions by age.
 
 Balance bands that fail CI (for example a median age at death outside a range) can be added once content settles. Until then, balance findings guide authoring but never block merges.

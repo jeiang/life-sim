@@ -513,7 +513,15 @@ export function choose(
     ...appendChoice(world, { t: "choose", i: choiceIndex }),
     pending: null,
   };
-  const w = resolveChoice(cleared, idx, s, p.scope, choiceIndex, p.amount);
+  const w = resolveChoice(
+    cleared,
+    idx,
+    s,
+    p.scope,
+    choiceIndex,
+    p.amount,
+    p.factorBp,
+  );
   if (w.ended) return result(world, w);
   if (w.pending) {
     return result(world, {

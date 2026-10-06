@@ -195,6 +195,10 @@ function HiddenOptions() {
         </button>
       )}
       <Switch label="18+ mode" on={matureMode.value} onToggle={setMatureMode} />
+      <p class="text-sm text-text-muted">
+        18+ mode applies to lives you start from now on; lives already started
+        keep the setting they began with.
+      </p>
     </section>
   );
 }

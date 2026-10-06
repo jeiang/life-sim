@@ -173,7 +173,7 @@ A Hidden options switch that lets the player pick a life's starting options (a c
 _Avoid_: Cheat mode, debug mode
 
 **18+ mode**:
-A Hidden options switch, off by default, that sets the `mature` name in expressions so Packs can offer explicit variants of text. It chooses text only and is not part of a life's saved state.
+A Hidden options switch, off by default. Its state is recorded in a life when the life begins (a leading `mature` entry in the choice log), so it affects new lives only; Packs give such lives explicit text through `mature_text` / `mature_label`. It picks text only; it is not an expression name.
 _Avoid_: NSFW mode, adult mode
 
 **Graveyard**:

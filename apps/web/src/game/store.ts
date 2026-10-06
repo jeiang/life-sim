@@ -37,6 +37,7 @@ import {
   openLifeStore,
   requestPersistence,
 } from "../persistence/index.ts";
+import { matureMode } from "./hidden.ts";
 
 /** UI-layer seed: the only place the web app draws randomness (ADR 0002). */
 function randomSeed(): number {
@@ -265,12 +266,12 @@ export function confirmPurchase(mode: "cash" | "loan"): void {
 
 /** Add a new life to the list and play it. The current life stays in the list. */
 export function startNewLife(): void {
-  begin(newLife(bundles, randomSeed()));
+  begin(newLife(bundles, randomSeed(), { mature: matureMode.value }));
 }
 
 /** God mode: start a life with the chosen starting options. */
 export function startCustomLife(custom: CustomStart): void {
-  begin(newLife(bundles, randomSeed(), { custom }));
+  begin(newLife(bundles, randomSeed(), { custom, mature: matureMode.value }));
 }
 
 function begin(w: World): void {

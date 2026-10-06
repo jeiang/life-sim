@@ -17,11 +17,21 @@ export function replay(
   log: readonly ChoiceEntry[],
   opts: NewLifeOptions = {},
 ): World {
-  const first = log[0];
+  const mature = log[0]?.t === "mature";
+  const rest = mature ? log.slice(1) : log;
+  const first = rest[0];
   const start = first?.t === "start" ? first : undefined;
-  let w = newLife(bundles, seed, start ? { ...opts, custom: start } : opts);
-  for (const c of start ? log.slice(1) : log) {
+  let w = newLife(bundles, seed, {
+    ...opts,
+    ...(start ? { custom: start } : {}),
+    ...(mature ? { mature } : {}),
+  });
+  for (const c of start ? rest.slice(1) : rest) {
     switch (c.t) {
+      case "mature":
+        throw new RangeError(
+          "a mature entry is only valid as the first choice",
+        );
       case "start":
         throw new RangeError("a start entry is only valid as the first choice");
       case "age":

@@ -149,16 +149,6 @@ export function setAssertSink(sink: ((message: string) => void) | null): void {
   assertSink = sink;
 }
 
-let matureMode = false;
-
-/**
- * 18+ mode (per install, set by the app): the `mature` expression name reads it. It is a display
- * switch for text variants, not part of the saved world, so packs use it only to choose text.
- */
-export function setMature(on: boolean): void {
-  matureMode = on;
-}
-
 /** What the decision-slot draw did in one age-up (for the balance harness). */
 export interface DecisionDraw {
   /** Slots that fired (the length of the unbroken run of hits). */
@@ -215,7 +205,6 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
         return personField(world, idx, scope.subject, path.slice(7), path);
       if (path === "city.cost_index") return costIndexOf(subject, idx);
       if (path === "city.wage_index") return wageIndexOf(subject, idx);
-      if (path === "mature") return matureMode;
       if (path === "confined") return confinementOf(subject, idx) !== undefined;
       if (path === "living.cost") return livingCost(subject, idx);
       if (path === "living.standard") return standardOf(subject, idx)?.id ?? "";

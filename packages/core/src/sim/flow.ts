@@ -26,7 +26,7 @@ import {
   resolveChoice,
   scopeFor,
 } from "./storylets.ts";
-import { renderText } from "./text.ts";
+import { pickText, renderText } from "./text.ts";
 
 /** What a step changed in the journal, in order. */
 export interface SimResult {
@@ -514,10 +514,13 @@ export function describePending(
   return {
     storyletId: s.id,
     ...(s.icon ? { icon: s.icon } : {}),
-    text: s.text === undefined ? "" : renderText(s.text, world, idx, scope),
+    text:
+      s.text === undefined
+        ? ""
+        : renderText(pickText(world, s.text, s.matureText), world, idx, scope),
     choices: s.choices.map((c, index) => ({
       index,
-      label: c.label,
+      label: pickText(world, c.label, c.matureLabel),
       enabled: evalBool(c.when, world, idx, bound),
     })),
   };

@@ -1,4 +1,3 @@
-import { setMature } from "@life/core";
 import { signal } from "@preact/signals";
 import bcrypt from "bcryptjs";
 
@@ -64,9 +63,8 @@ const initial = loadHidden(storage());
 /** True once the code was entered on this install (or migrated from the old unlock). */
 export const unlocked = signal(initial.unlocked);
 export const godMode = signal(initial.god);
-/** 18+ mode: the `mature` expression name (docs/spec/pack-format.md). */
+/** 18+ mode: read when a life begins and recorded in it; changing it never affects a life already started (docs/spec/pack-format.md). */
 export const matureMode = signal(initial.mature);
-setMature(initial.mature);
 
 /** The build carries a code hash, so Settings can offer the code field. */
 export const hasCodeField = CODE_HASH !== undefined;
@@ -95,6 +93,5 @@ export function setGodMode(on: boolean): void {
 
 export function setMatureMode(on: boolean): void {
   matureMode.value = on;
-  setMature(on);
   persist(MATURE, on);
 }

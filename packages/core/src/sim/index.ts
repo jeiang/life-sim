@@ -11,7 +11,6 @@ export {
   setAssertSink,
   setChanceDropSink,
   setDecisionSink,
-  setMature,
 } from "./env.ts";
 export { playFixedLife } from "./fixed-life.ts";
 export {
@@ -62,4 +61,4 @@ export { replay } from "./replay.ts";
 export { REPOSSESSION_MISSES } from "./settle.ts";
 export type { AmountRange } from "./storylets.ts";
 export { succeed } from "./succession.ts";
-export { formatMoney, renderText } from "./text.ts";
+export { formatMoney, isMature, pickText, renderText } from "./text.ts";

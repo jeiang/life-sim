@@ -200,12 +200,24 @@ const Outcome = obj({
   weight: Type.Optional(Src),
   when: Type.Optional(Src),
   text: Type.Optional(Type.String()),
+  mature_text: Type.Optional(
+    Type.String({
+      description:
+        "Replaces `text` in a life begun with 18+ mode on (chosen at life start, never read live)",
+    }),
+  ),
   effects: Type.Optional(Type.Array(Type.String())),
   next: Type.Optional(Ref),
 });
 
 const Choice = obj({
   label: Label,
+  mature_label: Type.Optional(
+    Type.String({
+      minLength: 1,
+      description: "Replaces `label` in a life begun with 18+ mode on",
+    }),
+  ),
   when: Type.Optional(Src),
   outcomes: Type.Optional(Type.Array(Outcome)),
 });
@@ -266,6 +278,12 @@ export const StoryletSchema = obj(
     ),
     text: Type.Optional(Type.String()),
     amount: Type.Optional(Amount),
+    mature_text: Type.Optional(
+      Type.String({
+        description:
+          "Replaces `text` in a life begun with 18+ mode on (chosen at life start, never read live)",
+      }),
+    ),
     choices: Type.Optional(Type.Array(Choice)),
     outcomes: Type.Optional(Type.Array(Outcome)),
   },

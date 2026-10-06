@@ -112,6 +112,9 @@ test("18+ mode and god mode switches persist across a reload", async ({
 }) => {
   await openSettings(page);
   await unlock(page, CODE);
+  await expect(
+    page.getByText(/applies to lives you start from now on/),
+  ).toBeVisible();
   await page.getByRole("switch", { name: "18+ mode" }).click();
   await page.getByRole("switch", { name: "God mode" }).click();
   await expect(page.getByRole("switch", { name: "18+ mode" })).toBeChecked();

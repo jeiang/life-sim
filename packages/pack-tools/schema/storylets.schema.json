@@ -149,6 +149,56 @@
       "text": {
         "type": "string"
       },
+      "amount": {
+        "additionalProperties": false,
+        "title": "Amount input (actions only): the player picks money from `min` to `max` in `step`s (default 1); `amount` is bound in choice and outcome `when`, `weight`, effects and text",
+        "type": "object",
+        "required": ["min", "max"],
+        "properties": {
+          "min": {
+            "description": "Expression in the Pack expression language (ADR 0004)",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "max": {
+            "description": "Expression in the Pack expression language (ADR 0004)",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "step": {
+            "description": "Expression in the Pack expression language (ADR 0004)",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          }
+        }
+      },
       "choices": {
         "type": "array",
         "items": {

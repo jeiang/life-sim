@@ -107,7 +107,7 @@ The single unit of authored content: conditions, choices, weighted outcomes, and
 _Avoid_: Card, scenario, event (as the model term)
 
 **Action**:
-A storylet offered to the player in a menu.
+A storylet offered to the player in a menu. It may ask for an **amount** (a bet, a deposit) through the shared amount picker; the amount is bound as `amount` in its choices and outcomes.
 
 **Event**:
 A storylet drawn by the Core during an age-up.

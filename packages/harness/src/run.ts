@@ -241,7 +241,8 @@ export function runLife(
 
   const apply = (m: Move): void => {
     if (!w) return;
-    if (m.t === "action") w = runAction(w, bundles, m.id, m.target).world;
+    if (m.t === "action")
+      w = runAction(w, bundles, m.id, m.target, m.amount).world;
     else if (m.t === "buy") w = purchase(w, bundles, m.kind, m.mode).world;
     else w = sell(w, bundles, m.asset).world;
   };

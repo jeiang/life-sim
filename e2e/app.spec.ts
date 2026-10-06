@@ -370,3 +370,42 @@ test("amount picker clamps to min/max/step and confirms or cancels", async ({
   await expect(dialog).toBeHidden();
   expect(await picked()).toBeNull();
 });
+
+test("an action with an amount opens the shared picker, then runs with the amount", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const life = (fn: string, ...args: number[]) =>
+    page.evaluate(
+      ([f, a]) =>
+        (
+          window as unknown as Record<
+            string,
+            Record<string, (...x: number[]) => void>
+          >
+        ).__life?.[f as string]?.(...(a as number[])),
+      [fn, args] as const,
+    );
+  await life("addAmountAction");
+  await life("setMoney", 250);
+  const dialog = page.getByRole("dialog");
+  await page
+    .getByRole("navigation", { name: "Menus" })
+    .getByRole("button", { name: "Activities" })
+    .click();
+  await page.getByRole("button", { name: "Place a bet" }).click();
+  await expect(dialog.getByRole("spinbutton")).toBeFocused();
+  // Cancelling runs nothing.
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(page.getByText("You bet")).toHaveCount(0);
+  await page.getByRole("button", { name: "Place a bet" }).click();
+  await dialog.getByRole("spinbutton").fill("350");
+  await dialog.getByRole("button", { name: "Confirm" }).click();
+  await expect(dialog).toBeHidden();
+  await page.getByRole("button", { name: "Back" }).click();
+  await expect(
+    page.locator(".journal-line", { hasText: "You bet $4.00." }),
+  ).toBeVisible();
+});

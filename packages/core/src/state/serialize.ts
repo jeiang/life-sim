@@ -186,11 +186,17 @@ function scope(v: unknown, p: string): ScopeRef {
   return { kind, id: int(o.id, `${p}.id`) };
 }
 
+function optAmount(v: unknown, p: string): { amount?: number } {
+  const amount = optInt(v, p);
+  return amount === undefined ? {} : { amount };
+}
+
 function queued(v: unknown, p: string): QueuedEvent {
   const o = obj(v, p);
   return {
     storyletId: str(o.storyletId, `${p}.storyletId`),
     ...(o.scope === undefined ? {} : { scope: scope(o.scope, `${p}.scope`) }),
+    ...optAmount(o.amount, `${p}.amount`),
   };
 }
 
@@ -199,6 +205,7 @@ function pending(v: unknown, p: string): Pending {
   return {
     storyletId: str(o.storyletId, `${p}.storyletId`),
     ...(o.scope === undefined ? {} : { scope: scope(o.scope, `${p}.scope`) }),
+    ...optAmount(o.amount, `${p}.amount`),
     ...(o.rest === undefined
       ? {}
       : {
@@ -266,6 +273,7 @@ function choiceLog(v: unknown, p: string): ChoiceEntry[] {
           t,
           id: str(o.id, `${q}.id`),
           ...(target === undefined ? {} : { target }),
+          ...optAmount(o.amount, `${q}.amount`),
         };
       }
       case "buy": {

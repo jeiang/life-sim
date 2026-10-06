@@ -18,7 +18,14 @@ import { livesWithParents, startLivingOnOwn } from "./living.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import { indexBundles, type PackIndex } from "./pack-index.ts";
 import { settle } from "./settle.ts";
-import { isEligible, open, resolveChoice, scopeFor } from "./storylets.ts";
+import {
+  amountAllowed,
+  amountRange,
+  isEligible,
+  open,
+  resolveChoice,
+  scopeFor,
+} from "./storylets.ts";
 import { renderText } from "./text.ts";
 
 /** What a step changed in the journal, in order. */
@@ -413,6 +420,7 @@ export function startStorylet(
   bundles: readonly PackBundle[],
   storyletId: string,
   target?: PersonId,
+  amount?: number,
 ): SimResult {
   if (world.ended) throw new Error("the life has ended");
   if (world.pending) throw new Error("a storylet is pending; choose first");
@@ -421,15 +429,38 @@ export function startStorylet(
   if (!s) throw new RangeError(`unknown storylet '${storyletId}'`);
   const scope: ScopeRef | undefined =
     target === undefined ? undefined : { kind: "person", id: target };
+  if (!s.amount !== (amount === undefined))
+    throw new RangeError(
+      s.amount
+        ? `action '${storyletId}' needs an amount`
+        : `action '${storyletId}' takes no amount`,
+    );
   if (!isEligible(world, idx, s, scope)) return { world, lines: [] };
+  const range = amountRange(world, idx, s, scope);
+  if (range && !amountAllowed(range, amount as number))
+    throw new RangeError(
+      `amount ${amount} is outside ${range.min}..${range.max} step ${range.step}`,
+    );
   const logged = appendChoice(world, {
     t: "action",
     id: storyletId,
     ...(target === undefined ? {} : { target }),
+    ...(amount === undefined ? {} : { amount }),
   });
   return result(
     world,
-    advance(logged, idx, [{ storyletId, ...(scope ? { scope } : {}) }], false),
+    advance(
+      logged,
+      idx,
+      [
+        {
+          storyletId,
+          ...(scope ? { scope } : {}),
+          ...(amount === undefined ? {} : { amount }),
+        },
+      ],
+      false,
+    ),
   );
 }
 
@@ -452,7 +483,7 @@ export function choose(
     ...appendChoice(world, { t: "choose", i: choiceIndex }),
     pending: null,
   };
-  const w = resolveChoice(cleared, idx, s, p.scope, choiceIndex);
+  const w = resolveChoice(cleared, idx, s, p.scope, choiceIndex, p.amount);
   if (w.ended) return result(world, w);
   if (w.pending) {
     return result(world, {
@@ -475,6 +506,8 @@ export function describePending(
   const s = idx.storylets.get(p.storyletId);
   if (!s) throw new RangeError(`unknown storylet '${p.storyletId}'`);
   const scope = scopeFor(world, p.scope, s.id);
+  // Prompt text is rendered without `amount`; only choices and outcomes bind it.
+  const bound = scopeFor(world, p.scope, s.id, p.amount);
   return {
     storyletId: s.id,
     ...(s.icon ? { icon: s.icon } : {}),
@@ -482,7 +515,7 @@ export function describePending(
     choices: s.choices.map((c, index) => ({
       index,
       label: c.label,
-      enabled: evalBool(c.when, world, idx, scope),
+      enabled: evalBool(c.when, world, idx, bound),
     })),
   };
 }

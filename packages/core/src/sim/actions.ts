@@ -2,7 +2,12 @@ import type { CompiledStorylet, IconRef, PackBundle } from "../pack.ts";
 import type { PersonId, ScopeRef, World } from "../state/types.ts";
 import { type SimResult, startStorylet } from "./flow.ts";
 import { indexBundles } from "./pack-index.ts";
-import { hasTargetRole, ineligibility } from "./storylets.ts";
+import {
+  type AmountRange,
+  amountRange,
+  hasTargetRole,
+  ineligibility,
+} from "./storylets.ts";
 
 /** One row of an action menu. */
 export interface ActionRow {
@@ -14,6 +19,8 @@ export interface ActionRow {
   /** True when it cannot be run now; `reason` says why. */
   readonly locked: boolean;
   readonly reason?: string;
+  /** Actions with an amount input: the range the picker offers (minor units), as of now. */
+  readonly amount?: AmountRange;
 }
 
 const cmp = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
@@ -56,6 +63,7 @@ export function listActions(
     if ((s.scope ?? undefined) !== scope?.kind) continue;
     if (scope && !hasTargetRole(world, s, scope.id)) continue;
     const reason = lockedReason(world, bundles, s, scope);
+    const range = amountRange(world, idx, s, scope);
     rows.push({
       id: s.id,
       label: s.label ?? actionLabel(s.id),
@@ -63,6 +71,7 @@ export function listActions(
       menu: menuPath,
       locked: reason !== null,
       ...(reason === null ? {} : { reason }),
+      ...(range ? { amount: range } : {}),
     });
   }
   return rows;
@@ -82,16 +91,18 @@ export function listSubmenus(
 
 /**
  * Run an action from a menu (bound to `target` for `scope: person` actions). Returns the
- * world unchanged if it is locked. With choices it becomes `world.pending`.
+ * world unchanged if it is locked. With choices it becomes `world.pending`. An action with
+ * `amount` needs `amount` on the grid of its listed range (else `RangeError`); any other takes none.
  */
 export function runAction(
   world: World,
   bundles: readonly PackBundle[],
   actionId: string,
   target?: PersonId,
+  amount?: number,
 ): SimResult {
   const s = indexBundles(bundles).storylets.get(actionId);
   if (s?.trigger !== "action")
     throw new RangeError(`unknown action '${actionId}'`);
-  return startStorylet(world, bundles, actionId, target);
+  return startStorylet(world, bundles, actionId, target, amount);
 }

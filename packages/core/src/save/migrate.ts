@@ -64,10 +64,15 @@ const v0to1: Migration = (raw) => {
 const v1to2: Migration = (raw) =>
   mapWorlds(raw, (w) => ({ ...w, schemaVersion: 2, uses: w.uses ?? {} }));
 
+/** Version 3 adds the optional `amount` on pending storylets and action log entries; only the stamps change. */
+const v2to3: Migration = (raw) =>
+  mapWorlds(raw, (w) => ({ ...w, schemaVersion: 3 }));
+
 /** Migrations by the version they upgrade from. Append only; never edit a shipped step. */
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   0: v0to1,
   1: v1to2,
+  2: v2to3,
 };
 
 /**

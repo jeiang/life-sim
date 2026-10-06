@@ -1,4 +1,4 @@
-import { AmountPickerDemo } from "./components/AmountPickerDemo.tsx";
+import { AmountPrompt } from "./components/AmountPrompt.tsx";
 import { BottomBar } from "./components/BottomBar.tsx";
 import { ChoiceDialog } from "./components/ChoiceDialog.tsx";
 import { Feed } from "./components/Feed.tsx";
@@ -60,7 +60,7 @@ export function App() {
         <Screen />
         <ChoiceDialog />
         <PurchaseDialog />
-        {import.meta.env.VITE_E2E ? <AmountPickerDemo /> : null}
+        <AmountPrompt />
       </div>
     </div>
   );

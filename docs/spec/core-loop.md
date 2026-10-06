@@ -93,6 +93,9 @@ Core-loop ships no confining occupation (prison and hospital come with later Pac
 Gym, library, doctor, meditate, take a walk, and the job board. Each is an action storylet with age gates and stat effects. No casino; the amount picker is first used by the gambling Pack.
 
 Recreational and social actions are **repeatable** (pack-format: Repeatable actions) under the Pack's default curve `{ full: 10, reduced: 20, factor: 25% }`: go to the gym, visit the library, see a doctor, meditate, take a walk, study harder, spend time together and have a conversation. Uses 1-10 in a year give the full effect, 11-20 a quarter of every gain, 21 and later none; costs (the doctor's fee), harms and money are never reduced. Actions that apply, enrol, buy, borrow, quit, ask for money or a raise, take a test, or create or change people (job applications, enrolment, drop out, driving test, work harder, ask for a raise, quit, retire, ask for money, become friends, make a friend) keep their `cooldown` or one-off rules.
+### Amount input
+
+An action with `amount` is listed with its resolved range (`ActionRow.amount`) and opens the shared amount picker (modal; keyboard and screen-reader behaviour as in the purchase dialog) before it runs. `runAction(world, bundles, id, target?, amount?)` takes the picked amount and rejects one off the grid. The amount is logged in the `action` choice-log entry and kept in `world.pending.amount` while choices are open. See [ADR 0005](../adr/0005-amount-input-on-actions.md).
 
 ## Storylets
 

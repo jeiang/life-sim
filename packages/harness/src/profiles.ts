@@ -14,7 +14,12 @@ export type ProfileName = (typeof PROFILE_NAMES)[number];
 
 /** One voluntary move: an action from a menu, a purchase, or a sale. */
 export type Move =
-  | { readonly t: "action"; readonly id: string; readonly target?: PersonId }
+  | {
+      readonly t: "action";
+      readonly id: string;
+      readonly target?: PersonId;
+      readonly amount?: number;
+    }
   | {
       readonly t: "buy";
       readonly kind: string;
@@ -82,10 +87,20 @@ export function unlockedActions(
   return out;
 }
 
-const asMove = (r: ActionRow & { target?: PersonId }): Move => ({
+/** The `pickAmount` hook: an amount drawn uniformly from the action's grid of allowed amounts. */
+export function pickAmount(
+  range: NonNullable<ActionRow["amount"]>,
+  rng: Rng,
+): number {
+  const steps = Math.floor((range.max - range.min) / range.step) + 1;
+  return range.min + rng.int(steps) * range.step;
+}
+
+const asMove = (r: ActionRow & { target?: PersonId }, rng: Rng): Move => ({
   t: "action",
   id: r.id,
   ...(r.target === undefined ? {} : { target: r.target }),
+  ...(r.amount ? { amount: pickAmount(r.amount, rng) } : {}),
 });
 
 const pick = <T>(xs: readonly T[], rng: Rng): T => xs[rng.int(xs.length)] as T;
@@ -99,7 +114,7 @@ const random: Profile = {
   maxMoves: (rng) => rng.int(3),
   nextMove(w, ctx, rng) {
     const rows = unlockedActions(w, ctx);
-    return rows.length === 0 ? null : asMove(pick(rows, rng));
+    return rows.length === 0 ? null : asMove(pick(rows, rng), rng);
   },
   pickChoice: uniformChoice,
 };
@@ -119,7 +134,7 @@ const studious: Profile = {
     const age = [...w.persons.values()].find((p) => p.id === w.playerId)?.age;
     if ((age ?? 0) >= 65) {
       const retire = rows.find((r) => short(r.id) === "retire");
-      if (retire) return asMove(retire);
+      if (retire) return asMove(retire, rng);
     }
     const study = rows.filter((r) => STUDY.test(short(r.id)));
     const school = study.filter((r) => r.menu === "occupation/education");
@@ -129,7 +144,7 @@ const studious: Profile = {
         : study.length > 0
           ? study
           : rows.filter((r) => JOB.test(short(r.id)));
-    return pool.length === 0 ? null : asMove(pick(pool, rng));
+    return pool.length === 0 ? null : asMove(pick(pool, rng), rng);
   },
   pickChoice(_v, enabled, rng) {
     const yes = enabled.filter((c) => ACCEPT.test(c.label));
@@ -152,7 +167,7 @@ const spender: Profile = {
     }
     // Broke: look for work, so there is something to spend.
     const jobs = unlockedActions(w, ctx).filter((r) => JOB.test(short(r.id)));
-    return jobs.length === 0 ? null : asMove(pick(jobs, rng));
+    return jobs.length === 0 ? null : asMove(pick(jobs, rng), rng);
   },
   pickChoice: uniformChoice,
 };

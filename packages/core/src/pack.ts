@@ -67,6 +67,14 @@ export const DEFAULT_REPEAT: RepeatCurve = {
   factorBp: 2500,
 };
 
+/** An action's amount input: integer expressions over the player, evaluated when the menu lists it. */
+export interface CompiledAmount {
+  readonly min: Expr;
+  readonly max: Expr;
+  /** Spacing of allowed amounts from `min`; below 1 counts as 1. */
+  readonly step: Expr;
+}
+
 export interface CompiledStorylet {
   readonly id: string;
   /** Actions: the menu label; absent: derived from the id. */
@@ -92,6 +100,11 @@ export interface CompiledStorylet {
   /** Overrides of the manifest's curve, field by field (repeatable actions only). */
   readonly repeat?: Partial<RepeatCurve>;
   readonly text?: string;
+  /**
+   * Actions only: the player picks an amount (money, minor units) before it runs. Bound as
+   * `amount` in choice and outcome `when`, `weight`, effects and text, and nowhere else.
+   */
+  readonly amount?: CompiledAmount;
   /** Empty when the storylet has a single `outcomes` list. */
   readonly choices: readonly CompiledChoice[];
   /** Used when `choices` is empty. */

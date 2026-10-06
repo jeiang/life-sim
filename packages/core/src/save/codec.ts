@@ -78,6 +78,8 @@ function obituary(v: unknown, p: string): Obituary {
       ended: v,
       storyletLog: {},
       uses: {},
+      scheduled: [],
+      milestoneQueue: [],
       choiceLog: [],
       packVersions: [],
     },

@@ -1,0 +1,12 @@
+- { kind: role, id: friend, label: Friend }
+- { kind: role, id: rival, label: Rival }
+- kind: generator
+  id: player
+  first_names: [Ada, Bo]
+  last_names: [Lee, Kim]
+  age: [0, 0]
+- kind: generator
+  id: local
+  first_names: [Nia, Max]
+  last_names: [Cho]
+  age: [20, 60]

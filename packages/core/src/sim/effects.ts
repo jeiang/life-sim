@@ -12,6 +12,7 @@ import {
 import { makeEnv, qualityOf, type Scope } from "./env.ts";
 import { livesWithParents, startLivingOnOwn } from "./living.ts";
 import { grantUnit, removeHolding, tradeHolding } from "./market.ts";
+import { emitMilestone, roleMilestone } from "./milestones.ts";
 import {
   dropAsset,
   endLife,
@@ -24,6 +25,7 @@ import {
   startOccupation,
 } from "./ops.ts";
 import type { PackIndex } from "./pack-index.ts";
+import { scheduleEffect, unschedule } from "./schedule.ts";
 import { renderText } from "./text.ts";
 
 /**
@@ -67,6 +69,32 @@ function setRole(w: World, from: number, to: number, role: string): World {
   );
 }
 
+/** `quality.x` on the subject, or `person.quality.x` / `<bound>.quality.x` on a person: `=`, `+=`, `-=`. */
+function writeQuality(
+  w: World,
+  idx: PackIndex,
+  pid: number,
+  id: string,
+  e: readonly ["set" | "add" | "sub", unknown, Expr],
+  scope: Scope,
+): World {
+  const decl = idx.qualities.get(id);
+  if (!decl) throw new RangeError(`unknown quality '${id}'`);
+  if (decl.type === "flag")
+    return setQuality(
+      w,
+      pid,
+      id,
+      Boolean(evaluate(e[2], makeEnv(w, idx, scope))),
+    );
+  const delta = evalInt(e[2], w, idx, scope);
+  const cur = qualityOf(getPerson(w, pid), idx, id) as number;
+  let next = e[0] === "set" ? delta : cur + (e[0] === "sub" ? -delta : delta);
+  if (decl.min !== undefined) next = Math.max(decl.min, next);
+  if (decl.max !== undefined) next = Math.min(decl.max, next);
+  return setQuality(w, pid, id, next);
+}
+
 function applyEffect(
   w: World,
   idx: PackIndex,
@@ -88,7 +116,10 @@ function applyEffect(
         const role = str(e[2], w, idx, scope);
         if (!idx.roles.has(role))
           throw new RangeError(`unknown role '${role}'`);
-        return pid === undefined ? w : setRole(w, who, pid, role);
+        if (pid === undefined) return w;
+        const out = setRole(w, who, pid, role);
+        const m = roleMilestone(role);
+        return m && out !== w ? emitMilestone(out, m) : out;
       }
       const delta = evalInt(e[2], w, idx, scope);
       const sign = e[0] === "sub" ? -1 : 1;
@@ -114,6 +145,15 @@ function applyEffect(
         }
         return out;
       }
+      const pq = /^([A-Za-z_]\w*)\.quality\.(.+)$/.exec(target);
+      if (pq) {
+        const pid =
+          bound.get(pq[1] as string) ??
+          (pq[1] === "person" ? scope.person : undefined);
+        return pid === undefined
+          ? w
+          : writeQuality(w, idx, pid, pq[2] as string, e, scope);
+      }
       if (target === "money")
         return updatePerson(w, who, (p) => ({
           ...p,
@@ -124,26 +164,18 @@ function applyEffect(
         const cur = getPerson(w, who).stats[id] ?? 0;
         return setStat(w, who, id, e[0] === "set" ? delta : cur + gain());
       }
-      const id = target.slice(8);
-      const decl = idx.qualities.get(id);
-      if (!decl) throw new RangeError(`unknown quality '${id}'`);
-      if (decl.type === "flag") {
-        const v = evaluate(e[2], makeEnv(w, idx, scope));
-        return setQuality(w, who, id, Boolean(v));
-      }
-      const cur = qualityOf(getPerson(w, who), idx, id) as number;
-      let next = e[0] === "set" ? delta : cur + sign * delta;
-      if (decl.min !== undefined) next = Math.max(decl.min, next);
-      if (decl.max !== undefined) next = Math.min(decl.max, next);
-      return setQuality(w, who, id, next);
+      return writeQuality(w, idx, who, target.slice(8), e, scope);
     }
     case "spawn": {
       const role = str(e[1], w, idx, scope);
       const gen = str(e[2], w, idx, scope);
       const [w2, pid] = spawnPerson(w, idx, who, role, gen);
       bound.set(e[3], pid);
-      return w2;
+      const m = roleMilestone(role);
+      return m ? emitMilestone(w2, m) : w2;
     }
+    case "schedule":
+      return scheduleEffect(w, idx, scope, bound, e[1], e[2], e[3], e[4], e[5]);
     case "do": {
       const args = e.slice(2) as Expr[];
       switch (e[1]) {
@@ -232,6 +264,14 @@ function applyEffect(
                 standardId: id,
                 livedStandardId: id,
               }));
+        }
+        case "unschedule":
+          return unschedule(w, str(args[0], w, idx, scope));
+        case "milestone": {
+          const id = str(args[0], w, idx, scope);
+          if (!idx.milestoneIds.has(id))
+            throw new RangeError(`unknown milestone '${id}'`);
+          return emitMilestone(w, id);
         }
         case "journal":
           return addJournalLine(

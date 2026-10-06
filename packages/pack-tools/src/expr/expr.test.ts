@@ -12,6 +12,8 @@ const env: CheckEnv = {
     "quality.licensed": "bool",
     "quality.title": "string",
     job: "id",
+    "friend.quality.mood": "int",
+    "friend.quality.sulking": "bool",
   },
   persons: ["friend"],
 };
@@ -164,6 +166,21 @@ describe("effect statements", () => {
       "relationship(friend).role = partner",
       ["set", ["relationship", "friend", "role"], ["id", "partner"]],
     ],
+    ["friend.quality.mood += 2", ["add", "friend.quality.mood", 2]],
+    ["friend.quality.sulking = true", ["set", "friend.quality.sulking", true]],
+    [
+      "schedule(pack/follow-up, after: 2-4 years)",
+      ["schedule", ["id", "pack/follow-up"], 2, 4, null, false],
+    ],
+    [
+      "schedule(pack/follow-up, after: 1-1 years, friend, lineage: true)",
+      ["schedule", ["id", "pack/follow-up"], 1, 1, "friend", true],
+    ],
+    [
+      "unschedule(pack/follow-up)",
+      ["do", "unschedule", ["id", "pack/follow-up"]],
+    ],
+    ["milestone(met_goal)", ["do", "milestone", ["id", "met_goal"]]],
   ])("%s", (src, ast) => {
     expect(eff(src)).toEqual({ ok: true, ast });
   });
@@ -185,6 +202,22 @@ describe("effect statements", () => {
     ["explode()", "unknown effect 'explode'"],
     ["take_loan(bank/auto-loan)", "takes 2 argument(s), got 1"],
     ["quality.title += 1", "needs an integer target"],
+    ["friend.quality.mood -= 1", "'-=' is not allowed"],
+    ["friend.quality.nope += 1", "unknown name 'friend.quality.nope'"],
+    ["schedule(a/b, 2-4 years)", "expected 'after"],
+    ["schedule(a/b, after: 0-2 years)", "must be at least 1 year"],
+    ["schedule(a/b, after: 4-2 years)", "from at most to"],
+    ["schedule(a/b, after: 2-4 days)", "expected 'years'"],
+    ["schedule(a/b, after: 2-4 years, stranger)", "unknown person 'stranger'"],
+    [
+      "schedule(a/b, after: 2-4 years, lineage: true, friend)",
+      "the person comes once",
+    ],
+    [
+      "schedule(a/b, after: 2-4 years, lineage: maybe)",
+      "expected true or false",
+    ],
+    ["milestone(job)", "expected a milestone id"],
   ])("rejects %s", (src, msg) => {
     const r = eff(src);
     expect(r.ok).toBe(false);

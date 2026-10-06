@@ -25,6 +25,7 @@ import type {
   StatDecl,
 } from "@life/core";
 import {
+  CORE_MILESTONES,
   DEFAULT_GENDER_WEIGHTS,
   DEFAULT_REPEAT,
   GENDERS,
@@ -149,6 +150,7 @@ const TOP_RESERVED = new Set([
   "person",
   "asset",
   "portfolio",
+  "milestone",
 ]);
 
 /** Kinds each id-typed function parameter accepts; `undefined` accepts any content id. */
@@ -175,6 +177,7 @@ const CALL_KINDS: Record<string, Kind[][] | undefined> = {
   holding_years: [["market"]],
   forecast: [["market"]],
   spawn_person: [["role"], ["generator"]],
+  unschedule: [["storylet"]],
 };
 
 /** Functions whose one argument names an exclusivity group, not a content id. */
@@ -231,6 +234,7 @@ class Compiler {
   run(): CompileOutput {
     this.load();
     this.checkCrossPackDeclarations();
+    this.checkMilestoneDeclarations();
     const order = this.order();
     const bundles: PackBundle[] = [];
     for (const id of order) {
@@ -410,6 +414,7 @@ class Compiler {
       for (const [kind, key] of [
         ["stat", "stats"],
         ["quality", "qualities"],
+        ["quality", "person_qualities"],
       ] as const) {
         for (const [i, d] of (pack.manifest[key] ?? []).entries()) {
           const first = owner.get(`${kind}.${d.id}`);
@@ -421,6 +426,30 @@ class Compiler {
               `${kind} '${d.id}' is declared by both Pack '${first}' and Pack '${id}'; prefix Pack-specific ids with the Pack name`,
             );
         }
+      }
+    }
+  }
+
+  /** Milestone ids are bare and shared like qualities; Core's own are reserved. */
+  private checkMilestoneDeclarations(): void {
+    const owner = new Map<string, string>();
+    for (const id of [...this.packs.keys()].sort()) {
+      const pack = this.packs.get(id) as LoadedPack;
+      for (const [i, m] of (pack.manifest.milestones ?? []).entries()) {
+        const first = owner.get(m);
+        if ((CORE_MILESTONES as readonly string[]).includes(m))
+          this.diag(
+            pack.manifestSrc,
+            ["milestones", i],
+            `milestone '${m}' is one of Core's own milestones`,
+          );
+        else if (first === undefined) owner.set(m, id);
+        else
+          this.diag(
+            pack.manifestSrc,
+            ["milestones", i],
+            `milestone '${m}' is declared by both Pack '${first}' and Pack '${id}'; prefix Pack-specific ids with the Pack name`,
+          );
       }
     }
   }
@@ -473,6 +502,12 @@ class PackCompiler {
   readonly groups = new Set<string>();
   /** Declared stat and quality names usable as `stat.x`/`quality.x`. */
   readonly declared = new Set<string>();
+  /** Person quality id -> type, from this Pack and its dependencies. */
+  readonly personQualities = new Map<string, "int" | "flag">();
+  /** Milestone ids usable in `trigger: milestone` and read as `milestone.<id>`: Core's and the declared. */
+  readonly milestones = new Set<string>(CORE_MILESTONES);
+  /** Milestone ids the Packs in scope declare (the ones `milestone(id)` may emit). */
+  readonly declaredMilestones = new Set<string>();
   readonly statIds = new Set<string>();
   owner = "";
 
@@ -499,6 +534,14 @@ class PackCompiler {
     for (const q of m.qualities ?? []) {
       this.baseNames[`quality.${q.id}`] = q.type === "flag" ? "bool" : "int";
       this.declared.add(`quality.${q.id}`);
+    }
+    for (const id of [...CORE_MILESTONES, ...(m.milestones ?? [])])
+      this.baseNames[`milestone.${id}`] = "bool";
+    for (const q of m.person_qualities ?? [])
+      this.personQualities.set(q.id, q.type === "flag" ? "flag" : "int");
+    for (const id of m.milestones ?? []) {
+      this.milestones.add(id);
+      this.declaredMilestones.add(id);
     }
     for (const g of m.exclusivity ?? []) this.groups.add(g);
   }
@@ -575,6 +618,9 @@ class PackCompiler {
     const qualities = (m.qualities ?? []).map((q) => ({
       ...q,
     })) as QualityDecl[];
+    const personQualities = (m.person_qualities ?? []).map((q) => ({
+      ...q,
+    })) as QualityDecl[];
     const migrations = this.migrations(m);
     this.idLock(m, migrations);
     return {
@@ -585,6 +631,8 @@ class PackCompiler {
       ...(m.currency ? { currency: m.currency } : {}),
       stats,
       qualities,
+      personQualities,
+      milestones: [...(m.milestones ?? [])],
       exclusivity: [...(m.exclusivity ?? [])],
       ...(m.year
         ? {
@@ -671,19 +719,27 @@ class PackCompiler {
       if (s.start[0] > s.start[1])
         this.err(["stats", i, "start"], "start range minimum exceeds maximum");
     }
-    for (const [i, q] of (m.qualities ?? []).entries()) {
-      if (seen.has(`quality.${q.id}`))
-        this.err(["qualities", i, "id"], `duplicate quality '${q.id}'`);
-      seen.add(`quality.${q.id}`);
-      if (q.type === "int") {
-        if (q.min !== undefined && q.max !== undefined && q.min > q.max)
-          this.err(["qualities", i], "min exceeds max");
-        if (
-          (q.min !== undefined && q.default < q.min) ||
-          (q.max !== undefined && q.default > q.max)
-        )
-          this.err(["qualities", i, "default"], "default is outside min/max");
+    for (const key of ["qualities", "person_qualities"] as const) {
+      for (const [i, q] of (m[key] ?? []).entries()) {
+        if (seen.has(`quality.${q.id}`))
+          this.err([key, i, "id"], `duplicate quality '${q.id}'`);
+        seen.add(`quality.${q.id}`);
+        if (q.type === "int") {
+          if (q.min !== undefined && q.max !== undefined && q.min > q.max)
+            this.err([key, i], "min exceeds max");
+          if (
+            (q.min !== undefined && q.default < q.min) ||
+            (q.max !== undefined && q.default > q.max)
+          )
+            this.err([key, i, "default"], "default is outside min/max");
+        }
       }
+    }
+    const seenMilestones = new Set<string>();
+    for (const [i, id] of (m.milestones ?? []).entries()) {
+      if (seenMilestones.has(id))
+        this.err(["milestones", i], `duplicate milestone '${id}'`);
+      seenMilestones.add(id);
     }
     if (this.pack.id !== CORE_LOOP)
       for (const key of ["year", "family"] as const)
@@ -894,6 +950,8 @@ class PackCompiler {
         "person.closeness": "int",
       };
       for (const s of this.statIds) n[`person.stat.${s}`] = "int";
+      for (const [id, t] of this.personQualities)
+        n[`person.quality.${id}`] = t === "flag" ? "bool" : "int";
       return n;
     }
     return {};
@@ -970,12 +1028,40 @@ class PackCompiler {
       else out.label = s.label;
     }
     if (s.scope) out.scope = s.scope;
+    if (s.milestone !== undefined && s.trigger !== "milestone")
+      this.err(
+        ["milestone"],
+        "'milestone' is only valid on milestone storylets",
+      );
     if (s.trigger === "event") {
       if (s.menu !== undefined)
         this.err(["menu"], "'menu' is only valid on action storylets");
       const both = s.chance !== undefined && s.weight !== undefined;
       if (both || (s.chance === undefined && s.weight === undefined))
         this.err([], "an event must have exactly one of 'chance' or 'weight'");
+    } else if (s.trigger === "milestone") {
+      if (s.milestone === undefined)
+        this.err([], "a milestone storylet needs a 'milestone' id");
+      else if (!this.milestones.has(s.milestone))
+        this.err(
+          ["milestone"],
+          `unknown milestone '${s.milestone}'; known: ${[...this.milestones].sort().join(", ")}`,
+        );
+      else out.milestone = s.milestone;
+      for (const key of [
+        "menu",
+        "chance",
+        "weight",
+        "scope",
+        "target",
+      ] as const)
+        if (s[key] !== undefined)
+          this.err([key], `'${key}' is not valid on milestone storylets`);
+      if (s.cooldown !== undefined || s.max_per_life !== undefined)
+        this.err(
+          [],
+          "a milestone storylet opens once; it has no repeat limits",
+        );
     } else {
       if (s.menu === undefined)
         this.err([], "an action storylet needs a 'menu'");
@@ -1157,6 +1243,8 @@ class PackCompiler {
         Object.assign(bound, pronounNames(name));
         bound[`${name}.age`] = "int";
         bound[`${name}.closeness`] = "int";
+        for (const [id, t] of this.personQualities)
+          bound[`${name}.quality.${id}`] = t === "flag" ? "bool" : "int";
         persons.push(name);
       }
       this.effectText(
@@ -1213,7 +1301,30 @@ class PackCompiler {
         const v = this.resolveExpr(e[2], isRole ? ["role"] : undefined, path);
         return v === undefined ? undefined : ([e[0], e[1], v] as Effect);
       }
+      case "schedule": {
+        const id = this.resolveExpr(e[1], ["storylet"], path);
+        if (id === undefined) return undefined;
+        this.checkScheduled(
+          String((id as readonly unknown[])[1]),
+          e[4] !== null,
+          path,
+        );
+        return ["schedule", id, e[2], e[3], e[4], e[5]];
+      }
       case "do": {
+        if (e[1] === "milestone") {
+          const name = String((e[2] as Expr as readonly unknown[])[1]);
+          if (!this.declaredMilestones.has(name)) {
+            this.err(
+              path,
+              (CORE_MILESTONES as readonly string[]).includes(name)
+                ? `milestone '${name}' is emitted by Core itself`
+                : `undeclared milestone '${name}'; declared: ${[...this.declaredMilestones].sort().join(", ") || "none"}`,
+            );
+            return undefined;
+          }
+          return e;
+        }
         const args = (e.slice(2) as Expr[]).map((a, i) =>
           this.resolveExpr(a, CALL_KINDS[e[1]]?.[i], path),
         );
@@ -1229,6 +1340,39 @@ class PackCompiler {
           : ["spawn", role, gen, e[3]];
       }
     }
+  }
+
+  /** A scheduled storylet must be an event, and a person-scoped one needs a person (and only it). */
+  private checkScheduled(full: string, withPerson: boolean, path: Path): void {
+    const slash = full.indexOf("/");
+    const item = this.c.packs
+      .get(full.slice(0, slash))
+      ?.items.find(
+        (i) =>
+          i.kind === "storylet" && `${full.slice(0, slash)}/${i.id}` === full,
+      );
+    const data = item?.data as { trigger?: string; scope?: string } | undefined;
+    if (!data) return;
+    if (data.trigger !== "event")
+      this.err(
+        path,
+        `schedule() needs an event storylet; '${full}' is ${data.trigger === "action" ? "an action" : "a milestone storylet"}`,
+      );
+    else if (data.scope === "loan")
+      this.err(
+        path,
+        `schedule() cannot open '${full}': loan-scoped storylets have no person to bind`,
+      );
+    else if (data.scope === "person" && !withPerson)
+      this.err(
+        path,
+        `'${full}' is 'scope: person'; name the person, as in schedule(${full.slice(slash + 1)}, after: 1-2 years, person)`,
+      );
+    else if (data.scope !== "person" && withPerson)
+      this.err(
+        path,
+        `'${full}' has no 'scope: person'; drop the person from schedule(...)`,
+      );
   }
 
   // ---- other content kinds ------------------------------------------------
@@ -1505,7 +1649,7 @@ class PackCompiler {
 
   /** Normalise a migration id to a full id (`<pack>/<id>`) or a declared name (`stat.x`). */
   private migId(raw: string, path: Path): string | undefined {
-    if (/^(stat|quality)\./.test(raw)) return raw;
+    if (/^(stat|quality|milestone)\./.test(raw)) return raw;
     const slash = raw.indexOf("/");
     if (slash >= 0 && raw.slice(0, slash) !== this.pack.id) {
       this.err(
@@ -1522,7 +1666,9 @@ class PackCompiler {
     for (const full of this.c.index.get(this.pack.id)?.keys() ?? [])
       ids.add(full);
     for (const s of m.stats ?? []) ids.add(`stat.${s.id}`);
-    for (const q of m.qualities ?? []) ids.add(`quality.${q.id}`);
+    for (const q of [...(m.qualities ?? []), ...(m.person_qualities ?? [])])
+      ids.add(`quality.${q.id}`);
+    for (const id of m.milestones ?? []) ids.add(`milestone.${id}`);
     return ids;
   }
 
@@ -1557,7 +1703,8 @@ class PackCompiler {
       let fallback: string | null = null;
       if (r.fallback !== undefined) {
         fallback =
-          /^(stat|quality)\./.test(r.fallback) && current.has(r.fallback)
+          /^(stat|quality|milestone)\./.test(r.fallback) &&
+          current.has(r.fallback)
             ? r.fallback
             : (this.ref(r.fallback, undefined, [
                 "migrations",

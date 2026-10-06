@@ -1,0 +1,86 @@
+- id: on-first-job
+  trigger: milestone
+  milestone: first_job
+  text: Your first job.
+  outcomes:
+    - text: First job.
+      effects:
+        - quality.asked += 1
+- id: on-graduated
+  trigger: milestone
+  milestone: graduated
+  text: You graduated.
+  choices:
+    - label: Celebrate
+      outcomes:
+        - text: Cheers.
+- id: on-married
+  trigger: milestone
+  milestone: married
+  outcomes:
+    - text: Married.
+- id: on-first-child
+  trigger: milestone
+  milestone: first_child
+  outcomes:
+    - text: A child.
+- id: on-retired
+  trigger: milestone
+  milestone: retired
+  outcomes:
+    - text: Retired.
+- id: on-met-goal
+  trigger: milestone
+  milestone: met_goal
+  outcomes:
+    - text: Goal met.
+- id: take-job
+  trigger: action
+  menu: occupation
+  outcomes:
+    - effects:
+        - start_occupation(life/job)
+- id: take-job2
+  trigger: action
+  menu: occupation
+  outcomes:
+    - effects:
+        - start_occupation(life/job2)
+- id: start-class
+  trigger: action
+  menu: occupation
+  outcomes:
+    - effects:
+        - start_occupation(life/class)
+- id: retire
+  trigger: action
+  menu: occupation
+  outcomes:
+    - effects:
+        - start_occupation(retired)
+- id: marry
+  trigger: action
+  menu: relationships
+  scope: person
+  outcomes:
+    - effects:
+        - relationship(person).role = spouse
+- id: have-child
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - spawn_person(child, life/local) as kid
+- id: score
+  trigger: action
+  menu: activities
+  outcomes:
+    - effects:
+        - milestone(met_goal)
+- id: goal-reader
+  trigger: action
+  menu: activities
+  when: milestone.met_goal and milestone.first_job
+  outcomes:
+    - effects:
+        - quality.asked += 10

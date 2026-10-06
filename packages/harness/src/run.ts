@@ -25,6 +25,7 @@ import {
   setChanceDropSink,
   setDecisionSink,
   settleLiving,
+  setScheduleSink,
   standardOf,
   streamFor,
   type World,
@@ -106,6 +107,12 @@ export interface LifeResult {
   }[];
   /** Per age-up: uses of repeatable actions in the year just ended, keyed like `World.uses`. */
   readonly yearUses: readonly Readonly<Record<string, number>>[];
+  /** Scheduled consequences over the life: fired, dropped (window ran out or person died), still queued at the end. */
+  readonly consequences: {
+    readonly fired: number;
+    readonly dropped: number;
+    readonly pending: number;
+  };
   /** Chance hits the yearly cap dropped, by Pack id (the storylet id's prefix). */
   readonly capDrops: Readonly<Record<string, number>>;
   readonly samples: readonly YearSample[];
@@ -251,6 +258,11 @@ export function runLife(
   let lastDraw: { queued: number; empty: number } | null = null;
   setDecisionSink((d) => {
     lastDraw = d;
+  });
+  const consequences = { fired: 0, dropped: 0, pending: 0 };
+  setScheduleSink((t) => {
+    consequences.fired += t.fired;
+    consequences.dropped += t.dropped;
   });
   const capDrops: Record<string, number> = {};
   setChanceDropSink((ids) => {
@@ -467,6 +479,7 @@ export function runLife(
   } finally {
     setAssertSink(null);
     setDecisionSink(null);
+    setScheduleSink(null);
     setChanceDropSink(null);
   }
 
@@ -486,6 +499,7 @@ export function runLife(
     yearChoices,
     yearDecisions,
     yearUses,
+    consequences: { ...consequences, pending: final?.scheduled.length ?? 0 },
     capDrops,
     samples,
     loansOpened: loanIds.size,

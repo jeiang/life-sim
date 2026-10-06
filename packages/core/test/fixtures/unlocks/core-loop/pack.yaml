@@ -1,0 +1,8 @@
+id: core-loop
+version: 1
+depends: [life]
+year:
+  slots: [0, 0]
+  cap: 20
+  decisions: [90%, 50%, 30%]
+  decisions_min_age: 5

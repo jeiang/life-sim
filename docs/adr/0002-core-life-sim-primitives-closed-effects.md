@@ -16,3 +16,11 @@ The closed effect list gains `trade(kind, amount)`: positive buys that much cash
 ## Note (2026-10-06): relationship role write
 
 The closed effect list gains `relationship(person).role = id`. It replaces every role row the player holds toward that person with one row of the given role, keeping the maximum closeness of the replaced rows (no-op if there was no tie). Closeness stays writable only through `relationship(p).closeness +=`. The matching reads, `person.closeness` (read-only) and `count_role(role, min, max)` (living people, inclusive range), are expression names and functions. One Core release (ADR 0004).
+
+## Note (2026-10-06): decision unlocks (#143)
+
+The closed effect list gains four things, in one Core release (ADR 0004):
+
+- `schedule(storylet, after: a-b years[, person][, lineage: true])` queues a consequence (an event storylet, bound to a person when it is `scope: person`); `unschedule(storylet)` cancels every queued copy. The queue is life state (`World.scheduled`). A consequence fires once, in a window of `a` to `b` years from now (`1 <= a <= b`), with a rising chance; its `when` is re-checked each time it could fire (false: it waits) and the end of the window drops it. `lineage: true` marks it to carry to the heir (#132 does the hand-off); without it, it is dropped when the life ends.
+- Person qualities: a manifest declares `person_qualities` (shared id space with `qualities`); `person.quality.<id>` and `<bound>.quality.<id>` are readable names and assignable (`=`, `+=` as for `quality`), acting on that person.
+- Milestones: Core emits `graduated` (a `school`-group occupation ends by completing its duration), `first_job` (the player starts an occupation outside `school`), `married` and `first_child` (the player's tie to someone becomes the `core-loop/spouse` or `core-loop/child` role), and `retired` (the player starts `core-loop/retired`); like the `school` group in the obituary, those ids are Core-owned references to core-loop. Each sets a readable `milestone.<id>` flag on the person and opens the `trigger: milestone` storylets for it, once. A Pack adds ids with the manifest `milestones` list and emits one with the effect `milestone(id)` (Core's own ids cannot be emitted by hand).

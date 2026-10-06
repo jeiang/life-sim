@@ -150,6 +150,15 @@ export interface Report {
       { bets: number; wagered: number; net: number; returnPct: number }
     >;
   };
+  /** Scheduled consequences (`schedule(...)`), per life and in total; all zero when no Pack schedules. */
+  readonly consequences: {
+    readonly fired: number;
+    readonly dropped: number;
+    /** Still queued when the life ended (or the run stopped). */
+    readonly pendingAtEnd: number;
+    readonly firedPerLife: number;
+    readonly pendingAtEndPerLife: number;
+  };
   /** Chance hits dropped by the yearly cap, by Pack id (Packs with none are omitted). */
   readonly capDrops: Record<string, number>;
   readonly death: {
@@ -284,6 +293,10 @@ export class Aggregate {
     wagered: [] as number[],
     games: new Map<string, { bets: number; wagered: number; net: number }>(),
   };
+  private consFired = 0;
+  private consDropped = 0;
+  private consPending = 0;
+  private consLives = 0;
   private readonly profileDec = new Map<string, number[]>();
   private choiceEvents5 = 0;
   private years5 = 0;
@@ -424,6 +437,10 @@ export class Aggregate {
         t.net += v.net;
       }
     }
+    this.consFired += r.consequences.fired;
+    this.consDropped += r.consequences.dropped;
+    this.consPending += r.consequences.pending;
+    this.consLives++;
     for (const [pack, n] of Object.entries(r.capDrops))
       this.capDrops.set(pack, (this.capDrops.get(pack) ?? 0) + n);
     for (const y of r.yearDecisions) {
@@ -724,6 +741,17 @@ export class Aggregate {
         ),
       },
       gambling: this.gamblingReport(),
+      consequences: {
+        fired: this.consFired,
+        dropped: this.consDropped,
+        pendingAtEnd: this.consPending,
+        firedPerLife:
+          Math.round((this.consFired / Math.max(1, this.consLives)) * 100) /
+          100,
+        pendingAtEndPerLife:
+          Math.round((this.consPending / Math.max(1, this.consLives)) * 100) /
+          100,
+      },
       capDrops: Object.fromEntries(
         [...this.capDrops].sort((a, b) => (a[0] < b[0] ? -1 : 1)),
       ),
@@ -930,6 +958,12 @@ export function renderMarkdown(
         `| ${id} | ${t.bets} | ${major(t.wagered)} | ${major(t.net)} | ${t.returnPct}% |`,
       );
   }
+  L.push(
+    "",
+    "## Scheduled consequences",
+    "",
+    `Fired ${r.consequences.fired} (${r.consequences.firedPerLife} per life), dropped ${r.consequences.dropped}, still queued at the end of a life ${r.consequences.pendingAtEnd} (${r.consequences.pendingAtEndPerLife} per life).`,
+  );
   L.push("", "## Chance events dropped by the yearly cap", "");
   const drops = Object.entries(r.capDrops);
   if (drops.length === 0) L.push("None.");

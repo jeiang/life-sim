@@ -36,10 +36,15 @@ export type Expr =
   | readonly ["?", Expr, Expr, Expr] // c ? a : b
   | readonly ["call", string, ...Expr[]]; // whitelisted function
 
-/** Assignment target: a dotted path (`stat.health`, `money`) or `relationship(p).field`. */
+/**
+ * Assignment target: a dotted path (`stat.health`, `money`, `quality.x`, or a person's quality
+ * `person.quality.x` / `<bound>.quality.x`) or `relationship(p).field`.
+ */
 export type Target = string | readonly ["relationship", string, string];
 
 export type Effect =
   | readonly ["set" | "add" | "sub", Target, Expr] // `=`, `+=`, `-=`
   | readonly ["do", string, ...Expr[]] // effect call, e.g. take_loan(...)
-  | readonly ["spawn", Expr, Expr, string]; // spawn_person(role, generator) as name
+  | readonly ["spawn", Expr, Expr, string] // spawn_person(role, generator) as name
+  // schedule(storylet, after: from-to years[, person][, lineage: true]); person is a bound name or null
+  | readonly ["schedule", Expr, number, number, string | null, boolean];

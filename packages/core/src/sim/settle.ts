@@ -10,6 +10,7 @@ import {
 } from "../state/world.ts";
 import { settleLiving } from "./living.ts";
 import { settleMarket } from "./market.ts";
+import { emitMilestone } from "./milestones.ts";
 import { dropAsset, endOccupation, evalInt } from "./ops.ts";
 import type { PackIndex } from "./pack-index.ts";
 import { formatMoney } from "./text.ts";
@@ -51,6 +52,8 @@ function settleOccupations(w: World, idx: PackIndex, id: PersonId): World {
     if (kind.durationYears !== undefined && years >= kind.durationYears) {
       w = endOccupation(w, id, occ.id);
       w = addJournalLine(w, age, `You finished ${kind.label}.`);
+      if (kind.group === "school" && id === w.playerId)
+        w = emitMilestone(w, "graduated");
     }
   }
   return w;

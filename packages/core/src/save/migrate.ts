@@ -76,6 +76,15 @@ const v3to4: Migration = (raw) =>
 const v4to5: Migration = (raw) =>
   mapWorlds(raw, (w) => ({ ...w, schemaVersion: 5 }));
 
+/** Version 6 adds `scheduled` and `milestoneQueue` (decision unlocks); both are empty in an old save. */
+const v5to6: Migration = (raw) =>
+  mapWorlds(raw, (w) => ({
+    ...w,
+    schemaVersion: 6,
+    scheduled: w.scheduled ?? [],
+    milestoneQueue: w.milestoneQueue ?? [],
+  }));
+
 /** Migrations by the version they upgrade from. Append only; never edit a shipped step. */
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   0: v0to1,
@@ -83,6 +92,7 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   2: v2to3,
   3: v3to4,
   4: v4to5,
+  5: v5to6,
 };
 
 /**

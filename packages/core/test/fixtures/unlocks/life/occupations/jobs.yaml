@@ -1,0 +1,13 @@
+- id: job
+  label: Shop job
+  group: full-time
+  pay: 100
+- id: job2
+  label: Other job
+  group: full-time
+  pay: 100
+- id: class
+  label: Class
+  group: school
+  pay: 0
+  duration_years: 2

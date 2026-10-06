@@ -172,6 +172,8 @@ export interface Person {
    * charged, no standard applies, and money and assets sit in trust (no shopping) until 18.
    */
   readonly withGuardian?: boolean;
+  /** Milestones this person has reached, in order (`milestone.<id>` reads true). Absent: none yet. */
+  readonly milestones?: readonly string[];
 }
 
 export interface Relationship {
@@ -222,6 +224,23 @@ export interface Pending {
   /** Repeat factor (basis points, below 10000) inherited through `next:` from a repeatable action. */
   readonly factorBp?: number;
   readonly rest?: { readonly events: readonly QueuedEvent[] };
+}
+
+/**
+ * A consequence queued by `schedule(...)`. Counted in years from the age-up after it was
+ * queued, so it does not depend on the player's age: `wait` more age-ups until the window
+ * opens, then it has `left` age-ups to fire (the last one always fires if it is eligible).
+ */
+export interface ScheduledEvent {
+  readonly storyletId: string;
+  /** Person binding for a `scope: person` storylet. */
+  readonly scope?: ScopeRef;
+  /** Age-ups still to pass before the window opens (0: open). */
+  readonly wait: number;
+  /** Age-ups the window still has, this one included. */
+  readonly left: number;
+  /** Carries to the heir when the life passes on (#132); false drops it at death. */
+  readonly lineage: boolean;
 }
 
 /** How often a storylet (per scope binding) has fired, for `once`, `cooldown`, `max_per_life`. */
@@ -338,10 +357,14 @@ export interface World {
    * Cleared at every age-up; read by `uses_this_year` and the diminishing-returns curve.
    */
   readonly uses: Readonly<Record<string, number>>;
+  /** Consequences queued by `schedule(...)`, in the order queued. */
+  readonly scheduled: readonly ScheduledEvent[];
+  /** Milestones reached whose `trigger: milestone` storylets have not opened yet, in order. */
+  readonly milestoneQueue: readonly string[];
   /** Every player choice so far, in order; see `replay`. */
   readonly choiceLog: readonly ChoiceEntry[];
   /** Packs (and versions) the save was made with, sorted by id. */
   readonly packVersions: readonly PackVersion[];
 }
 
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;

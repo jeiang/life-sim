@@ -30,6 +30,8 @@ packs/<pack-id>/
 | `stats` | Declared stats: id, label, icon, start range. Always 0 to 100. |
 | `qualities` | Declared qualities: id, type (`int` with optional min/max, or `flag`), default. |
 | `living` | Living costs: `default` (standard chosen on moving out), `housing_share` (percent of the cost an owned home removes) `home_category` (item kind category that counts as a home) and an optional `household` block (see Household costs). Needs `standards`. |
+| `person_qualities` | Declared qualities of non-player people (same shape as `qualities`, same shared id space): read and set as `person.quality.<id>` (or `<bound>.quality.<id>`), see Person qualities. |
+| `milestones` | Milestone ids this Pack adds to Core's (see Milestones). Bare ids shared by every Pack. |
 | `exclusivity` | Occupation exclusivity groups (for example `school`, `full-time`). |
 | `repeat` | Default curve for repeatable actions: `{ full: 10, reduced: 20, factor: 25% }` (see Repeatable actions). Any field left out takes the value shown. The first manifest that sets it wins. |
 | `year` | Only Pack `core-loop` may declare this block or the `family` block (any other Pack declaring either is a compile error). Event draw settings: flavour slot count range and the yearly event cap, `decisions` / `decisions_min_age` (decision slots per year, see Year draw), plus optional `quiet` lines the Core journals for a year in which nothing else happened (every age gets a journal group). |
@@ -69,9 +71,9 @@ packs/<pack-id>/
 | Field | Meaning |
 |---|---|
 | `id`, `icon`, `tags` | Identity; optional icon (see Icons); free tags for grouping. `custody-ok` is a Core-owned tag: see [Confinement](#confinement). |
-| `trigger` | `event` (drawn at age-up) or `action` (offered in a menu). |
+| `trigger` | `event` (drawn at age-up), `action` (offered in a menu) or `milestone` (opens when the player reaches the milestone named by `milestone`, see Milestones). |
 | `menu` | For actions: the menu path, `<top>` or `<top>/<submenu>`, where the top is one of `occupation`, `assets`, `relationships`, `activities` (see [screens](screens.md#menu-ids)). |
-| `scope` | Optional binding, evaluated once per bound item. `loan` (events only): once per loan the player holds, with `loan` bound (for example a missed-payment event). `person`: once per non-player person during the NPC yearly pass, with `person` bound (NPC storylets); on an action, the UI offers it for a chosen person. `die(...)` kills the bound person, and `relationship(person).closeness += n` changes the tie to them. Without `scope`, only the player and storylet-local names are in scope. |
+| `scope` | Optional binding, evaluated once per bound item. `loan` (events only): once per loan the player holds, with `loan` bound (for example a missed-payment event). `person`: once per non-player person during the NPC yearly pass, with `person` bound (NPC storylets); an event with `choices` is instead a decision the player faces (see Person decisions); on an action, the UI offers it for a chosen person. `die(...)` kills the bound person, and `relationship(person).closeness += n` changes the tie to them. Without `scope`, only the player and storylet-local names are in scope. |
 | `target` | With `scope: person`: role ids the person must hold toward the player (for example `[core-loop/parent]`). `person.role`, `person.alive` and `person.age` are readable. |
 | `when` | Eligibility condition (boolean expression). |
 | `chance` | Event that rolls independently each year at this probability. |
@@ -230,7 +232,58 @@ At each age-up, after settlement (ADR 0003):
 
 Slots chain. Slot 1 fires with probability p1. Slot k rolls only if slot k-1 fired, and fires with probability p_k / p_(k-1) (slot 2: 50/90, slot 3: 30/50), so the run of fired slots reaches k with probability exactly p_k. Each roll has its own stable RNG purpose key, `decision-slot/<k>`.
 
-Choice events that hit in the chance pass count toward the fired slots. Each remaining fired slot draws one eligible choice event with a `weight` (respecting `when`, `once`, `cooldown`, `max_per_life`; no storylet twice in a year; purpose key `decision-pick/<n>`). A fired slot with nothing eligible stays empty. Chance events can add decisions beyond the slots, so the delivered 'at least' rates are never below the targets.
+Choice events that hit in the chance pass count toward the fired slots. Each remaining fired slot draws one eligible choice event with a `weight` (a `scope: person` one counts once, see Person decisions) (respecting `when`, `once`, `cooldown`, `max_per_life`; no storylet twice in a year; purpose key `decision-pick/<n>`). A fired slot with nothing eligible stays empty. Chance events can add decisions beyond the slots, so the delivered 'at least' rates are never below the targets.
+
+### Person decisions
+
+A `scope: person` event with `choices` is a decision for the player, not an NPC reaction: the NPC pass skips it. With a `weight` it competes in the decision slots (and, without `year.decisions`, the flavour slots) as one candidate however many people it could open for; its weight is the highest among the eligible people. When drawn, the Core picks one eligible person (`when`, `target`, `once`, `cooldown`, `max_per_life` per person) uniformly at random (purpose key `person-pick/<storylet>`) and the player decides with that person bound (`person.*`; effects such as `relationship(person).closeness += 5`, `person.quality.mood += 1`, `die(...)` act on them). With a `chance` it rolls per eligible person like any chance event and counts toward the slots. `next:` keeps the person bound. Non-choice `scope: person` events are unchanged. Events that are only reached through `schedule(...)` or `next:` use `chance: 0`.
+
+### Scheduled consequences
+
+`schedule(storylet, after: 2-4 years)` queues an event for later; the effect is quoted in YAML (`- "schedule(...)"`) because of the colon, and ids need their pack prefix (`life/follow-up`). Options after the window, in this order: a person (`person` or a name bound with `spawn_person`, required when the storylet is `scope: person` and refused otherwise) and `lineage: true`. The window runs from `a` to `b` years from now (`1 <= a <= b`; use `next:` for "now"). Once it opens the Core rolls each age-up with chance 1 / (age-ups left in the window, this one included): 1/3, then 1/2, then certain for `2-4`, so the fire year is uniform over the window. At each roll the storylet's `when`, `once`, `cooldown`, `max_per_life` and `target` are checked; false means it waits (no roll, the window still shrinks) and the end of the window drops it. A bound person who died drops it at once. Scheduling a storylet that is already queued for the same person keeps the earlier entry. `unschedule(storylet)` removes every queued copy, for any person. Due consequences open first in the year, on top of the decision slots, the flavour slots and the yearly cap, and do not count as decisions. A consequence without `lineage: true` is dropped when the life ends; `lineage: true` marks it to carry to the heir (#132). The expression names are unchanged; the queue is life state (`World.scheduled`) and saved.
+
+### Milestones
+
+Core emits `graduated`, `first_job`, `married`, `first_child` and `retired` (definitions in ADR 0002); a Pack adds ids in its manifest `milestones` and emits them with `milestone(id)`. Reaching one (once per person) sets the readable bool `milestone.<id>` and opens the Pack's `trigger: milestone` storylets whose `milestone` is that id, before the rest of the queue (immediately after the action or at the start of the year's events). A milestone storylet has no `chance`, `weight`, `scope`, `menu` or repeat limits.
+
+### Example tree
+
+A tree needs no new primitive: `next:` (now), `schedule()` (later), weighted outcomes (random branches) and qualities (memory).
+
+```yaml
+- id: borrow-from-friend            # decision, one friend picked at random
+  trigger: event
+  scope: person
+  target: [core-loop/friend]
+  weight: 10
+  when: not person.quality.owes_you
+  text: "{person.first_name} asks to borrow $200."
+  choices:
+    - label: Lend it
+      outcomes:
+        - weight: 70                # random branch: repaid later
+          text: "{person.first_name} promises to pay you back."
+          effects:
+            - money -= 20000
+            - person.quality.owes_you = true
+            - "schedule(core-loop/friend-repays, after: 1-3 years, person)"
+        - weight: 30                # random branch: never repaid
+          text: "{person.first_name} stops answering your calls."
+          effects:
+            - money -= 20000
+            - relationship(person).closeness += -10
+    - label: Say no
+      next: core-loop/friend-sulks  # immediate follow-up
+- id: friend-repays                 # the consequence; chance 0: only reached by schedule
+  trigger: event
+  scope: person
+  chance: 0
+  text: "{person.first_name} pays you back."
+  outcomes:
+    - effects:
+        - money += 20000
+        - person.quality.owes_you = false
+```
 
 The queued decisions open one after another: the player resolves each (and its `next:` chain) and the next opens. The life cannot age up until the queue is empty.
 
@@ -240,7 +293,7 @@ One small custom language is used for `when`, `weight`, `chance`, and effect sta
 
 - Literals: integers, percents (`2.5%`, compiled to basis points out of 10,000), strings, booleans, and content ids (`job/cashier`).
 - Operators: `+ - * /`, `mod` (modulo; `%` is used only by percent literals), comparisons, `and or not`, `in`, and the ternary `a ? b : c`.
-- Names (scope `person` also has `person.role` as a content id, `person.alive`, and the read-only `person.closeness`, the player's highest closeness to them across their role rows, 0 with no tie; bound people have `<name>.closeness` too): `age`, `money`, `uses_this_year` (storylets), `confined` (boolean, see [Confinement](#confinement)), `stat.<id>`, `quality.<id>`, `loan.<field>` (`balance`, `payment`, `missed`) in storylets with `scope: loan`, and other scoped references inside storylets (for example `person.<field>` for a spawned person).
+- Names: `milestone.<id>` (bool, the player has reached it). Scope `person` also has `person.quality.<id>` (see `person_qualities`) and a bound person has `<name>.quality.<id>`. (Scope `person` also has `person.role` as a content id, `person.alive`, and the read-only `person.closeness`, the player's highest closeness to them across their role rows, 0 with no tie; bound people have `<name>.closeness` too): `age`, `money`, `uses_this_year` (storylets), `confined` (boolean, see [Confinement](#confinement)), `stat.<id>`, `quality.<id>`, `loan.<field>` (`balance`, `payment`, `missed`) in storylets with `scope: loan`, and other scoped references inside storylets (for example `person.<field>` for a spawned person).
 - Functions: a fixed whitelist (for example `min`, `max`, `clamp`, `has`, `has_occupation`, `owns`, `years_in`, `in_group`, `years_in_group`, `role_closeness(role)`: average closeness to the living people the player holds that role toward, 0 with none (an aggregate over a role, unlike `person.closeness`, which reads one person); `count_role(role, min, max)`: living people the player holds that role toward with closeness in `[min, max]`, inclusive). No user-defined functions and no loops.
 - Group checks: `in_group(g)` is true while the player holds an occupation whose `group` is `g`; `years_in_group(g)` sums completed years over every occupation in `g`, held or ended (0 if none; an occupation ended within its first year adds 0). `g` must be an exclusivity group declared by the Pack or a dependency: a bare word (`in_group(school)`) or, for hyphenated names, a string (`in_group("full-time")`). There is no `end_group` effect and no `ends_groups` field; packs end occupations explicitly with `end_occupation`. Group names are not content ids, so the ids lock is unaffected.
 - Integer-only. `/` truncates toward zero. A constant zero divisor is a build error. At runtime, division by zero gives 0 and overflow clamps to the safe-integer range. Dev builds and the balance harness assert on both.
@@ -263,6 +316,9 @@ spawn_person(role, generator) as <name>
 relationship(<person>).closeness += n
 move_to(city)                        move_out()
 set_standard(standard)
+person.quality.<id> = v | += n       <bound>.quality.<id> = v | += n   (person qualities)
+schedule(storylet, after: a-b years[, person][, lineage: true])    unschedule(storylet)
+milestone(id)                        (a Pack-declared milestone)
 relationship(<person>).role = role   (replaces all the player's role rows toward them; keeps the highest closeness)
 move_in()                            merge_money()
 journal("text")                      die("cause")

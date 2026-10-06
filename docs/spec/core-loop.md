@@ -115,6 +115,10 @@ About 60, plus NPC and mortality storylets:
 | Chance events | About 15 | Illness, windfall, accident, lottery scratch-card win |
 | Choice events | About 15, some with `next:` chains | Found wallet; a friend asks for a loan |
 
+## Decision unlocks
+
+Core-loop ships no consequence, person decision or milestone content yet (its NPC storylets have no choices, so nothing changes for its players, and its pack version is unchanged), but later Packs build on these (dating, generations). Core raises the milestones `graduated` (completing a school occupation), `first_job` (first non-school occupation), `married` and `first_child` (the `spouse` and `child` roles this Pack declares) and `retired` (the `retired` occupation), and exposes them as `milestone.<id>`. See [pack-format](pack-format.md#milestones).
+
 ## Death and the end of a life
 
 - A mortality storylet whose yearly chance rises with age and falls with health, plus a few accident and illness deaths among the chance events.

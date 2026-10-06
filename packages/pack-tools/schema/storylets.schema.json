@@ -37,8 +37,17 @@
           {
             "const": "action",
             "type": "string"
+          },
+          {
+            "const": "milestone",
+            "type": "string"
           }
         ]
+      },
+      "milestone": {
+        "minLength": 1,
+        "description": "`trigger: milestone` only: the milestone id (Core's or a Pack's) that opens this storylet, once",
+        "type": "string"
       },
       "menu": {
         "pattern": "^(occupation|assets|relationships|activities)(/[a-z][a-z0-9_-]*)?$",

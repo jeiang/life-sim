@@ -3,8 +3,11 @@
  * evaluator agree. Adding one is a Core release (ADR 0002, ADR 0004).
  */
 
-/** `group` is an exclusivity group declared in a manifest (a bare word or a string literal). */
-export type Type = "int" | "bool" | "string" | "id" | "group";
+/**
+ * `group` is an exclusivity group declared in a manifest (a bare word or a string literal);
+ * `milestone` is a milestone id (Core's or Pack-declared), written the same way.
+ */
+export type Type = "int" | "bool" | "string" | "id" | "group" | "milestone";
 
 export interface Signature {
   readonly params: readonly Type[];
@@ -68,6 +71,10 @@ export const EFFECTS = {
   set_standard: { params: ["id"], returns: "bool" },
   /** Buy (positive) or sell (negative) that much cash worth of a market kind. */
   trade: { params: ["id", "int"], returns: "bool" },
+  /** Cancel every queued `schedule(...)` of a storylet (any person). `schedule` itself has its own syntax. */
+  unschedule: { params: ["id"], returns: "bool" },
+  /** Emit a Pack-declared milestone for the player (once; Core's own ids cannot be emitted by hand). */
+  milestone: { params: ["milestone"], returns: "bool" },
 } as const satisfies Record<string, Signature>;
 
 export type AssignOp = "=" | "+=" | "-=";

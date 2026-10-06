@@ -185,6 +185,30 @@ export function reportDecisions(draw: DecisionDraw): void {
   decisionSink?.(draw);
 }
 
+/** What the schedule did in one age-up that started with consequences queued (balance harness). */
+export interface ScheduleTick {
+  /** Consequences that came due and were queued to open. */
+  readonly fired: number;
+  /** Consequences dropped: the window ran out, or the bound person died. */
+  readonly dropped: number;
+  /** Consequences still queued afterwards. */
+  readonly pending: number;
+}
+
+let scheduleSink: ((tick: ScheduleTick) => void) | null = null;
+
+/** Report every age-up that had scheduled consequences to `sink`; `null` stops. */
+export function setScheduleSink(
+  sink: ((tick: ScheduleTick) => void) | null,
+): void {
+  scheduleSink = sink;
+}
+
+/** @internal Used by the year draw. */
+export function reportSchedule(tick: ScheduleTick): void {
+  scheduleSink?.(tick);
+}
+
 let chanceDropSink: ((ids: readonly string[]) => void) | null = null;
 
 /** Report the chance hits dropped by the yearly cap (storylet keys, one call per capped age-up); `null` stops. */
@@ -213,6 +237,8 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
       if (path.startsWith("stat.")) return subject.stats[path.slice(5)] ?? 0;
       if (path.startsWith("quality."))
         return qualityOf(subject, idx, path.slice(8)) as Value;
+      if (path.startsWith("milestone."))
+        return subject.milestones?.includes(path.slice(10)) ?? false;
       if (path.startsWith("player."))
         return personField(world, idx, scope.subject, path.slice(7), path);
       if (path === "city.cost_index") return costIndexOf(subject, idx);

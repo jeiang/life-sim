@@ -32,6 +32,7 @@ const TYPE_NAME: Record<Type, string> = {
   string: "a string",
   id: "a content id",
   group: "an exclusivity group name",
+  milestone: "a milestone id",
 };
 
 const MAX_SUGGEST = 2;
@@ -95,11 +96,16 @@ export class Checker {
    * group name for a `group` parameter (which also takes a string literal, for `"full-time"`).
    */
   param(n: Node, want: Type): Checked {
-    if (want === "group") {
-      if (n.k === "str") return ["group", ["id", n.v]];
+    if (want === "group" || want === "milestone") {
+      if (n.k === "str") return [want, ["id", n.v]];
       if (n.k === "name" && !n.v.includes(".") && !(n.v in this.env.names))
-        return ["group", ["id", n.v]];
-      return this.err(n, "expected an exclusivity group name, such as school");
+        return [want, ["id", n.v]];
+      return this.err(
+        n,
+        want === "group"
+          ? "expected an exclusivity group name, such as school"
+          : "expected a milestone id, such as retired",
+      );
     }
     if (
       want === "id" &&
@@ -226,9 +232,37 @@ function constant(e: Expr): number | undefined {
 }
 
 export function checkStmt(c: Checker, env: CheckEnv, s: Stmt): Effect | null {
+  if (s.k === "schedule") {
+    const storylet = c.param(s.storylet, "id");
+    if (s.from < 1 || s.to < s.from)
+      err(
+        c,
+        s,
+        `'after: ${s.from}-${s.to} years' must be at least 1 year, from at most to`,
+      );
+    if (s.person && !env.persons?.includes(s.person.name))
+      err(
+        c,
+        s.person,
+        `unknown person '${s.person.name}'${suggest(s.person.name, env.persons ?? [])}`,
+      );
+    return (
+      storylet && [
+        "schedule",
+        storylet[1],
+        s.from,
+        s.to,
+        s.person?.name ?? null,
+        s.lineage,
+      ]
+    );
+  }
   if (s.k === "assign") {
     const path = s.target.path;
-    const root = path.split(".")[0] as string;
+    // `person.quality.x` and `<bound>.quality.x` assign like `quality.x`, on that person.
+    const owner = /^([A-Za-z_]\w*)\.quality\./.exec(path)?.[1];
+    const onPerson = owner !== undefined && env.persons?.includes(owner);
+    const root = onPerson ? "quality" : (path.split(".")[0] as string);
     const ops = Object.hasOwn(ASSIGNABLE, root) ? ASSIGNABLE[root] : undefined;
     const declared = Object.hasOwn(env.names, path)
       ? env.names[path]

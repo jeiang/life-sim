@@ -22,6 +22,10 @@ export interface PackIndex {
   readonly storylets: ReadonlyMap<string, CompiledStorylet>;
   /** Event storylets in id order. */
   readonly events: readonly CompiledStorylet[];
+  /** Milestone ids the loaded Packs declare (Core's own are in `CORE_MILESTONES`). */
+  readonly milestoneIds: ReadonlySet<string>;
+  /** `trigger: milestone` storylets by milestone id, in storylet id order. */
+  readonly milestoneStorylets: ReadonlyMap<string, readonly CompiledStorylet[]>;
   readonly occupations: ReadonlyMap<string, CompiledOccupationKind>;
   readonly items: ReadonlyMap<string, CompiledItemKind>;
   /** Market kinds (items with a `market` block), a subset of `items`. */
@@ -107,7 +111,8 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
       if (p.type === "role") put(roles, "role", p.id, p);
       else put(generators, "generator", p.id, p);
     }
-    for (const q of b.qualities) put(qualities, "quality", q.id, q);
+    for (const q of [...b.qualities, ...b.personQualities])
+      put(qualities, "quality", q.id, q);
     for (const s of b.stats) {
       const first = owners.get(`stat.${s.id}`);
       if (first !== undefined && first !== b.id)
@@ -125,10 +130,20 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
   const events = [...storylets.values()]
     .filter((s) => s.trigger === "event")
     .sort((a, b) => cmp(a.id, b.id));
+  const milestoneIds = new Set(bundles.flatMap((b) => b.milestones));
+  const milestoneStorylets = new Map<string, CompiledStorylet[]>();
+  for (const s of [...storylets.values()].sort((a, b) => cmp(a.id, b.id)))
+    if (s.trigger === "milestone" && s.milestone !== undefined)
+      milestoneStorylets.set(s.milestone, [
+        ...(milestoneStorylets.get(s.milestone) ?? []),
+        s,
+      ]);
   const index: PackIndex = {
     bundles,
     storylets,
     events,
+    milestoneIds,
+    milestoneStorylets,
     occupations,
     items,
     markets: new Map([...items].filter(([, i]) => i.market !== undefined)),

@@ -29,6 +29,7 @@ import {
 } from "../state/world.ts";
 import { makeEnv, type Scope } from "./env.ts";
 import { portfolioValue } from "./market.ts";
+import { emitMilestone, RETIRED_OCCUPATION } from "./milestones.ts";
 import type { PackIndex } from "./pack-index.ts";
 import { nameOf } from "./text.ts";
 
@@ -225,10 +226,15 @@ export function startOccupation(
     performance: 50,
     pay: evalInt(kind.pay, w2, idx, scope),
   };
-  return updatePerson(w2, personId, (p) => ({
+  const started = updatePerson(w2, personId, (p) => ({
     ...p,
     occupations: [...p.occupations, occ],
   }));
+  if (personId !== world.playerId) return started;
+  if (kindId === RETIRED_OCCUPATION) return emitMilestone(started, "retired");
+  return kind.group === "school"
+    ? started
+    : emitMilestone(started, "first_job");
 }
 
 /** Range of the first-name roll: one raw draw, mapped onto the pool once the gender is known. */
@@ -338,7 +344,14 @@ export function endLife(
   };
   const w = updatePerson(world, personId, (x) => ({ ...x, alive: false }));
   return addJournalLine(
-    { ...w, pending: null, ended: obit },
+    {
+      ...w,
+      pending: null,
+      ended: obit,
+      // Only lineage consequences outlive the person (the heir hand-off, #132, picks them up).
+      scheduled: w.scheduled.filter((e) => e.lineage),
+      milestoneQueue: [],
+    },
     p.age,
     `${nameOf(w, personId)} died at ${p.age}: ${cause}.`,
   );

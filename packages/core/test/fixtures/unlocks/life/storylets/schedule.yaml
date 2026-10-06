@@ -1,0 +1,86 @@
+# Consequences: `chance: 0` events are only opened by schedule() or next.
+- id: later
+  trigger: event
+  chance: 0
+  text: Later happened.
+  outcomes:
+    - text: Later happened.
+- id: later-gated
+  trigger: event
+  chance: 0
+  when: quality.gate
+  text: Gated later happened.
+  outcomes:
+    - text: Gated later happened.
+- id: later-choice
+  trigger: event
+  chance: 0
+  text: A consequence asks you.
+  choices:
+    - label: Ok
+      outcomes:
+        - text: Fine.
+- id: later-person
+  trigger: event
+  scope: person
+  chance: 0
+  text: "{person.first_name} calls back."
+  outcomes:
+    - text: Called back.
+- id: plan
+  trigger: action
+  menu: activities
+  text: Plan.
+  outcomes:
+    - effects:
+        - "schedule(later, after: 2-4 years)"
+- id: plan-gated
+  trigger: action
+  menu: activities
+  text: Plan.
+  outcomes:
+    - effects:
+        - "schedule(life/later-gated, after: 1-2 years)"
+- id: plan-lineage
+  trigger: action
+  menu: activities
+  text: Plan.
+  outcomes:
+    - effects:
+        - "schedule(later, after: 1-3 years, lineage: true)"
+- id: plan-choice
+  trigger: action
+  menu: activities
+  text: Plan.
+  outcomes:
+    - effects:
+        - "schedule(life/later-choice, after: 1-1 years)"
+- id: plan-person
+  trigger: action
+  menu: relationships
+  scope: person
+  text: Plan.
+  outcomes:
+    - effects:
+        - "schedule(life/later-person, after: 1-1 years, person)"
+- id: cancel
+  trigger: action
+  menu: activities
+  text: Cancel.
+  outcomes:
+    - effects:
+        - unschedule(later)
+- id: open-gate
+  trigger: action
+  menu: activities
+  text: Open.
+  outcomes:
+    - effects:
+        - quality.gate = true
+- id: close-gate
+  trigger: action
+  menu: activities
+  text: Close.
+  outcomes:
+    - effects:
+        - quality.gate = false

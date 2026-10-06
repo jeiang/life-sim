@@ -126,6 +126,64 @@
         ]
       }
     },
+    "person_qualities": {
+      "description": "Qualities of non-player people: read as `person.quality.<id>` (or `<bound>.quality.<id>`) and set by effects on that person. Ids are shared with `qualities`.",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": ["id", "type", "default"],
+            "properties": {
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "type": {
+                "const": "int",
+                "type": "string"
+              },
+              "min": {
+                "type": "integer"
+              },
+              "max": {
+                "type": "integer"
+              },
+              "default": {
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": ["id", "type", "default"],
+            "properties": {
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "type": {
+                "const": "flag",
+                "type": "string"
+              },
+              "default": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "milestones": {
+      "description": "Milestone ids this Pack adds to Core's (graduated, first_job, married, first_child, retired). Emit one with `milestone(id)`; `trigger: milestone` storylets open on it and `milestone.<id>` reads true afterwards.",
+      "type": "array",
+      "items": {
+        "pattern": "^[a-z][a-z0-9_]*$",
+        "type": "string"
+      }
+    },
     "exclusivity": {
       "type": "array",
       "items": {

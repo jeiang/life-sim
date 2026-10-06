@@ -37,6 +37,14 @@ export type Stmt = Pos &
         value: Node;
       }
     | { k: "call"; name: string; args: Node[]; as?: Pos & { name: string } }
+    | {
+        k: "schedule";
+        storylet: Node;
+        from: number;
+        to: number;
+        person?: Pos & { name: string };
+        lineage: boolean;
+      }
   );
 
 // Binding powers, low to high: or, and, (not = 3), comparison/in, additive, multiplicative, unary minus.
@@ -207,6 +215,7 @@ class Parser {
         column: p.column,
       });
     }
+    if (t.value === "schedule" && this.is("op", "(")) return this.schedule(pos);
     if (this.is("op", "(")) {
       const args = this.args();
       let as: (Pos & { name: string }) | undefined;
@@ -234,6 +243,62 @@ class Parser {
       op: op.value as "=" | "+=" | "-=",
       target: { path: t.value as string, ...pos },
       value: this.expr(),
+      ...pos,
+    };
+  }
+
+  private count(what: string): number {
+    if (!this.is("int"))
+      this.fail(`expected ${what}, found ${this.describe(this.peek())}`);
+    return this.next().value as number;
+  }
+
+  /** `schedule(storylet, after: 2-4 years[, person][, lineage: true])`. */
+  private schedule(pos: Pos): Stmt {
+    this.expect("op", "(");
+    const storylet = this.expr();
+    this.expect("op", ",");
+    const after = this.ident("'after: <from>-<to> years'");
+    if (after.value !== "after")
+      this.fail("expected 'after: <from>-<to> years'", after);
+    this.expect("op", ":");
+    const from = this.count("a number of years");
+    this.expect("op", "-", "'-' between the years, as in 'after: 2-4 years'");
+    const to = this.count("a number of years");
+    const unit = this.ident("'years'");
+    if (unit.value !== "years") this.fail("expected 'years'", unit);
+    let person: (Pos & { name: string }) | undefined;
+    let lineage = false;
+    let sawLineage = false;
+    while (this.accept("op", ",")) {
+      const opt = this.ident("a person name or 'lineage: true'");
+      if (opt.value === "lineage") {
+        if (sawLineage) this.fail("'lineage' given twice", opt);
+        sawLineage = true;
+        this.expect("op", ":");
+        if (!this.is("kw", "true") && !this.is("kw", "false"))
+          this.fail(
+            `expected true or false, found ${this.describe(this.peek())}`,
+          );
+        lineage = this.next().value === "true";
+      } else {
+        if (person || sawLineage)
+          this.fail("the person comes once, before 'lineage'", opt);
+        person = {
+          name: opt.value as string,
+          line: opt.line,
+          column: opt.column,
+        };
+      }
+    }
+    this.expect("op", ")", "',' or ')'");
+    return {
+      k: "schedule",
+      storylet,
+      from,
+      to,
+      ...(person ? { person } : {}),
+      lineage,
       ...pos,
     };
   }

@@ -1,0 +1,48 @@
+# Person decisions: drawn by weight as a storylet, then one eligible person at random.
+- id: ask-friend
+  trigger: event
+  scope: person
+  target: [friend]
+  weight: 10
+  when: not person.quality.sulking
+  text: "{person.first_name} asks you something."
+  choices:
+    - label: Help
+      outcomes:
+        - effects:
+            - person.quality.mood += 1
+    - label: Refuse
+      outcomes:
+        - effects:
+            - person.quality.sulking = true
+- id: ask-rival
+  trigger: event
+  scope: person
+  target: [rival]
+  weight: 10
+  text: "{person.first_name} challenges you."
+  choices:
+    - label: Accept
+      outcomes:
+        - text: Accepted.
+# A heavier person decision, for the weight-first draw.
+- id: ask-heavy
+  trigger: event
+  scope: person
+  target: [friend]
+  weight: 30
+  when: quality.gate
+  text: "{person.first_name} needs a favour."
+  choices:
+    - label: Ok
+      outcomes:
+        - text: Done.
+- id: plain-decision
+  trigger: event
+  weight: 10
+  when: not quality.gate
+  text: A plain decision.
+  choices:
+    - label: Ok
+      outcomes:
+        - text: Fine.

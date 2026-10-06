@@ -1,0 +1,16 @@
+id: life
+version: 1
+depends: []
+currency:
+  symbol: "$"
+  digits: 2
+stats:
+  - { id: happiness, label: Happiness, start: [50, 100] }
+qualities:
+  - { id: gate, type: flag, default: false }
+  - { id: asked, type: int, min: 0, default: 0 }
+person_qualities:
+  - { id: mood, type: int, min: 0, max: 5, default: 0 }
+  - { id: sulking, type: flag, default: false }
+milestones: [met_goal]
+exclusivity: [school, full-time]

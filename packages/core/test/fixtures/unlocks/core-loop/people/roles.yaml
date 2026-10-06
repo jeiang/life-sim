@@ -1,0 +1,2 @@
+- { kind: role, id: spouse, label: Spouse }
+- { kind: role, id: child, label: Child }

@@ -85,7 +85,9 @@ export interface CompiledStorylet {
   readonly label?: string;
   readonly icon?: IconRef;
   readonly tags: readonly string[];
-  readonly trigger: "event" | "action";
+  readonly trigger: "event" | "action" | "milestone";
+  /** `trigger: milestone` only: the milestone id (Core's or a Pack's) that opens it, once. */
+  readonly milestone?: string;
   /** Actions only: `<top>` or `<top>/<submenu>`. */
   readonly menu?: string;
   readonly scope?: "loan" | "person";
@@ -335,6 +337,13 @@ export interface PackBundle {
   readonly currency?: { readonly symbol: string; readonly digits: number };
   readonly stats: readonly StatDecl[];
   readonly qualities: readonly QualityDecl[];
+  /**
+   * Qualities of non-player persons (`person.quality.<id>`, `<bound>.quality.<id>`). They share
+   * the id namespace with `qualities` and live in the same `Person.qualities` record.
+   */
+  readonly personQualities: readonly QualityDecl[];
+  /** Milestone ids this Pack declares (bare ids; Core's own are not listed). */
+  readonly milestones: readonly string[];
   readonly exclusivity: readonly string[];
   readonly year?: {
     readonly slots: readonly [number, number];

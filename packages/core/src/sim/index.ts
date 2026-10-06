@@ -8,9 +8,11 @@ export {
 export {
   type DecisionDraw,
   makeEnv,
+  type ScheduleTick,
   setAssertSink,
   setChanceDropSink,
   setDecisionSink,
+  setScheduleSink,
 } from "./env.ts";
 export { playFixedLife } from "./fixed-life.ts";
 export {
@@ -54,6 +56,7 @@ export {
   unitsFor,
   unitsValue,
 } from "./market.ts";
+export { CORE_MILESTONES } from "./milestones.ts";
 export { type NetWorthPoint, recordNetWorth } from "./networth.ts";
 export {
   DEFAULT_FAMILY,

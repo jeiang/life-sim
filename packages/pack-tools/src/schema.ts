@@ -106,6 +106,18 @@ export const ManifestSchema = obj(
     ),
     stats: Type.Optional(Type.Array(StatSchema)),
     qualities: Type.Optional(Type.Array(QualitySchema)),
+    person_qualities: Type.Optional(
+      Type.Array(QualitySchema, {
+        description:
+          "Qualities of non-player people: read as `person.quality.<id>` (or `<bound>.quality.<id>`) and set by effects on that person. Ids are shared with `qualities`.",
+      }),
+    ),
+    milestones: Type.Optional(
+      Type.Array(Name, {
+        description:
+          "Milestone ids this Pack adds to Core's (graduated, first_job, married, first_child, retired). Emit one with `milestone(id)`; `trigger: milestone` storylets open on it and `milestone.<id>` reads true afterwards.",
+      }),
+    ),
     exclusivity: Type.Optional(Type.Array(Id)),
     repeat: Type.Optional(
       repeatCurve("Default diminishing-returns curve for repeatable actions"),
@@ -266,7 +278,18 @@ export const StoryletSchema = obj(
     ),
     icon: Type.Optional(Icon),
     tags: Type.Optional(Type.Array(Type.String())),
-    trigger: Type.Union([Type.Literal("event"), Type.Literal("action")]),
+    trigger: Type.Union([
+      Type.Literal("event"),
+      Type.Literal("action"),
+      Type.Literal("milestone"),
+    ]),
+    milestone: Type.Optional(
+      Type.String({
+        minLength: 1,
+        description:
+          "`trigger: milestone` only: the milestone id (Core's or a Pack's) that opens this storylet, once",
+      }),
+    ),
     menu: Type.Optional(
       Type.String({
         pattern:

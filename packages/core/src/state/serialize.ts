@@ -10,6 +10,7 @@ import {
   type Person,
   type QualityValue,
   type QueuedEvent,
+  type ScheduledEvent,
   type ScopeRef,
   type Series,
   type StoryletRecord,
@@ -163,6 +164,13 @@ function person(v: unknown, p: string): Person {
     ...(withGuardian === undefined ? {} : { withGuardian }),
     ...(standardId === undefined ? {} : { standardId }),
     ...(livedStandardId === undefined ? {} : { livedStandardId }),
+    ...(o.milestones === undefined
+      ? {}
+      : {
+          milestones: arr(o.milestones, `${p}.milestones`).map((x, i) =>
+            str(x, `${p}.milestones[${i}]`),
+          ),
+        }),
     id: int(o.id, `${p}.id`),
     givenName: str(o.givenName, `${p}.givenName`),
     familyName: str(o.familyName, `${p}.familyName`),
@@ -237,6 +245,17 @@ function queued(v: unknown, p: string): QueuedEvent {
     storyletId: str(o.storyletId, `${p}.storyletId`),
     ...(o.scope === undefined ? {} : { scope: scope(o.scope, `${p}.scope`) }),
     ...optAmount(o.amount, `${p}.amount`),
+  };
+}
+
+function scheduled(v: unknown, p: string): ScheduledEvent {
+  const o = obj(v, p);
+  return {
+    storyletId: str(o.storyletId, `${p}.storyletId`),
+    ...(o.scope === undefined ? {} : { scope: scope(o.scope, `${p}.scope`) }),
+    wait: int(o.wait, `${p}.wait`),
+    left: int(o.left, `${p}.left`),
+    lineage: bool(o.lineage, `${p}.lineage`),
   };
 }
 
@@ -420,6 +439,12 @@ export function deserializeWorld(text: string): World {
     ended: o.ended === null ? null : obituary(o.ended, "$.ended"),
     storyletLog: storyletLog(o.storyletLog, "$.storyletLog"),
     uses: intRecord(o.uses, "$.uses"),
+    scheduled: arr(o.scheduled, "$.scheduled").map((x, i) =>
+      scheduled(x, `$.scheduled[${i}]`),
+    ),
+    milestoneQueue: arr(o.milestoneQueue, "$.milestoneQueue").map((x, i) =>
+      str(x, `$.milestoneQueue[${i}]`),
+    ),
     choiceLog: choiceLog(o.choiceLog, "$.choiceLog"),
     packVersions: arr(o.packVersions, "$.packVersions").map((x, i) => {
       const v = obj(x, `$.packVersions[${i}]`);

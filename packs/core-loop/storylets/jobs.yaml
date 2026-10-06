@@ -9,7 +9,7 @@
   trigger: action
   menu: activities/job-board
   tags: [job, apply]
-  when: age >= 14 and not (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista)) and not has_occupation(core-loop/retired)
+  when: age >= 14 and not in_group("part-time") and not has_occupation(core-loop/retired)
   cooldown: 1
   text: "The job board has an opening for a cashier."
   outcomes:
@@ -26,7 +26,7 @@
   trigger: action
   menu: activities/job-board
   tags: [job, apply]
-  when: age >= 14 and not (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista)) and not has_occupation(core-loop/retired)
+  when: age >= 14 and not in_group("part-time") and not has_occupation(core-loop/retired)
   cooldown: 1
   text: "The job board has an opening for a barista."
   outcomes:
@@ -43,7 +43,7 @@
   trigger: action
   menu: activities/job-board
   tags: [job, apply]
-  when: age >= 18 and not (has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)) and not has_occupation(core-loop/retired)
+  when: age >= 18 and not in_group("full-time")
   cooldown: 1
   text: "The job board has an opening for a server."
   outcomes:
@@ -60,7 +60,7 @@
   trigger: action
   menu: activities/job-board
   tags: [job, apply]
-  when: age >= 18 and quality.graduated_high_school and not (has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)) and not has_occupation(core-loop/retired)
+  when: age >= 18 and quality.graduated_high_school and not in_group("full-time")
   cooldown: 1
   text: "The job board has an opening for a electrician's apprentice."
   outcomes:
@@ -77,7 +77,7 @@
   trigger: action
   menu: activities/job-board
   tags: [job, apply]
-  when: age >= 18 and quality.has_degree_business and not (has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)) and not has_occupation(core-loop/retired)
+  when: age >= 18 and quality.has_degree_business and not in_group("full-time") and not quality.criminal_record
   cooldown: 1
   text: "The job board has an opening for a junior analyst."
   outcomes:
@@ -94,7 +94,7 @@
   trigger: action
   menu: activities/job-board
   tags: [job, apply]
-  when: age >= 18 and quality.has_degree_engineering and not (has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)) and not has_occupation(core-loop/retired)
+  when: age >= 18 and quality.has_degree_engineering and not in_group("full-time") and not quality.criminal_record
   cooldown: 1
   text: "The job board has an opening for a junior engineer."
   outcomes:
@@ -111,7 +111,7 @@
   trigger: action
   menu: activities/job-board
   tags: [job, apply]
-  when: age >= 18 and quality.has_degree_nursing and not (has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)) and not has_occupation(core-loop/retired)
+  when: age >= 18 and quality.has_degree_nursing and not in_group("full-time") and not quality.criminal_record
   cooldown: 1
   text: "The job board has an opening for a staff nurse."
   outcomes:
@@ -128,7 +128,7 @@
   trigger: action
   menu: activities/job-board
   tags: [job, apply]
-  when: age >= 18 and quality.has_degree_arts and not (has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)) and not has_occupation(core-loop/retired)
+  when: age >= 18 and quality.has_degree_arts and not in_group("full-time")
   cooldown: 1
   text: "The job board has an opening for a studio assistant."
   outcomes:
@@ -599,7 +599,7 @@
   trigger: action
   menu: occupation
   tags: [job]
-  when: has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)
+  when: (in_group("full-time") and not has_occupation(core-loop/retired)) or in_group("part-time")
   cooldown: 1
   text: "You put in extra effort at work this year."
   outcomes:
@@ -622,7 +622,7 @@
   trigger: action
   menu: occupation
   tags: [job]
-  when: has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)
+  when: (in_group("full-time") and not has_occupation(core-loop/retired)) or in_group("part-time")
   cooldown: 2
   text: "You ask your boss for a raise."
   outcomes:
@@ -691,27 +691,9 @@
     - weight: 1
       text: "You retire and start collecting a pension."
       effects:
-        - quality.years_worked = years_in(core-loop/cashier) + years_in(core-loop/barista) + years_in(core-loop/server) + years_in(core-loop/shift-lead) + years_in(core-loop/restaurant-manager) + years_in(core-loop/apprentice) + years_in(core-loop/electrician) + years_in(core-loop/master-electrician) + years_in(core-loop/junior-analyst) + years_in(core-loop/analyst) + years_in(core-loop/senior-analyst) + years_in(core-loop/junior-engineer) + years_in(core-loop/engineer) + years_in(core-loop/senior-engineer) + years_in(core-loop/staff-nurse) + years_in(core-loop/charge-nurse) + years_in(core-loop/nurse-manager) + years_in(core-loop/studio-assistant) + years_in(core-loop/designer) + years_in(core-loop/art-director)
+        - quality.years_worked = years_in_group("full-time") + years_in_group("part-time")
         - end_occupation(core-loop/cashier)
         - end_occupation(core-loop/barista)
-        - end_occupation(core-loop/server)
-        - end_occupation(core-loop/shift-lead)
-        - end_occupation(core-loop/restaurant-manager)
-        - end_occupation(core-loop/apprentice)
-        - end_occupation(core-loop/electrician)
-        - end_occupation(core-loop/master-electrician)
-        - end_occupation(core-loop/junior-analyst)
-        - end_occupation(core-loop/analyst)
-        - end_occupation(core-loop/senior-analyst)
-        - end_occupation(core-loop/junior-engineer)
-        - end_occupation(core-loop/engineer)
-        - end_occupation(core-loop/senior-engineer)
-        - end_occupation(core-loop/staff-nurse)
-        - end_occupation(core-loop/charge-nurse)
-        - end_occupation(core-loop/nurse-manager)
-        - end_occupation(core-loop/studio-assistant)
-        - end_occupation(core-loop/designer)
-        - end_occupation(core-loop/art-director)
         - start_occupation(core-loop/retired)
         - quality.raise_bonus = 0
         - quality.work_effort = 0

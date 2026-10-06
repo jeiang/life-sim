@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
 id: core-loop
-version: 10
+version: 11
 currency:
   symbol: "$"
   digits: 2
@@ -24,6 +24,22 @@ qualities:
   - { id: work_effort, type: int, min: 0, max: 5, default: 0 }
   - { id: applying_for, type: int, min: 0, default: 0 }
   - { id: interview_score, type: int, min: 0, default: 0 }
+  - { id: criminal_record, type: flag, default: false }
+  - { id: wanted, type: flag, default: false }
+  - { id: pending_charge, type: int, min: 0, default: 0 }
+  - { id: family_wealth, type: int, min: 1, max: 5, default: 3 }
+  - { id: attracted_men, type: int, min: 0, max: 100, default: 0 }
+  - { id: attracted_women, type: int, min: 0, max: 100, default: 0 }
+  - { id: attracted_nonbinary, type: int, min: 0, max: 100, default: 0 }
+  - { id: karma, type: int, min: 0, max: 100, default: 50 }
+  - { id: lang_english, type: int, min: 0, max: 100, default: 100 }
+  - { id: lang_spanish, type: int, min: 0, max: 100, default: 0 }
+  - { id: lang_french, type: int, min: 0, max: 100, default: 0 }
+  - { id: lang_german, type: int, min: 0, max: 100, default: 0 }
+  - { id: lang_italian, type: int, min: 0, max: 100, default: 0 }
+  - { id: lang_japanese, type: int, min: 0, max: 100, default: 0 }
+  - { id: lang_mandarin, type: int, min: 0, max: 100, default: 0 }
+  - { id: lang_korean, type: int, min: 0, max: 100, default: 0 }
 exclusivity: [school, full-time, part-time]
 repeat: { full: 3, reduced: 8, factor: 25% }
 year:

@@ -25,6 +25,7 @@ import {
   setAssertSink,
   setChanceDropSink,
   setDecisionSink,
+  setOutcomeSink,
   settleLiving,
   standardOf,
   streamFor,
@@ -110,6 +111,13 @@ export interface LifeResult {
   /** Chance hits the yearly cap dropped, by Pack id (the storylet id's prefix). */
   readonly capDrops: Readonly<Record<string, number>>;
   readonly samples: readonly YearSample[];
+  /**
+   * Money change of every resolved choice of a storylet tagged `wager`, by storylet id: how
+   * often it was played, the net money change, and the worst single change (the stake).
+   */
+  readonly wagers: Readonly<
+    Record<string, { plays: number; net: number; worst: number }>
+  >;
   /** Persons in the final world and how many of them (not the player) hold or held a job; null without a world. */
   readonly persons: number | null;
   readonly careers: number;
@@ -269,6 +277,21 @@ export function runLife(
   for (const b of bundles)
     for (const st of b.storylets)
       if (st.trigger === "event" && st.choices.length > 0) choiceIds.add(st.id);
+  const wagerIds = new Set<string>();
+  for (const b of bundles)
+    for (const st of b.storylets)
+      if (st.tags.includes("wager")) wagerIds.add(st.id);
+  const wagers: Record<string, { plays: number; net: number; worst: number }> =
+    {};
+  setOutcomeSink((id, d) => {
+    if (!wagerIds.has(id) || d === 0) return;
+    const t = wagers[id] ?? { plays: 0, net: 0, worst: 0 };
+    wagers[id] = {
+      plays: t.plays + 1,
+      net: t.net + d,
+      worst: Math.min(t.worst, d),
+    };
+  });
   const yearUses: Record<string, number>[] = [];
   const samples: YearSample[] = [];
   const loanIds = new Set<number>();
@@ -474,6 +497,7 @@ export function runLife(
     setAssertSink(null);
     setDecisionSink(null);
     setChanceDropSink(null);
+    setOutcomeSink(null);
   }
 
   const final = w;
@@ -494,6 +518,7 @@ export function runLife(
     yearUses,
     capDrops,
     samples,
+    wagers,
     persons: final ? final.persons.size : null,
     careers: final
       ? [...final.persons.values()].filter(

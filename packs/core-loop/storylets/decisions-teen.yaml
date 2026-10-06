@@ -294,7 +294,7 @@
   icon: 💔
   trigger: event
   weight: 9
-  when: age >= 14 and age <= 24
+  when: age >= 14 and age <= 24 and count_role(core-loop/spouse, 0, 100) == 0
   cooldown: 6
   text: "A first romance ends badly, and {player.first_name} is miserable."
   choices:
@@ -382,6 +382,7 @@
 - id: lottery-ticket
   icon: 🎟️
   trigger: event
+  tags: [wager]
   weight: 10
   when: age >= 18 and age <= 95 and money >= 500
   cooldown: 3
@@ -389,16 +390,29 @@
   choices:
     - label: "Buy a ticket"
       outcomes:
-        - weight: 95
+        - weight: 940
           text: "Not a winner, but the dream was nice for a day."
           effects:
             - money -= 500
             - stat.happiness += 1
-        - weight: 5
+        - weight: 50
           text: "A small win, and a very big grin."
           effects:
-            - money += 20000
+            - money -= 500
+            - money += 2000
             - stat.happiness += 4
+        - weight: 9
+          text: "A decent prize, enough for a proper night out."
+          effects:
+            - money -= 500
+            - money += 10000
+            - stat.happiness += 5
+        - weight: 1
+          text: "A big win. The shop owner shakes your hand."
+          effects:
+            - money -= 500
+            - money += 50000
+            - stat.happiness += 8
     - label: "Keep the money"
       outcomes:
         - weight: 1
@@ -416,16 +430,18 @@
   choices:
     - label: "Stop and help"
       outcomes:
-        - weight: 80
+        - weight: 80 + (quality.karma - 50) / 5
           text: "A thankful driver and a warm feeling."
           effects:
             - stat.happiness += 4
             - stat.health -= 1
+            - quality.karma += 3
         - weight: 20
           text: "A soggy hour for nothing much, though a thank-you card arrives."
           effects:
             - stat.happiness += 1
             - stat.health -= 2
+            - quality.karma += 3
     - label: "Call a tow truck for them"
       outcomes:
         - weight: 1

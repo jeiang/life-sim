@@ -75,6 +75,10 @@
         "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
         "type": "string"
       },
+      "remote": {
+        "description": "The work can be done from anywhere; `has_remote_job()` is true while one is held",
+        "type": "boolean"
+      },
       "npc": {
         "description": "`false`: never assigned to an NPC career (creator, prison and similar special occupations)",
         "const": false,

@@ -52,6 +52,7 @@ It **reports** without failing, in `report.md` and `report.json` in the check ou
 - Vacations (only when Pack `vacations` is loaded): trips per life by price tier, trip spending as a share of gross earnings, travel deaths per 10,000 trips, and median net worth of travellers against non-travellers within each profile;
 - stats at 100: share of living lives at the cap, per stat, by decade of age;
 - gambling (when the Gambling Pack is loaded): share of lives that staked anything and share ever addicted, per profile; addiction and recovery rates, bans and VIP rooms; lifetime stakes per gambler; and per game the bets, stakes, net change of cash and realised return (stakes plus net, over stakes). A gambling action that leaves cash below zero is an assertion fault;
+- wagers: for storylets tagged `wager`, plays (outcomes that changed money), net money, the stake (worst single loss) and the realised return (below 100% loses money on average);
 - stat distributions by age.
 
 Balance bands that fail CI (for example a median age at death outside a range) can be added once content settles. Until then, balance findings guide authoring but never block merges.

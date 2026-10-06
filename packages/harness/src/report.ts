@@ -152,6 +152,15 @@ export interface Report {
       { bets: number; wagered: number; net: number; returnPct: number }
     >;
   };
+  /**
+   * Storylets tagged `wager` (the player risks money): plays, net money in minor units, the
+   * stake (the worst single loss) and the realised return, `100 + 100 * mean net / stake`
+   * percent (below 100 loses money).
+   */
+  readonly wagers: Record<
+    string,
+    { plays: number; net: number; stake: number; returnPct: number }
+  >;
   /** Chance hits dropped by the yearly cap, by Pack id (Packs with none are omitted). */
   readonly capDrops: Record<string, number>;
   readonly death: {
@@ -299,6 +308,10 @@ export class Aggregate {
   private readonly repeatUse = new Map<
     string,
     { uses: number; years: number; max: number; full: number; reduced: number }
+  >();
+  private readonly wagerTotals = new Map<
+    string,
+    { plays: number; net: number; worst: number }
   >();
   private readonly stageYears: number[] = STAGES.map(() => 0);
   private readonly stageHit: number[] = STAGES.map(() => 0);
@@ -450,6 +463,14 @@ export class Aggregate {
         }
       this.decEmpty += y.empty;
       if (y.empty > 0) this.decEmptyYears++;
+    }
+    for (const [id, t] of Object.entries(r.wagers)) {
+      const a = this.wagerTotals.get(id) ?? { plays: 0, net: 0, worst: 0 };
+      this.wagerTotals.set(id, {
+        plays: a.plays + t.plays,
+        net: a.net + t.net,
+        worst: Math.min(a.worst, t.worst),
+      });
     }
     for (const year of r.yearUses) {
       this.repeatYears++;
@@ -740,6 +761,26 @@ export class Aggregate {
         ),
       },
       gambling: this.gamblingReport(),
+      wagers: Object.fromEntries(
+        [...this.wagerTotals]
+          .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+          .map(([id, t]) => {
+            const stake = -t.worst;
+            return [
+              id,
+              {
+                plays: t.plays,
+                net: t.net,
+                stake,
+                returnPct:
+                  stake > 0
+                    ? Math.round((100 + (100 * t.net) / t.plays / stake) * 10) /
+                      10
+                    : 100,
+              },
+            ];
+          }),
+      ),
       capDrops: Object.fromEntries(
         [...this.capDrops].sort((a, b) => (a[0] < b[0] ? -1 : 1)),
       ),
@@ -1007,6 +1048,21 @@ export function renderMarkdown(
     L.push(
       `| ${id} | ${u.uses} | ${u.perYear} | ${u.usedYears} | ${u.meanWhenUsed} | ${u.maxInYear} | ${u.pastFull}% | ${u.pastReduced}% |`,
     );
+  if (Object.keys(r.wagers).length > 0) {
+    L.push(
+      "",
+      "## Wagers",
+      "",
+      "Storylets tagged `wager`; a play is an outcome that changed the player's money. Return is 100% plus the mean net change over the stake (the worst single loss); below 100% the player loses money on average.",
+      "",
+      "| storylet | plays | net (major units) | stake (major units) | realised return |",
+      "|---|---|---|---|---|",
+    );
+    for (const [id, t] of Object.entries(r.wagers))
+      L.push(
+        `| ${id} | ${t.plays} | ${major(t.net)} | ${major(t.stake)} | ${t.returnPct}% |`,
+      );
+  }
   L.push(
     "",
     "## Death",

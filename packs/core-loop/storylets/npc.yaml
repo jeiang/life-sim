@@ -70,6 +70,7 @@
   trigger: event
   tags: [npc, custody-ok]
   scope: person
+  target: [core-loop/sibling]
   chance: 100%
   when: person.age == 6
   text: "{person.first_name} puts on a new backpack and heads to the first day of school."
@@ -83,6 +84,7 @@
   trigger: event
   tags: [npc, custody-ok]
   scope: person
+  target: [core-loop/sibling]
   chance: 40%
   when: person.age >= 5 and person.age <= 8 and age >= 4
   once: true
@@ -97,6 +99,7 @@
   trigger: event
   tags: [npc, custody-ok]
   scope: person
+  target: [core-loop/sibling]
   chance: 6%
   when: person.age >= 8 and person.age <= 18 and person.stat.smarts >= 60
   cooldown: 3
@@ -111,6 +114,7 @@
   trigger: event
   tags: [npc, custody-ok]
   scope: person
+  target: [core-loop/sibling]
   chance: 100%
   when: person.age == 18
   text: "{person.first_name} graduates from high school, and the family celebrates."
@@ -125,6 +129,7 @@
   trigger: event
   tags: [npc, custody-ok]
   scope: person
+  target: [core-loop/sibling]
   chance: 6%
   when: person.age >= 8 and person.age <= 17 and age >= 8 and age <= 17
   cooldown: 3
@@ -139,6 +144,7 @@
   trigger: event
   tags: [npc, custody-ok]
   scope: person
+  target: [core-loop/sibling, core-loop/friend, core-loop/coworker, core-loop/partner, core-loop/spouse, core-loop/child]
   chance: 3%
   when: person.age >= 24 and person.age <= 55
   cooldown: 4
@@ -153,6 +159,7 @@
   trigger: event
   tags: [npc, custody-ok]
   scope: person
+  target: [core-loop/parent, core-loop/sibling, core-loop/friend, core-loop/partner, core-loop/spouse, core-loop/child]
   chance: 5%
   when: person.age >= 30 and age >= 20
   cooldown: 3
@@ -161,3 +168,23 @@
     - weight: 1
       effects:
         - stat.happiness += 2
+
+# Generic mortality for human roles. Parents have their own `parent-death` (rates unchanged), so
+# they are not listed; a role added later (pets, say) is not human and is not listed either.
+# Same shape as the player's `natural-mortality` (age^4 / 90000, health-weighted) from age 30,
+# and the player's `childhood-mortality` rate below it.
+- id: person-mortality
+  icon: 🕯️
+  trigger: event
+  tags: [npc, mortality, custody-ok]
+  scope: person
+  target: [core-loop/sibling, core-loop/classmate, core-loop/coworker, core-loop/friend, core-loop/partner, core-loop/spouse, core-loop/child]
+  chance: "min(10000, person.age >= 30 ? (person.age * person.age * person.age * person.age / 90000) * (140 - person.stat.health) / 90 + max(0, person.age - 100) * 1000 : 3 + max(0, 12 - person.age))"
+  when: person.age >= 1
+  once: true
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness -= 3 + person.closeness / 8
+        - journal("{person.first_name} {person.last_name} died at age {person.age}.")
+        - die("natural causes")

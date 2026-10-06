@@ -202,6 +202,21 @@ export function reportChanceDrops(ids: readonly string[]): void {
   chanceDropSink?.(ids);
 }
 
+let outcomeSink: ((storyletId: string, moneyDelta: number) => void) | null =
+  null;
+
+/** Report the money change of every resolved outcome (storylet id, the subject's change); `null` stops. For the balance harness. */
+export function setOutcomeSink(
+  sink: ((storyletId: string, moneyDelta: number) => void) | null,
+): void {
+  outcomeSink = sink;
+}
+
+/** @internal Used by outcome resolution. */
+export function reportOutcome(storyletId: string, moneyDelta: number): void {
+  outcomeSink?.(storyletId, moneyDelta);
+}
+
 /** Expression environment (ADR 0004) over the world. Only the whitelisted names exist. */
 export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
   const subject = getPerson(world, scope.subject);
@@ -263,6 +278,10 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
       if (pure) return pure(...(args as number[]));
       const id = args[0] as string;
       switch (name) {
+        case "has_remote_job":
+          return subject.occupations.some(
+            (o) => idx.occupations.get(o.kindId)?.remote === true,
+          );
         case "has_occupation":
           return subject.occupations.some((o) => o.kindId === id);
         case "owns":

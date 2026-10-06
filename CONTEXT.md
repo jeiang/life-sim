@@ -111,6 +111,18 @@ _Avoid_: Housing status, residence
 A state of the player, held through an occupation that declares `confines` (prison, hospital). While confined the player is `confined`, housing is provided, and only content tagged `custody-ok` runs where menus or events are locked; the shop is locked with menus.
 _Avoid_: Imprisonment, lockout
 
+**Mailbox quality**:
+A core-loop quality that one Pack writes and another reads on a later age-up, so neither depends on the other. `pending_charge` is the first: any Pack sets it, Crime arrests at the next age-up.
+
+**Family wealth**:
+A hidden quality (`family_wealth`, 1 to 5) rolled once at the first age-up and shared by every Pack that needs the player's family means (parents' help, weddings, family standing). Packs read it and never roll their own.
+
+**Karma**:
+A hidden quality (`karma`, 0 to 100, default 50) that only non-repeatable content writes, so repeating an action cannot farm it.
+
+**Remote occupation**:
+An occupation kind flagged `remote: true`, work that can be done from anywhere. `has_remote_job()` reads it.
+
 **Standard of living**:
 A Pack-defined level of spending (homeless to ultra-rich) with a base yearly cost, yearly happiness and health effects and an illness and death risk multiplier. The player on their own chooses one and pays its cost, scaled by the city cost index, each settlement; short of savings they live the best one they can afford that year. The cost includes a dependents term for each child living at home, less the share a partner who moved in pays; a spouse whose money was merged pays no separate share.
 _Avoid_: Lifestyle, rent, tier

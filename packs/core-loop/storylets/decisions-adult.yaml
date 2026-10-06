@@ -1,0 +1,892 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Decisions for adulthood (about 20-59): weighted choice events (issue #99), drawn into the yearly decision slots.
+# `chance: 0%` entries are follow-up scenes reached only through `next:`.
+
+- id: job-offer-elsewhere
+  icon: 📨
+  trigger: event
+  weight: 11
+  when: age >= 22 and age <= 58 and (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director))
+  cooldown: 5
+  text: "A recruiter sends a message about a role at a rival firm with a similar salary."
+  choices:
+    - label: "Explore the offer"
+      outcomes:
+        - weight: 35
+          text: "A better working culture, and a signing bonus."
+          effects:
+            - money += 150000
+            - stat.happiness += 3
+        - weight: 65
+          text: "The role is not quite as advertised, and the old boss is cool for a while."
+          effects:
+            - stat.happiness -= 2
+    - label: "Politely decline"
+      outcomes:
+        - weight: 1
+          text: "Loyalty is noted, and nothing changes."
+          effects:
+            - stat.happiness += 1
+
+- id: overtime-ask
+  icon: ⏰
+  trigger: event
+  weight: 12
+  when: age >= 20 and age <= 62 and (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director))
+  cooldown: 4
+  text: "The boss asks if anyone can cover a late shift, with good extra pay."
+  choices:
+    - label: "Cover the shift"
+      outcomes:
+        - weight: 1
+          text: "Extra money, and a tired evening."
+          effects:
+            - money += 12000
+            - stat.health -= 2
+            - stat.happiness -= 1
+    - label: "Say no"
+      outcomes:
+        - weight: 1
+          text: "A quiet night at home."
+          effects:
+            - stat.happiness += 1
+
+- id: workplace-lunch-club
+  icon: 🥪
+  trigger: event
+  weight: 10
+  when: age >= 22 and age <= 62 and (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director))
+  cooldown: 8
+  text: "A lunch club forms at work, and a coworker invites {player.first_name} along."
+  choices:
+    - label: "Join them"
+      outcomes:
+        - weight: 70
+          text: "New friendships, and some juicy office gossip."
+          effects:
+            - stat.happiness += 3
+            - spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1
+            - relationship(c1).closeness += 10
+        - weight: 30
+          text: "Lunch is dull, but pleasant."
+          effects:
+            - stat.happiness += 1
+    - label: "Eat at the desk"
+      outcomes:
+        - weight: 1
+          text: "A quick sandwich and a bit more work done."
+          effects:
+            - stat.smarts += 1
+
+- id: late-night-deadline
+  icon: 💡
+  trigger: event
+  weight: 11
+  when: age >= 22 and age <= 60 and (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director))
+  cooldown: 5
+  text: "A deadline looms, and the work is only half done."
+  choices:
+    - label: "Pull an all-nighter"
+      outcomes:
+        - weight: 65
+          text: "The work lands on time, and the boss notices."
+          effects:
+            - stat.happiness += 1
+            - stat.health -= 4
+            - money += 20000
+        - weight: 35
+          text: "The finished work is sloppy, and the criticism stings."
+          effects:
+            - stat.health -= 4
+            - stat.happiness -= 3
+    - label: "Ask for an extension"
+      outcomes:
+        - weight: 60
+          text: "The boss is understanding."
+          effects:
+            - stat.happiness += 1
+        - weight: 40
+          text: "The extension is refused, and the evening is long."
+          effects:
+            - stat.happiness -= 2
+
+- id: gym-yearly-deal
+  icon: 🏋️
+  trigger: event
+  weight: 12
+  when: age >= 20 and age <= 70 and money >= 10000
+  cooldown: 6
+  text: "A new gym is offering a cheap yearly membership."
+  choices:
+    - label: "Sign up and go regularly"
+      outcomes:
+        - weight: 55
+          text: "A fitter, happier year."
+          effects:
+            - money -= 10000
+            - stat.health += 4
+            - stat.looks += 1
+            - stat.happiness += 2
+        - weight: 45
+          text: "The membership goes unused after a fortnight."
+          effects:
+            - money -= 10000
+            - stat.happiness -= 1
+    - label: "Run outdoors instead"
+      outcomes:
+        - weight: 1
+          text: "Free, fresh, and unfussy."
+          effects:
+            - stat.health += 2
+
+- id: flatmate-trouble
+  icon: 🏠
+  trigger: event
+  weight: 10
+  when: age >= 20 and age <= 40
+  cooldown: 7
+  text: "A flatmate keeps eating {player.first_name}'s food and leaving dishes in the sink."
+  choices:
+    - label: "Have a calm chat"
+      outcomes:
+        - weight: 60
+          text: "The air clears, and a rota appears on the fridge."
+          effects:
+            - stat.happiness += 2
+        - weight: 40
+          text: "Both agree, then nothing changes."
+          effects:
+            - stat.happiness -= 1
+    - label: "Leave passive-aggressive notes"
+      outcomes:
+        - weight: 1
+          text: "The notes pile up, and so does the tension."
+          effects:
+            - stat.happiness -= 3
+    - label: "Move out"
+      outcomes:
+        - weight: 1
+          text: "A new place costs a little, but the mood lifts."
+          effects:
+            - money -= min(money, 20000)
+            - stat.happiness += 2
+
+- id: dating-app
+  icon: 💞
+  trigger: event
+  weight: 10
+  when: age >= 20 and age <= 50
+  cooldown: 6
+  text: "A friend nudges {player.first_name} to try a dating app."
+  choices:
+    - label: "Give it a go"
+      outcomes:
+        - weight: 40
+          text: "A lovely first date and a promising spark."
+          effects:
+            - stat.happiness += 5
+            - stat.looks += 1
+        - weight: 60
+          text: "A string of awkward chats and a ghost."
+          effects:
+            - stat.happiness -= 2
+    - label: "Meet people the old-fashioned way"
+      outcomes:
+        - weight: 1
+          text: "A nice evening with friends instead."
+          effects:
+            - stat.happiness += 2
+
+- id: wedding-invite
+  icon: 💒
+  trigger: event
+  weight: 11
+  when: age >= 22 and age <= 60
+  cooldown: 4
+  text: "An invitation to a friend's wedding arrives, and it is in another city."
+  choices:
+    - label: "Attend and stay the weekend"
+      outcomes:
+        - weight: 75
+          text: "A joyful ceremony and dancing until dawn."
+          effects:
+            - money -= min(money, 30000)
+            - stat.happiness += 5
+        - weight: 25
+          text: "The venue is miles away and a hotel fiasco spoils the weekend."
+          effects:
+            - money -= min(money, 30000)
+            - stat.happiness += 1
+    - label: "Send a gift and stay home"
+      outcomes:
+        - weight: 1
+          text: "A thoughtful present and a calm weekend."
+          effects:
+            - money -= min(money, 5000)
+            - stat.happiness += 1
+
+- id: home-repair
+  icon: 🛠️
+  trigger: event
+  weight: 10
+  when: age >= 24 and age <= 75 and money >= 20000
+  cooldown: 5
+  text: "A tap starts to leak, and the damp patch is spreading."
+  choices:
+    - label: "Fix it yourself"
+      outcomes:
+        - weight: 40
+          text: "A tidy repair and a boost of pride."
+          effects:
+            - stat.smarts += 1
+            - stat.happiness += 3
+            - money -= 2000
+        - weight: 60
+          text: "The leak gets worse before a plumber is finally called."
+          effects:
+            - money -= 20000
+            - stat.happiness -= 2
+    - label: "Hire a plumber"
+      outcomes:
+        - weight: 1
+          text: "Quick, clean, and pricey."
+          effects:
+            - money -= 15000
+
+- id: neighbourhood-barbecue
+  icon: 🍖
+  trigger: event
+  weight: 10
+  when: age >= 25 and age <= 70
+  cooldown: 6
+  text: "Neighbours are planning a street barbecue."
+  choices:
+    - label: "Bring a dish and mingle"
+      outcomes:
+        - weight: 75
+          text: "Good food, a sunny afternoon, and a few new friends."
+          effects:
+            - stat.happiness += 4
+            - money -= min(money, 2000)
+        - weight: 25
+          text: "Rain breaks the party, but the leftovers are good."
+          effects:
+            - stat.happiness += 1
+            - money -= min(money, 2000)
+    - label: "Host it yourself"
+      outcomes:
+        - weight: 60
+          text: "A roaring success, and a grill worth keeping."
+          effects:
+            - money -= min(money, 8000)
+            - stat.happiness += 6
+        - weight: 40
+          text: "The grill sulks and the sausages burn, but everyone laughs."
+          effects:
+            - money -= min(money, 8000)
+            - stat.happiness += 3
+    - label: "Stay in"
+      outcomes:
+        - weight: 1
+          text: "A quiet afternoon indoors."
+          effects:
+            - stat.health += 1
+
+- id: family-holiday
+  icon: 🏝️
+  trigger: event
+  weight: 10
+  when: age >= 25 and age <= 70 and money >= 60000
+  cooldown: 5
+  text: "A week's holiday could be just what everyone needs."
+  choices:
+    - label: "Book something grand"
+      outcomes:
+        - weight: 80
+          text: "Postcards, sunburn, and a flood of new memories."
+          effects:
+            - money -= 60000
+            - stat.happiness += 8
+        - weight: 20
+          text: "Delayed flights and a rainy week, but memories all the same."
+          effects:
+            - money -= 60000
+            - stat.happiness += 2
+    - label: "Go camping"
+      outcomes:
+        - weight: 1
+          text: "A cheap, cosy trip under the stars."
+          effects:
+            - money -= 15000
+            - stat.happiness += 5
+            - stat.health += 1
+    - label: "Stay home"
+      outcomes:
+        - weight: 1
+          text: "A relaxing staycation with the phone off."
+          effects:
+            - stat.happiness += 2
+
+- id: charity-run
+  icon: 🏃
+  trigger: event
+  weight: 10
+  when: age >= 20 and age <= 55
+  cooldown: 7
+  text: "Colleagues are signing up for a charity fun run."
+  choices:
+    - label: "Train and enter"
+      outcomes:
+        - weight: 70
+          text: "A finish line, a medal, and a good deed."
+          effects:
+            - stat.health += 4
+            - stat.happiness += 4
+        - weight: 30
+          text: "A twisted ankle on mile three, but spirits stay high."
+          effects:
+            - stat.health -= 3
+            - stat.happiness += 2
+    - label: "Sponsor a friend"
+      outcomes:
+        - weight: 1
+          text: "A donation made and a thank-you card in return."
+          effects:
+            - money -= min(money, 2000)
+            - stat.happiness += 2
+
+- id: night-class
+  icon: 🖥️
+  trigger: event
+  weight: 10
+  when: age >= 22 and age <= 55 and money >= 30000
+  cooldown: 7
+  text: "A night class is open on a subject {player.first_name} has always been curious about."
+  choices:
+    - label: "Enrol"
+      outcomes:
+        - weight: 65
+          text: "A new skill, and a sharper mind."
+          effects:
+            - money -= 30000
+            - stat.smarts += 4
+            - stat.happiness += 2
+        - weight: 35
+          text: "The class runs out of steam, but the first few weeks were inspiring."
+          effects:
+            - money -= 30000
+            - stat.smarts += 1
+    - label: "Pass"
+      outcomes:
+        - weight: 1
+          text: "Another evening on the sofa."
+          effects:
+            - stat.happiness += 1
+
+- id: found-cat
+  icon: 🐈
+  trigger: event
+  weight: 9
+  when: age >= 20 and age <= 80
+  cooldown: 10
+  text: "A scruffy cat keeps turning up on the doorstep."
+  choices:
+    - label: "Take it in"
+      outcomes:
+        - weight: 70
+          text: "A purring companion who rules the household."
+          effects:
+            - money -= 8000
+            - stat.happiness += 5
+        - weight: 30
+          text: "The cat has an owner after all, who is delighted."
+          effects:
+            - stat.happiness += 2
+    - label: "Put out a bowl of food"
+      outcomes:
+        - weight: 1
+          text: "A regular visitor, no strings attached."
+          effects:
+            - stat.happiness += 2
+    - label: "Shoo it away"
+      outcomes:
+        - weight: 1
+          text: "The cat looks offended and moves on."
+          effects:
+            - stat.happiness -= 1
+
+- id: tax-mixup
+  icon: 📑
+  trigger: event
+  weight: 9
+  when: age >= 22 and age <= 90 and money >= 10000
+  cooldown: 6
+  text: "A tax form is confusing, and the deadline is days away."
+  choices:
+    - label: "Work through it yourself"
+      outcomes:
+        - weight: 60
+          text: "A refund lands in the account."
+          effects:
+            - money += 15000
+            - stat.smarts += 1
+        - weight: 40
+          text: "An error means a small fine."
+          effects:
+            - money -= 10000
+            - stat.happiness -= 2
+    - label: "Pay an accountant"
+      outcomes:
+        - weight: 1
+          text: "A tidy, accurate return."
+          effects:
+            - money -= 8000
+            - stat.happiness += 1
+
+- id: car-trouble
+  icon: 🚘
+  trigger: event
+  weight: 9
+  when: age >= 20 and age <= 80 and (owns(core-loop/used-car) or owns(core-loop/new-car))
+  cooldown: 5
+  text: "A strange rattle starts coming from the car."
+  choices:
+    - label: "Take it to a garage"
+      outcomes:
+        - weight: 70
+          text: "A small fix and a clean bill of health."
+          effects:
+            - money -= 12000
+            - stat.happiness += 1
+        - weight: 30
+          text: "A pricey repair, but the car runs sweetly again."
+          effects:
+            - money -= 40000
+    - label: "Ignore it"
+      outcomes:
+        - weight: 50
+          text: "The rattle fades by itself."
+          effects:
+            - stat.happiness += 1
+        - weight: 50
+          text: "The rattle turns into a breakdown on the motorway."
+          effects:
+            - money -= 60000
+            - stat.happiness -= 3
+
+- id: bike-to-work
+  icon: 🚴
+  trigger: event
+  weight: 9
+  when: age >= 20 and age <= 60 and (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director))
+  cooldown: 7
+  text: "The commute is long and the bus is dire."
+  choices:
+    - label: "Cycle to work"
+      outcomes:
+        - weight: 75
+          text: "Fitter, brighter, and a lot cheaper."
+          effects:
+            - stat.health += 3
+            - stat.happiness += 2
+            - money += 2000
+        - weight: 25
+          text: "A soaking wet commute and a puncture."
+          effects:
+            - stat.health += 1
+            - stat.happiness -= 1
+    - label: "Stick with the bus"
+      outcomes:
+        - weight: 1
+          text: "A slow ride, but a good book."
+          effects:
+            - stat.smarts += 1
+
+- id: workplace-prank
+  icon: 🎭
+  trigger: event
+  weight: 8
+  when: age >= 22 and age <= 58 and (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director))
+  cooldown: 8
+  text: "A colleague's birthday is coming, and a prank is brewing."
+  choices:
+    - label: "Join in"
+      outcomes:
+        - weight: 70
+          text: "The whole office roars, and the prank becomes legend."
+          effects:
+            - stat.happiness += 4
+        - weight: 30
+          text: "The prank misfires and the boss is not amused."
+          effects:
+            - stat.happiness -= 3
+    - label: "Stay out of it"
+      outcomes:
+        - weight: 1
+          text: "An innocent observer."
+          effects:
+            - stat.smarts += 1
+
+- id: school-friend-dinner
+  icon: 🥂
+  trigger: event
+  weight: 10
+  when: age >= 25 and age <= 80
+  cooldown: 8
+  text: "An old school friend gets in touch and suggests meeting up."
+  choices:
+    - label: "Meet for dinner"
+      outcomes:
+        - weight: 75
+          text: "Hours of laughter and a promise to meet again."
+          effects:
+            - money -= min(money, 6000)
+            - stat.happiness += 5
+          next: reunion-reflection
+        - weight: 25
+          text: "The friend has changed, and the evening is stiff."
+          effects:
+            - money -= min(money, 6000)
+            - stat.happiness -= 1
+    - label: "Reply and suggest a call"
+      outcomes:
+        - weight: 1
+          text: "A warm chat that lasts all evening."
+          effects:
+            - stat.happiness += 2
+    - label: "Leave it unread"
+      outcomes:
+        - weight: 1
+          text: "The message sinks to the bottom of the inbox."
+          effects:
+            - stat.happiness -= 1
+
+- id: stock-tip
+  icon: 📈
+  trigger: event
+  weight: 9
+  when: age >= 25 and age <= 70 and money >= 100000
+  cooldown: 8
+  text: "A coworker swears by a hot investment tip."
+  choices:
+    - label: "Put some money in"
+      outcomes:
+        - weight: 40
+          text: "A tidy profit, and the coworker gloats."
+          effects:
+            - money += 60000
+            - stat.happiness += 3
+          next: stock-tip-followup
+        - weight: 60
+          text: "The tip sinks, and so does a chunk of savings."
+          effects:
+            - money -= 50000
+            - stat.happiness -= 4
+    - label: "Ignore the tip"
+      outcomes:
+        - weight: 1
+          text: "A steady path is no fun to boast about, but it works."
+          effects:
+            - stat.smarts += 1
+
+- id: creative-side-project
+  icon: 🎨
+  trigger: event
+  weight: 10
+  when: age >= 20 and age <= 65 and (has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director))
+  cooldown: 8
+  text: "A friend suggests turning a sketchbook of ideas into a side project."
+  choices:
+    - label: "Launch the project"
+      outcomes:
+        - weight: 45
+          text: "It finds an audience, and a small stream of extra income."
+          effects:
+            - money += 40000
+            - stat.happiness += 5
+            - stat.smarts += 1
+        - weight: 55
+          text: "It quietly stalls, but the work is a joy."
+          effects:
+            - stat.happiness += 2
+    - label: "Keep it as a hobby"
+      outcomes:
+        - weight: 1
+          text: "A quiet pastime without any pressure."
+          effects:
+            - stat.happiness += 2
+
+- id: nurse-night-shift
+  icon: 🏥
+  trigger: event
+  weight: 11
+  when: age >= 22 and age <= 60 and (has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager))
+  cooldown: 5
+  text: "The ward is short-staffed, and a double shift is on offer."
+  choices:
+    - label: "Take the double shift"
+      outcomes:
+        - weight: 1
+          text: "Aching feet, extra pay, and a grateful ward."
+          effects:
+            - money += 25000
+            - stat.health -= 3
+            - stat.happiness += 1
+    - label: "Go home to rest"
+      outcomes:
+        - weight: 1
+          text: "A proper night's sleep."
+          effects:
+            - stat.health += 2
+
+- id: site-safety
+  icon: ⛑️
+  trigger: event
+  weight: 9
+  when: age >= 20 and age <= 62 and (has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician))
+  cooldown: 7
+  text: "A colleague is cutting corners on site and the safety lead is out."
+  choices:
+    - label: "Speak up"
+      outcomes:
+        - weight: 75
+          text: "The corner stays uncut, and the team respects the stand."
+          effects:
+            - stat.happiness += 2
+            - stat.smarts += 1
+        - weight: 25
+          text: "The colleague sulks for weeks."
+          effects:
+            - stat.happiness -= 2
+    - label: "Say nothing"
+      outcomes:
+        - weight: 80
+          text: "Nothing goes wrong, and the moment passes."
+          effects:
+            - stat.happiness -= 1
+        - weight: 20
+          text: "A minor accident, and a sore wrist."
+          effects:
+            - stat.health -= 4
+            - stat.happiness -= 2
+
+- id: code-review-clash
+  icon: 🧑‍💻
+  trigger: event
+  weight: 10
+  when: age >= 22 and age <= 60 and (has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer))
+  cooldown: 6
+  text: "A teammate's plan seems flawed, and the meeting is about to start."
+  choices:
+    - label: "Raise the issue openly"
+      outcomes:
+        - weight: 60
+          text: "The team adjusts, and a nasty bug is avoided."
+          effects:
+            - stat.happiness += 2
+            - stat.smarts += 1
+        - weight: 40
+          text: "A heated debate, and some bruised egos."
+          effects:
+            - stat.happiness -= 2
+    - label: "Talk to the teammate privately"
+      outcomes:
+        - weight: 1
+          text: "A gentle word fixes things quietly."
+          effects:
+            - stat.happiness += 2
+
+- id: checkup-letter
+  icon: 🩺
+  trigger: event
+  weight: 12
+  when: age >= 30 and age <= 85
+  cooldown: 6
+  text: "A letter reminds {player.first_name} to book a health check."
+  choices:
+    - label: "Book it"
+      outcomes:
+        - weight: 70
+          text: "A clean bill of health and gentle advice."
+          effects:
+            - stat.health += 2
+            - stat.happiness += 1
+            - money -= min(money, 3000)
+        - weight: 30
+          text: "A caught problem, treated early."
+          effects:
+            - stat.health += 4
+            - money -= min(money, 8000)
+    - label: "Put it off"
+      outcomes:
+        - weight: 60
+          text: "Nothing happens, for now."
+          effects:
+            - stat.happiness += 1
+        - weight: 40
+          text: "A niggle grows into a worry."
+          effects:
+            - stat.health -= 3
+            - stat.happiness -= 2
+
+- id: midlife-crisis
+  icon: 🏍️
+  trigger: event
+  weight: 9
+  when: age >= 40 and age <= 55 and money >= 100000
+  once: true
+  text: "A shiny motorbike is in the shop window, and something in {player.first_name} stirs."
+  choices:
+    - label: "Buy it"
+      outcomes:
+        - weight: 60
+          text: "Wind in the hair and a grin that will not leave."
+          effects:
+            - money -= 90000
+            - stat.happiness += 7
+            - stat.looks += 1
+        - weight: 40
+          text: "A near-miss on the first ride calms the urge."
+          effects:
+            - money -= 90000
+            - stat.happiness += 2
+            - stat.health -= 3
+    - label: "Take a test ride and leave"
+      outcomes:
+        - weight: 1
+          text: "A thrill and a dose of reality."
+          effects:
+            - stat.happiness += 2
+    - label: "Walk on"
+      outcomes:
+        - weight: 1
+          text: "The window display shines on without a customer."
+          effects:
+            - stat.happiness += 1
+
+- id: career-change-urge
+  icon: 🧭
+  trigger: event
+  weight: 9
+  when: age >= 28 and age <= 55 and (has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director))
+  cooldown: 9
+  text: "A restless urge to try something entirely different takes hold."
+  choices:
+    - label: "Take a course"
+      outcomes:
+        - weight: 70
+          text: "New horizons open, and a fresh motivation to match."
+          effects:
+            - money -= min(money, 20000)
+            - stat.smarts += 3
+            - stat.happiness += 3
+        - weight: 30
+          text: "The course drains the wallet, with little to show."
+          effects:
+            - money -= min(money, 20000)
+            - stat.happiness -= 1
+    - label: "Stay the course"
+      outcomes:
+        - weight: 1
+          text: "Steadiness is also a skill."
+          effects:
+            - stat.happiness += 1
+
+- id: kids-school-play
+  icon: 🎪
+  trigger: event
+  weight: 9
+  when: age >= 28 and age <= 55
+  cooldown: 6
+  text: "A young relative asks {player.first_name} to watch their school play."
+  choices:
+    - label: "Go and clap loudly"
+      outcomes:
+        - weight: 80
+          text: "A wobbly performance and a glowing child."
+          effects:
+            - stat.happiness += 4
+        - weight: 20
+          text: "A long, bad show with a cheerful ending."
+          effects:
+            - stat.happiness += 2
+    - label: "Send a card"
+      outcomes:
+        - weight: 1
+          text: "A thoughtful card, and a polite thank-you in return."
+          effects:
+            - stat.happiness += 1
+
+- id: hobby-craft-fair
+  icon: 🧶
+  trigger: event
+  weight: 9
+  when: age >= 25 and age <= 75
+  cooldown: 8
+  text: "A craft fair is looking for stallholders."
+  choices:
+    - label: "Take a stall"
+      outcomes:
+        - weight: 60
+          text: "Brisk sales and a lot of chatting."
+          effects:
+            - money += 12000
+            - stat.happiness += 4
+        - weight: 40
+          text: "A slow day and a cold flask of tea."
+          effects:
+            - money -= 3000
+            - stat.happiness += 1
+    - label: "Browse the stalls"
+      outcomes:
+        - weight: 1
+          text: "A pleasant stroll and a nice trinket."
+          effects:
+            - money -= min(money, 2000)
+            - stat.happiness += 1
+
+- id: stock-tip-followup
+  icon: 💹
+  trigger: event
+  chance: 0%
+  text: "The investment is wobbling, and the coworker is nervous."
+  choices:
+    - label: "Sell now"
+      outcomes:
+        - weight: 1
+          text: "A small loss, and some peace of mind."
+          effects:
+            - money -= min(money, 10000)
+            - stat.happiness += 1
+    - label: "Hold tight"
+      outcomes:
+        - weight: 50
+          text: "The price bounces back with a flourish."
+          effects:
+            - money += 40000
+            - stat.happiness += 3
+        - weight: 50
+          text: "The price keeps sinking."
+          effects:
+            - money -= min(money, 30000)
+            - stat.happiness -= 3
+
+- id: reunion-reflection
+  icon: 🥹
+  trigger: event
+  chance: 0%
+  text: "After the dinner, a long-forgotten plan comes back to mind."
+  choices:
+    - label: "Revive the plan"
+      outcomes:
+        - weight: 1
+          text: "A hobby revived, and new energy to go with it."
+          effects:
+            - stat.happiness += 3
+            - stat.smarts += 1
+    - label: "Let it rest"
+      outcomes:
+        - weight: 1
+          text: "Some dreams are best as memories."
+          effects:
+            - stat.happiness += 1

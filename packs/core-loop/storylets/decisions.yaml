@@ -1,11 +1,12 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
-# More choice events across the life stages (issue #91). Chances are tuned with the harness (see BALANCE.md).
+# More choice events across the life stages (issue #91), drawn by weight into the yearly decision slots (issue #99).
 
 - id: corner-lemonade-stall
   icon: 🍋
   trigger: event
-  chance: 6%
+  weight: 12
   when: age >= 5 and age <= 12
+  cooldown: 6
   text: "A hot afternoon and a spare table give {player.first_name} an idea: a lemonade stand by the gate."
   choices:
     - label: Set up the stand
@@ -29,8 +30,9 @@
 - id: pocket-money
   icon: 🐷
   trigger: event
-  chance: 5%
+  weight: 10
   when: age >= 6 and age <= 13
+  cooldown: 6
   text: "Pocket money has piled up in a drawer, and the corner shop has a lot of sweets."
   choices:
     - label: Spend it all
@@ -51,8 +53,9 @@
 - id: playground-dare
   icon: 🧗
   trigger: event
-  chance: 5%
+  weight: 10
   when: age >= 6 and age <= 12
+  cooldown: 6
   text: "Older kids dare {player.first_name} to jump off the top of the climbing frame."
   choices:
     - label: Take the jump
@@ -76,8 +79,9 @@
 - id: new-kid-in-class
   icon: 🎒
   trigger: event
-  chance: 5%
+  weight: 10
   when: age >= 6 and age <= 15
+  cooldown: 6
   text: "A new classmate sits alone at lunch, looking lost."
   choices:
     - label: Sit with them
@@ -98,8 +102,9 @@
 - id: school-play-audition
   icon: 🎭
   trigger: event
-  chance: 4%
+  weight: 8
   when: age >= 8 and age <= 17
+  cooldown: 6
   text: "The school is staging a play, and auditions are open to everyone."
   choices:
     - label: Audition
@@ -121,8 +126,9 @@
 - id: broken-window
   icon: 🪟
   trigger: event
-  chance: 4%
+  weight: 8
   when: age >= 8 and age <= 15
+  cooldown: 6
   text: "A stray ball goes through the neighbour's window."
   choices:
     - label: Own up
@@ -150,8 +156,9 @@
 - id: teen-party
   icon: 🎉
   trigger: event
-  chance: 6%
+  weight: 12
   when: age >= 14 and age <= 19
+  cooldown: 6
   text: "A classmate is throwing a party while their parents are away."
   choices:
     - label: Go
@@ -176,8 +183,9 @@
 - id: late-night-study
   icon: 📚
   trigger: event
-  chance: 5%
+  weight: 10
   when: age >= 14 and age <= 24
+  cooldown: 6
   text: "A big deadline looms, and the night is short."
   choices:
     - label: Pull an all-nighter
@@ -202,8 +210,9 @@
 - id: road-trip-invite
   icon: 🚗
   trigger: event
-  chance: 5%
+  weight: 10
   when: age >= 17 and age <= 32
+  cooldown: 6
   text: "Friends are planning a spontaneous road trip for the weekend."
   choices:
     - label: Pack a bag
@@ -228,8 +237,9 @@
 - id: impulse-sale
   icon: 🛍️
   trigger: event
-  chance: 5%
+  weight: 10
   when: age >= 18 and age <= 75 and money >= 10000
+  cooldown: 6
   text: "A shop window shows a sale that looks too good to pass up."
   choices:
     - label: Splurge
@@ -254,8 +264,9 @@
 - id: gym-membership
   icon: 🏋️
   trigger: event
-  chance: 5%
+  weight: 10
   when: age >= 18 and age <= 65 and money >= 6000
+  cooldown: 6
   text: "A new gym opens nearby with a cheap sign-up offer."
   choices:
     - label: Join
@@ -278,8 +289,9 @@
 - id: adopt-a-pet
   icon: 🐕
   trigger: event
-  chance: 4%
+  weight: 8
   when: age >= 20 and age <= 75
+  cooldown: 6
   text: "A rescue centre has a pet that has clearly chosen {player.first_name}."
   choices:
     - label: Take them home
@@ -302,8 +314,9 @@
 - id: old-friend-message
   icon: 🥂
   trigger: event
-  chance: 4%
+  weight: 8
   when: age >= 25 and age <= 80
+  cooldown: 6
   text: "An old friend from years ago sends a message: can we catch up?"
   choices:
     - label: Meet up
@@ -326,8 +339,9 @@
 - id: career-seminar
   icon: 📈
   trigger: event
-  chance: 5%
+  weight: 10
   when: age >= 22 and age <= 60 and money >= 8000
+  cooldown: 6
   text: "A weekend seminar promises to sharpen career skills."
   choices:
     - label: Attend
@@ -352,8 +366,9 @@
 - id: health-checkup
   icon: 🩺
   trigger: event
-  chance: 5%
+  weight: 10
   when: age >= 35 and age <= 85
+  cooldown: 6
   text: "A reminder letter says a routine check-up is overdue."
   choices:
     - label: Book it
@@ -379,8 +394,9 @@
 - id: neighbourhood-board
   icon: 🏘️
   trigger: event
-  chance: 4%
+  weight: 8
   when: age >= 30 and age <= 75
+  cooldown: 6
   text: "The residents' board is short of volunteers and looks to {player.first_name}."
   choices:
     - label: Join the board
@@ -402,8 +418,9 @@
 - id: travel-deal
   icon: ✈️
   trigger: event
-  chance: 4%
+  weight: 8
   when: age >= 25 and age <= 78 and money >= 40000
+  cooldown: 6
   text: "A last-minute travel deal lands in the inbox."
   choices:
     - label: Book the trip
@@ -426,8 +443,9 @@
 - id: hobby-class
   icon: 🎨
   trigger: event
-  chance: 5%
+  weight: 10
   when: age >= 55 and age <= 90
+  cooldown: 6
   text: "The community centre starts a new class for beginners."
   choices:
     - label: Sign up
@@ -451,8 +469,9 @@
 - id: family-visit
   icon: 👨‍👩‍👧
   trigger: event
-  chance: 5%
+  weight: 10
   when: age >= 55 and age <= 90
+  cooldown: 6
   text: "The family wants to descend on {player.first_name} for the weekend."
   choices:
     - label: Host everyone

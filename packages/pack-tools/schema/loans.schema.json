@@ -6,12 +6,7 @@
     "additionalProperties": false,
     "title": "Loan kind",
     "type": "object",
-    "required": [
-      "id",
-      "label",
-      "rate",
-      "term_years"
-    ],
+    "required": ["id", "label", "rate", "term_years"],
     "properties": {
       "id": {
         "pattern": "^[a-z][a-z0-9_-]*$",

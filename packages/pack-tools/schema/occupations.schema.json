@@ -6,12 +6,7 @@
     "additionalProperties": false,
     "title": "Occupation kind",
     "type": "object",
-    "required": [
-      "id",
-      "label",
-      "group",
-      "pay"
-    ],
+    "required": ["id", "label", "group", "pay"],
     "properties": {
       "id": {
         "pattern": "^[a-z][a-z0-9_-]*$",

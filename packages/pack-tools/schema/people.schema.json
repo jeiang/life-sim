@@ -8,11 +8,7 @@
       {
         "additionalProperties": false,
         "type": "object",
-        "required": [
-          "kind",
-          "id",
-          "label"
-        ],
+        "required": ["kind", "id", "label"],
         "properties": {
           "kind": {
             "const": "role",
@@ -32,13 +28,7 @@
       {
         "additionalProperties": false,
         "type": "object",
-        "required": [
-          "kind",
-          "id",
-          "first_names",
-          "last_names",
-          "age"
-        ],
+        "required": ["kind", "id", "first_names", "last_names", "age"],
         "properties": {
           "kind": {
             "const": "generator",
@@ -63,10 +53,7 @@
               {
                 "additionalProperties": false,
                 "type": "object",
-                "required": [
-                  "male",
-                  "female"
-                ],
+                "required": ["male", "female"],
                 "properties": {
                   "male": {
                     "minItems": 1,

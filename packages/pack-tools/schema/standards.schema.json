@@ -6,14 +6,7 @@
     "additionalProperties": false,
     "title": "Standard of living",
     "type": "object",
-    "required": [
-      "id",
-      "label",
-      "cost",
-      "happiness",
-      "health",
-      "risk"
-    ],
+    "required": ["id", "label", "cost", "happiness", "health", "risk"],
     "properties": {
       "id": {
         "pattern": "^[a-z][a-z0-9_-]*$",

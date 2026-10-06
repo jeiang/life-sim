@@ -3,10 +3,7 @@
   "additionalProperties": false,
   "title": "Pack manifest (pack.yaml)",
   "type": "object",
-  "required": [
-    "id",
-    "version"
-  ],
+  "required": ["id", "version"],
   "properties": {
     "id": {
       "pattern": "^[a-z][a-z0-9-]*$",
@@ -26,10 +23,7 @@
     "currency": {
       "additionalProperties": false,
       "type": "object",
-      "required": [
-        "symbol",
-        "digits"
-      ],
+      "required": ["symbol", "digits"],
       "properties": {
         "symbol": {
           "minLength": 1,
@@ -47,11 +41,7 @@
       "items": {
         "additionalProperties": false,
         "type": "object",
-        "required": [
-          "id",
-          "label",
-          "start"
-        ],
+        "required": ["id", "label", "start"],
         "properties": {
           "id": {
             "pattern": "^[a-z][a-z0-9_]*$",
@@ -94,11 +84,7 @@
           {
             "additionalProperties": false,
             "type": "object",
-            "required": [
-              "id",
-              "type",
-              "default"
-            ],
+            "required": ["id", "type", "default"],
             "properties": {
               "id": {
                 "pattern": "^[a-z][a-z0-9_]*$",
@@ -122,11 +108,7 @@
           {
             "additionalProperties": false,
             "type": "object",
-            "required": [
-              "id",
-              "type",
-              "default"
-            ],
+            "required": ["id", "type", "default"],
             "properties": {
               "id": {
                 "pattern": "^[a-z][a-z0-9_]*$",
@@ -177,10 +159,7 @@
     "year": {
       "additionalProperties": false,
       "type": "object",
-      "required": [
-        "slots",
-        "cap"
-      ],
+      "required": ["slots", "cap"],
       "properties": {
         "slots": {
           "description": "Flavour slot count range [min, max]",
@@ -233,10 +212,7 @@
       "additionalProperties": false,
       "title": "Starting family",
       "type": "object",
-      "required": [
-        "parent",
-        "sibling"
-      ],
+      "required": ["parent", "sibling"],
       "properties": {
         "player": {
           "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
@@ -246,11 +222,7 @@
         "parent": {
           "additionalProperties": false,
           "type": "object",
-          "required": [
-            "role",
-            "generator",
-            "count"
-          ],
+          "required": ["role", "generator", "count"],
           "properties": {
             "role": {
               "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
@@ -271,11 +243,7 @@
         "sibling": {
           "additionalProperties": false,
           "type": "object",
-          "required": [
-            "role",
-            "generator",
-            "count"
-          ],
+          "required": ["role", "generator", "count"],
           "properties": {
             "role": {
               "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
@@ -310,11 +278,7 @@
       "additionalProperties": false,
       "title": "Living costs",
       "type": "object",
-      "required": [
-        "default",
-        "housing_share",
-        "home_category"
-      ],
+      "required": ["default", "housing_share", "home_category"],
       "properties": {
         "default": {
           "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
@@ -385,10 +349,7 @@
           "items": {
             "additionalProperties": false,
             "type": "object",
-            "required": [
-              "from",
-              "to"
-            ],
+            "required": ["from", "to"],
             "properties": {
               "from": {
                 "type": "string"
@@ -404,9 +365,7 @@
           "items": {
             "additionalProperties": false,
             "type": "object",
-            "required": [
-              "id"
-            ],
+            "required": ["id"],
             "properties": {
               "id": {
                 "type": "string"

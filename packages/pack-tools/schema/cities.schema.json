@@ -6,12 +6,7 @@
     "additionalProperties": false,
     "title": "City",
     "type": "object",
-    "required": [
-      "id",
-      "label",
-      "cost_index",
-      "weight"
-    ],
+    "required": ["id", "label", "cost_index", "weight"],
     "properties": {
       "id": {
         "pattern": "^[a-z][a-z0-9_-]*$",

@@ -1,0 +1,62 @@
+name: ci
+
+# Pull-request gate on GitHub-hosted runners. buildbot-nix only builds `main`
+# to push closures to the cache; it never builds PRs and is not required.
+# The required branch-protection contexts are `eval`, `package`, and one
+# `check (<name>)` leg per flake check.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    name: eval
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      - name: Evaluate every flake output
+        run: nix flake check --no-build -L
+
+  check:
+    name: check (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [biome, vitest, versions, packs, e2e, harness]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      - uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7
+        with:
+          primary-key: nix-${{ runner.os }}-${{ matrix.name }}-${{ hashFiles('flake.lock', 'pnpm-lock.yaml') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-${{ matrix.name }}-
+          gc-max-store-size-linux: 4G
+      - name: Build check
+        run: nix build ".#checks.x86_64-linux.${{ matrix.name }}" -L --no-link
+
+  package:
+    name: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      - uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7
+        with:
+          primary-key: nix-${{ runner.os }}-package-${{ hashFiles('flake.lock', 'pnpm-lock.yaml') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-package-
+          gc-max-store-size-linux: 4G
+      - name: Build web app
+        run: nix build ".#packages.x86_64-linux.default" -L --no-link

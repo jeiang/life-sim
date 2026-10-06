@@ -1,0 +1,395 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# From arrest to sentence. Every crime action and the `pending_charge` mailbox end in
+# `crime-caught`; the chain then runs arraignment (lawyer), plea, verdict and sentencing, and
+# the intake of a prison term. The chain targets are `chance: 0%` events reached only by `next`.
+# Severity (`quality.crime_severity`): 1 petty, 2 serious, 3 violent felony, 4 murder.
+
+# Another Pack sets `quality.pending_charge` to a severity code (1 to 4); Crime arrests at the next age-up.
+- id: arrest-pending
+  icon: 🚔
+  trigger: event
+  chance: 100%
+  when: quality.pending_charge > 0
+  text: "Police arrive at {player.first_name}'s door with a charge."
+  outcomes:
+    - weight: 1
+      effects:
+        - quality.crime_severity = min(4, quality.pending_charge)
+        - quality.pending_charge = 0
+        - quality.crime_resisting = false
+        - quality.crime_arrests += 1
+      next: crime-caught
+
+- id: crime-caught
+  icon: 🚔
+  trigger: event
+  chance: 0%
+  text: "You are in handcuffs. The officer reads you your rights."
+  choices:
+    - label: Cooperate
+      outcomes:
+        - weight: 1
+          text: "You keep your hands where they can be seen and go quietly."
+          next: crime-arraignment
+    - label: Run
+      outcomes:
+        - weight: max(5, 20 + stat.health / 4 - (quality.crime_severity > 2 ? 10 : 0))
+          text: "You break free and vanish into the crowd. The police will be looking for you."
+          effects:
+            - quality.wanted = true
+            - quality.crime_resisting = true
+            - stat.happiness += -4
+        - weight: 60
+          text: "You do not get ten metres. Resisting arrest will count against you."
+          effects:
+            - quality.crime_resisting = true
+            - stat.health += -4
+          next: crime-arraignment
+    - label: Bribe the officer
+      when: money >= 50000 * quality.crime_severity * quality.crime_severity
+      outcomes:
+        - weight: max(2, 40 - 8 * quality.crime_severity)
+          text: "The officer pockets the cash and looks the other way. The case goes away."
+          effects:
+            - money -= 50000 * quality.crime_severity * quality.crime_severity
+            - quality.crime_severity = 0
+            - quality.karma += -4
+            - journal("Bribed an officer to escape a charge at age {age}.")
+        - weight: 60
+          text: "The officer takes the cash anyway and adds bribery to the file."
+          effects:
+            - money -= 50000 * quality.crime_severity * quality.crime_severity
+            - quality.crime_resisting = true
+            - quality.karma += -4
+          next: crime-arraignment
+
+- id: crime-manhunt
+  icon: 🚨
+  trigger: event
+  chance: 25%
+  when: quality.wanted and not confined
+  text: "The police are still looking for {player.first_name}."
+  outcomes:
+    - weight: 1
+      when: quality.crime_escaped
+      text: "A patrol recognises you and the escape is over."
+      next: crime-recaptured
+    - weight: 1
+      when: not quality.crime_escaped
+      text: "A routine check turns up the warrant. You are arrested."
+      effects:
+        - quality.wanted = false
+        - quality.crime_arrests += 1
+      next: crime-arraignment
+
+- id: crime-cold-case
+  icon: 🗄️
+  trigger: event
+  chance: 6%
+  when: quality.wanted and not quality.crime_escaped and not confined
+  text: "The case against {player.first_name} goes cold."
+  outcomes:
+    - weight: 1
+      effects:
+        - quality.wanted = false
+        - quality.crime_severity = 0
+        - quality.crime_resisting = false
+        - journal("The police stopped looking for you at age {age}.")
+
+- id: crime-arraignment
+  icon: ⚖️
+  trigger: event
+  chance: 0%
+  text: "At the arraignment the judge asks who will speak for you."
+  choices:
+    - label: Public defender (free)
+      outcomes:
+        - weight: 1
+          text: "A tired public defender with forty other cases takes yours."
+          effects:
+            - quality.crime_lawyer = 0
+          next: crime-plea
+    - label: Hire a private lawyer
+      when: money >= 150000 * quality.crime_severity
+      outcomes:
+        - weight: 1
+          text: "A private lawyer takes your retainer and the case."
+          effects:
+            - money -= 150000 * quality.crime_severity
+            - quality.crime_lawyer = 1
+          next: crime-plea
+    - label: Hire a top defence lawyer
+      when: money >= 600000 * quality.crime_severity
+      outcomes:
+        - weight: 1
+          text: "A celebrated defence lawyer takes the case, and the prosecutors take notice."
+          effects:
+            - money -= 600000 * quality.crime_severity
+            - quality.crime_lawyer = 2
+          next: crime-plea
+
+- id: crime-plea
+  icon: 📜
+  trigger: event
+  chance: 0%
+  text: "The prosecutor offers a plea deal: plead guilty for a lighter sentence, or take your chances at trial."
+  choices:
+    - label: Take the plea deal
+      outcomes:
+        - weight: 1
+          when: age >= 18
+          text: "You plead guilty."
+          effects:
+            - quality.crime_plea = true
+          next: crime-sentencing
+        - weight: 1
+          when: age < 18
+          text: "You plead guilty."
+          effects:
+            - quality.crime_plea = true
+          next: crime-sentencing-juvenile
+    - label: Go to trial
+      outcomes:
+        - weight: 1
+          text: "You plead not guilty. The trial begins."
+          effects:
+            - quality.crime_plea = false
+          next: crime-verdict
+
+- id: crime-verdict
+  icon: ⚖️
+  trigger: event
+  chance: 0%
+  text: "The jury returns."
+  outcomes:
+    - weight: max(1, 12 + 16 * quality.crime_lawyer - 3 * quality.crime_severity - (quality.crime_resisting ? 8 : 0) - 2 * min(quality.crime_convictions, 5))
+      text: "Not guilty. You walk out free."
+      effects:
+        - quality.crime_severity = 0
+        - quality.crime_resisting = false
+        - stat.happiness += 6
+        - journal("Acquitted at trial at age {age}.")
+    - weight: 60
+      when: age >= 18
+      text: "Guilty."
+      next: crime-sentencing
+    - weight: 60
+      when: age < 18
+      text: "Guilty."
+      next: crime-sentencing-juvenile
+
+# Adult sentencing: light, typical and heavy bands per severity; the weights shift with record, lawyer, plea, resisting and parole,
+# and the roll is the luck. Fines and probation end the chain; a prison term is read by `crime-intake`.
+- id: crime-sentencing
+  icon: 🔨
+  trigger: event
+  chance: 0%
+  text: "The judge passes sentence."
+  outcomes:    - weight: max(5, 20 + 8 * quality.crime_lawyer + (quality.crime_plea ? 12 : 0))
+      when: quality.crime_severity == 1
+      text: "A fine of $500 and a stern warning."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.criminal_record = true
+        - money -= min(money, 50000)
+        - journal("Fined for a petty crime at age {age}.")
+    - weight: 60
+      when: quality.crime_severity == 1
+      text: "Two years of probation and a criminal record."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.criminal_record = true
+        - journal("Put on probation at age {age}.")
+    - weight: max(5, 20 + 6 * min(quality.crime_convictions, 5) + (quality.crime_resisting ? 15 : 0) + (quality.crime_on_parole ? 10 : 0) - 8 * quality.crime_lawyer - (quality.crime_plea ? 12 : 0))
+      when: quality.crime_severity == 1
+      text: "One year in jail."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.criminal_record = true
+        - quality.crime_term = 1
+        - journal("Sentenced to 1 year at age {age}.")
+      next: crime-intake
+    - weight: max(5, 20 + 8 * quality.crime_lawyer + (quality.crime_plea ? 12 : 0))
+      when: quality.crime_severity == 2
+      text: "Probation and community service."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.criminal_record = true
+        - stat.happiness += -2
+        - journal("Put on probation at age {age}.")
+    - weight: 60
+      when: quality.crime_severity == 2
+      text: "Two years in prison."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.criminal_record = true
+        - quality.crime_term = 2
+        - journal("Sentenced to 2 years at age {age}.")
+      next: crime-intake
+    - weight: max(5, 20 + 6 * min(quality.crime_convictions, 5) + (quality.crime_resisting ? 15 : 0) + (quality.crime_on_parole ? 10 : 0) - 8 * quality.crime_lawyer - (quality.crime_plea ? 12 : 0))
+      when: quality.crime_severity == 2
+      text: "Five years in prison."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.criminal_record = true
+        - quality.crime_term = 5
+        - journal("Sentenced to 5 years at age {age}.")
+      next: crime-intake
+    - weight: max(5, 20 + 8 * quality.crime_lawyer + (quality.crime_plea ? 12 : 0))
+      when: quality.crime_severity == 3
+      text: "Four years in prison."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.criminal_record = true
+        - quality.crime_term = 4
+        - journal("Sentenced to 4 years at age {age}.")
+      next: crime-intake
+    - weight: 60
+      when: quality.crime_severity == 3
+      text: "Eight years in prison."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.criminal_record = true
+        - quality.crime_term = 8
+        - journal("Sentenced to 8 years at age {age}.")
+      next: crime-intake
+    - weight: max(5, 20 + 6 * min(quality.crime_convictions, 5) + (quality.crime_resisting ? 15 : 0) + (quality.crime_on_parole ? 10 : 0) - 8 * quality.crime_lawyer - (quality.crime_plea ? 12 : 0))
+      when: quality.crime_severity == 3
+      text: "Fifteen years in prison."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.criminal_record = true
+        - quality.crime_term = 15
+        - journal("Sentenced to 15 years at age {age}.")
+      next: crime-intake
+    - weight: max(5, 20 + 8 * quality.crime_lawyer + (quality.crime_plea ? 12 : 0))
+      when: quality.crime_severity == 4
+      text: "Fifteen years for murder."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.criminal_record = true
+        - quality.crime_term = 15
+        - journal("Sentenced to 15 years at age {age}.")
+      next: crime-intake
+    - weight: 60
+      when: quality.crime_severity == 4
+      text: "Twenty-five years for murder."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.criminal_record = true
+        - quality.crime_term = 25
+        - journal("Sentenced to 25 years at age {age}.")
+      next: crime-intake
+    - weight: max(5, 20 + 6 * min(quality.crime_convictions, 5) + (quality.crime_resisting ? 15 : 0) + (quality.crime_on_parole ? 10 : 0) - 8 * quality.crime_lawyer - (quality.crime_plea ? 12 : 0))
+      when: quality.crime_severity == 4
+      text: "Life in prison for murder."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.criminal_record = true
+        - quality.crime_term = 999
+        - journal("Sentenced to life at age {age}.")
+      next: crime-intake
+    - weight: max(1, 6 + 4 * min(quality.crime_convictions, 5) - 3 * quality.crime_lawyer - 4 * (quality.crime_plea ? 1 : 0))
+      when: quality.crime_severity == 4 and quality.crime_death_penalty
+      text: "The judge sentences you to death."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.criminal_record = true
+        - quality.crime_term = 999
+        - quality.crime_death_row = true
+        - journal("Sentenced to death at age {age}.")
+      next: crime-intake
+
+- id: crime-sentencing-juvenile
+  icon: 🔨
+  trigger: event
+  chance: 0%
+  text: "The juvenile court passes sentence. Juvenile records are sealed."
+  outcomes:
+    - weight: max(5, 80 - 25 * quality.crime_severity + 10 * quality.crime_lawyer + (quality.crime_plea ? 12 : 0))
+      text: "Probation, counselling and a curfew."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - journal("Put on probation as a minor at age {age}.")
+    - weight: 40
+      text: "Detention until the sentence ends, or until you turn 18."
+      effects:
+        - quality.crime_convictions += 1
+        - quality.crime_years_clean = 0
+        - quality.crime_term = quality.crime_severity
+        - journal("Sentenced to juvenile detention at age {age}.")
+      next: crime-intake
+
+- id: crime-intake
+  icon: 🔒
+  trigger: event
+  chance: 0%
+  text: "The door closes behind {player.first_name}."
+  outcomes:
+    - weight: 1
+      when: age >= 18
+      text: "Processing, a uniform and a cell. Your cellmate, {cellmate.first_name} {cellmate.last_name}, looks you over."
+      effects:
+        - quality.crime_sentences += 1
+        - quality.crime_release_age = age + quality.crime_term
+        - quality.crime_parole_age = age + (quality.crime_term >= 900 ? 25 : quality.crime_term / 2)
+        - quality.crime_on_parole = false
+        - quality.crime_behaviour = 50
+        - quality.crime_respect = 0
+        - quality.crime_gang = false
+        - start_occupation(crime/prison)
+        - end_occupation(core-loop/university-business)
+        - end_occupation(core-loop/university-engineering)
+        - end_occupation(core-loop/university-nursing)
+        - end_occupation(core-loop/university-arts)
+        - end_occupation(core-loop/cashier)
+        - end_occupation(core-loop/barista)
+        - spawn_person(crime/inmate, crime/inmate-gen) as cellmate
+        - stat.happiness += -8
+    - weight: 1
+      when: age < 18
+      text: "A bed in a juvenile facility. Your roommate, {cellmate.first_name} {cellmate.last_name}, looks you over."
+      effects:
+        - quality.crime_sentences += 1
+        - quality.crime_release_age = min(age + quality.crime_term, 18)
+        - quality.crime_parole_age = 0
+        - quality.crime_on_parole = false
+        - quality.crime_behaviour = 50
+        - quality.crime_respect = 0
+        - quality.crime_gang = false
+        - start_occupation(crime/juvenile-detention)
+        - end_occupation(core-loop/cashier)
+        - end_occupation(core-loop/barista)
+        - spawn_person(crime/inmate, crime/inmate-gen-juvenile) as cellmate
+        - stat.happiness += -8
+
+- id: crime-recaptured
+  icon: 🚔
+  trigger: event
+  chance: 0%
+  text: "Back behind bars, with extra time added."
+  outcomes:
+    - weight: 1
+      effects:
+        - quality.wanted = false
+        - quality.crime_escaped = false
+        - quality.crime_release_age = max(quality.crime_release_age, age) + 2
+        - quality.crime_behaviour = 0
+        - quality.crime_on_parole = false
+        - start_occupation(crime/prison)
+        - stat.happiness += -5
+        - journal("Recaptured after an escape at age {age}.")

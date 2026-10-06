@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/occupations.schema.json
+# Prison sits in `full-time`, so starting it ends any job and the pension. Juvenile detention
+# sits in `part-time` and leaves high school (`school`) running. Both confine the player (menus
+# and events lock except `custody-ok` content) and provide housing. The sentence ends by the
+# `release` event at `quality.crime_release_age`, not by `duration_years`.
+- id: prison
+  label: Prison
+  icon: 🔒
+  group: full-time
+  requires: age >= 18
+  pay: 0
+  npc: false
+  confines: { menus: true, events: true }
+- id: juvenile-detention
+  label: Juvenile detention
+  icon: 🔒
+  group: part-time
+  requires: age < 18
+  pay: 0
+  npc: false
+  confines: { menus: true, events: true }

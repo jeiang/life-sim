@@ -1,0 +1,286 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Property crimes (actions, `activities/crime`): age gate, once a year (`cooldown: 1`), a payout or being
+# caught. Caught sets the case (severity, no resisting) and opens the court chain at `crime-caught`.
+# Risk rises with a record or parole and falls with smarts. Karma drops once per action (they are not repeatable).
+
+- id: shoplift
+  label: Shoplift
+  icon: 🛍️
+  trigger: action
+  menu: activities/crime
+  tags: [crime]
+  when: age >= 12
+  cooldown: 1
+  text: "You case the place. It is illegal, and the risk is real."
+  outcomes:
+    - weight: 55
+      text: "You slip a few things under your coat and walk out. Worth about $60."
+      effects:
+        - money += 6000
+        - quality.karma += -3
+        - stat.happiness += 1
+    - weight: 45
+      text: "You grab more than expected, close to $150 of goods."
+      effects:
+        - money += 15000
+        - quality.karma += -3
+        - stat.happiness += 1
+    - weight: max(1, 22 + (quality.criminal_record ? 10 : 0) + (quality.crime_on_parole ? 10 : 0) - stat.smarts / 6)
+      text: "A security guard grabs your arm at the door and calls the police."
+      effects:
+        - quality.crime_severity = 1
+        - quality.crime_resisting = false
+        - quality.crime_arrests += 1
+        - quality.karma += -3
+      next: crime-caught
+
+- id: pickpocket
+  label: Pick pockets
+  icon: 👛
+  trigger: action
+  menu: activities/crime
+  tags: [crime]
+  when: age >= 12
+  cooldown: 1
+  text: "You case the place. It is illegal, and the risk is real."
+  outcomes:
+    - weight: 60
+      text: "A crowded market, a loose pocket. You come away with $80."
+      effects:
+        - money += 8000
+        - quality.karma += -3
+        - stat.happiness += 1
+    - weight: 40
+      text: "A fat wallet. $250 in cash."
+      effects:
+        - money += 25000
+        - quality.karma += -3
+        - stat.happiness += 1
+    - weight: max(1, 26 + (quality.criminal_record ? 10 : 0) + (quality.crime_on_parole ? 10 : 0) - stat.smarts / 6)
+      text: "A hand closes on your wrist: an off-duty officer."
+      effects:
+        - quality.crime_severity = 1
+        - quality.crime_resisting = false
+        - quality.crime_arrests += 1
+        - quality.karma += -3
+      next: crime-caught
+
+- id: steal-a-car
+  label: Steal a car
+  icon: 🚗
+  trigger: action
+  menu: activities/crime
+  tags: [crime]
+  when: age >= 14
+  cooldown: 1
+  text: "You case the place. It is illegal, and the risk is real."
+  outcomes:
+    - weight: 70
+      text: "You hot-wire it and sell it on for $4,000."
+      effects:
+        - money += 400000
+        - quality.karma += -3
+        - stat.happiness += 1
+    - weight: 30
+      text: "A nice one. The fence pays $9,000."
+      effects:
+        - money += 900000
+        - quality.karma += -3
+        - stat.happiness += 1
+    - weight: max(1, 38 + (quality.criminal_record ? 10 : 0) + (quality.crime_on_parole ? 10 : 0) - stat.smarts / 8)
+      text: "A patrol car pulls in behind you at the first red light."
+      effects:
+        - quality.crime_severity = 2
+        - quality.crime_resisting = false
+        - quality.crime_arrests += 1
+        - quality.karma += -3
+      next: crime-caught
+
+- id: burglary
+  label: Burgle a house
+  icon: 🏠
+  trigger: action
+  menu: activities/crime
+  tags: [crime]
+  when: age >= 14
+  cooldown: 1
+  text: "You case the place. It is illegal, and the risk is real."
+  outcomes:
+    - weight: 65
+      text: "You find jewellery and cash. The fence pays $2,500."
+      effects:
+        - money += 250000
+        - quality.karma += -3
+        - stat.happiness += 1
+    - weight: 35
+      text: "A big score: electronics and a safe. $7,000."
+      effects:
+        - money += 700000
+        - quality.karma += -3
+        - stat.happiness += 1
+    - weight: max(1, 40 + (quality.criminal_record ? 10 : 0) + (quality.crime_on_parole ? 10 : 0) - stat.smarts / 8)
+      text: "An alarm you did not see starts blaring, and the street fills with lights."
+      effects:
+        - quality.crime_severity = 2
+        - quality.crime_resisting = false
+        - quality.crime_arrests += 1
+        - quality.karma += -3
+      next: crime-caught
+
+- id: fraud
+  label: Run a scam
+  icon: 💳
+  trigger: action
+  menu: activities/crime
+  tags: [crime]
+  when: age >= 16
+  cooldown: 1
+  text: "You case the place. It is illegal, and the risk is real."
+  outcomes:
+    - weight: 60
+      text: "A fake invoice goes through. $6,000 lands in your account."
+      effects:
+        - money += 600000
+        - quality.karma += -3
+        - stat.happiness += 1
+    - weight: 40
+      text: "A phone scam takes a retiree for $15,000."
+      effects:
+        - money += 1500000
+        - quality.karma += -3
+        - stat.happiness += 1
+    - weight: max(1, 32 + (quality.criminal_record ? 10 : 0) + (quality.crime_on_parole ? 10 : 0) - stat.smarts / 4)
+      text: "The bank flags the transfer. Investigators are waiting at your door."
+      effects:
+        - quality.crime_severity = 2
+        - quality.crime_resisting = false
+        - quality.crime_arrests += 1
+        - quality.karma += -3
+      next: crime-caught
+
+- id: armed-robbery
+  label: Rob a store
+  icon: 🔫
+  trigger: action
+  menu: activities/crime
+  tags: [crime]
+  when: age >= 16
+  cooldown: 1
+  text: "You case the place. It is illegal, and the risk is real."
+  outcomes:
+    - weight: 70
+      text: "The till gives you $3,500 and you are gone in under a minute."
+      effects:
+        - money += 350000
+        - quality.karma += -3
+        - stat.happiness += 1
+    - weight: 30
+      text: "The safe was open. $9,000."
+      effects:
+        - money += 900000
+        - quality.karma += -3
+        - stat.happiness += 1
+    - weight: max(1, 48 + (quality.criminal_record ? 10 : 0) + (quality.crime_on_parole ? 10 : 0) - stat.smarts / 10)
+      text: "The clerk hit a silent alarm. Police cars box you in."
+      effects:
+        - quality.crime_severity = 3
+        - quality.crime_resisting = false
+        - quality.crime_arrests += 1
+        - quality.karma += -3
+      next: crime-caught
+
+# Violence is person-scoped and sits behind a confirm step.
+- id: assault
+  label: Assault
+  icon: 👊
+  trigger: action
+  menu: relationships
+  scope: person
+  tags: [crime]
+  when: age >= 12 and person.alive
+  cooldown: 1
+  text: "You are furious with {person.first_name}. Hitting {person.object} would be a crime."
+  choices:
+    - label: Attack
+      outcomes:
+        - weight: 65
+          text: "You hurt {person.first_name} badly and walk away. Nobody calls the police."
+          effects:
+            - relationship(person).closeness += -35
+            - quality.karma += -6
+            - stat.happiness += -2
+        - weight: max(1, 25 + (quality.criminal_record ? 10 : 0) + (quality.crime_on_parole ? 10 : 0))
+          text: "A neighbour calls the police. You are arrested for assault."
+          effects:
+            - relationship(person).closeness += -35
+            - quality.karma += -6
+            - quality.crime_severity = 2
+            - quality.crime_resisting = false
+            - quality.crime_arrests += 1
+          next: crime-caught
+        - weight: 10
+          text: "{person.first_name} lands in hospital with serious injuries. The charge is aggravated assault."
+          effects:
+            - relationship(person).closeness += -50
+            - quality.karma += -8
+            - quality.crime_severity = 3
+            - quality.crime_resisting = false
+            - quality.crime_arrests += 1
+          next: crime-caught
+    - label: Walk away
+      outcomes:
+        - weight: 1
+          text: "You take a breath and leave. The moment passes."
+
+- id: murder
+  label: Murder
+  icon: 🔪
+  trigger: action
+  menu: relationships
+  scope: person
+  tags: [crime]
+  when: age >= 14 and person.alive
+  cooldown: 1
+  text: "Killing {person.first_name} cannot be undone. Are you sure?"
+  choices:
+    - label: Go through with it
+      outcomes:
+        - weight: max(1, 55 - stat.smarts / 4)
+          text: "{person.first_name} is dead, and the scene shows no sign of you. For now."
+          effects:
+            - die("murdered")
+            - quality.crime_murders += 1
+            - quality.karma += -20
+            - stat.happiness += -12
+            - journal("Killed {person.first_name} at age {age}.")
+        - weight: max(1, 45 + stat.smarts / 4 + (quality.criminal_record ? 10 : 0))
+          text: "{person.first_name} is dead, and the police are at your door within hours."
+          effects:
+            - die("murdered")
+            - quality.karma += -20
+            - stat.happiness += -12
+            - quality.crime_severity = 4
+            - quality.crime_resisting = false
+            - quality.crime_arrests += 1
+            - journal("Killed {person.first_name} at age {age}.")
+          next: crime-caught
+    - label: Back out
+      outcomes:
+        - weight: 1
+          text: "You put it down. It was never going to happen."
+
+# An unsolved murder can still come back.
+- id: old-murder-surfaces
+  icon: 🕵️
+  trigger: event
+  chance: 4%
+  when: quality.crime_murders > 0
+  text: "A cold-case detective reopens an old murder file. Your name is in it."
+  outcomes:
+    - weight: 1
+      effects:
+        - quality.crime_murders = 0
+        - quality.crime_severity = 4
+        - quality.crime_resisting = false
+        - quality.crime_arrests += 1
+      next: crime-caught

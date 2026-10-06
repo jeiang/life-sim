@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
+id: crime
+version: 1
+depends: [core-loop]
+qualities:
+  # The open case, set when the player is caught and read down the court chain.
+  # Severity: 1 petty, 2 serious, 3 violent felony, 4 murder. Another Pack's `pending_charge`
+  # mailbox code is this same scale.
+  - { id: crime_severity, type: int, min: 0, max: 4, default: 0 }
+  # Ran, resisted or failed a bribe: harsher verdict and sentence.
+  - { id: crime_resisting, type: flag, default: false }
+  # Counsel: 0 public defender, 1 private lawyer, 2 top lawyer.
+  - { id: crime_lawyer, type: int, min: 0, max: 2, default: 0 }
+  - { id: crime_plea, type: flag, default: false }
+  # Sentence handed down, in years (999 is life); read once by the intake.
+  - { id: crime_term, type: int, min: 0, default: 0 }
+  # Age at which the sentence ends (the release event fires); 0 when there is none, 999 for a life term.
+  - { id: crime_release_age, type: int, min: 0, default: 0 }
+  # Age from which yearly parole hearings run (half the sentence, 25 years for a life term).
+  - { id: crime_parole_age, type: int, min: 0, default: 0 }
+  - { id: crime_on_parole, type: flag, default: false }
+  - { id: crime_death_row, type: flag, default: false }
+  # Jurisdiction law: murder can carry the death penalty. Per-country Pack data later (#61 sets it on moving); v1 has one default jurisdiction with it on.
+  - { id: crime_death_penalty, type: flag, default: true }
+  # Inside: behaviour with the guards, and standing with the inmates (both 0-100).
+  - { id: crime_behaviour, type: int, min: 0, max: 100, default: 50 }
+  - { id: crime_respect, type: int, min: 0, max: 100, default: 0 }
+  - { id: crime_gang, type: flag, default: false }
+  # Broke out and not yet recaptured (with `wanted`).
+  - { id: crime_escaped, type: flag, default: false }
+  # An unsolved murder the police may still connect to the player.
+  - { id: crime_murders, type: int, min: 0, default: 0 }
+  # Lifetime counters (the balance harness reads them).
+  - { id: crime_arrests, type: int, min: 0, default: 0 }
+  - { id: crime_convictions, type: int, min: 0, default: 0 }
+  - { id: crime_sentences, type: int, min: 0, default: 0 }
+  - { id: crime_escapes, type: int, min: 0, default: 0 }
+  # Free years since the last conviction or release (expungement needs 5).
+  - { id: crime_years_clean, type: int, min: 0, default: 0 }

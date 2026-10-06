@@ -281,7 +281,7 @@ export const StoryletSchema = obj(
       Type.Array(Ref, {
         minItems: 1,
         description:
-          "`scope: person` only: role ids the bound person must have toward the player",
+          "`scope: person` only: role ids, or Core kinship ids (bare, for example `grandparent`), the bound person must be to the player",
       }),
     ),
     when: Type.Optional(Src),

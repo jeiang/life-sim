@@ -28,6 +28,8 @@ import {
   DEFAULT_GENDER_WEIGHTS,
   DEFAULT_REPEAT,
   GENDERS,
+  isKinshipId,
+  KINSHIP_IDS,
   PACK_BUNDLE_FORMAT,
   PRONOUN_FIELDS,
 } from "@life/core";
@@ -176,6 +178,9 @@ const CALL_KINDS: Record<string, Kind[][] | undefined> = {
   forecast: [["market"]],
   spawn_person: [["role"], ["generator"]],
 };
+
+/** Kinship functions and the index of their kinship-id argument (a Core-owned id, never a content id). */
+const KINSHIP_ARG: Record<string, number> = { is_kin: 1, count_kin: 0 };
 
 /** Functions whose one argument names an exclusivity group, not a content id. */
 const GROUP_FUNCTIONS = new Set(["in_group", "years_in_group"]);
@@ -790,7 +795,7 @@ class PackCompiler {
     kind: "bool" | "int",
     path: Path,
     extra: Names = {},
-    persons: readonly string[] = [],
+    persons: readonly string[] = extra["person.age"] ? ["person"] : [],
   ): Expr | undefined {
     const text = String(srcValue);
     const env: CheckEnv = {
@@ -824,6 +829,20 @@ class PackCompiler {
         this.err(
           path,
           `undeclared exclusivity group '${g}'; declared: ${[...this.groups].sort().join(", ") || "none"}`,
+        );
+        return undefined;
+      }
+      return e;
+    }
+    if (tag === "call" && e[1] in KINSHIP_ARG) {
+      const at = KINSHIP_ARG[e[1] as string] as number;
+      const kin = (e as unknown as readonly Expr[])[
+        at + 2
+      ] as readonly string[];
+      if (!isKinshipId(kin[1] as string)) {
+        this.err(
+          path,
+          `unknown kinship id '${kin[1]}'; kinship ids: ${KINSHIP_IDS.join(", ")}`,
         );
         return undefined;
       }
@@ -892,6 +911,8 @@ class PackCompiler {
         "person.role": "id",
         "person.alive": "bool",
         "person.closeness": "int",
+        "person.kin": "id",
+        "person.kin_label": "string",
       };
       for (const s of this.statIds) n[`person.stat.${s}`] = "int";
       return n;
@@ -991,6 +1012,11 @@ class PackCompiler {
         this.err(["target"], "'target' needs 'scope: person'");
       const roles: string[] = [];
       for (const [i, r] of s.target.entries()) {
+        // A bare Core kinship id (`grandparent`) or a role id.
+        if (isKinshipId(r)) {
+          roles.push(r);
+          continue;
+        }
         const full = this.ref(r, ["role"], ["target", i]);
         if (full) roles.push(full);
       }
@@ -1157,6 +1183,8 @@ class PackCompiler {
         Object.assign(bound, pronounNames(name));
         bound[`${name}.age`] = "int";
         bound[`${name}.closeness`] = "int";
+        bound[`${name}.kin`] = "id";
+        bound[`${name}.kin_label`] = "string";
         persons.push(name);
       }
       this.effectText(

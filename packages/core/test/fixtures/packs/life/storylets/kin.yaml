@@ -1,0 +1,35 @@
+- id: kin-visit
+  trigger: action
+  menu: relationships/family
+  scope: person
+  target: [grandparent, aunt-uncle]
+  text: You visit your {person.kin_label}, {person.first_name}.
+  outcomes:
+    - effects:
+        - money += 1
+
+- id: kin-sibling-only
+  trigger: action
+  menu: relationships/family
+  scope: person
+  when: is_kin(person, sibling) and person.alive
+  outcomes:
+    - effects:
+        - money += 2
+
+- id: kin-parents-around
+  trigger: action
+  menu: relationships/family
+  when: count_kin(parent, 20, 60) >= 2
+  outcomes:
+    - effects:
+        - money += 3
+
+- id: kin-adopt-in-law
+  trigger: action
+  menu: relationships/family
+  outcomes:
+    - effects:
+        - spawn_person(parent, parents) as p
+        - journal("Met {p.kin_label} {p.first_name}.")
+        - money += 4

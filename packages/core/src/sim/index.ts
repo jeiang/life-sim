@@ -24,6 +24,18 @@ export {
 } from "./flow.ts";
 export { godSetMoney, godSetStat, isGodLife } from "./god.ts";
 export {
+  countKin,
+  type FamilyRole,
+  familyRoleOf,
+  isKinshipId,
+  KINSHIP_IDS,
+  type KinshipId,
+  kinshipLabel,
+  kinshipOf,
+  linkFamilyRole,
+  spousesOf,
+} from "./kinship.ts";
+export {
   assetCityId,
   chosenStandardOf,
   confinementOf,

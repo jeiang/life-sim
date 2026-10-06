@@ -128,6 +128,15 @@ export function pronounOf(
   return i < 3 ? word : word[0]?.toUpperCase() + word.slice(1);
 }
 
+/** How a parent link was made: by birth, by adoption, or through a parent's marriage. */
+export type ParentKind = "birth" | "adopted" | "step";
+
+/** One parent of a person. Kinship is derived from these links (ADR 0005). */
+export interface ParentLink {
+  readonly id: PersonId;
+  readonly kind: ParentKind;
+}
+
 export interface Person {
   readonly id: PersonId;
   readonly givenName: string;
@@ -150,6 +159,11 @@ export interface Person {
   readonly loans: readonly Loan[];
   /** Market holdings, in kind id order. */
   readonly holdings: readonly Holding[];
+  /**
+   * The person's parents, sorted by id (typically two; fewer when unknown). The only stored
+   * family fact: grandparents, siblings, cousins and in-laws are derived from it.
+   */
+  readonly parents: readonly ParentLink[];
   /** Pack city id the person lives in; absent in lives made before cities existed. */
   readonly cityId?: string;
   /**
@@ -344,4 +358,4 @@ export interface World {
   readonly packVersions: readonly PackVersion[];
 }
 
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;

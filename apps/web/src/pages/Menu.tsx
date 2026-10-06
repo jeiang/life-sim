@@ -14,7 +14,7 @@ import {
   type MenuRow,
   MenuSection,
 } from "../components/MenuList.tsx";
-import { money } from "../game/format.ts";
+import { kinLabel, money } from "../game/format.ts";
 import {
   openPurchase,
   packIndex,
@@ -285,7 +285,7 @@ export function MenuPage(props: { id: MenuId }) {
             rows={people.map(({ rel, person }) => ({
               key: `person-${person.id}`,
               label: personName(w, person.id),
-              sublabel: `${packIndex.roles.get(rel.role)?.label ?? actionLabel(rel.role)}${person.alive ? "" : ", passed away"}`,
+              sublabel: `${kinLabel(w, person.id) ?? packIndex.roles.get(rel.role)?.label ?? actionLabel(rel.role)}${person.alive ? "" : ", passed away"}`,
               value: `Closeness ${rel.closeness}`,
               chevron: true,
               onSelect: () => openProfile(person.id),

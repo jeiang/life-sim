@@ -14,7 +14,7 @@ import { GodBadge } from "../components/GodFields.tsx";
 import { MenuList } from "../components/MenuList.tsx";
 import { PageFrame } from "../components/PageFrame.tsx";
 import { StatBars } from "../components/StatPanel.tsx";
-import { money } from "../game/format.ts";
+import { kinLabel, money } from "../game/format.ts";
 import { packIndex, runMenuAction, world } from "../game/store.ts";
 import { openPage, profileTarget } from "../nav.ts";
 
@@ -58,9 +58,9 @@ export function Profile() {
       (r.from === w.playerId && r.to === id) ||
       (r.from === id && r.to === w.playerId),
   );
-  const roleLabel = rel
-    ? (packIndex.roles.get(rel.role)?.label ?? rel.role)
-    : undefined;
+  const roleLabel =
+    kinLabel(w, id) ??
+    (rel ? (packIndex.roles.get(rel.role)?.label ?? rel.role) : undefined);
 
   return (
     <PageFrame title={isPlayer ? "Your profile" : "Profile"}>

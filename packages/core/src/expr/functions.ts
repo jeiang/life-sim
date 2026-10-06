@@ -3,8 +3,11 @@
  * evaluator agree. Adding one is a Core release (ADR 0002, ADR 0004).
  */
 
-/** `group` is an exclusivity group declared in a manifest (a bare word or a string literal). */
-export type Type = "int" | "bool" | "string" | "id" | "group";
+/**
+ * `group` is an exclusivity group declared in a manifest (a bare word or a string literal);
+ * `person` is a person name in scope (`person`, or one bound by `spawn_person ... as`).
+ */
+export type Type = "int" | "bool" | "string" | "id" | "group" | "person";
 
 export interface Signature {
   readonly params: readonly Type[];
@@ -41,6 +44,11 @@ export const FUNCTIONS = {
   holding_years: { params: ["id"], returns: "int" },
   /** The return, basis points, the next settlement will apply (drawn a year in advance). */
   forecast: { params: ["id"], returns: "int" },
+  /** The kinship id of a person to the player (`grandparent`, `cousin`, ...); "" for no kin. */
+  kin: { params: ["person"], returns: "id" },
+  is_kin: { params: ["person", "id"], returns: "bool" },
+  /** Living people of this kinship with age in `[min, max]`. */
+  count_kin: { params: ["id", "int", "int"], returns: "int" },
 } as const satisfies Record<string, Signature>;
 
 /** Effect calls (statements with arguments). `spawn_person(...) as <name>` is parsed separately. */

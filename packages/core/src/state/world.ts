@@ -5,6 +5,7 @@ import {
   type JournalEntry,
   type Loan,
   type PackVersion,
+  type ParentKind,
   type Person,
   type PersonId,
   type QualityValue,
@@ -85,6 +86,7 @@ export function addPerson(world: World, draft: PersonDraft): [World, PersonId] {
     assets: [],
     loans: [],
     holdings: [],
+    parents: [],
     ...draft,
     id,
   };
@@ -186,6 +188,28 @@ export function putHolding(
       ),
     };
   });
+}
+
+/**
+ * Make `parent` a parent of `child`. A person has at most one link per parent: linking again
+ * replaces the kind. Links stay sorted by id.
+ */
+export function addParentLink(
+  world: World,
+  child: PersonId,
+  parent: PersonId,
+  kind: ParentKind = "birth",
+): World {
+  if (child === parent)
+    throw new RangeError("a person cannot be their own parent");
+  getPerson(world, parent);
+  return updatePerson(world, child, (p) => ({
+    ...p,
+    parents: [
+      ...p.parents.filter((l) => l.id !== parent),
+      { id: parent, kind },
+    ].sort((a, b) => a.id - b.id),
+  }));
 }
 
 /** Insert or replace the relationship with the same (from, to, role). */

@@ -32,6 +32,7 @@ const TYPE_NAME: Record<Type, string> = {
   string: "a string",
   id: "a content id",
   group: "an exclusivity group name",
+  person: "a person name",
 };
 
 const MAX_SUGGEST = 2;
@@ -95,6 +96,14 @@ export class Checker {
    * group name for a `group` parameter (which also takes a string literal, for `"full-time"`).
    */
   param(n: Node, want: Type): Checked {
+    if (want === "person") {
+      if (n.k === "name" && this.env.persons?.includes(n.v))
+        return ["person", ["s", n.v]];
+      return this.err(
+        n,
+        `expected a person name${suggest(n.k === "name" ? n.v : "", this.env.persons ?? [])}; person names are 'person' in a person-scoped storylet and names bound by spawn_person(...) as <name>`,
+      );
+    }
     if (want === "group") {
       if (n.k === "str") return ["group", ["id", n.v]];
       if (n.k === "name" && !n.v.includes(".") && !(n.v in this.env.names))

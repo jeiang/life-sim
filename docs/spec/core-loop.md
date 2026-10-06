@@ -39,7 +39,7 @@ About 12 jobs in 4 ladders, each rung with pay, requirements, and a promotion ta
 
 ## People
 
-- At birth: two parents and 0-2 siblings, generated from Pack data.
+- At birth: two parents and 0-2 siblings, generated from Pack data. Every person, the player included, stores parent links (the generated siblings share the player's parents); family names (grandparent, cousin, in-law, ...) are derived from the tree, see [ADR 0005](../adr/0005-parent-links-derived-kinship.md). Birth adds no grandparents, so those kinship ids appear once content creates the people (children, later Packs).
 - Every generated person, the player included, gets a gender, drawn from the same stream as their other traits (male or female with equal weight unless the generator sets `gender`; see the pack-format spec). The first name is chosen from the pool for that gender: the first-name roll keeps its place in the stream and the gender draw comes last. Text uses it through pronoun placeholders; people without a gender (old saves) read as neutral (they/them/their). Nonbinary is chosen only in god mode (#105).
 - At school start: 2-3 classmates. At job start: 2 coworkers.
 - Verbs (Relationships menu, profile): spend time, conversation, ask for money (family), befriend (classmates, coworkers).

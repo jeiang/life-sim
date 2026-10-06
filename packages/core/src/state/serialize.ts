@@ -6,6 +6,7 @@ import {
   type Obituary,
   type ObituaryOccupation,
   type Occupation,
+  type ParentLink,
   type Pending,
   type Person,
   type QualityValue,
@@ -137,6 +138,14 @@ function gender(v: unknown, p: string): Gender {
   return GENDERS.includes(v as Gender) ? (v as Gender) : fail(p, "gender");
 }
 
+function parentLink(v: unknown, p: string): ParentLink {
+  const o = obj(v, p);
+  const kind = str(o.kind, `${p}.kind`);
+  if (kind !== "birth" && kind !== "adopted" && kind !== "step")
+    fail(`${p}.kind`, "birth, adopted or step");
+  return { id: int(o.id, `${p}.id`), kind };
+}
+
 function person(v: unknown, p: string): Person {
   const o = obj(v, p);
   const cityId =
@@ -171,6 +180,9 @@ function person(v: unknown, p: string): Person {
       : { gender: gender(o.gender, `${p}.gender`) }),
     age: int(o.age, `${p}.age`),
     alive: bool(o.alive, `${p}.alive`),
+    parents: arr(o.parents, `${p}.parents`).map((x, i) =>
+      parentLink(x, `${p}.parents[${i}]`),
+    ),
     stats: intRecord(o.stats, `${p}.stats`),
     qualities: qualities(o.qualities, `${p}.qualities`),
     money: int(o.money, `${p}.money`),

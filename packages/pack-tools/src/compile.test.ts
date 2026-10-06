@@ -762,6 +762,49 @@ describe("build checks fail", () => {
     );
   });
 
+  const KIN_ACTION = `- id: visit
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [grandparent, aunt-uncle]
+  when: is_kin(person, grandparent)
+  text: "You visit your {person.kin_label}."
+  outcomes:
+    - effects:
+        - money += count_kin(grandparent, 0, 120)
+`;
+
+  test("kinship: target ids, kin(person), is_kin, count_kin and the label placeholder", () => {
+    const r = compilePacks(fixture({ "base/storylets/kin.yaml": KIN_ACTION }));
+    expect(r.ok, r.diagnostics.map(formatDiagnostic).join("\n")).toBe(true);
+    const visit = r.bundles
+      .flatMap((b) => b.storylets)
+      .find((x) => x.id === "base/visit");
+    expect(visit?.target).toEqual(["grandparent", "aunt-uncle"]);
+  });
+
+  test("kinship mistakes are reported", () => {
+    const edit = (from: string, to: string) => ({
+      "base/storylets/kin.yaml": subIn(KIN_ACTION, from, to),
+    });
+    expectError(
+      edit("target: [grandparent, aunt-uncle]", "target: [granddad]"),
+      "dangling reference 'granddad'",
+    );
+    expectError(
+      edit("is_kin(person, grandparent)", "is_kin(person, granddad)"),
+      "unknown kinship id 'granddad'",
+    );
+    expectError(
+      edit("count_kin(grandparent, 0, 120)", "count_kin(granddad, 0, 120)"),
+      "unknown kinship id 'granddad'",
+    );
+    expectError(
+      edit("is_kin(person, grandparent)", "is_kin(stranger, grandparent)"),
+      "expected a person name",
+    );
+  });
+
   test("item requires and loan down payment compile; bad ones are reported", () => {
     const r = compilePacks(
       fixture({

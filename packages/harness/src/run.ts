@@ -4,8 +4,10 @@ import {
   choose,
   costIndexOf,
   describePending,
+  familyRoleOf,
   getPerson,
   indexBundles,
+  kinshipOf,
   type Loan,
   livesWithParents,
   livingBreakdown,
@@ -50,7 +52,8 @@ export type FaultKind =
   | "assertion"
   | "stuck"
   | "save-mismatch"
-  | "minor-living-cost";
+  | "minor-living-cost"
+  | "family";
 
 export interface Fault {
   readonly kind: FaultKind;
@@ -110,6 +113,8 @@ export interface LifeResult {
   readonly capDrops: Readonly<Record<string, number>>;
   readonly samples: readonly YearSample[];
   readonly loansOpened: number;
+  /** People in the final world (the player and everyone ever met or born). */
+  readonly persons: number;
   readonly loansDefaulted: number;
   readonly repossessions: number;
   readonly everDegree: boolean;
@@ -128,6 +133,19 @@ export interface LifeResult {
       { readonly slots: readonly number[]; readonly spent: number }
     >
   >;
+}
+
+/**
+ * Every person the player holds a family role toward (`parent`, `sibling`, `child`,
+ * `grandparent`) must have a kinship to the player; names the first that does not.
+ */
+function unresolvedFamily(w: World): string | null {
+  for (const r of w.relationships) {
+    if (r.from !== w.playerId || !familyRoleOf(r.role)) continue;
+    if (!kinshipOf(w, w.playerId, r.to))
+      return `person ${r.to} (${r.role}) has no kinship to the player`;
+  }
+  return null;
 }
 
 const playerOf = (w: World) => {
@@ -403,6 +421,10 @@ export function runLife(
       const bad = checkSave(w, bundles);
       if (bad) fault("save-mismatch", bad);
     }
+    if (w) {
+      const bad = unresolvedFamily(w);
+      if (bad) fault("family", bad);
+    }
   } catch (e) {
     fault("exception", describeError(e));
   } finally {
@@ -430,6 +452,7 @@ export function runLife(
     capDrops,
     samples,
     loansOpened: loanIds.size,
+    persons: final?.persons.size ?? 0,
     loansDefaulted: defaulted.size,
     repossessions,
     everDegree: me

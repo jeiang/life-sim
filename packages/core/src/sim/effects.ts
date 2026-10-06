@@ -10,6 +10,7 @@ import {
   updatePerson,
 } from "../state/world.ts";
 import { makeEnv, qualityOf, type Scope } from "./env.ts";
+import { linkFamilyRole } from "./kinship.ts";
 import { livesWithParents, startLivingOnOwn } from "./living.ts";
 import { grantUnit, removeHolding, tradeHolding } from "./market.ts";
 import {
@@ -61,9 +62,14 @@ function setRole(w: World, from: number, to: number, role: string): World {
   const rows = w.relationships.filter((r) => r.from === from && r.to === to);
   if (rows.length === 0) return w;
   const closeness = Math.max(...rows.map((r) => r.closeness));
-  return putRelationship(
-    { ...w, relationships: w.relationships.filter((r) => !rows.includes(r)) },
-    { from, to, role, closeness },
+  return linkFamilyRole(
+    putRelationship(
+      { ...w, relationships: w.relationships.filter((r) => !rows.includes(r)) },
+      { from, to, role, closeness },
+    ),
+    from,
+    to,
+    role,
   );
 }
 

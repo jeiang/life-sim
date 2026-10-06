@@ -147,6 +147,8 @@ export interface Report {
     /** Of lives that reached 65. */
     readonly retirement: number;
   };
+  /** People in the final world, per life (a mean over all lives). */
+  readonly family: { readonly personsPerLife: number };
   readonly loans: {
     readonly opened: number;
     readonly defaulted: number;
@@ -289,6 +291,7 @@ export class Aggregate {
   private retired = 0;
   private workYears = 0;
   private workingYears = 0;
+  private persons = 0;
   private loansOpened = 0;
   private loansDefaulted = 0;
   private repossessions = 0;
@@ -496,6 +499,7 @@ export class Aggregate {
         add(6, withAt(40));
       }
     }
+    this.persons += r.persons;
     this.loansOpened += r.loansOpened;
     this.loansDefaulted += r.loansDefaulted;
     this.repossessions += r.repossessions;
@@ -652,6 +656,11 @@ export class Aggregate {
         employment: pct(this.workingYears, this.workYears),
         everEmployed: pct(this.everEmployed, this.reached25),
         retirement: pct(this.retired, this.reached65),
+      },
+      family: {
+        personsPerLife: this.lives
+          ? Math.round((this.persons * 100) / this.lives) / 100
+          : 0,
       },
       loans: {
         opened: this.loansOpened,
@@ -882,6 +891,12 @@ export function renderMarkdown(
     `- Employment: ${r.rates.employment}% of person-years aged 25-64`,
     `- Ever employed: ${r.rates.everEmployed}% of lives reaching 25`,
     `- Retirement: ${r.rates.retirement}% of lives reaching 65`,
+    "",
+  );
+  L.push(
+    "## People",
+    "",
+    `- People per life (final world, the player included): ${r.family.personsPerLife}`,
     "",
   );
   L.push(

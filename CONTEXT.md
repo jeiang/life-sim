@@ -57,8 +57,12 @@ A Pack-declared hidden integer or flag on a person (for example has a driving li
 _Avoid_: Variable, state flag
 
 **Relationship**:
-A directed link from one person to another with a role (parent, sibling, partner, friend, classmate, coworker) and a closeness from 0 to 100. A person can hold several role rows toward another; setting a role replaces them all and keeps the highest closeness. Expressions read `person.closeness` (the highest across rows) and `count_role(role, min, max)` (living people only).
+A directed link from one person to another with a role (partner, friend, classmate, coworker; family names come from Kinship) and a closeness from 0 to 100. A person can hold several role rows toward another; setting a role replaces them all and keeps the highest closeness. Expressions read `person.closeness` (the highest across rows) and `count_role(role, min, max)` (living people only).
 _Avoid_: Connection, bond
+
+**Kinship**:
+What one person is to another in the family tree: parent, grandparent, great-grandparent, child, grandchild, great-grandchild, sibling (full, half, step, adopted), aunt or uncle, great-aunt or great-uncle, cousin, niece or nephew, step-parent, step-child, and in-laws through marriage. The Core stores only each person's parent links (birth, adopted or step) and derives kinship from the closest common ancestor, relative to the player pointer, so succession renames everyone with no relabel map. Packs use it through `kin(person)`, `is_kin(person, id)`, `count_kin(id, min_age, max_age)`, the `{person.kin_label}` placeholder, and bare kinship ids in a storylet `target`.
+_Avoid_: Family role, relation
 
 **Asset**:
 An owned instance of a Pack-defined item kind, with a purchase price, a current value, and its own qualities.

@@ -1,5 +1,5 @@
 import { emojiFiles } from "virtual:packs";
-import { formatMoney } from "@life/core";
+import { formatMoney, kinshipLabel, kinshipOf, type World } from "@life/core";
 import { packIndex } from "./store.ts";
 
 export const money = (minor: number): string =>
@@ -30,4 +30,11 @@ export function splitEmoji(text: string): string[] {
 export function emojiUrl(emoji: string): string | undefined {
   const f = emojiFiles[emoji];
   return f ? `${BASE}${f}` : undefined;
+}
+
+/** The person's family name to the player ("Grandmother"), from the family tree; undefined for no kin. */
+export function kinLabel(w: World, id: number): string | undefined {
+  const k = kinshipOf(w, w.playerId, id);
+  const label = k && kinshipLabel(k, w.persons.get(id)?.gender);
+  return label ? label.charAt(0).toUpperCase() + label.slice(1) : undefined;
 }

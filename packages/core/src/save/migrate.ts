@@ -76,6 +76,51 @@ const v3to4: Migration = (raw) =>
 const v4to5: Migration = (raw) =>
   mapWorlds(raw, (w) => ({ ...w, schemaVersion: 5 }));
 
+/**
+ * Version 6 stores parent links on every person (kinship is derived from them, ADR 0005).
+ * An old world gets them from the player's role rows by the last segment of the role id:
+ * `parent` rows become the player's parents, `sibling` rows share those parents, `child` rows
+ * have the player as parent, and a `grandparent` row becomes a parent of the player's first
+ * parent. Everyone else starts with no parents.
+ */
+const v5to6: Migration = (raw) =>
+  mapWorlds(raw, (w) => {
+    const persons = (Array.isArray(w.persons) ? w.persons : []).filter(isObj);
+    const rows = (Array.isArray(w.relationships) ? w.relationships : []).filter(
+      isObj,
+    );
+    const links = new Map<number, { id: number; kind: string }[]>();
+    const link = (child: unknown, parent: unknown): void => {
+      if (typeof child !== "number" || typeof parent !== "number") return;
+      const list = links.get(child) ?? [];
+      if (!list.some((l) => l.id === parent))
+        links.set(child, [...list, { id: parent, kind: "birth" }]);
+    };
+    const rolled = (role: string): unknown[] =>
+      rows
+        .filter(
+          (r) =>
+            r.from === w.playerId &&
+            typeof r.role === "string" &&
+            r.role.slice(r.role.lastIndexOf("/") + 1) === role,
+        )
+        .map((r) => r.to)
+        .sort((a, b) => (a as number) - (b as number));
+    const parents = rolled("parent");
+    for (const p of parents) link(w.playerId, p);
+    for (const s of rolled("sibling")) for (const p of parents) link(s, p);
+    for (const c of rolled("child")) link(c, w.playerId);
+    for (const g of rolled("grandparent")) link(parents[0], g);
+    return {
+      ...w,
+      schemaVersion: 6,
+      persons: persons.map((p) => ({
+        ...p,
+        parents: (links.get(p.id as number) ?? []).sort((a, b) => a.id - b.id),
+      })),
+    };
+  });
+
 /** Migrations by the version they upgrade from. Append only; never edit a shipped step. */
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   0: v0to1,
@@ -83,6 +128,7 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   2: v2to3,
   3: v3to4,
   4: v4to5,
+  5: v5to6,
 };
 
 /**

@@ -29,6 +29,7 @@ import {
 } from "../state/world.ts";
 import { makeEnv, type Scope } from "./env.ts";
 import { portfolioValue } from "./market.ts";
+import { linkFamilyRole } from "./kinship.ts";
 import type { PackIndex } from "./pack-index.ts";
 import { nameOf } from "./text.ts";
 
@@ -292,15 +293,13 @@ export function spawnPerson(
     gender,
     stats,
   });
-  return [
-    putRelationship(w1, {
-      from,
-      to: id,
-      role: roleId,
-      closeness: opts.closeness ?? 50,
-    }),
-    id,
-  ];
+  const linked = putRelationship(w1, {
+    from,
+    to: id,
+    role: roleId,
+    closeness: opts.closeness ?? 50,
+  });
+  return [linkFamilyRole(linked, from, id, roleId), id];
 }
 
 function obitOccupation(o: Occupation, age: number): ObituaryOccupation {

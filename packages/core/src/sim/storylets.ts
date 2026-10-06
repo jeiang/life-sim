@@ -8,6 +8,7 @@ import type { PersonId, QueuedEvent, ScopeRef, World } from "../state/types.ts";
 import { addJournalLine, getPerson, nextStream } from "../state/world.ts";
 import { applyEffects } from "./effects.ts";
 import { makeEnv, rolesOf, type Scope } from "./env.ts";
+import { kinshipOf } from "./kinship.ts";
 import { confinementOf } from "./living.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import type { PackIndex } from "./pack-index.ts";
@@ -100,7 +101,7 @@ function bindingLive(world: World, scope: ScopeRef | undefined): boolean {
   return getPerson(world, world.playerId).loans.some((l) => l.id === scope.id);
 }
 
-/** The person holds one of the storylet's `target` roles toward the player (no filter: any). */
+/** The person holds one of the storylet's `target` roles, or is one of its kinship ids, toward the player (no filter: any). */
 export function hasTargetRole(
   world: World,
   s: CompiledStorylet,
@@ -108,7 +109,8 @@ export function hasTargetRole(
 ): boolean {
   if (!s.target || s.target.length === 0) return true;
   const roles = rolesOf(world, person);
-  return s.target.some((t) => roles.includes(t));
+  const kin = kinshipOf(world, world.playerId, person);
+  return s.target.some((t) => roles.includes(t) || t === kin);
 }
 
 /**

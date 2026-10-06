@@ -33,7 +33,8 @@ It **fails** on engine faults:
 - an exception thrown by the Core;
 - an expression runtime assertion (division by zero, overflow);
 - a stuck state: an open event with no selectable choice, or a life that can no longer age up;
-- a save round-trip mismatch: at random ages the world is serialized, loaded, and compared, and it must be identical.
+- a save round-trip mismatch: at random ages the world is serialized, loaded, and compared, and it must be identical;
+- an unresolved family person: at the end of a life, every person the player holds a `parent`, `sibling`, `child` or `grandparent` role toward must have a kinship to the player (ADR 0005).
 
 It **reports** without failing, in `report.md` and `report.json` in the check output:
 
@@ -42,6 +43,7 @@ It **reports** without failing, in `report.md` and `report.json` in the check ou
 - age at death (distribution) and causes of death;
 - net worth at ages 18, 40, and 65;
 - degree rate, employment rate, and retirement rate;
+- people per life (the final world's person count, to catch a change in how many people a life creates);
 - loan defaults and repossessions;
 - living standards: share of lives with parents or at each standard by decade of age, and the homeless share of years lived on their own, overall and per profile, and the living cost as a percent of income by household shape (alone, with children, with a partner sharing);
 - invariant (fault `minor-living-cost`): no living cost is charged while the player is under 18;

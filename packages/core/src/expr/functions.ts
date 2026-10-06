@@ -28,6 +28,7 @@ export const FUNCTIONS = {
   role_count: { params: ["id"], returns: "int" },
   in_group: { params: ["group"], returns: "bool" },
   years_in_group: { params: ["group"], returns: "int" },
+  count_role: { params: ["id", "int", "int"], returns: "int" },
 } as const satisfies Record<string, Signature>;
 
 /** Effect calls (statements with arguments). `spawn_person(...) as <name>` is parsed separately. */

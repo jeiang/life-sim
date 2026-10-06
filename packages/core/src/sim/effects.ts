@@ -55,6 +55,17 @@ function str(
   return String(evaluate(e, makeEnv(w, idx, scope)));
 }
 
+/** Replace every role row `from` holds toward `to` with one `role` row at the highest closeness. */
+function setRole(w: World, from: number, to: number, role: string): World {
+  const rows = w.relationships.filter((r) => r.from === from && r.to === to);
+  if (rows.length === 0) return w;
+  const closeness = Math.max(...rows.map((r) => r.closeness));
+  return putRelationship(
+    { ...w, relationships: w.relationships.filter((r) => !rows.includes(r)) },
+    { from, to, role, closeness },
+  );
+}
+
 function applyEffect(
   w: World,
   idx: PackIndex,
@@ -69,6 +80,15 @@ function applyEffect(
     case "add":
     case "sub": {
       const target = e[1];
+      if (typeof target !== "string" && target[2] === "role") {
+        const pid =
+          bound.get(target[1]) ??
+          (target[1] === "person" ? scope.person : undefined);
+        const role = str(e[2], w, idx, scope);
+        if (!idx.roles.has(role))
+          throw new RangeError(`unknown role '${role}'`);
+        return pid === undefined ? w : setRole(w, who, pid, role);
+      }
       const delta = evalInt(e[2], w, idx, scope);
       const sign = e[0] === "sub" ? -1 : 1;
       // Diminishing returns (repeatable actions): only positive stat and closeness deltas shrink.

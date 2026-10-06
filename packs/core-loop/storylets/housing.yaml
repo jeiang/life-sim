@@ -39,7 +39,7 @@
   trigger: event
   tags: [housing]
   when: age >= 18 and living.with_parents
-  chance: 100 + (100 - role_closeness(core-loop/parent)) * 4 + min(10, max(0, age - 30)) * 150 + role_count(core-loop/sibling) * 75
+  chance: 100 + (100 - role_closeness(core-loop/parent)) * 4 + min(10, max(0, age - 30)) * 150 + count_role(core-loop/sibling, 0, 100) * 75
   text: "Your parents sit you down: it is time you had a place of your own."
   outcomes:
     - weight: 1

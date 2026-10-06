@@ -1,6 +1,6 @@
 {
   "pack": "core-loop",
-  "version": 1,
+  "version": 2,
   "ids": [
     "core-loop/acne-flare",
     "core-loop/adopt-a-pet",
@@ -42,6 +42,7 @@
     "core-loop/cheat-caught",
     "core-loop/cheat-on-test",
     "core-loop/checkup-letter",
+    "core-loop/child",
     "core-loop/childhood-mortality",
     "core-loop/chore-chart",
     "core-loop/church-fete",
@@ -176,6 +177,7 @@
     "core-loop/parent-illness",
     "core-loop/parent-recovery",
     "core-loop/part-time-weekend-job",
+    "core-loop/partner",
     "core-loop/pay-raise-surprise",
     "core-loop/person-checks-in",
     "core-loop/person-new-job",
@@ -244,6 +246,7 @@
     "core-loop/spelling-bee",
     "core-loop/spend-time-with-loved-ones",
     "core-loop/sports-trial",
+    "core-loop/spouse",
     "core-loop/staff-nurse",
     "core-loop/start-elementary-school",
     "core-loop/start-high-school",

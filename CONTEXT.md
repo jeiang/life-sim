@@ -49,7 +49,7 @@ A Pack-declared hidden integer or flag on a person (for example has a driving li
 _Avoid_: Variable, state flag
 
 **Relationship**:
-A directed link from one person to another with a role (parent, sibling, partner, friend, classmate, coworker) and a closeness from 0 to 100.
+A directed link from one person to another with a role (parent, sibling, partner, friend, classmate, coworker) and a closeness from 0 to 100. A person can hold several role rows toward another; setting a role replaces them all and keeps the highest closeness. Expressions read `person.closeness` (the highest across rows) and `count_role(role, min, max)` (living people only).
 _Avoid_: Connection, bond
 
 **Asset**:

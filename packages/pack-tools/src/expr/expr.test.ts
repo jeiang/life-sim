@@ -160,6 +160,10 @@ describe("effect statements", () => {
       "relationship(friend).closeness += 5",
       ["add", ["relationship", "friend", "closeness"], 5],
     ],
+    [
+      "relationship(friend).role = partner",
+      ["set", ["relationship", "friend", "role"], ["id", "partner"]],
+    ],
   ])("%s", (src, ast) => {
     expect(eff(src)).toEqual({ ok: true, ast });
   });
@@ -168,6 +172,7 @@ describe("effect statements", () => {
     ["money = 5", "'=' is not allowed on 'money'"],
     ["quality.licensed -= 1", "'-=' is not allowed on 'quality'"],
     ["age += 1", "'age' cannot be assigned"],
+    ["person.closeness += 1", "'person.closeness' cannot be assigned"],
     ["stat.nope += 1", "unknown name 'stat.nope'"],
     ["stat.smarts += true", "expected an integer, got a boolean"],
     ["spawn_person(a, b)", "needs 'as <name>'"],
@@ -175,6 +180,8 @@ describe("effect statements", () => {
     ["relationship(stranger).closeness += 1", "unknown person 'stranger'"],
     ["relationship(friend).closeness = 1", "only allows '+='"],
     ["relationship(friend).trust += 1", "only 'closeness'"],
+    ["relationship(friend).role += partner", "only allows '='"],
+    ["relationship(friend).role = 3", "expected a content id, got an integer"],
     ["explode()", "unknown effect 'explode'"],
     ["take_loan(bank/auto-loan)", "takes 2 argument(s), got 1"],
     ["quality.title += 1", "needs an integer target"],

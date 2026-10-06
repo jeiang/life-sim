@@ -4,6 +4,9 @@
 - { kind: role, id: classmate, label: Classmate }
 - { kind: role, id: coworker, label: Coworker }
 - { kind: role, id: friend, label: Friend }
+- { kind: role, id: partner, label: Partner }
+- { kind: role, id: spouse, label: Spouse }
+- { kind: role, id: child, label: Child }
 - kind: generator
   id: parent-gen
   age: [22, 40]

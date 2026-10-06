@@ -29,4 +29,26 @@ Tuned with the [harness](../../docs/spec/harness.md): `pnpm harness --jobs 4 --l
 
 ## Results
 
-Local 2,000 lives (seed 20260101, `--jobs 4`); the 10,000-life numbers from CI follow below.
+10,000 lives, seed 20260101, all profiles (CI `harness-10k`), 0 faults, 0 storylets never fired, decisions at least 1 / 2 / 3 in 89.9 / 49.6 / 28.7% of years:
+
+| kind | mean return | annualised | crash years | delisted | bond default rate |
+|---|---|---|---|---|---|
+| total-market | 6.62% | 5.08% | 6.5% | - | - |
+| world-index | 6.96% | 5.81% | 4.27% | - | - |
+| income-bond-fund | 3% | 2.95% | 0% | - | - |
+| corporate-bond-fund | 5.16% | 4.97% | 0% | - | - |
+| acme-robotics | 10.2% | 5.75% | 14.74% | - | - |
+| northwind-foods | 5.99% | 4.34% | 7.84% | - | - |
+| lumen-energy | 8.63% | 3.09% | 18.16% | - | - |
+| quark-coin | 8.18% | 0.53% | 20.08% | - | - |
+| pinecrest-mining | -5.43% | -39.29% | 25.11% | 6.01% | - |
+| brightwave-labs | -3.57% | -32.92% | 24.47% | 4.92% | - |
+| gov-bond-5 | 2.77% | 2.65% | 0.38% | - | 0.38% |
+| gov-bond-10 | 3.76% | 3.63% | 0.4% | - | 0.4% |
+
+- Tips: the tipped kind rose 71.25% of the time (444,375 tips) and returned 9.12% the next year against 6.24% for a random kind. Insider tips (669): all rose 20% or more, mean 45.15%; 0.07 offers per life, and the profiles that take them (`random`) acted on 0.006 per life.
+- `investor` annualised 5.04% (99.9% participation, 74,732 holding years); `tipstacker` 6.34%, 1.3 points above, inside the 2-point target; `random` 4.83% with 82.8% of its lives investing.
+- Net worth (median, major units): investors against the rest across all profiles $891,563 against $291,460 at 40 and $4,701,862 against $1,266,832 at 65. The groups are confounded (the `investor` and `tipstacker` profiles save most of their pay and seek work; `idle` and `spender` never invest).
+- Scams: 2.26 offers per life over all profiles; `random` loses to 1.18 per life, `spender` 1.57 and `gambler` 1.54 (they answer at random), `studious` 0.52 (high smarts, so fewer offers and more "look into it" successes); `investor` and `tipstacker` decline every one.
+- Penny stocks: mean return -5.4% and -3.6% a year, annualised near -33% to -39% (a holder usually loses nearly everything), delisted 5-6% of years; the 10x jump (1% a year) is too rare to show in the annualised figure.
+- Observation, not changed: the price series are lognormal-like random walks over up to 100 world years, so the high-volatility kinds can drift to very small or very large prices in a long life; a return of -100% leaves a price of 1 minor unit that can never recover (Core rounding). Sources never tip a kind priced under 20 minor units.

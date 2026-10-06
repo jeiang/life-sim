@@ -21,8 +21,19 @@ All checks are hermetic `checks.<system>.*` flake outputs, so `nix flake check` 
 | `e2e` | Playwright on Chromium and WebKit against the built app; axe-core on every screen kind in light and dark themes ([visual](visual.md#accessibility-wcag-22-aa)); and the in-run determinism comparison of 20 seeded lives across Node, Chromium, and WebKit ([harness](harness.md#determinism-check-in-e2e)) |
 | `harness` | 1,000 seeded lives across player profiles. Fails on engine faults, and writes a balance report ([harness](harness.md)) |
 
+- The full 10,000-life run is not a flake check. It runs on GitHub Actions (below).
 - Tool versions (Node, pnpm, Biome, Playwright browsers) come from `flake.lock`. Bumping nixpkgs is deliberate and fails `versions` until the npm pins match.
 - Playwright uses `PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}`.
+
+## GitHub Actions: 10,000-life harness
+
+`.github/workflows/harness.yml` (job `harness-10k`) runs on every pull request, every push to `main`, and on demand. The repository is public, so the free `ubuntu-latest` runner is used. Actions are pinned by commit SHA, the token has `contents: read` and `pull-requests: write` (plus `actions: read` to fetch main's last report), and a new push to a pull request cancels its in-progress run.
+
+- It installs Node 24 and pnpm 10 (pnpm store cached by `actions/setup-node`), runs `pnpm install --frozen-lockfile`, then `harness --lives 10000 --profile all --seed 20260101 --jobs $(nproc)` ([harness](harness.md)).
+- The full `report.md`, `report.json` and console output are uploaded as the `harness-report` artifact. On pull requests from this repository, one sticky comment (marker `<!-- harness-10k -->`) is created and then updated with headline balance numbers, any faults, and a column from main's last successful run. Every run also writes the same text to the job summary. The text comes from `.github/scripts/harness-summary.mjs`.
+- The job fails on engine faults only (the CLI's exit status). There are no machine-checkable balance targets yet, so none are enforced.
+- `harness-10k` is a required status check on `main`, next to `buildbot/nix-eval` and `buildbot/nix-build`.
+- Agents tune locally with `--lives 2000 --jobs 4`; the final 10,000-life numbers in `BALANCE.md` come from the CI report on the pull request.
 
 ## Open risk
 

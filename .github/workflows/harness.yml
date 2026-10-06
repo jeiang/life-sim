@@ -1,0 +1,95 @@
+name: harness
+
+# The 10,000-life balance run. buildbot's `harness` flake check only runs 1,000
+# lives; the full run is too slow for it, so it runs here on a free runner.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: harness-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read # download main's last report for the comparison
+
+jobs:
+  harness:
+    name: harness-10k
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: 10
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm # caches the pnpm store, keyed on pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Run 10,000 lives
+        id: run
+        run: |
+          mkdir -p out
+          start=$(date +%s)
+          set +e
+          node --experimental-strip-types packages/harness/src/cli.ts \
+            --lives 10000 --profile all --seed 20260101 --jobs "$(nproc)" \
+            --out out 2>&1 | tee out/console.txt
+          status=${PIPESTATUS[0]}
+          echo "seconds=$(( $(date +%s) - start ))" >> "$GITHUB_OUTPUT"
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0 # fail after the report is uploaded and commented
+
+      - name: Fetch main's last report
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          id=$(gh run list --workflow harness.yml --branch main --status success \
+            --limit 1 --json databaseId --jq '.[0].databaseId')
+          [ -n "$id" ] && gh run download "$id" -n harness-report -D base
+
+      - name: Summarize
+        run: |
+          node .github/scripts/harness-summary.mjs out/report.json \
+            "$([ -f base/report.json ] && echo base/report.json)" \
+            "${{ steps.run.outputs.seconds }}" "${{ steps.run.outputs.status }}" \
+            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            > out/summary.md
+          cat out/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: harness-report
+          path: out/
+          if-no-files-found: error
+
+      - name: Sticky PR comment
+        # Fork PRs get a read-only token; the job summary above still has the numbers.
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const body = "<!-- harness-10k -->\n" + require("fs").readFileSync("out/summary.md", "utf8");
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
+            const prev = comments.find((c) => c.body?.startsWith("<!-- harness-10k -->"));
+            if (prev) await github.rest.issues.updateComment({ owner, repo, comment_id: prev.id, body });
+            else await github.rest.issues.createComment({ owner, repo, issue_number, body });
+
+      - name: Fail on engine faults
+        if: steps.run.outputs.status != '0'
+        run: |
+          echo "::error::harness exited with status ${{ steps.run.outputs.status }} (engine faults or a run error); see the report artifact"
+          exit 1

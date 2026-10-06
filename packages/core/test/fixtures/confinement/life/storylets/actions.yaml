@@ -1,0 +1,37 @@
+- id: arrest
+  trigger: action
+  menu: occupation
+  tags: [custody-ok]
+  outcomes:
+    - effects:
+        - start_occupation(cell)
+
+- id: admit
+  trigger: action
+  menu: occupation
+  outcomes:
+    - effects:
+        - start_occupation(ward)
+
+- id: release
+  trigger: action
+  menu: occupation
+  tags: [custody-ok]
+  outcomes:
+    - effects:
+        - end_occupation(cell)
+
+- id: read
+  trigger: action
+  menu: activities
+  tags: [custody-ok]
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: jog
+  trigger: action
+  menu: activities
+  outcomes:
+    - effects:
+        - stat.happiness += 1

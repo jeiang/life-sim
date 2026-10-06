@@ -8,6 +8,7 @@
 - id: parent-illness
   icon: 🤒
   trigger: event
+  tags: [npc, custody-ok]
   scope: person
   target: [core-loop/parent]
   chance: 4%
@@ -23,6 +24,7 @@
 - id: parent-recovery
   icon: 🌤️
   trigger: event
+  tags: [npc, custody-ok]
   scope: person
   target: [core-loop/parent]
   chance: 5%
@@ -36,6 +38,7 @@
 - id: parent-death
   icon: 🕊️
   trigger: event
+  tags: [npc, custody-ok]
   scope: person
   target: [core-loop/parent]
   chance: min(10000, (person.age * person.age * person.age * person.age / 68000) * (140 - person.stat.health) / 90)
@@ -50,6 +53,7 @@
 - id: parent-gift
   icon: 🎁
   trigger: event
+  tags: [npc, custody-ok]
   scope: person
   target: [core-loop/parent]
   chance: 3%
@@ -64,6 +68,7 @@
 - id: sibling-starts-school
   icon: 🎒
   trigger: event
+  tags: [npc, custody-ok]
   scope: person
   chance: 100%
   when: person.age == 6
@@ -76,6 +81,7 @@
 - id: sibling-learns-to-ride
   icon: 🚲
   trigger: event
+  tags: [npc, custody-ok]
   scope: person
   chance: 40%
   when: person.age >= 5 and person.age <= 8 and age >= 4
@@ -89,6 +95,7 @@
 - id: sibling-school-award
   icon: 🏅
   trigger: event
+  tags: [npc, custody-ok]
   scope: person
   chance: 6%
   when: person.age >= 8 and person.age <= 18 and person.stat.smarts >= 60
@@ -102,6 +109,7 @@
 - id: sibling-graduates
   icon: 🎓
   trigger: event
+  tags: [npc, custody-ok]
   scope: person
   chance: 100%
   when: person.age == 18
@@ -115,6 +123,7 @@
 - id: sibling-rivalry
   icon: ⚔️
   trigger: event
+  tags: [npc, custody-ok]
   scope: person
   chance: 6%
   when: person.age >= 8 and person.age <= 17 and age >= 8 and age <= 17
@@ -128,6 +137,7 @@
 - id: person-new-job
   icon: 💼
   trigger: event
+  tags: [npc, custody-ok]
   scope: person
   chance: 3%
   when: person.age >= 24 and person.age <= 55
@@ -141,6 +151,7 @@
 - id: person-checks-in
   icon: ☎️
   trigger: event
+  tags: [npc, custody-ok]
   scope: person
   chance: 5%
   when: person.age >= 30 and age >= 20

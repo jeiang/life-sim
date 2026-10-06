@@ -239,6 +239,25 @@ export const OccupationSchema = obj(
           "While held, no living cost is charged and the standard's effects do not apply (for example prison)",
       }),
     ),
+    confines: Type.Optional(
+      obj(
+        {
+          menus: Type.Optional(
+            Type.Boolean({
+              description:
+                "Lock action menus and the shop except actions tagged `custody-ok`",
+            }),
+          ),
+          events: Type.Optional(
+            Type.Boolean({
+              description:
+                "Lock yearly events except those tagged `custody-ok`",
+            }),
+          ),
+        },
+        "Confinement (prison, hospital): while held the player is `confined`, housing is provided, and only content tagged `custody-ok` runs where locked",
+      ),
+    ),
   },
   "Occupation kind",
 );

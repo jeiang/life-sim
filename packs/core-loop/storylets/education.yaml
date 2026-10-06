@@ -60,7 +60,7 @@
 - id: graduate-high-school
   icon: 🎓
   trigger: event
-  tags: [education, school]
+  tags: [education, school, custody-ok]
   chance: 100%
   when: years_in(core-loop/high-school) >= 6 and not quality.graduated_high_school
   text: "{player.first_name} walks across the stage and collects a diploma."
@@ -75,7 +75,7 @@
 - id: graduate-university
   icon: 🎓
   trigger: event
-  tags: [education, school]
+  tags: [education, school, custody-ok]
   chance: 100%
   when: (years_in(core-loop/university-business) >= 4 and not quality.has_degree_business) or (years_in(core-loop/university-engineering) >= 4 and not quality.has_degree_engineering) or (years_in(core-loop/university-nursing) >= 4 and not quality.has_degree_nursing) or (years_in(core-loop/university-arts) >= 4 and not quality.has_degree_arts)
   text: "{player.first_name} graduates from university."

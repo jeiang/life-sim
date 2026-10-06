@@ -5,6 +5,7 @@
 - id: flu-season
   icon: 🤧
   trigger: event
+  tags: [illness, custody-ok]
   chance: 900 * living.risk / 10000
   when: age >= 1
   text: "{player.first_name} comes down with the flu."
@@ -17,6 +18,7 @@
 - id: food-poisoning
   icon: 🤢
   trigger: event
+  tags: [illness, custody-ok]
   chance: 3%
   when: age >= 3
   text: "Something at a questionable buffet does not agree with {player.first_name}."
@@ -42,6 +44,7 @@
 - id: serious-illness
   icon: 🏥
   trigger: event
+  tags: [illness, custody-ok]
   chance: 150 * living.risk / 10000
   when: age >= 20
   text: "A worrying diagnosis sends {player.first_name} into a long round of treatment."
@@ -73,6 +76,7 @@
 - id: sudden-recovery
   icon: 💪
   trigger: event
+  tags: [illness, custody-ok]
   chance: 4%
   when: stat.health < 60
   text: "A good run of sleep, rest, and fresh air leaves {player.first_name} feeling much better."
@@ -200,6 +204,7 @@
 - id: heart-attack
   icon: 🫀
   trigger: event
+  tags: [illness, custody-ok]
   chance: 0.4% + (age - 45) * 4 + max(0, 60 - stat.health) * 2
   when: age >= 45
   text: "A tight feeling in the chest turns into an emergency."
@@ -218,6 +223,7 @@
 - id: severe-pneumonia
   icon: 🫁
   trigger: event
+  tags: [illness, custody-ok]
   chance: 1.2%
   when: age >= 55
   text: "A cough that will not clear becomes severe pneumonia."

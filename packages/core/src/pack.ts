@@ -97,6 +97,12 @@ export interface CompiledOccupationKind {
    * charged and the standard's effects do not apply.
    */
   readonly providesHousing?: boolean;
+  /**
+   * While held, the player is confined (prison, hospital): housing is provided, and content
+   * without the Core tag `custody-ok` cannot run. `menus` locks action menus and the shop;
+   * `events` locks yearly events.
+   */
+  readonly confines?: { readonly menus: boolean; readonly events: boolean };
   /** Loan kind that can finance it (student loan). */
   readonly loan?: string;
 }

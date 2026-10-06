@@ -82,6 +82,10 @@ About 10 item kinds, bought through the purchase dialog:
 - Salaries are gross pay (about $6k for a teen cashier to $115k for a senior engineer at a 100% wage index), multiplied by the current city's wage index (80% to 150%). Pensions, raises and the windfall raise bonus are scaled the same way.
 - The profile shows the current standard and its yearly cost. Harness numbers and targets are in [BALANCE.md](../../packs/core-loop/BALANCE.md).
 
+## Confinement
+
+Core-loop ships no confining occupation (prison and hospital come with later Packs), but its content is ready: mortality, illness, loan (missed payment), graduation and NPC events carry the Core tag `custody-ok` and keep running while the player is confined. Everything else (activities, jobs, relationships, housing, the shop) locks by default. See [pack-format](pack-format.md#confinement).
+
 ## Activities (`activities`)
 
 Gym, library, doctor, meditate, take a walk, and the job board. Each is an action storylet with age gates and stat effects. No casino; the amount picker is first used by the gambling Pack.

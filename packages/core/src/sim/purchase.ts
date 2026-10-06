@@ -10,6 +10,7 @@ import {
 } from "../state/world.ts";
 import { makeEnv } from "./env.ts";
 import { appendChoice, type SimResult } from "./flow.ts";
+import { confinementOf } from "./living.ts";
 import {
   clockAge,
   dropAsset,
@@ -41,6 +42,11 @@ export interface ShopRow {
   readonly reason?: string;
 }
 
+const CONFINED = "Not allowed while confined";
+
+const confinedFromMenus = (world: World, idx: PackIndex): boolean =>
+  confinementOf(getPerson(world, world.playerId), idx)?.menus === true;
+
 const cmp = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 interface Quote {
@@ -59,13 +65,15 @@ function quote(world: World, idx: PackIndex, kindId: string): Quote {
     ? Math.min(price, Math.trunc((price * loan.downPaymentBp + 9999) / 10000))
     : undefined;
   const ok = evalBool(kind.requires, world, idx, scope);
-  const requiresReason = ok
-    ? null
-    : kind.requires === undefined
-      ? "Not available"
-      : explainFalse(kind.requires, (c) =>
-          Boolean(evaluate(c, makeEnv(world, idx, scope))),
-        );
+  const requiresReason = confinedFromMenus(world, idx)
+    ? CONFINED
+    : ok
+      ? null
+      : kind.requires === undefined
+        ? "Not available"
+        : explainFalse(kind.requires, (c) =>
+            Boolean(evaluate(c, makeEnv(world, idx, scope))),
+          );
   return {
     price,
     ...(down === undefined ? {} : { down }),
@@ -180,6 +188,7 @@ export function sell(
   const idx = indexBundles(bundles);
   if (world.ended) throw new Error("This life is over");
   if (world.pending) throw new Error("Finish the open choice first");
+  if (confinedFromMenus(world, idx)) throw new Error(CONFINED);
   const who = world.playerId;
   const asset = getPerson(world, who).assets.find((a) => a.id === assetId);
   if (!asset) throw new RangeError(`no asset ${assetId}`);

@@ -67,7 +67,7 @@ packs/<pack-id>/
 
 | Field | Meaning |
 |---|---|
-| `id`, `icon`, `tags` | Identity; optional icon (see Icons); free tags for grouping. |
+| `id`, `icon`, `tags` | Identity; optional icon (see Icons); free tags for grouping. `custody-ok` is a Core-owned tag: see [Confinement](#confinement). |
 | `trigger` | `event` (drawn at age-up) or `action` (offered in a menu). |
 | `menu` | For actions: the menu path, `<top>` or `<top>/<submenu>`, where the top is one of `occupation`, `assets`, `relationships`, `activities` (see [screens](screens.md#menu-ids)). |
 | `scope` | Optional binding, evaluated once per bound item. `loan` (events only): once per loan the player holds, with `loan` bound (for example a missed-payment event). `person`: once per non-player person during the NPC yearly pass, with `person` bound (NPC storylets); on an action, the UI offers it for a chosen person. `die(...)` kills the bound person, and `relationship(person).closeness += n` changes the tie to them. Without `scope`, only the player and storylet-local names are in scope. |
@@ -120,6 +120,15 @@ The player chooses a standard (`set_standard(id)`, or the **Standard of living**
 
 An occupation with `provides_housing: true` (for prison, boarding school, military) waives all of this while it is held: no cost, no standard effects, and `living.risk` reads 100%.
 
+## Confinement
+
+An occupation with `confines: { menus, events }` (for prison, hospital; at least one `true`) confines the player while it is held. Core then:
+
+- locks content by whitelist: with `menus: true`, an action storylet can run only if it carries the Core-owned tag `custody-ok` (other actions show locked, "Not allowed while confined"), and the shop is locked (rows and sales); with `events: true`, only events tagged `custody-ok` are drawn (including NPC and loan-scoped events). New menus and events lock by default;
+- provides housing, as `provides_housing: true` does (no living cost, no standard effects, `living.risk` reads 100%); the living situation itself is unchanged.
+
+`start_occupation` and `end_occupation` still apply to the player; tag the actions that start or end confinement `custody-ok`. A `next:` chain is not checked after its first storylet opens. Several confining occupations combine: a lock applies when any of them sets it. The boolean name `confined` is true while the player holds any confining occupation, so other Packs' pay, schools and events can react (for example `when: not confined`).
+
 Names: `living.standard` (id of the lived standard), `living.cost` (this year's cost, 0 with parents or provided housing), `living.risk`. Function `standard_cost(standard)`: what that standard would cost the player now (city index and home waiver applied), for example `when: standard_cost(core-loop/rich) <= money`.
 
 ## Year draw
@@ -147,7 +156,7 @@ One small custom language is used for `when`, `weight`, `chance`, and effect sta
 
 - Literals: integers, percents (`2.5%`, compiled to basis points out of 10,000), strings, booleans, and content ids (`job/cashier`).
 - Operators: `+ - * /`, `mod` (modulo; `%` is used only by percent literals), comparisons, `and or not`, `in`, and the ternary `a ? b : c`.
-- Names (scope `person` also has `person.role` as a content id, `person.alive`): `age`, `money`, `stat.<id>`, `quality.<id>`, `loan.<field>` (`balance`, `payment`, `missed`) in storylets with `scope: loan`, and other scoped references inside storylets (for example `person.<field>` for a spawned person).
+- Names (scope `person` also has `person.role` as a content id, `person.alive`): `age`, `money`, `confined` (boolean, see [Confinement](#confinement)), `stat.<id>`, `quality.<id>`, `loan.<field>` (`balance`, `payment`, `missed`) in storylets with `scope: loan`, and other scoped references inside storylets (for example `person.<field>` for a spawned person).
 - Functions: a fixed whitelist (for example `min`, `max`, `clamp`, `has`, `has_occupation`, `owns`, `years_in`, `role_closeness(role)`: average closeness to the living people the player holds that role toward, 0 with none; `role_count(role)`: how many of them are alive). No user-defined functions and no loops.
 - Integer-only. `/` truncates toward zero. A constant zero divisor is a build error. At runtime, division by zero gives 0 and overflow clamps to the safe-integer range. Dev builds and the balance harness assert on both.
 - No randomness inside expressions. Rolls happen only for `chance` and `weight`, and each roll site's RNG purpose key comes from the content id.

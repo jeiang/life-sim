@@ -1,0 +1,25 @@
+- { kind: role, id: parent, label: Parent }
+- { kind: role, id: sibling, label: Sibling }
+- { kind: role, id: neighbour, label: Neighbour }
+- kind: generator
+  id: player
+  first_names: [Ada, Bo]
+  last_names: [Lee, Kim]
+  age: [0, 0]
+- kind: generator
+  id: parents
+  first_names: [Pat, Sam]
+  last_names: [Lee]
+  age: [25, 40]
+  stats:
+    health: [60, 90]
+- kind: generator
+  id: siblings
+  first_names: [Kit]
+  last_names: [Lee]
+  age: [0, 10]
+- kind: generator
+  id: local
+  first_names: [Nia, Max]
+  last_names: [Cho]
+  age: [20, 60]

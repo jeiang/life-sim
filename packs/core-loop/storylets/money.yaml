@@ -4,6 +4,7 @@
 - id: missed-payment
   icon: 📬
   trigger: event
+  tags: [loan, custody-ok]
   scope: loan
   chance: 100%
   when: loan.missed > 0

@@ -24,10 +24,8 @@ Tuned with the [harness](../../docs/spec/harness.md): `pnpm harness --jobs 4 --l
 
 ## Results
 
-2,000 lives, seed 20260101, `--jobs 4`, 0 faults, median age at death 73, no storylet unfired:
+10,000 lives, seed 20260101, `--jobs 4`, 0 faults, median age at death 73, 242 of 242 storylets fired, decisions at least 1 / 2 / 3 in 89.9 / 49.9 / 29.7% of years, 0.2% empty slots:
 
-- `random` (500 lives): 73% take at least one trip, 1.66 trips per life, spread evenly over the tiers (vacations 0.14-0.18 per life per tier, cruises 0.15-0.19). Spending $4,085 per life, **0.27% of gross earnings**. The other profiles never open the travel menu.
-- Travel deaths: none in about 3,300 trips (expected 0.3).
-- Net worth, `random` travellers against non-travellers: median $86k against $7k at 40 and $463k against $115k at 65. Trips do not reduce wealth at the scale `random` plays them; the gap is selection (non-travellers die young, or never had $500).
-
-The 10,000-life numbers are in the PR report.
+- `random` (2,500 lives): 72% take at least one trip, 1.64 trips per life (vacations 0.15-0.17 per life per tier, cruises 0.15-0.19), no tier more than 1.3 times another. Spending $4,043 per life, **0.28% of gross earnings** (all profiles: 0.06%). The other profiles never open the travel menu.
+- Travel deaths: none in about 4,100 trips (expected 0.4). The 1-in-10,000 rate is fixed by the weights, which a unit test checks at every tier.
+- Net worth, `random` travellers against non-travellers: median $96k against $5k at 40 and $435k against $171k at 65. Trips do not cost wealth at the scale `random` plays them; the gap is selection (non-travellers die young, or never had $500).

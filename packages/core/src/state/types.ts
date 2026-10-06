@@ -289,4 +289,4 @@ export interface World {
   readonly packVersions: readonly PackVersion[];
 }
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;

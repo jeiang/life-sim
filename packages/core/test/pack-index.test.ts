@@ -17,6 +17,7 @@ const withQuality = (id: string, quality: string): PackBundle => ({
   occupations: [],
   items: [],
   loans: [],
+  cities: [],
   people: [],
   stats: [],
   qualities: [{ id: quality, type: "flag", default: false }] as never,

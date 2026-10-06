@@ -10,8 +10,25 @@ const STATUS_FIELD = "PVTSSF_lAHOAefT1c4BlzFNzhkefRY";
 const TODO = "f75ad846";
 const BLOCKED = "f650f8b4";
 
-module.exports = async ({ github, getOctokit, context, core }) => {
-  const projectGql = getOctokit(process.env.PROJECT_TOKEN).graphql;
+module.exports = async ({ github, context, core }) => {
+  // Projects v2 GraphQL with PROJECT_TOKEN (github-script only exposes the default token).
+  const projectGql = async (query, variables) => {
+    const res = await fetch("https://api.github.com/graphql", {
+      method: "POST",
+      headers: {
+        authorization: `bearer ${process.env.PROJECT_TOKEN}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+    const body = await res.json();
+    if (!res.ok || body.errors) {
+      throw new Error(
+        `Projects GraphQL failed: ${res.status} ${JSON.stringify(body.errors ?? body.message)}`,
+      );
+    }
+    return body.data;
+  };
   const { owner, repo } = context.repo;
   const slug = `${owner}/${repo}`;
 

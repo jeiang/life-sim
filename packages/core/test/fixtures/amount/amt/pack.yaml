@@ -5,7 +5,4 @@ currency:
   digits: 2
 stats:
   - { id: happiness, label: Happiness, start: [50, 100] }
-year:
-  slots: [0, 0]
-  cap: 3
 migrations: {}

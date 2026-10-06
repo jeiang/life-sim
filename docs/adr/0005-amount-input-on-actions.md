@@ -8,6 +8,6 @@ We rejected a separate `amount` log entry because it would let a log hold an act
 
 ## Consequences
 
-- `SCHEMA_VERSION` is 2. Version 1 saves load through a migration that only restamps worlds: both new fields are optional, and an old log or pending storylet never has an amount.
+- `SCHEMA_VERSION` is 3. Version 2 saves load through a migration that only restamps worlds: both new fields are optional, and an old log or pending storylet never has an amount.
 - Authors must keep `max` affordable themselves; the Core only enforces the minimum against cash at listing.
 - Any new place that opens an action with an amount (a market screen, a harness move) must pass an amount on the grid, and log it the same way.

@@ -1,6 +1,9 @@
+import { isGodLife } from "@life/core";
 import { Plus } from "lucide-preact";
+import { GodBadge } from "../components/GodFields.tsx";
 import { PageShell } from "../components/PageShell.tsx";
 import { money } from "../game/format.ts";
+import { godMode } from "../game/god.ts";
 import {
   continueLife,
   lives,
@@ -28,7 +31,10 @@ export function LivesPage() {
                   onClick={() => continueLife(l.id)}
                   class="min-h-11 w-full rounded-xl bg-surface-raised p-3 text-left"
                 >
-                  <span class="block font-bold">{l.name}</span>
+                  <span class="block font-bold">
+                    {l.name}
+                    {isGodLife(l.world) && <GodBadge />}
+                  </span>
                   <span class="block text-sm text-text-muted">
                     Age {p?.age ?? 0}
                     {p ? `, ${money(p.money)}` : ""}
@@ -47,6 +53,15 @@ export function LivesPage() {
         <Plus aria-hidden="true" class="size-5" />
         Start a new life
       </button>
+      {godMode.value && (
+        <button
+          type="button"
+          onClick={() => openPage("customlife")}
+          class="min-h-11 w-full rounded-xl bg-surface-raised px-4 font-semibold"
+        >
+          Custom life
+        </button>
+      )}
       {problems.length > 0 && (
         <p role="alert" class="text-sm text-danger">
           {problems.length} saved {problems.length === 1 ? "life" : "lives"}{" "}

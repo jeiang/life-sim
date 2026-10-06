@@ -1,5 +1,5 @@
 import type { FamilyDecl, PackBundle } from "../pack.ts";
-import type { PersonId, World } from "../state/types.ts";
+import type { CustomStart, PersonId, World } from "../state/types.ts";
 import {
   addJournalLine,
   clamp,
@@ -31,6 +31,11 @@ export interface NewLifeOptions {
   readonly familyName?: string;
   /** Overrides the manifest family (or the default) field by field. */
   readonly family?: Partial<FamilySpec>;
+  /**
+   * God mode custom life: fixes names, gender, starting stats and family size, and records a
+   * `start` entry as choice 0 so `replay` rebuilds it.
+   */
+  readonly custom?: CustomStart;
 }
 
 function resolve(
@@ -75,12 +80,17 @@ export function newLife(
   const gen = genId ? idx.generators.get(genId) : undefined;
   const pick = (xs: readonly string[] | undefined, fallback: string): string =>
     xs?.length ? (xs[rng.int(xs.length)] as string) : fallback;
-  const givenName = opts.givenName ?? pick(gen?.firstNames, "Player");
-  const familyName = opts.familyName ?? pick(gen?.lastNames, "Player");
+  const { custom } = opts;
+  const givenName =
+    custom?.givenName ?? opts.givenName ?? pick(gen?.firstNames, "Player");
+  const familyName =
+    custom?.familyName ?? opts.familyName ?? pick(gen?.lastNames, "Player");
   const stats: Record<string, number> = {};
   for (const s of idx.stats) {
     const [lo, hi] = s.start;
-    stats[s.id] = clamp(lo + rng.int(hi - lo + 1), 0, 100);
+    // Drawn even when overridden, so the streams after it match a plain life.
+    const drawn = clamp(lo + rng.int(hi - lo + 1), 0, 100);
+    stats[s.id] = custom ? clamp(custom.stats[s.id] ?? drawn, 0, 100) : drawn;
   }
   const qualities: Record<string, number | boolean> = {};
   for (const [id, q] of idx.qualities) qualities[id] = q.default;
@@ -88,14 +98,17 @@ export function newLife(
     ...p,
     givenName,
     familyName,
+    ...(custom ? { gender: custom.gender } : {}),
     stats,
     qualities,
   }));
   w = addJournalLine(w, 0, `${givenName} ${familyName} was born.`);
 
   // Family.
-  w = spawnFamily(w, idx, w.playerId, family, familyName);
-  return w;
+  w = spawnFamily(w, idx, w.playerId, family, familyName, custom);
+  return custom
+    ? { ...w, choiceLog: [...w.choiceLog, { t: "start", ...custom }] }
+    : w;
 }
 
 function spawnFamily(
@@ -104,12 +117,13 @@ function spawnFamily(
   playerId: PersonId,
   family: FamilySpec,
   familyName: string,
+  custom: CustomStart | undefined,
 ): World {
   let w = world;
   const parentRole = resolve(idx.roles, family.parent.role);
   const parentGen = resolve(idx.generators, family.parent.generator);
   if (parentRole && parentGen) {
-    for (let i = 0; i < family.parent.count; i++)
+    for (let i = 0; i < (custom?.parents ?? family.parent.count); i++)
       w = spawnPerson(w, idx, playerId, parentRole, parentGen, {
         familyName,
       })[0];
@@ -120,7 +134,7 @@ function spawnFamily(
     const [lo, hi] = family.sibling.count;
     const [w2, rng] = nextStream(w, 0, "birth/siblings");
     w = w2;
-    const n = lo + rng.int(hi - lo + 1);
+    const n = custom ? custom.siblings : lo + rng.int(hi - lo + 1);
     for (let i = 0; i < n; i++)
       w = spawnPerson(w, idx, playerId, sibRole, sibGen, { familyName })[0];
   }

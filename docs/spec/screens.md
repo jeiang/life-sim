@@ -49,6 +49,7 @@ Decided in [Screen kinds and main play layout](https://github.com/jeiang/life-si
 
 - Install card (iOS "Add to Home Screen" guidance; Android install button).
 - Settings: export lives, import lives, credits (from the build's credits manifest).
+- God mode (hidden, an app feature, not a Pack): tapping the build version row in Settings > About 7 times shows a code field; the code is checked as a SHA-256 hash (case-insensitive), and the unlock persists per install (local storage). While unlocked, Settings shows a switch to turn it off (unlocking again needs the taps and code) and an "Edit this life" link. The life list gets a "Custom life" form: first and last name, gender, each starting stat, parent and sibling counts. "Edit this life" opens the god-mode panel, which sets each stat (0 to 100) and money. A custom start is choice 0 of the life's choice log (`start`) and each edit is a `god-stat` or `god-money` entry, so replay, export and import reproduce the life; lives that have any of these show an "Edited" badge on the profile and in the life list.
 - Graveyard: finished lives as obituaries.
 - Life list: the ongoing lives to continue, plus "start a new life", which adds a life to the list (several lives, ADR 0003). Only death moves a life to the graveyard.
 

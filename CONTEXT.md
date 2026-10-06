@@ -136,6 +136,10 @@ _Avoid_: Tab, section
 
 ### Persistence
 
+**God mode**:
+A hidden, per-install unlock that lets the player pick a life's starting options (a custom life) and edit the player's stats and money mid-life. Each choice or edit is a choice log entry, so replay reproduces the life; such lives show an Edited badge. An app feature plus Core log entry types, not a Pack.
+_Avoid_: Cheat mode, debug mode
+
 **Graveyard**:
 The archive of finished lives, kept as obituaries only.
 _Avoid_: Cemetery, history, finished saves

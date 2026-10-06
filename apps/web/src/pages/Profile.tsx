@@ -1,6 +1,7 @@
 import { bundles } from "virtual:packs";
-import { listActions, netWorth } from "@life/core";
+import { isGodLife, listActions, netWorth } from "@life/core";
 import { PackIcon } from "../components/Emoji.tsx";
+import { GodBadge } from "../components/GodFields.tsx";
 import { MenuList } from "../components/MenuList.tsx";
 import { PageFrame } from "../components/PageFrame.tsx";
 import { StatBars } from "../components/StatPanel.tsx";
@@ -54,9 +55,11 @@ export function Profile() {
       <div class="px-4 py-3">
         <h2 class="text-lg font-bold">
           {p.givenName} {p.familyName}
+          {isPlayer && isGodLife(w) && <GodBadge />}
         </h2>
         <p class="text-text-muted">
           {isPlayer ? "You" : (roleLabel ?? "Acquaintance")}, age {p.age}
+          {p.gender ? `, ${p.gender}` : ""}
           {p.alive ? "" : " (deceased)"}
         </p>
       </div>

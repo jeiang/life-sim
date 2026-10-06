@@ -51,10 +51,15 @@ export interface Asset {
   readonly qualities: Readonly<Record<string, QualityValue>>;
 }
 
+/** Gender chosen in god mode; absent on generated people. */
+export type Gender = "male" | "female" | "nonbinary";
+export const GENDERS: readonly Gender[] = ["male", "female", "nonbinary"];
+
 export interface Person {
   readonly id: PersonId;
   readonly givenName: string;
   readonly familyName: string;
+  readonly gender?: Gender;
   readonly age: number;
   readonly alive: boolean;
   /** Pack-declared stats, integers 0-100. */
@@ -138,6 +143,19 @@ export interface Obituary {
   readonly education: readonly ObituaryOccupation[];
 }
 
+/** The starting options a god-mode "custom life" fixes (the `start` log entry). */
+export interface CustomStart {
+  readonly givenName: string;
+  readonly familyName: string;
+  readonly gender: Gender;
+  /** Starting value (0-100) per Pack stat id. */
+  readonly stats: Readonly<Record<string, number>>;
+  /** Parents spawned (the manifest family's count otherwise). */
+  readonly parents: number;
+  /** Siblings spawned (drawn from the manifest range otherwise). */
+  readonly siblings: number;
+}
+
 /**
  * One player choice, in the order made (ADR 0003). With the life seed the list replays the
  * life on the build that wrote it.
@@ -151,7 +169,13 @@ export type ChoiceEntry =
       readonly kind: string;
       readonly mode: "cash" | "loan";
     }
-  | { readonly t: "sell"; readonly asset: number };
+  | { readonly t: "sell"; readonly asset: number }
+  /** God mode: always entry 0 of a custom life; replay feeds it to `newLife`. */
+  | ({ readonly t: "start" } & CustomStart)
+  /** God mode: set one of the player's stats (0-100). */
+  | { readonly t: "god-stat"; readonly stat: string; readonly value: number }
+  /** God mode: set the player's money (minor units). */
+  | { readonly t: "god-money"; readonly value: number };
 
 export interface PackVersion {
   readonly id: string;

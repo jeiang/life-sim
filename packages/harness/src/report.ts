@@ -501,7 +501,9 @@ export function renderMarkdown(
     L.push(`| ${k} | ${v}% |`);
   L.push(
     "",
-    `Mean choice events per life by profile: ${Object.entries(r.choices.meanPerLifeByProfile)
+    `Mean choice events per life by profile: ${Object.entries(
+      r.choices.meanPerLifeByProfile,
+    )
       .map(([k, v]) => `${k} ${v}`)
       .join(" · ")}`,
   );

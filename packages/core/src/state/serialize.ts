@@ -284,6 +284,8 @@ function choiceLog(v: unknown, p: string): ChoiceEntry[] {
       }
       case "sell":
         return { t, asset: int(o.asset, `${q}.asset`) };
+      case "succeed":
+        return { t, heir: int(o.heir, `${q}.heir`) };
       case "start": {
         const cityId =
           o.cityId === undefined ? undefined : str(o.cityId, `${q}.cityId`);
@@ -327,6 +329,12 @@ export function deserializeWorld(text: string): World {
     schemaVersion: int(o.schemaVersion, "$.schemaVersion"),
     seed: int(o.seed, "$.seed"),
     playerId: int(o.playerId, "$.playerId"),
+    // Saves from before generations: founder, with the world clock at the player's age.
+    generation: optInt(o.generation, "$.generation") ?? 0,
+    worldYear:
+      optInt(o.worldYear, "$.worldYear") ??
+      persons.get(int(o.playerId, "$.playerId"))?.age ??
+      0,
     nextId: int(o.nextId, "$.nextId"),
     persons,
     relationships: arr(o.relationships, "$.relationships").map((x, i) => {

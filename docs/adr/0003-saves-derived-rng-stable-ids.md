@@ -8,3 +8,9 @@ Each life is autosaved to IndexedDB after every action and age-up as a World sna
 - A choice log replays exactly only on the build that wrote it. Replay is a debugging and test tool, not a save format.
 - Saves can be lost when the browser evicts storage, so export/import is the backup path. The app nudges for it when `navigator.storage.persist()` returns false.
 - The yearly cap never favours a Pack by id: when chance hits exceed the cap, the survivors come from a keyed draw (purpose key `year/chance-cap/<i>`), taken only when the cap actually bites, so years where it does not are unchanged. Only Pack `core-loop` may declare the singleton `year` and `family` manifest blocks, so a Pack sorting before it cannot silently replace them.
+
+## Amendment 2026-10-06: generations and the world-year clock
+
+- Streams are derived from (life seed, **generation**, age, purpose key, counter). Generation 0 uses the original input string, so existing lives replay unchanged; generation `n > 0` inserts `g<n>` after the seed, so an heir never replays the founder's draws at the same ages.
+- `World.generation` (0 for the founder, +1 per succession) and `World.worldYear` (+1 per age-up, never reset) are saved and hashed. Price series read `worldYear`, not the player's age, so markets do not restart when an heir takes over. Saves without the fields load as generation 0 with `worldYear` equal to the player's age (schema version 4 restamps them).
+- `succeed(world, heir)` moves the player pointer, bumps the generation, and resets `storyletLog`, the roll-site counters and the repeatable-action counters. It is logged as a `succeed` choice entry so replay reproduces it. Clearing `ended` and archiving the obituary stay with the dynasty flow.

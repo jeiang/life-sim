@@ -400,7 +400,10 @@ export function ageUp(world: World, bundles: readonly PackBundle[]): SimResult {
   if (world.ended) throw new Error("the life has ended");
   if (world.pending) throw new Error("a storylet is pending; choose first");
   const idx = indexBundles(bundles);
-  let w = appendChoice(world, { t: "age" });
+  let w = appendChoice(
+    { ...world, worldYear: world.worldYear + 1 },
+    { t: "age" },
+  );
   for (const p of personsInIdOrder(w)) {
     if (p.alive) w = updatePerson(w, p.id, (x) => ({ ...x, age: x.age + 1 }));
   }

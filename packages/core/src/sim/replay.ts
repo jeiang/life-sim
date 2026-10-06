@@ -5,6 +5,7 @@ import { ageUp, choose } from "./flow.ts";
 import { godSetMoney, godSetStat } from "./god.ts";
 import { type NewLifeOptions, newLife } from "./new-life.ts";
 import { purchase, sell } from "./purchase.ts";
+import { succeed } from "./succession.ts";
 
 /**
  * Rebuild a life from its seed and choice log (ADR 0003). Reproduces the same world hash
@@ -37,6 +38,9 @@ export function replay(
         break;
       case "sell":
         w = sell(w, bundles, c.asset).world;
+        break;
+      case "succeed":
+        w = succeed(w, c.heir);
         break;
       case "god-stat":
         w = godSetStat(w, c.stat, c.value);

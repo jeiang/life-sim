@@ -73,13 +73,17 @@ export class Rng {
  * Derive an independent stream for one roll site (ADR 0003). The inputs are
  * joined as `seed|age|counter|purposeKey` (purpose key last, so it may contain
  * any character) and expanded with cyrb128 into the four sfc32 state words.
+ * Generation 0 keeps that form; later generations insert `g<n>` after the seed
+ * (never numeric, so it cannot collide with a generation-0 key).
  */
 export function streamFor(
   seed: number,
   age: number,
   purposeKey: string,
   counter: number,
+  generation = 0,
 ): Rng {
-  const [a, b, c, d] = cyrb128(`${seed}|${age}|${counter}|${purposeKey}`);
+  const gen = generation === 0 ? "" : `|g${generation}`;
+  const [a, b, c, d] = cyrb128(`${seed}${gen}|${age}|${counter}|${purposeKey}`);
   return new Rng(a, b, c, d);
 }

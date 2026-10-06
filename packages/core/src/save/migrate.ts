@@ -68,11 +68,16 @@ const v1to2: Migration = (raw) =>
 const v2to3: Migration = (raw) =>
   mapWorlds(raw, (w) => ({ ...w, schemaVersion: 3 }));
 
+/** Version 4 adds `generation` and `worldYear` (loaded as generation 0, world year = the player's age when absent). */
+const v3to4: Migration = (raw) =>
+  mapWorlds(raw, (w) => ({ ...w, schemaVersion: 4 }));
+
 /** Migrations by the version they upgrade from. Append only; never edit a shipped step. */
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   0: v0to1,
   1: v1to2,
   2: v2to3,
+  3: v3to4,
 };
 
 /**

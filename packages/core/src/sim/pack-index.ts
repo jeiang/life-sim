@@ -1,17 +1,19 @@
-import type {
-  CompiledCity,
-  CompiledGenerator,
-  CompiledItemKind,
-  CompiledLoanKind,
-  CompiledOccupationKind,
-  CompiledRole,
-  CompiledStandard,
-  CompiledStorylet,
-  FamilyDecl,
-  LivingDecl,
-  PackBundle,
-  QualityDecl,
-  StatDecl,
+import {
+  type CompiledCity,
+  type CompiledGenerator,
+  type CompiledItemKind,
+  type CompiledLoanKind,
+  type CompiledOccupationKind,
+  type CompiledRole,
+  type CompiledStandard,
+  type CompiledStorylet,
+  DEFAULT_REPEAT,
+  type FamilyDecl,
+  type LivingDecl,
+  type PackBundle,
+  type QualityDecl,
+  type RepeatCurve,
+  type StatDecl,
 } from "../pack.ts";
 
 /** Lookup tables over a set of bundles, built once per bundle array. */
@@ -36,6 +38,8 @@ export interface PackIndex {
   readonly currency: { readonly symbol: string; readonly digits: number };
   /** Starting family from the first manifest that declares one. */
   readonly family: FamilyDecl | undefined;
+  /** Default repeat curve: the first manifest that sets one, else `DEFAULT_REPEAT`. */
+  readonly repeat: RepeatCurve;
   /** Event draw settings from the first manifest that declares them. */
   readonly year: {
     readonly slots: readonly [number, number];
@@ -86,6 +90,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
   let living: LivingDecl | undefined;
   const standards: CompiledStandard[] = [];
   const owners = new Map<string, string>();
+  let repeat: RepeatCurve | undefined;
   for (const b of bundles) {
     const put = <T>(map: Map<string, T>, kind: string, id: string, v: T) =>
       declare(map, owners, kind, id, v, b.id);
@@ -113,6 +118,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     if (b.currency) currency = b.currency;
     if (!year && b.year) year = b.year;
     if (!family && b.family) family = b.family;
+    if (!repeat && b.repeat) repeat = b.repeat;
   }
   const events = [...storylets.values()]
     .filter((s) => s.trigger === "event")
@@ -134,6 +140,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     qualities,
     currency,
     family,
+    repeat: repeat ?? DEFAULT_REPEAT,
     year: year ?? { slots: [0, 0], cap: Number.MAX_SAFE_INTEGER },
   };
   cache.set(bundles, index);

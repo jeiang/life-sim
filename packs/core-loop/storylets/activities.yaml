@@ -6,7 +6,7 @@
   menu: activities
   tags: [activity, fitness]
   when: age >= 12
-  cooldown: 1
+  repeatable: true
   text: "You head to the gym."
   outcomes:
     - weight: 55 + stat.health / 4
@@ -39,7 +39,7 @@
   menu: activities
   tags: [activity, learning]
   when: age >= 6
-  cooldown: 1
+  repeatable: true
   text: "You spend an afternoon at the library."
   outcomes:
     - weight: 60
@@ -66,7 +66,7 @@
   menu: activities
   tags: [activity, health]
   when: money >= 5000
-  cooldown: 1
+  repeatable: true
   text: "You book a check-up. The visit costs $50."
   outcomes:
     - weight: 25 + (100 - stat.health) / 2
@@ -95,7 +95,7 @@
   menu: activities
   tags: [activity, mind]
   when: age >= 10
-  cooldown: 1
+  repeatable: true
   text: "You find a quiet corner and sit still for a while."
   outcomes:
     - weight: 60
@@ -120,7 +120,7 @@
   menu: activities
   tags: [activity, outdoors]
   when: age >= 4
-  cooldown: 1
+  repeatable: true
   text: "You step outside for a walk."
   outcomes:
     - weight: 60

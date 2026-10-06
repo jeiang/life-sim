@@ -31,6 +31,7 @@ packs/<pack-id>/
 | `qualities` | Declared qualities: id, type (`int` with optional min/max, or `flag`), default. |
 | `living` | Living costs: `default` (standard chosen on moving out), `housing_share` (percent of the cost an owned home removes) and `home_category` (item kind category that counts as a home). Needs `standards`. |
 | `exclusivity` | Occupation exclusivity groups (for example `school`, `full-time`). |
+| `repeat` | Default curve for repeatable actions: `{ full: 10, reduced: 20, factor: 25% }` (see Repeatable actions). Any field left out takes the value shown. The first manifest that sets it wins. |
 | `year` | Event draw settings: flavour slot count range and the yearly event cap, `decisions` / `decisions_min_age` (decision slots per year, see Year draw), plus optional `quiet` lines the Core journals for a year in which nothing else happened (every age gets a journal group). |
 | `migrations` | Renamed ids (`old -> new`) and removed ids (with a fallback). |
 
@@ -76,6 +77,7 @@ packs/<pack-id>/
 | `chance` | Event that rolls independently each year at this probability. |
 | `weight` | Event that competes for a flavour slot with this weight. An event has exactly one of `chance` or `weight`. |
 | `once`, `cooldown`, `max_per_life` | Repeat limits. |
+| `repeatable`, `repeat` | Actions only. `repeatable: true` lets the action be done many times a year with diminishing returns (see Repeatable actions); it has no `cooldown`. `repeat` overrides the manifest curve field by field. |
 | `text` | Inline English, with `{placeholders}`. |
 | `choices` | Zero or more. Each has `label`, optional `when`, and `outcomes`. With no choices, the storylet has a single `outcomes` list. |
 | `outcomes` | Weighted list. Each has `weight`, optional `when`, `text`, `effects`, and optional `next`. |
@@ -130,6 +132,23 @@ An occupation with `confines: { menus, events }` (for prison, hospital; at least
 `start_occupation` and `end_occupation` still apply to the player; tag the actions that start or end confinement `custody-ok`. A `next:` chain is not checked after its first storylet opens. Several confining occupations combine: a lock applies when any of them sets it. The boolean name `confined` is true while the player holds any confining occupation, so other Packs' pay, schools and events can react (for example `when: not confined`).
 
 Names: `living.standard` (id of the lived standard), `living.cost` (this year's cost, 0 with parents or provided housing), `living.risk`. Function `standard_cost(standard)`: what that standard would cost the player now (city index and home waiver applied), for example `when: standard_cost(core-loop/rich) <= money`.
+## Repeatable actions
+
+A normal action is limited by `once`, `cooldown` or `max_per_life`. An action with `repeatable: true` has no `cooldown` (a build error) and stays selectable all year; its returns diminish instead. The Core counts uses per action storylet per year, and per bound person for `scope: person` actions (time with Mom and time with Dad count separately). The counters are life state (`World.uses`), reset at every age-up, rebuilt by replaying the choice log and part of the world hash.
+
+With the curve `{ full: F, reduced: R, factor: P }`:
+
+| Use in the year | Gains kept |
+|---|---|
+| 1 to F | all |
+| F+1 to R | P (default 25%) |
+| R+1 and later | none |
+
+Only **gains** shrink: positive `stat.x += n` (and `-= -n`) deltas and positive `relationship(p).closeness +=` deltas, each rounded toward zero. Money never scales (pay, prizes and costs apply in full), nor do costs, negative deltas, quality changes, `stat.x = n`, flags, journal lines, spawned people or any other effect, so repeating never gets safer. Only the outcomes of the repeatable storylet itself scale, not those of a storylet it chains to with `next`.
+
+From use F+1 the Core adds "You are getting tired of this." to the outcome text; from use R+1 it adds "It no longer helps this year." Packs can write their own with `uses_this_year`.
+
+`uses_this_year` (integer, readable in any storylet expression and text) is the number of uses of this storylet (and person) so far this year. In `when` it is the count before this use; once the action opens (its `text`, outcome `when`/`weight`/`text`/effects) it includes the current use, so the 11th use reads 11. It is 0 for non-repeatable storylets.
 
 ## Year draw
 
@@ -156,7 +175,7 @@ One small custom language is used for `when`, `weight`, `chance`, and effect sta
 
 - Literals: integers, percents (`2.5%`, compiled to basis points out of 10,000), strings, booleans, and content ids (`job/cashier`).
 - Operators: `+ - * /`, `mod` (modulo; `%` is used only by percent literals), comparisons, `and or not`, `in`, and the ternary `a ? b : c`.
-- Names (scope `person` also has `person.role` as a content id, `person.alive`): `age`, `money`, `confined` (boolean, see [Confinement](#confinement)), `stat.<id>`, `quality.<id>`, `loan.<field>` (`balance`, `payment`, `missed`) in storylets with `scope: loan`, and other scoped references inside storylets (for example `person.<field>` for a spawned person).
+- Names (scope `person` also has `person.role` as a content id, `person.alive`): `age`, `money`, `uses_this_year` (storylets), `confined` (boolean, see [Confinement](#confinement)), `stat.<id>`, `quality.<id>`, `loan.<field>` (`balance`, `payment`, `missed`) in storylets with `scope: loan`, and other scoped references inside storylets (for example `person.<field>` for a spawned person).
 - Functions: a fixed whitelist (for example `min`, `max`, `clamp`, `has`, `has_occupation`, `owns`, `years_in`, `role_closeness(role)`: average closeness to the living people the player holds that role toward, 0 with none; `role_count(role)`: how many of them are alive). No user-defined functions and no loops.
 - Integer-only. `/` truncates toward zero. A constant zero divisor is a build error. At runtime, division by zero gives 0 and overflow clamps to the safe-integer range. Dev builds and the balance harness assert on both.
 - No randomness inside expressions. Rolls happen only for `chance` and `weight`, and each roll site's RNG purpose key comes from the content id.

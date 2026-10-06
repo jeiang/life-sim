@@ -236,7 +236,7 @@
   menu: occupation
   tags: [education]
   when: has_occupation(core-loop/elementary-school) or has_occupation(core-loop/high-school) or has_occupation(core-loop/university-business) or has_occupation(core-loop/university-engineering) or has_occupation(core-loop/university-nursing) or has_occupation(core-loop/university-arts)
-  cooldown: 1
+  repeatable: true
   text: "You hit the books."
   outcomes:
     - weight: 70

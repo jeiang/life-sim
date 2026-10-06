@@ -120,6 +120,32 @@
         "minimum": 1,
         "type": "integer"
       },
+      "repeatable": {
+        "description": "Actions only: may be done many times a year with diminishing returns; excludes `cooldown`",
+        "type": "boolean"
+      },
+      "repeat": {
+        "additionalProperties": false,
+        "title": "Overrides the manifest's repeat curve for this action",
+        "type": "object",
+        "properties": {
+          "full": {
+            "minimum": 0,
+            "description": "Uses per year that give the full effect",
+            "type": "integer"
+          },
+          "reduced": {
+            "minimum": 0,
+            "description": "Uses per year up to which gains are reduced; later uses give none",
+            "type": "integer"
+          },
+          "factor": {
+            "pattern": "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$",
+            "description": "Share of each gain kept in the reduced range, for example `25%`",
+            "type": "string"
+          }
+        }
+      },
       "text": {
         "type": "string"
       },

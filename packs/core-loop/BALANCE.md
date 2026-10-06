@@ -41,6 +41,14 @@ All choice storylets are now drawn by `weight` into the yearly decision slots (`
 
 Result (10,000 lives, seed 20260101, 0 faults, median death age 74): at least 1 / 2 / 3 decisions in **89.9% / 49.9% / 29.8%** of years from age 5 (every profile within 0.3 points of that); slots with nothing eligible **0.2%** of years (1,960 slots); 115 choice events per life and 60 years with a choice. Top storylet 2.70% of decisions (`volunteer-weekend`), then `lottery-ticket` 2.62%; the rarest is `code-review-clash` (needs an office job). Every storylet fires. By stage (share of years with a choice): 5-12 90%, 13-17 90%, 18-29 90%, 30-49 90%, 50-64 88%, 65+ 84%.
 
+## Repeatable activities (issue #106)
+
+Gym, library, doctor, meditate, walk, study harder, spend time together and have a conversation are `repeatable` (default curve `repeat: { full: 10, reduced: 20, factor: 25% }`: uses 1-10 a year in full, 11-20 a quarter of each gain, 21+ none; money and harms never shrink). They no longer lock after one use per year.
+
+Result (10,000 lives, seed 20260101, 0 faults), before -> after: median death age 74 -> 74; net worth at 65 median $548,651 -> $539,233 (`random` at 40: $77,490 -> $72,765; `studious` and `spender` unchanged); degree 36.7% -> 36.8%; employment 64.0% -> 63.8%; loan defaults 19.5% -> 19.5%; decisions 89.9 / 49.9 / 29.8% unchanged; events per year 5.03; every storylet still fires; happiness and health medians by age unchanged.
+
+The profiles never reach the penalty ranges: `random` makes 0-2 moves a year, so no activity was used more than twice in a year (library 0.23 uses per year lived, most others under 0.1; see `Repeated activities` in the harness report). The 11+ and 21+ tiers are covered by unit tests, not by balance runs. One harness change was needed: `studious` now does each action at most once a year, as the old cooldown made it; without that it studied all year, never applied for work, and employment fell from 64% to 41%.
+
 ## Intentionally rare storylets
 
 These fired at least once in 10,000 lives but are rare on purpose:

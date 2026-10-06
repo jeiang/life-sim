@@ -177,6 +177,15 @@ export function applyPackMigrations(
       : { ...rec };
   }
 
+  const uses: Record<string, number> = {};
+  for (const [key, n] of Object.entries(world.uses)) {
+    const hash = key.indexOf("#");
+    const nb = r(hash < 0 ? key : key.slice(0, hash));
+    if (nb === null) continue;
+    const nk = hash < 0 ? nb : nb + key.slice(hash);
+    uses[nk] = (uses[nk] ?? 0) + n;
+  }
+
   const installed = new Map(bundles.map((b) => [b.id, String(b.version)]));
   const packVersions = [
     ...new Set([...world.packVersions.map((p) => p.id), ...installed.keys()]),
@@ -193,6 +202,7 @@ export function applyPackMigrations(
     relationships,
     pending,
     storyletLog,
+    uses,
     ended: world.ended ? obituary(world.ended, r) : null,
     packVersions,
   };

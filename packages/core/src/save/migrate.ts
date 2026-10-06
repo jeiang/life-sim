@@ -60,8 +60,15 @@ const v0to1: Migration = (raw) => {
   };
 };
 
+/** Version 2 adds `uses`, the per-year counters of repeatable actions (empty in an old save). */
+const v1to2: Migration = (raw) =>
+  mapWorlds(raw, (w) => ({ ...w, schemaVersion: 2, uses: w.uses ?? {} }));
+
 /** Migrations by the version they upgrade from. Append only; never edit a shipped step. */
-export const MIGRATIONS: Readonly<Record<number, Migration>> = { 0: v0to1 };
+export const MIGRATIONS: Readonly<Record<number, Migration>> = {
+  0: v0to1,
+  1: v1to2,
+};
 
 /**
  * Upgrade a raw (parsed JSON) save to `target` by running the migration chain. The result

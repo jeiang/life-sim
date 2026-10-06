@@ -126,6 +126,22 @@ describe("schema migrations", () => {
     expect(getPerson(mig, mig.playerId).age).toBe(getPerson(w, w.playerId).age);
   });
 
+  test("a v1 save without use counters loads with none", () => {
+    const w = play(3, 4, [0]);
+    const j = JSON.parse(serializeWorld(w));
+    delete j.uses;
+    j.schemaVersion = 1;
+    const raw = {
+      schemaVersion: 1,
+      lives: [{ id: "a", name: "A", world: j }],
+      graveyard: [],
+      packVersions: [],
+    };
+    const mig = parseSave(JSON.stringify(raw)).lives[0]?.world as World;
+    expect(mig.uses).toEqual({});
+    expect(mig.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+  });
+
   test("steps run in order up to the target", () => {
     const calls: number[] = [];
     const step =

@@ -37,6 +37,10 @@ export interface Scope {
     readonly value: number;
     readonly years: number;
   };
+  /** `uses_this_year`: uses of the running repeatable action so far this year, this one included. */
+  readonly uses?: number;
+  /** Share of every gain this outcome keeps, basis points (default 10000: all of it). */
+  readonly factorBp?: number;
   /** Persons bound by `spawn_person(...) as <name>` in the running outcome. */
   readonly bound?: ReadonlyMap<string, PersonId>;
 }
@@ -134,6 +138,7 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
     get(path: string): Value {
       if (path === "age") return subject.age;
       if (path === "money") return subject.money;
+      if (path === "uses_this_year") return scope.uses ?? 0;
       if (path.startsWith("stat.")) return subject.stats[path.slice(5)] ?? 0;
       if (path.startsWith("quality."))
         return qualityOf(subject, idx, path.slice(8)) as Value;

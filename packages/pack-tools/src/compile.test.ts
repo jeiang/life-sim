@@ -614,6 +614,39 @@ describe("build checks fail", () => {
     );
   });
 
+  test("repeatable actions: curve resolves, cooldown and events are rejected", () => {
+    const tips = (t: string) =>
+      t.replace(
+        "  trigger: action\n  menu: activities/job-board\n",
+        "  trigger: action\n  menu: activities/job-board\n  repeatable: true\n  repeat: { full: 3, factor: 40% }\n",
+      );
+    const r = compilePacks(fixture({ "base/storylets/work.yaml": tips }));
+    expect(r.ok).toBe(true);
+    if (r.ok)
+      expect(
+        r.bundles
+          .flatMap((b) => b.storylets)
+          .find((x) => x.id === "base/job-hunt-tips")?.repeat,
+      ).toEqual({ full: 3, factorBp: 4000 });
+    expectError(
+      {
+        "base/storylets/work.yaml": (t) =>
+          tips(t).replace(
+            "  repeatable: true\n",
+            "  repeatable: true\n  cooldown: 1\n",
+          ),
+      },
+      "a repeatable action has no 'cooldown'",
+    );
+    expectError(
+      {
+        "base/storylets/work.yaml": (t) =>
+          t.replace("trigger: event", "repeatable: true\n  trigger: event"),
+      },
+      "'repeatable' is only valid on action storylets",
+    );
+  });
+
   test("action scope and target mistakes are reported", () => {
     expectError(
       {

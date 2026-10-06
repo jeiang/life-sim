@@ -14,7 +14,7 @@ Every choice comes from the seeded RNG, so a run is reproducible from its seed.
 
 | Profile | Behaviour |
 |---|---|
-| `random` | Uniform random choices; 0-2 random eligible actions per year |
+| `random` | Uniform random choices; 0-2 random eligible actions per year, repeatable ones included (and repeated) |
 | `studious` | Prefers study actions and university; accepts job offers |
 | `spender` | Buys whenever affordable, takes loans when offered |
 | `idle` | Takes no voluntary actions; answers events at random |
@@ -40,6 +40,7 @@ It **reports** without failing, in `report.md` and `report.json` in the check ou
 - loan defaults and repossessions;
 - living standards: share of lives with parents or at each standard by decade of age, and the homeless share of years lived on their own, overall and per profile;
 - housing: age at moving out, share moved out and kicked out (of lives reaching 18), and share still living with their parents at 30 and 40, overall and per profile;
+- repeated activities: per repeatable action, uses per year lived, mean and maximum uses in a year it was used, and the share of those years past the full-effect and reduced ranges;
 - stat distributions by age.
 
 Balance bands that fail CI (for example a median age at death outside a range) can be added once content settles. Until then, balance findings guide authoring but never block merges.

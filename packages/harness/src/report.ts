@@ -1,4 +1,4 @@
-import type { PackBundle } from "@life/core";
+import { DEFAULT_REPEAT, type PackBundle, type RepeatCurve } from "@life/core";
 import type { ProfileName } from "./profiles.ts";
 import type { Fault, LifeResult } from "./run.ts";
 
@@ -95,6 +95,30 @@ export interface Report {
     readonly byProfile: Record<
       string,
       { atLeast1: number; atLeast2: number; atLeast3: number }
+    >;
+  };
+  /**
+   * Repeatable actions (those used at least once): uses per year lived, and how the years
+   * with at least one use were spread. A "binding" is one action on one person (or alone).
+   */
+  readonly repeats: {
+    /** Age-ups over which `perYear` is taken. */
+    readonly years: number;
+    readonly byActivity: Record<
+      string,
+      {
+        uses: number;
+        /** Uses per age-up over all lives. */
+        perYear: number;
+        /** Binding-years with at least one use. */
+        usedYears: number;
+        /** Mean uses in a binding-year with any. */
+        meanWhenUsed: number;
+        maxInYear: number;
+        /** Percent of used binding-years past the full-effect and the reduced range (11+, 21+ for the default curve). */
+        pastFull: number;
+        pastReduced: number;
+      }
     >;
   };
   readonly death: {
@@ -209,6 +233,11 @@ export class Aggregate {
   private readonly profileDec = new Map<string, number[]>();
   private choiceEvents5 = 0;
   private years5 = 0;
+  private repeatYears = 0;
+  private readonly repeatUse = new Map<
+    string,
+    { uses: number; years: number; max: number; full: number; reduced: number }
+  >();
   private readonly stageYears: number[] = STAGES.map(() => 0);
   private readonly stageHit: number[] = STAGES.map(() => 0);
   private readonly profileChoice = new Map<string, number[]>();
@@ -255,8 +284,15 @@ export class Aggregate {
   /** Per profile (and "all"): [reached18, movedOut, kickedOut, reached30, with30, reached40, with40]. */
   private readonly home = new Map<string, number[]>();
 
+  /** Effective repeat curve per repeatable action, to count years past it. */
+  private readonly curves = new Map<string, RepeatCurve>();
+
   constructor(bundles: readonly PackBundle[]) {
     this.bundles = bundles;
+    const base = bundles.find((b) => b.repeat)?.repeat ?? DEFAULT_REPEAT;
+    for (const b of bundles)
+      for (const s of b.storylets)
+        if (s.repeatable) this.curves.set(s.id, { ...base, ...s.repeat });
   }
 
   add(r: LifeResult): void {
@@ -316,6 +352,26 @@ export class Aggregate {
         }
       this.decEmpty += y.empty;
       if (y.empty > 0) this.decEmptyYears++;
+    }
+    for (const year of r.yearUses) {
+      this.repeatYears++;
+      for (const [k, n] of Object.entries(year)) {
+        const id = k.split("#")[0] as string;
+        const c = this.curves.get(id);
+        const u = this.repeatUse.get(id) ?? {
+          uses: 0,
+          years: 0,
+          max: 0,
+          full: 0,
+          reduced: 0,
+        };
+        this.repeatUse.set(id, u);
+        u.uses += n;
+        u.years++;
+        u.max = Math.max(u.max, n);
+        if (c && n > c.full) u.full++;
+        if (c && n > c.reduced) u.reduced++;
+      }
     }
     for (const n of r.yearEvents) {
       this.eventHist[String(n)] = (this.eventHist[String(n)] ?? 0) + 1;
@@ -500,6 +556,27 @@ export class Aggregate {
                 atLeast1: pct(v[0] as number, v[3] as number),
                 atLeast2: pct(v[1] as number, v[3] as number),
                 atLeast3: pct(v[2] as number, v[3] as number),
+              },
+            ]),
+        ),
+      },
+      repeats: {
+        years: this.repeatYears,
+        byActivity: Object.fromEntries(
+          [...this.repeatUse]
+            .sort((a, b) => b[1].uses - a[1].uses || (a[0] < b[0] ? -1 : 1))
+            .map(([id, u]) => [
+              id,
+              {
+                uses: u.uses,
+                perYear:
+                  Math.round((u.uses / Math.max(1, this.repeatYears)) * 1000) /
+                  1000,
+                usedYears: u.years,
+                meanWhenUsed: Math.round((u.uses / u.years) * 100) / 100,
+                maxInYear: u.max,
+                pastFull: pct(u.full, u.years),
+                pastReduced: pct(u.reduced, u.years),
               },
             ]),
         ),
@@ -701,6 +778,19 @@ export function renderMarkdown(
       .map(([k, v]) => `${k} ${v}`)
       .join(" · ")}`,
   );
+  L.push(
+    "",
+    "## Repeated activities",
+    "",
+    `Uses of repeatable actions over ${r.repeats.years} age-ups. A binding-year is one action (on one person) in one year.`,
+    "",
+    "| activity | uses | uses per year | binding-years used | mean uses when used | max in a year | past full | past reduced |",
+    "|---|---|---|---|---|---|---|---|",
+  );
+  for (const [id, u] of Object.entries(r.repeats.byActivity))
+    L.push(
+      `| ${id} | ${u.uses} | ${u.perYear} | ${u.usedYears} | ${u.meanWhenUsed} | ${u.maxInYear} | ${u.pastFull}% | ${u.pastReduced}% |`,
+    );
   L.push(
     "",
     "## Death",

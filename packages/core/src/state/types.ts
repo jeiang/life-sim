@@ -228,10 +228,15 @@ export interface World {
   readonly ended: Obituary | null;
   /** Storylet firing counts, keyed by storylet id, plus `#<scope id>` when scoped. */
   readonly storyletLog: Readonly<Record<string, StoryletRecord>>;
+  /**
+   * Uses of repeatable actions this year, keyed like `storyletLog` (`<id>` or `<id>#<person>`).
+   * Cleared at every age-up; read by `uses_this_year` and the diminishing-returns curve.
+   */
+  readonly uses: Readonly<Record<string, number>>;
   /** Every player choice so far, in order; see `replay`. */
   readonly choiceLog: readonly ChoiceEntry[];
   /** Packs (and versions) the save was made with, sorted by id. */
   readonly packVersions: readonly PackVersion[];
 }
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;

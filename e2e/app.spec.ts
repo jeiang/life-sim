@@ -135,6 +135,55 @@ test("document does not scroll and the bottom bar stays pinned on a phone", asyn
   expect(await noScroll()).toBe(true);
 });
 
+test("document stays unscrollable after dialogs and the shell disables double-tap zoom", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  for (let i = 0; i < 6; i++) {
+    if (await ageButton(page).isDisabled()) break;
+    await ageButton(page).click();
+    await resolvePending(page);
+  }
+  const pos = () =>
+    page.evaluate(() => ({
+      win: [window.scrollX, window.scrollY],
+      html: document.documentElement.scrollTop,
+      body: document.body.scrollTop,
+      bodyPosition: getComputedStyle(document.body).position,
+      htmlOverflow: getComputedStyle(document.documentElement).overflow,
+    }));
+  const p = await pos();
+  expect(p.win).toEqual([0, 0]);
+  expect(p.html).toBe(0);
+  expect(p.body).toBe(0);
+  expect(p.bodyPosition).toBe("fixed");
+  expect(p.htmlOverflow).toBe("hidden");
+  // A programmatic scroll attempt (what iOS focus/zoom does) must not move the document.
+  await page.evaluate(() => window.scrollTo(0, 200));
+  expect((await pos()).win).toEqual([0, 0]);
+  const shell = page.locator("#app > div");
+  await expect(shell).toHaveCSS("touch-action", "manipulation");
+});
+
+test("built CSS keeps a valid root -apple-system-body rule (Dynamic Type)", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/");
+  const href = await page.evaluate(
+    () =>
+      document.querySelector<HTMLLinkElement>('link[rel="stylesheet"]')?.href,
+  );
+  expect(href).toBeTruthy();
+  const css = await (await request.get(href as string)).text();
+  // A system-font keyword must be the whole `font` value; a trailing family invalidates it.
+  expect(css).toMatch(/:root\{font:-apple-system-body;/);
+  expect(css).not.toMatch(/-apple-system-body\s*,/);
+  // Nothing sets the root size in px after it, and the rule is unlayered (wins over preflight).
+  expect(css).not.toMatch(/(?:html|:root)\{[^}]*font-size:\d+px/);
+});
+
 test("profile and net-worth chart open, describe the data", async ({
   page,
 }) => {

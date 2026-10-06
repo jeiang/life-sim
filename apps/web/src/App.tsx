@@ -48,7 +48,7 @@ function Screen() {
 export function App() {
   if (!ready.value) return null;
   return (
-    <div class="@container relative mx-auto h-dvh max-w-md overflow-hidden bg-surface text-text">
+    <div class="@container relative mx-auto h-dvh touch-manipulation max-w-md overflow-hidden bg-surface text-text">
       <div class="flex h-full flex-col overflow-y-auto overscroll-none pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]">
         <div class="h-[env(safe-area-inset-top)] shrink-0 bg-primary" />
         <UpdateBanner />

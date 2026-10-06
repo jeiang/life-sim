@@ -9,6 +9,7 @@ import {
   updatePerson,
 } from "../state/world.ts";
 import { settleLiving } from "./living.ts";
+import { settleMarket } from "./market.ts";
 import { dropAsset, endOccupation, evalInt } from "./ops.ts";
 import type { PackIndex } from "./pack-index.ts";
 import { formatMoney } from "./text.ts";
@@ -17,7 +18,7 @@ import { formatMoney } from "./text.ts";
 export const REPOSSESSION_MISSES = 3;
 
 /**
- * Settlement (ADR 0003): occupations pay or charge, then the player pays living costs, then loans take payments (with default
+ * Settlement (ADR 0003): occupations pay or charge, then market series move and bonds pay, then the player pays living costs, then loans take payments (with default
  * and repossession), then assets change value; each in person id, then item id order.
  */
 export function settle(world: World, idx: PackIndex): World {
@@ -26,6 +27,7 @@ export function settle(world: World, idx: PackIndex): World {
     .filter((p) => p.alive)
     .map((p) => p.id);
   for (const id of ids) w = settleOccupations(w, idx, id);
+  w = settleMarket(w, idx);
   w = settleLiving(w, idx);
   for (const id of ids) w = settleLoans(w, idx, id);
   for (const id of ids) w = settleAssets(w, idx, id);

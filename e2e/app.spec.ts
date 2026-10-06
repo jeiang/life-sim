@@ -409,3 +409,40 @@ test("an action with an amount opens the shared picker, then runs with the amoun
     page.locator(".journal-line", { hasText: "You bet $4.00." }),
   ).toBeVisible();
 });
+
+test("the market screen buys and sells through the shared amount picker", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const life = (fn: string, ...args: number[]) =>
+    page.evaluate(
+      ([f, a]) =>
+        (
+          window as unknown as Record<
+            string,
+            Record<string, (...x: number[]) => void>
+          >
+        ).__life?.[f as string]?.(...(a as number[])),
+      [fn, args] as const,
+    );
+  await life("addMarket");
+  await life("setMoney", 100000);
+  const dialog = page.getByRole("dialog");
+  await page
+    .getByRole("navigation", { name: "Menus" })
+    .getByRole("button", { name: "Assets" })
+    .click();
+  await page.getByRole("button", { name: /Investments/ }).click();
+  await page.getByRole("button", { name: /E2E fund/ }).click();
+  await expect(page.getByTestId("holding")).toHaveText("You hold none.");
+  await expect(page.getByRole("img", { name: /price by year/ })).toBeVisible();
+  await page.getByRole("button", { name: "Buy", exact: true }).click();
+  await dialog.getByRole("spinbutton").fill("5000");
+  await dialog.getByRole("button", { name: "Confirm" }).click();
+  await expect(page.getByTestId("holding")).toContainText(
+    "You hold 0.5 units worth $50.00",
+  );
+  await page.getByRole("button", { name: "Sell all" }).click();
+  await expect(page.getByTestId("holding")).toHaveText("You hold none.");
+});

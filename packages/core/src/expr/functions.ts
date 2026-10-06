@@ -27,6 +27,20 @@ export const FUNCTIONS = {
   in_group: { params: ["group"], returns: "bool" },
   years_in_group: { params: ["group"], returns: "int" },
   count_role: { params: ["id", "int", "int"], returns: "int" },
+  /** Market kinds. Price of one whole unit now, minor units. */
+  price: { params: ["id"], returns: "int" },
+  /** One-year price change, basis points. */
+  change: { params: ["id"], returns: "int" },
+  /** Units the player holds, x10^4 (10000 = one whole unit). */
+  units: { params: ["id"], returns: "int" },
+  /** Current value of the player's holding, minor units. */
+  holding_value: { params: ["id"], returns: "int" },
+  /** Cash paid for the units still held, minor units. */
+  cost_basis: { params: ["id"], returns: "int" },
+  /** Years since the player first invested in the kind (0 with no holding). */
+  holding_years: { params: ["id"], returns: "int" },
+  /** The return, basis points, the next settlement will apply (drawn a year in advance). */
+  forecast: { params: ["id"], returns: "int" },
 } as const satisfies Record<string, Signature>;
 
 /** Effect calls (statements with arguments). `spawn_person(...) as <name>` is parsed separately. */
@@ -52,6 +66,8 @@ export const EFFECTS = {
   merge_money: { params: [], returns: "bool" },
   /** Choose a standard of living (ignored while living with parents). */
   set_standard: { params: ["id"], returns: "bool" },
+  /** Buy (positive) or sell (negative) that much cash worth of a market kind. */
+  trade: { params: ["id", "int"], returns: "bool" },
 } as const satisfies Record<string, Signature>;
 
 export type AssignOp = "=" | "+=" | "-=";

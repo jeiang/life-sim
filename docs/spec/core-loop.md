@@ -124,6 +124,10 @@ About 60, plus NPC and mortality storylets:
 - Core carries a generation index (0 for the founder) in every RNG stream derivation, and a world-year counter that advances once per age-up and keeps running across generations. Series read the world year, not the player's age.
 - `succeed(world, heirId)` is the Core primitive that moves the player pointer to a living heir: generation +1, and the storylet firing log, roll-site counters and repeatable-action counters reset. The core-loop Pack does not use it yet (no heir above).
 
+## Market and holdings
+
+The Assets menu has an **Investments** screen (`assets/investments`, age 18+, shown when a loaded Pack has market kinds): per kind the price, one-year change and holding. A row opens the price chart (by world year) with Buy, Sell and Sell all; Buy and Sell use the shared amount picker (whole currency units). Each trade is a `trade` choice-log entry and a journal line. Trading is locked while confined. Holdings count in net worth. Shortfall at settlement does not sell holdings (epic #57); `tradeHolding` lets later Core code do it. See [pack-format](pack-format.md#market-kinds).
+
 ## Chart
 
 The first chart series is net worth over age (cash plus asset values minus loan balances), shown from the Assets menu and the player profile.

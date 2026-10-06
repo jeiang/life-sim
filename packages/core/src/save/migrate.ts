@@ -72,12 +72,17 @@ const v2to3: Migration = (raw) =>
 const v3to4: Migration = (raw) =>
   mapWorlds(raw, (w) => ({ ...w, schemaVersion: 4 }));
 
+/** Version 5 adds `market` (price series) and `Person.holdings`; both load empty from an old save, and series start at the next settlement. */
+const v4to5: Migration = (raw) =>
+  mapWorlds(raw, (w) => ({ ...w, schemaVersion: 5 }));
+
 /** Migrations by the version they upgrade from. Append only; never edit a shipped step. */
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   0: v0to1,
   1: v1to2,
   2: v2to3,
   3: v3to4,
+  4: v4to5,
 };
 
 /**

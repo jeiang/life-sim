@@ -108,7 +108,8 @@ export function listShop(
   const rows: ShopRow[] = [];
   const kinds = [...idx.items.values()].sort((a, b) => cmp(a.id, b.id));
   for (const k of kinds) {
-    if (category !== undefined && k.category !== category) continue;
+    if (k.market || (category !== undefined && k.category !== category))
+      continue;
     const q = quote(world, idx, k.id);
     const cash = rejection(world, q, "cash");
     const loan = rejection(world, q, "loan");
@@ -146,6 +147,8 @@ export function purchase(
   mode: "cash" | "loan",
 ): SimResult {
   const idx = indexBundles(bundles);
+  if (idx.markets.has(itemKindId))
+    throw new RangeError(`'${itemKindId}' is traded, not bought`);
   const q = quote(world, idx, itemKindId);
   const why = rejection(world, q, mode);
   if (why) throw new Error(why);

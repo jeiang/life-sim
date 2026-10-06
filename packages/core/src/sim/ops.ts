@@ -28,6 +28,7 @@ import {
   updatePerson,
 } from "../state/world.ts";
 import { makeEnv, type Scope } from "./env.ts";
+import { portfolioValue } from "./market.ts";
 import type { PackIndex } from "./pack-index.ts";
 import { nameOf } from "./text.ts";
 
@@ -58,9 +59,9 @@ export function clockAge(world: World): number {
   return getPerson(world, world.playerId).age;
 }
 
-/** Cash plus asset values minus loan balances. */
-export function netWorth(person: Person): number {
-  let n = person.money;
+/** Cash plus asset values and market holdings minus loan balances. */
+export function netWorth(world: World, person: Person): number {
+  let n = person.money + portfolioValue(world, person.id);
   for (const a of person.assets) n += a.value;
   for (const l of person.loans) n -= l.balance;
   return n;
@@ -327,7 +328,7 @@ export function endLife(
     familyName: p.familyName,
     age: p.age,
     cause,
-    netWorth: netWorth(p),
+    netWorth: netWorth(world, p),
     career: all
       .filter((x) => x.group !== "school")
       .map((x) => obitOccupation(x.o, p.age)),

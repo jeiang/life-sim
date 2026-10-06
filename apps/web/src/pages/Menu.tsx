@@ -31,6 +31,7 @@ import {
   type PageId,
   sub,
 } from "../nav.ts";
+import { MARKET_MIN_AGE, MarketScreen } from "./Market.tsx";
 
 export type MenuId = Extract<
   PageId,
@@ -47,6 +48,7 @@ const TITLES: Record<MenuId, string> = {
 export const isMenuId = (id: PageId): id is MenuId => id in TITLES;
 
 const SHOPPING = "assets/shopping";
+const INVESTMENTS = "assets/investments";
 
 interface Confirm {
   text: string;
@@ -150,6 +152,13 @@ export function MenuPage(props: { id: MenuId }) {
     </div>
   );
 
+  if (path === INVESTMENTS)
+    return (
+      <Shell title="Investments">
+        <MarketScreen />
+      </Shell>
+    );
+
   // Shopping: the shop's item rows.
   if (path === SHOPPING) {
     const rows: MenuRow[] = listShop(w, bundles).map((s) => ({
@@ -245,6 +254,16 @@ export function MenuPage(props: { id: MenuId }) {
               chevron: true,
               onSelect: () => openSub(SHOPPING),
             },
+            ...(packIndex.markets.size > 0 && player.value.age >= MARKET_MIN_AGE
+              ? [
+                  {
+                    key: "investments",
+                    label: "Investments",
+                    chevron: true,
+                    onSelect: () => openSub(INVESTMENTS),
+                  },
+                ]
+              : []),
             {
               key: "chart",
               label: "Net worth chart",
@@ -284,7 +303,9 @@ export function MenuPage(props: { id: MenuId }) {
   );
   const submenus =
     path === props.id
-      ? listSubmenus(bundles, props.id).filter((s) => s !== SHOPPING)
+      ? listSubmenus(bundles, props.id).filter(
+          (s) => s !== SHOPPING && s !== INVESTMENTS,
+        )
       : [];
   if (actions.length > 0)
     sections.push(

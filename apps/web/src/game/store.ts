@@ -1,6 +1,7 @@
 import { bundles } from "virtual:packs";
 import {
   ageUp,
+  type CompiledItemKind,
   type CompiledStorylet,
   type CustomStart,
   canAgeUp,
@@ -26,6 +27,7 @@ import {
   type SavedLife,
   type ShopRow,
   sell,
+  trade,
   type World,
 } from "@life/core";
 import { computed, effect, signal } from "@preact/signals";
@@ -406,6 +408,25 @@ if (import.meta.env.VITE_E2E) {
     playFixedLives(seeds: readonly number[]): string[] {
       return seeds.map((s) => playFixedLife(bundles, s));
     },
+    /**
+     * Add a market kind (`e2e-fund`, $100.00 a unit) and an age-18 player to the loaded Pack, so
+     * the market screen has something to trade (core-loop has no market kinds).
+     */
+    addMarket(): void {
+      (packIndex.markets as Map<string, CompiledItemKind>).set("e2e-fund", {
+        id: "e2e-fund",
+        label: "E2E fund",
+        category: "investments",
+        price: 0,
+        value: 0,
+        market: { start: 10000, driftBp: 500, volBp: 0 },
+      } as CompiledItemKind);
+      const w = world.value;
+      const persons = new Map(w.persons);
+      const p = persons.get(w.playerId);
+      if (p) persons.set(w.playerId, { ...p, age: 18 });
+      world.value = { ...w, persons };
+    },
     /** Set the player's cash, minor units. */
     setMoney(n: number): void {
       const w = world.value;
@@ -452,6 +473,11 @@ export function runMenuAction(
       apply(() => runAction(world.value, bundles, actionId, target, amount)),
   });
   return null;
+}
+
+/** Buy (positive) or sell (negative) `amount` of cash worth of a market kind; error message or null. */
+export function tradeKind(kindId: string, amount: number): string | null {
+  return apply(() => trade(world.value, bundles, kindId, amount));
 }
 
 /** God mode: set a player stat (0-100). */

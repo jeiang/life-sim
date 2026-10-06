@@ -967,3 +967,91 @@ describe("schema export", () => {
     }
   });
 });
+
+describe("market kinds", () => {
+  const MARKET = [
+    "- id: fund",
+    "  label: Fund",
+    "  category: investments",
+    "  market: { start: 10000, drift: -1.5%, vol: 12%, crash: { chance: 5%, drop: 30% } }",
+    "- id: gilt",
+    "  label: Gilt",
+    "  category: investments",
+    "  market:",
+    "    start: 10000",
+    "    drift: 0%",
+    "    vol: 1%",
+    "    beta: { of: fund, factor: 50% }",
+    "    bond: { term: 5, coupon: 3%, default: 0.5% }",
+    "",
+  ].join("\n");
+  const BUY = [
+    "- id: buy-fund",
+    "  trigger: action",
+    "  menu: assets/investments",
+    "  amount: { min: 100, max: money, step: 100 }",
+    "  outcomes:",
+    "    - effects:",
+    "        - trade(fund, amount)",
+    "        - quality.nothing = price(fund) + units(fund) + forecast(fund)",
+    "",
+  ].join("\n");
+  const edits = (market = MARKET, buy = BUY) => ({
+    "base/items/market.yaml": market,
+    "base/storylets/buy-fund.yaml": buy,
+  });
+
+  test("compiles percents (signed drift, default total loss) and resolves ids", () => {
+    const r = compilePacks(
+      fixture(edits(MARKET, BUY.replace(/ {8}- quality.*\n/, ""))),
+    );
+    expect(r.diagnostics.map(formatDiagnostic)).toEqual([]);
+    const items = r.bundles.find((b) => b.id === "base")?.items ?? [];
+    expect(items.find((i) => i.id === "base/fund")?.market).toMatchObject({
+      start: 10000,
+      driftBp: -150,
+      volBp: 1200,
+      crash: { chanceBp: 500, dropBp: 3000 },
+    });
+    expect(items.find((i) => i.id === "base/gilt")?.market).toMatchObject({
+      beta: { of: "base/fund", factorBp: 5000 },
+      bond: { termYears: 5, couponBp: 300, defaultBp: 50, lossBp: 10000 },
+    });
+  });
+
+  test("market kinds reject price, value and loan; plain items still need them", () => {
+    expectError(
+      edits(MARKET.replace("  market: {", "  price: 5\n  market: {")),
+      "a market kind has no 'price'",
+    );
+    expectError(
+      {
+        "base/items/market.yaml": "- id: plain\n  label: P\n  category: c\n",
+      },
+      "needs 'price' and 'value'",
+    );
+  });
+
+  test("beta must name a market kind and may not loop", () => {
+    expectError(
+      edits(MARKET.replace("of: fund", "of: phone")),
+      "is a item, expected market",
+    );
+    expectError(
+      edits(
+        MARKET.replace(
+          "  market: { start: 10000, drift: -1.5%,",
+          "  market: { beta: { of: gilt, factor: 10% }, start: 10000, drift: -1.5%,",
+        ),
+      ),
+      "beta chain loops back",
+    );
+  });
+
+  test("trade and the price functions take market kinds only", () => {
+    expectError(
+      edits(MARKET, BUY.replace("trade(fund,", "trade(phone,")),
+      "expected market",
+    );
+  });
+});

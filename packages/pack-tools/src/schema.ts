@@ -355,18 +355,78 @@ export const OccupationSchema = obj(
   "Occupation kind",
 );
 
+const Percent = Type.String({
+  pattern: "^\\d+(\\.\\d{1,2})?%$",
+  description: "A percent literal, for example `2.5%`",
+});
+const SignedPercent = Type.String({
+  pattern: "^-?\\d+(\\.\\d{1,2})?%$",
+  description: "A percent literal that may be negative, for example `-1.5%`",
+});
+
+const MarketSchema = obj(
+  {
+    start: Type.Integer({
+      minimum: 1,
+      description: "Starting price of one whole unit, minor units",
+    }),
+    drift: SignedPercent,
+    vol: Percent,
+    beta: Type.Optional(
+      obj(
+        {
+          of: Ref,
+          factor: SignedPercent,
+        },
+        "Follows another market kind: its yearly return times `factor` is added",
+      ),
+    ),
+    crash: Type.Optional(
+      obj(
+        { chance: Percent, drop: Percent },
+        "Yearly chance of a crash that takes `drop` off the return",
+      ),
+    ),
+    jump: Type.Optional(
+      obj(
+        { chance: Percent, multiple: Type.Integer({ minimum: 2 }) },
+        "Yearly chance the price is multiplied by `multiple`",
+      ),
+    ),
+    delist: Type.Optional(
+      Type.String({
+        pattern: "^\\d+(\\.\\d{1,2})?%$",
+        description: "Yearly chance the price falls to 0 for good",
+      }),
+    ),
+    bond: Type.Optional(
+      obj(
+        {
+          term: Type.Integer({ minimum: 1, description: "Years to maturity" }),
+          coupon: Percent,
+          default: Percent,
+          loss: Type.Optional(Percent),
+        },
+        "Government bond: `coupon` yearly on the principal, principal back at maturity, `default` is the yearly issuer default chance and `loss` the share of principal lost (default 100%)",
+      ),
+    ),
+  },
+  "Market block: the kind is traded by amount (`trade`) instead of bought, and has a price series per world year",
+);
+
 export const ItemSchema = obj(
   {
     id: Id,
     label: Label,
     icon: Type.Optional(Icon),
     category: Type.String({ minLength: 1 }),
-    price: Src,
-    value: Src,
+    price: Type.Optional(Src),
+    value: Type.Optional(Src),
     requires: Type.Optional(Src),
     loan: Type.Optional(Ref),
+    market: Type.Optional(MarketSchema),
   },
-  "Item kind",
+  "Item kind. A kind with `market` has no `price`, `value` or `loan`; any other has `price` and `value`",
 );
 
 export const LoanSchema = obj(

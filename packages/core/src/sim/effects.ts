@@ -11,6 +11,7 @@ import {
 } from "../state/world.ts";
 import { makeEnv, qualityOf, type Scope } from "./env.ts";
 import { livesWithParents, startLivingOnOwn } from "./living.ts";
+import { grantUnit, removeHolding, tradeHolding } from "./market.ts";
 import {
   dropAsset,
   endLife,
@@ -158,10 +159,23 @@ function applyEffect(
             termYears: kind.termYears,
           })[0];
         }
-        case "grant_asset":
-          return grantAsset(w, idx, who, str(args[0], w, idx, scope))[0];
+        case "trade":
+          return tradeHolding(
+            w,
+            idx,
+            who,
+            str(args[0], w, idx, scope),
+            evalInt(args[1] as Expr, w, idx, scope),
+          )[0];
+        case "grant_asset": {
+          const kind = str(args[0], w, idx, scope);
+          return idx.markets.has(kind)
+            ? grantUnit(w, idx, who, kind)
+            : grantAsset(w, idx, who, kind)[0];
+        }
         case "remove_asset": {
           const kind = str(args[0], w, idx, scope);
+          if (idx.markets.has(kind)) return removeHolding(w, who, kind);
           const a = getPerson(w, who).assets.find((x) => x.kindId === kind);
           return a ? dropAsset(w, who, a.id) : w;
         }

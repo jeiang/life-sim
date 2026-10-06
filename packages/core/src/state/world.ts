@@ -1,6 +1,7 @@
 import { type Rng, streamFor } from "../rng.ts";
 import {
   type Asset,
+  type Holding,
   type JournalEntry,
   type Loan,
   type PackVersion,
@@ -54,6 +55,7 @@ export function createWorld(opts: {
     generation: 0,
     worldYear: 0,
     nextId: 0,
+    market: {},
     persons: new Map(),
     relationships: [],
     journal: [],
@@ -82,6 +84,7 @@ export function addPerson(world: World, draft: PersonDraft): [World, PersonId] {
     occupationHistory: [],
     assets: [],
     loans: [],
+    holdings: [],
     ...draft,
     id,
   };
@@ -165,6 +168,24 @@ export function removeLoan(world: World, id: PersonId, loanId: number): World {
     ...p,
     loans: p.loans.filter((l) => l.id !== loanId),
   }));
+}
+
+/** Insert, replace or (with 0 units) remove the person's holding of `holding.kindId`. */
+export function putHolding(
+  world: World,
+  id: PersonId,
+  holding: Holding,
+): World {
+  return updatePerson(world, id, (p) => {
+    const rest = p.holdings.filter((h) => h.kindId !== holding.kindId);
+    if (holding.units <= 0) return { ...p, holdings: rest };
+    return {
+      ...p,
+      holdings: [...rest, holding].sort((a, b) =>
+        a.kindId < b.kindId ? -1 : a.kindId > b.kindId ? 1 : 0,
+      ),
+    };
+  });
 }
 
 /** Insert or replace the relationship with the same (from, to, role). */

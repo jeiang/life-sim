@@ -9,6 +9,10 @@ The Core is content-agnostic, but not fully generic. It has built-in models for 
 - Continuing as a child is a pointer move in the world, not a state migration.
 - Amendment (confinement): occupations may declare `confines { menus, events }`. Core locks content by whitelist, not blocklist: while confined, only storylets tagged `custody-ok` (a Core-owned tag) run in a locked trigger kind, the shop is locked, and housing is provided. Core exposes the boolean `confined`. Future menus and events therefore lock by default; a Pack that wants one to work in custody tags it.
 
+## Note (2026-10-06): trade effect and market holdings
+
+The closed effect list gains `trade(kind, amount)`: positive buys that much cash worth of a market kind at the current price, negative sells that much cash worth (more than held sells all; buying never takes cash below 0). `grant_asset` on a market kind gives one whole unit at the current price, `remove_asset` drops the holding without proceeds. The Core gains `Person.holdings` (units x10^4, cost basis, first age) and `World.market` (price series per market kind, drawn per world year from the seed, with the next return stored in advance). Expressions gain `price`, `change`, `units`, `holding_value`, `cost_basis`, `holding_years`, `forecast` and the name `portfolio`. The market screen logs a `trade` choice-log entry. Save schema version 5.
+
 ## Note (2026-10-06): relationship role write
 
 The closed effect list gains `relationship(person).role = id`. It replaces every role row the player holds toward that person with one row of the given role, keeping the maximum closeness of the replaced rows (no-op if there was no tie). Closeness stays writable only through `relationship(p).closeness +=`. The matching reads, `person.closeness` (read-only) and `count_role(role, min, max)` (living people, inclusive range), are expression names and functions. One Core release (ADR 0004).

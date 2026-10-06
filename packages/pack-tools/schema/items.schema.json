@@ -4,9 +4,9 @@
   "type": "array",
   "items": {
     "additionalProperties": false,
-    "title": "Item kind",
+    "title": "Item kind. A kind with `market` has no `price`, `value` or `loan`; any other has `price` and `value`",
     "type": "object",
-    "required": ["id", "label", "category", "price", "value"],
+    "required": ["id", "label", "category"],
     "properties": {
       "id": {
         "pattern": "^[a-z][a-z0-9_-]*$",
@@ -71,6 +71,115 @@
         "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
         "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
         "type": "string"
+      },
+      "market": {
+        "additionalProperties": false,
+        "title": "Market block: the kind is traded by amount (`trade`) instead of bought, and has a price series per world year",
+        "type": "object",
+        "required": ["start", "drift", "vol"],
+        "properties": {
+          "start": {
+            "minimum": 1,
+            "description": "Starting price of one whole unit, minor units",
+            "type": "integer"
+          },
+          "drift": {
+            "pattern": "^-?\\d+(\\.\\d{1,2})?%$",
+            "description": "A percent literal that may be negative, for example `-1.5%`",
+            "type": "string"
+          },
+          "vol": {
+            "pattern": "^\\d+(\\.\\d{1,2})?%$",
+            "description": "A percent literal, for example `2.5%`",
+            "type": "string"
+          },
+          "beta": {
+            "additionalProperties": false,
+            "title": "Follows another market kind: its yearly return times `factor` is added",
+            "type": "object",
+            "required": ["of", "factor"],
+            "properties": {
+              "of": {
+                "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+                "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+                "type": "string"
+              },
+              "factor": {
+                "pattern": "^-?\\d+(\\.\\d{1,2})?%$",
+                "description": "A percent literal that may be negative, for example `-1.5%`",
+                "type": "string"
+              }
+            }
+          },
+          "crash": {
+            "additionalProperties": false,
+            "title": "Yearly chance of a crash that takes `drop` off the return",
+            "type": "object",
+            "required": ["chance", "drop"],
+            "properties": {
+              "chance": {
+                "pattern": "^\\d+(\\.\\d{1,2})?%$",
+                "description": "A percent literal, for example `2.5%`",
+                "type": "string"
+              },
+              "drop": {
+                "pattern": "^\\d+(\\.\\d{1,2})?%$",
+                "description": "A percent literal, for example `2.5%`",
+                "type": "string"
+              }
+            }
+          },
+          "jump": {
+            "additionalProperties": false,
+            "title": "Yearly chance the price is multiplied by `multiple`",
+            "type": "object",
+            "required": ["chance", "multiple"],
+            "properties": {
+              "chance": {
+                "pattern": "^\\d+(\\.\\d{1,2})?%$",
+                "description": "A percent literal, for example `2.5%`",
+                "type": "string"
+              },
+              "multiple": {
+                "minimum": 2,
+                "type": "integer"
+              }
+            }
+          },
+          "delist": {
+            "pattern": "^\\d+(\\.\\d{1,2})?%$",
+            "description": "Yearly chance the price falls to 0 for good",
+            "type": "string"
+          },
+          "bond": {
+            "additionalProperties": false,
+            "title": "Government bond: `coupon` yearly on the principal, principal back at maturity, `default` is the yearly issuer default chance and `loss` the share of principal lost (default 100%)",
+            "type": "object",
+            "required": ["term", "coupon", "default"],
+            "properties": {
+              "term": {
+                "minimum": 1,
+                "description": "Years to maturity",
+                "type": "integer"
+              },
+              "coupon": {
+                "pattern": "^\\d+(\\.\\d{1,2})?%$",
+                "description": "A percent literal, for example `2.5%`",
+                "type": "string"
+              },
+              "default": {
+                "pattern": "^\\d+(\\.\\d{1,2})?%$",
+                "description": "A percent literal, for example `2.5%`",
+                "type": "string"
+              },
+              "loss": {
+                "pattern": "^\\d+(\\.\\d{1,2})?%$",
+                "description": "A percent literal, for example `2.5%`",
+                "type": "string"
+              }
+            }
+          }
+        }
       }
     }
   }

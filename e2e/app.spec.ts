@@ -17,6 +17,8 @@ async function resolvePending(page: Page): Promise<void> {
 }
 
 test("ages up ten times, resolving every pending choice", async ({ page }) => {
+  // Several decisions a year make this the longest walk; slow software-rendered WebKit needs room.
+  test.setTimeout(120_000);
   await page.goto("/");
   await expect(
     page.getByRole("heading", { name: /^Age 0 years/i }),

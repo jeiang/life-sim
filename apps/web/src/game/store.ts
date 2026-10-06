@@ -39,6 +39,9 @@ import {
 
 /** UI-layer seed: the only place the web app draws randomness (ADR 0002). */
 function randomSeed(): number {
+  // The e2e build plays one fixed life: a random life made specs flaky (early deaths, years too
+  // tall for the journal pane). Release builds tree-shake this branch out.
+  if (import.meta.env.VITE_E2E) return 1;
   return crypto.getRandomValues(new Uint32Array(1))[0] as number;
 }
 

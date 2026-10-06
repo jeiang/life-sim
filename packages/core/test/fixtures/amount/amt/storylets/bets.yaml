@@ -1,0 +1,39 @@
+- id: stake
+  trigger: action
+  menu: activities
+  amount: { min: 200, max: "min(money, 1000)", step: 100 }
+  text: Prompt text cannot see the stake.
+  choices:
+    - label: Cautious
+      when: amount <= 500
+      outcomes:
+        - text: "You stake {amount}."
+          effects:
+            - money -= amount
+            - stat.happiness += amount / 100
+    - label: All in
+      outcomes:
+        - weight: amount
+          text: "Lost {amount}."
+          effects:
+            - money -= amount
+          next: after
+        - weight: 0
+          effects:
+            - money += amount
+
+- id: donate
+  trigger: action
+  menu: activities
+  amount: { min: 100, max: 1000 }
+  outcomes:
+    - text: "Gave {amount}."
+      effects:
+        - money -= amount
+
+- id: after
+  trigger: action
+  menu: activities
+  text: Next step.
+  outcomes:
+    - text: Done.

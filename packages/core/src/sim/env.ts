@@ -42,6 +42,8 @@ export interface Scope {
   readonly uses?: number;
   /** Share of every gain this outcome keeps, basis points (default 10000: all of it). */
   readonly factorBp?: number;
+  /** `amount` in the choices and outcomes of an action with an amount input. */
+  readonly amount?: number;
   /** Persons bound by `spawn_person(...) as <name>` in the running outcome. */
   readonly bound?: ReadonlyMap<string, PersonId>;
 }
@@ -195,6 +197,7 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
       if (path === "age") return subject.age;
       if (path === "money") return subject.money;
       if (path === "uses_this_year") return scope.uses ?? 0;
+      if (path === "amount" && scope.amount !== undefined) return scope.amount;
       if (path.startsWith("stat.")) return subject.stats[path.slice(5)] ?? 0;
       if (path.startsWith("quality."))
         return qualityOf(subject, idx, path.slice(8)) as Value;

@@ -30,7 +30,7 @@ export function replay(
         w = choose(w, bundles, c.i).world;
         break;
       case "action":
-        w = runAction(w, bundles, c.id, c.target).world;
+        w = runAction(w, bundles, c.id, c.target, c.amount).world;
         break;
       case "buy":
         w = purchase(w, bundles, c.kind, c.mode).world;

@@ -24,12 +24,16 @@ export function scopeFor(
   world: World,
   ref: ScopeRef | undefined,
   storyletId?: string,
+  amount?: number,
 ): Scope {
   const subject = world.playerId;
-  const base: Scope =
-    storyletId === undefined
-      ? { subject }
-      : { subject, uses: world.uses[logKey(storyletId, ref)] ?? 0 };
+  const base: Scope = {
+    subject,
+    ...(storyletId === undefined
+      ? {}
+      : { uses: world.uses[logKey(storyletId, ref)] ?? 0 }),
+    ...(amount === undefined ? {} : { amount }),
+  };
   if (!ref) return base;
   if (ref.kind === "person") return { ...base, person: ref.id };
   const loan = getPerson(world, subject).loans.find((l) => l.id === ref.id);
@@ -44,6 +48,39 @@ export function repeatFactorBp(c: RepeatCurve, n: number): number {
 /** The curve of a repeatable action (its overrides over the manifest default); else undefined. */
 function curveOf(idx: PackIndex, s: CompiledStorylet): RepeatCurve | undefined {
   return s.repeatable ? { ...idx.repeat, ...s.repeat } : undefined;
+}
+
+/** An action's amount range as the player sees it now. */
+export interface AmountRange {
+  readonly min: number;
+  readonly max: number;
+  readonly step: number;
+}
+
+/** Evaluate `s.amount` (no `amount` is bound in it); null when the storylet has none. */
+export function amountRange(
+  world: World,
+  idx: PackIndex,
+  s: CompiledStorylet,
+  scope: ScopeRef | undefined,
+): AmountRange | null {
+  if (!s.amount) return null;
+  const env = scopeFor(world, scope);
+  return {
+    min: evalInt(s.amount.min, world, idx, env),
+    max: evalInt(s.amount.max, world, idx, env),
+    step: Math.max(1, evalInt(s.amount.step, world, idx, env)),
+  };
+}
+
+/** True when `n` is an integer on the `min + k * step` grid inside `[min, max]`. */
+export function amountAllowed(r: AmountRange, n: number): boolean {
+  return (
+    Number.isSafeInteger(n) &&
+    n >= r.min &&
+    n <= r.max &&
+    (n - r.min) % r.step === 0
+  );
 }
 
 export function logKey(
@@ -104,13 +141,20 @@ export function ineligibility(
       return `Again at age ${rec.lastAge + s.cooldown}`;
   }
   const env = scopeFor(world, scope, s.id);
-  return evalBool(s.when, world, idx, env)
-    ? null
-    : s.when === undefined
+  if (!evalBool(s.when, world, idx, env))
+    return s.when === undefined
       ? "Not available"
       : explainFalse(s.when, (c) =>
           Boolean(evaluate(c, makeEnv(world, idx, env))),
         );
+  // The minimum is checked at listing: an action the player cannot pay for is disabled.
+  const range = amountRange(world, idx, s, scope);
+  if (range) {
+    if (range.min > getPerson(world, world.playerId).money)
+      return `Needs at least ${formatMoney(range.min, idx.currency)}`;
+    if (range.max < range.min) return "Not available";
+  }
+  return null;
 }
 
 /** `when`, `once`, `cooldown` and `max_per_life` all pass for this storylet and binding. */
@@ -191,9 +235,10 @@ function runOutcome(
   outcomes: readonly CompiledOutcome[],
   ref: ScopeRef | undefined,
   depth: number,
+  amount?: number,
 ): World {
   const curve = curveOf(idx, s);
-  const base = scopeFor(world, ref, s.id);
+  const base = scopeFor(world, ref, s.id, amount);
   const bp = curve ? repeatFactorBp(curve, base.uses ?? 0) : 10000;
   const scope: Scope = bp < 10000 ? { ...base, factorBp: bp } : base;
   const [w0, outcome] = pickOutcome(world, idx, s.id, outcomes, scope);
@@ -240,6 +285,8 @@ export function open(
   if (world.ended || depth > MAX_CHAIN) return world;
   const s = idx.storylets.get(ev.storyletId);
   if (!s) throw new RangeError(`unknown storylet '${ev.storyletId}'`);
+  if (s.amount && ev.amount === undefined)
+    throw new RangeError(`storylet '${s.id}' needs an amount`);
   let w = record(world, logKey(s.id, ev.scope));
   if (s.repeatable) {
     const key = logKey(s.id, ev.scope);
@@ -255,12 +302,16 @@ export function open(
     }
     return {
       ...w,
-      pending: { storyletId: s.id, ...(ev.scope ? { scope: ev.scope } : {}) },
+      pending: {
+        storyletId: s.id,
+        ...(ev.scope ? { scope: ev.scope } : {}),
+        ...(ev.amount === undefined ? {} : { amount: ev.amount }),
+      },
     };
   }
   if (s.text !== undefined)
     w = say(w, renderText(s.text, w, idx, scopeFor(w, ev.scope, s.id)));
-  return runOutcome(w, idx, s, s.outcomes, ev.scope, depth);
+  return runOutcome(w, idx, s, s.outcomes, ev.scope, depth, ev.amount);
 }
 
 /** Resolve a choice of the open storylet (journals its text and the outcome, runs effects). */
@@ -270,15 +321,16 @@ export function resolveChoice(
   s: CompiledStorylet,
   ref: ScopeRef | undefined,
   choiceIndex: number,
+  amount?: number,
 ): World {
   const choice = s.choices[choiceIndex];
   if (!choice)
     throw new RangeError(`storylet '${s.id}' has no choice ${choiceIndex}`);
-  const scope = scopeFor(world, ref, s.id);
+  const scope = scopeFor(world, ref, s.id, amount);
   if (!evalBool(choice.when, world, idx, scope))
     throw new RangeError(`choice ${choiceIndex} of '${s.id}' is not available`);
   let w = world;
   if (s.text !== undefined) w = say(w, renderText(s.text, w, idx, scope));
   w = say(w, `You chose: ${choice.label}`);
-  return runOutcome(w, idx, s, choice.outcomes, ref, 0);
+  return runOutcome(w, idx, s, choice.outcomes, ref, 0, amount);
 }

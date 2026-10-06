@@ -22,6 +22,7 @@ export function formatMoney(
 }
 
 const MONEY_NAMES = new Set([
+  "amount",
   "money",
   "loan.balance",
   "loan.payment",

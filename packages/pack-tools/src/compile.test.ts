@@ -877,6 +877,84 @@ describe("output", () => {
   });
 });
 
+describe("amount input", () => {
+  const BET = [
+    "- id: bet",
+    "  trigger: action",
+    "  menu: activities",
+    "  amount: { min: 100, max: 1000, step: 100 }",
+    "  choices:",
+    "    - label: Go",
+    "      when: amount >= 200",
+    "      outcomes:",
+    '        - text: "Bet {amount}."',
+    "          effects:",
+    "            - money -= amount",
+    "",
+  ].join("\n");
+  const withBet = (edit: (t: string) => string = (t) => t) => ({
+    "base/storylets/bet.yaml": edit(BET),
+  });
+
+  test("compiles, with amount bound in choice and outcome expressions and text", () => {
+    const r = compilePacks(fixture(withBet()));
+    expect(r.diagnostics.map(formatDiagnostic)).toEqual([]);
+    const s = r.bundles[0]?.storylets.find((x) => x.id === "base/bet");
+    expect(s?.amount).toEqual({ min: 100, max: 1000, step: 100 });
+  });
+
+  test("amount is unbound outside choices and outcomes", () => {
+    expectError(
+      withBet((t) => t.replace("  choices:", "  when: amount > 1\n  choices:")),
+      "unknown name 'amount'",
+    );
+    expectError(
+      withBet((t) =>
+        t.replace("  choices:", "  text: Stake {amount}\n  choices:"),
+      ),
+      "unknown placeholder '{amount}'",
+    );
+    expectError(
+      withBet((t) => t.replace("max: 1000", "max: amount")),
+      "unknown name 'amount'",
+    );
+  });
+
+  test("a storylet without an amount cannot use `amount`", () => {
+    expectError(
+      withBet((t) =>
+        t.replace("  amount: { min: 100, max: 1000, step: 100 }\n", ""),
+      ),
+      "unknown name 'amount'",
+    );
+  });
+
+  test("amount belongs to actions, with a sane range, and next cannot target it", () => {
+    expectError(
+      withBet((t) =>
+        t.replace("trigger: action", "trigger: event\n  chance: 1%"),
+      ),
+      "'amount' is only valid on action storylets",
+    );
+    expectError(
+      withBet((t) => t.replace("min: 100", "min: 5000")),
+      "minimum exceeds maximum",
+    );
+    expectError(
+      withBet((t) => t.replace("step: 100", "step: 0")),
+      "step must be at least 1",
+    );
+    expectError(
+      {
+        ...withBet(),
+        "base/storylets/chain.yaml":
+          "- id: chain\n  trigger: action\n  menu: activities\n  outcomes:\n    - next: bet\n",
+      },
+      "does not carry one",
+    );
+  });
+});
+
 describe("schema export", () => {
   test("committed JSON Schemas match the TypeBox schemas", () => {
     for (const [name, text] of Object.entries(jsonSchemas())) {

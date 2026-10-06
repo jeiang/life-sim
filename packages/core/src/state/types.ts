@@ -158,6 +158,8 @@ export interface ScopeRef {
 export interface QueuedEvent {
   readonly storyletId: string;
   readonly scope?: ScopeRef;
+  /** The picked amount of an action with `amount`; never carried by `next:`. */
+  readonly amount?: number;
 }
 
 /**
@@ -168,6 +170,8 @@ export interface QueuedEvent {
 export interface Pending {
   readonly storyletId: string;
   readonly scope?: ScopeRef;
+  /** The picked amount, bound as `amount` in the choices and outcomes. */
+  readonly amount?: number;
   readonly rest?: { readonly events: readonly QueuedEvent[] };
 }
 
@@ -221,7 +225,13 @@ export interface CustomStart {
 export type ChoiceEntry =
   | { readonly t: "age" }
   | { readonly t: "choose"; readonly i: number }
-  | { readonly t: "action"; readonly id: string; readonly target?: PersonId }
+  | {
+      readonly t: "action";
+      readonly id: string;
+      readonly target?: PersonId;
+      /** The amount picked for an action with `amount` (minor units). */
+      readonly amount?: number;
+    }
   | {
       readonly t: "buy";
       readonly kind: string;
@@ -273,4 +283,4 @@ export interface World {
   readonly packVersions: readonly PackVersion[];
 }
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;

@@ -7,10 +7,12 @@ import {
   choose,
   describePending,
   endLife,
+  formatMoney,
   type GraveyardEntry,
   godSetMoney,
   godSetStat,
   indexBundles,
+  listActions,
   listShop,
   type NetWorthPoint,
   newLife,
@@ -27,7 +29,6 @@ import {
   type World,
 } from "@life/core";
 import { computed, effect, signal } from "@preact/signals";
-import { amountDemo } from "../components/AmountPickerDemo.tsx";
 import {
   type Autosaver,
   createAutosaver,
@@ -61,6 +62,23 @@ export const netWorthHistory = signal<readonly NetWorthPoint[]>(
 const track = (): void => {
   netWorthHistory.value = recordNetWorth(netWorthHistory.value, world.value);
 };
+
+/** What the shared amount picker is open for; `null` when closed. Host: `AmountPrompt`. */
+export interface AmountRequest {
+  title: string;
+  min: number;
+  max: number;
+  step: number;
+  format?: (n: number) => string;
+  onConfirm: (amount: number) => void;
+  onCancel?: () => void;
+}
+export const amountRequest = signal<AmountRequest | null>(null);
+
+/** Ask the player for an amount through the one shared picker (actions, the market screen). */
+export function requestAmount(req: AmountRequest): void {
+  amountRequest.value = req;
+}
 
 /** Journal lines written by the latest action, for the polite live region. */
 export const latestLines = signal<readonly string[]>([]);
@@ -313,7 +331,41 @@ if (import.meta.env.VITE_E2E) {
     },
     openPurchase,
     pickAmount(min: number, max: number, step: number): void {
-      amountDemo.value = { min, max, step };
+      const done = (result: number | null) => {
+        (window as unknown as { __picked: number | null }).__picked = result;
+        amountRequest.value = null;
+      };
+      amountRequest.value = {
+        title: "Place your bet",
+        min,
+        max,
+        step,
+        onConfirm: done,
+        onCancel: () => done(null),
+      };
+    },
+    /**
+     * Add an action with an amount input (`e2e-bet`, menu `activities`, $1.00 to $10.00 in
+     * $1.00 steps, costs the amount) to the loaded Pack.
+     */
+    addAmountAction(): void {
+      (packIndex.storylets as Map<string, CompiledStorylet>).set("e2e-bet", {
+        id: "e2e-bet",
+        label: "Place a bet",
+        tags: [],
+        trigger: "action",
+        menu: "activities",
+        once: false,
+        amount: { min: 100, max: 1000, step: 100 },
+        choices: [],
+        outcomes: [
+          {
+            weight: 1,
+            text: "You bet {amount}.",
+            effects: [["sub", "money", ["v", "amount"]]],
+          },
+        ],
+      } as unknown as CompiledStorylet);
     },
     /**
      * Open a three-step `next:` chain (core-loop has none longer than two interactive steps):
@@ -384,7 +436,21 @@ export function runMenuAction(
   actionId: string,
   target?: number,
 ): string | null {
-  return apply(() => runAction(world.value, bundles, actionId, target));
+  const s = packIndex.storylets.get(actionId);
+  if (!s?.amount)
+    return apply(() => runAction(world.value, bundles, actionId, target));
+  const row = listActions(world.value, bundles, s.menu ?? "", target).find(
+    (r) => r.id === actionId,
+  );
+  if (!row?.amount || row.locked) return row?.reason ?? "Not available";
+  requestAmount({
+    title: row.label,
+    ...row.amount,
+    format: (n) => formatMoney(n, packIndex.currency),
+    onConfirm: (amount) =>
+      apply(() => runAction(world.value, bundles, actionId, target, amount)),
+  });
+  return null;
 }
 
 /** God mode: set a player stat (0-100). */

@@ -59,4 +59,5 @@ export { indexBundles, type PackIndex } from "./pack-index.ts";
 export { listShop, purchase, type ShopRow, sell } from "./purchase.ts";
 export { replay } from "./replay.ts";
 export { REPOSSESSION_MISSES } from "./settle.ts";
+export type { AmountRange } from "./storylets.ts";
 export { formatMoney, renderText } from "./text.ts";

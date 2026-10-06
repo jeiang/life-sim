@@ -889,12 +889,31 @@ class PackCompiler {
     };
   }
 
+  /** True when the storylet with this full id declares `amount` (it cannot be a `next:` target). */
+  private declaresAmount(full: string): boolean {
+    const [packId = ""] = full.split("/");
+    return (
+      this.c.packs
+        .get(packId)
+        ?.items.some(
+          (i) =>
+            i.kind === "storylet" &&
+            `${packId}/${i.id}` === full &&
+            i.data.amount !== undefined,
+        ) ?? false
+    );
+  }
+
   private storylet(it: LoadedItem, s: StoryletSrc): CompiledStorylet {
     void it;
     const scopeNames: Names = {
       ...this.scopeNames(s.scope),
       uses_this_year: "int",
     };
+    // `amount` is bound only in choices and outcomes of a storylet that declares one.
+    const bodyNames: Names = s.amount
+      ? { ...scopeNames, amount: "int" }
+      : scopeNames;
     const out: {
       -readonly [K in keyof CompiledStorylet]: CompiledStorylet[K];
     } = {
@@ -939,6 +958,31 @@ class PackCompiler {
       out.target = roles;
     }
     if (s.menu) out.menu = s.menu;
+    if (s.amount) {
+      if (s.trigger !== "action")
+        this.err(["amount"], "'amount' is only valid on action storylets");
+      const range = (["min", "max", "step"] as const).map((k) => {
+        const v = s.amount?.[k];
+        return v === undefined && k === "step"
+          ? 1
+          : this.expr(
+              v as string | number | boolean,
+              "int",
+              ["amount", k],
+              scopeNames,
+            );
+      });
+      const [min, max, step] = range;
+      if (min !== undefined && max !== undefined && step !== undefined) {
+        out.amount = { min, max, step };
+        if (typeof min === "number" && typeof max === "number" && min > max)
+          this.err(["amount"], "amount minimum exceeds maximum");
+        if (typeof min === "number" && min < 0)
+          this.err(["amount", "min"], "amount minimum cannot be negative");
+        if (typeof step === "number" && step < 1)
+          this.err(["amount", "step"], "amount step must be at least 1");
+      }
+    }
     if (s.when !== undefined) {
       const w = this.expr(s.when, "bool", ["when"], scopeNames);
       if (w !== undefined) out.when = w;
@@ -992,17 +1036,17 @@ class PackCompiler {
           ch.when,
           "bool",
           ["choices", ci, "when"],
-          scopeNames,
+          bodyNames,
         );
         if (w !== undefined) choice.when = w;
       }
       choice.outcomes = (ch.outcomes ?? []).map((o, oi) =>
-        this.outcome(o, ["choices", ci, "outcomes", oi], scopeNames),
+        this.outcome(o, ["choices", ci, "outcomes", oi], bodyNames),
       );
       return choice;
     });
     out.outcomes = (s.outcomes ?? []).map((o, oi) =>
-      this.outcome(o, ["outcomes", oi], scopeNames),
+      this.outcome(o, ["outcomes", oi], bodyNames),
     );
     return out;
   }
@@ -1086,7 +1130,12 @@ class PackCompiler {
     }
     if (o.next !== undefined) {
       const full = this.ref(o.next, ["storylet"], [...path, "next"]);
-      if (full) out.next = full;
+      if (full && this.declaresAmount(full))
+        this.err(
+          [...path, "next"],
+          `'${o.next}' needs an amount, and 'next' does not carry one`,
+        );
+      else if (full) out.next = full;
     }
     return out;
   }

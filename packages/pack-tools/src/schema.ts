@@ -210,6 +210,15 @@ const Choice = obj({
   outcomes: Type.Optional(Type.Array(Outcome)),
 });
 
+const Amount = obj(
+  {
+    min: Src,
+    max: Src,
+    step: Type.Optional(Src),
+  },
+  "Amount input (actions only): the player picks money from `min` to `max` in `step`s (default 1); `amount` is bound in choice and outcome `when`, `weight`, effects and text",
+);
+
 export const StoryletSchema = obj(
   {
     id: Id,
@@ -256,6 +265,7 @@ export const StoryletSchema = obj(
       repeatCurve("Overrides the manifest's repeat curve for this action"),
     ),
     text: Type.Optional(Type.String()),
+    amount: Type.Optional(Amount),
     choices: Type.Optional(Type.Array(Choice)),
     outcomes: Type.Optional(Type.Array(Outcome)),
   },

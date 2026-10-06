@@ -33,6 +33,7 @@ packs/<pack-id>/
 | `exclusivity` | Occupation exclusivity groups (for example `school`, `full-time`). |
 | `repeat` | Default curve for repeatable actions: `{ full: 10, reduced: 20, factor: 25% }` (see Repeatable actions). Any field left out takes the value shown. The first manifest that sets it wins. |
 | `year` | Only Pack `core-loop` may declare this block or the `family` block (any other Pack declaring either is a compile error). Event draw settings: flavour slot count range and the yearly event cap, `decisions` / `decisions_min_age` (decision slots per year, see Year draw), plus optional `quiet` lines the Core journals for a year in which nothing else happened (every age gets a journal group). |
+| `npc_careers` | Only Pack `core-loop`. Who gets a simulated career and how it runs: `roles`, `start_age`, `retire_age`, `group` (exclusivity group of NPC jobs), `retired` (pension kind), yearly percents `hire`, `promotion`, `job_loss`, ascending `tiers` (yearly-income thresholds in minor units), `education` (flag qualities rolled once at career start, each with `chance` and optional `needs`). See [NPC careers](#npc-careers). |
 | `migrations` | Renamed ids (`old -> new`) and removed ids (with a fallback). |
 
 ## Composition
@@ -173,6 +174,10 @@ An occupation with `confines: { menus, events }` (for prison, hospital; at least
 `start_occupation` and `end_occupation` still apply to the player; tag the actions that start or end confinement `custody-ok`. A `next:` chain is not checked after its first storylet opens. Several confining occupations combine: a lock applies when any of them sets it. The boolean name `confined` is true while the player holds any confining occupation, so other Packs' pay, schools and events can react (for example `when: not confined`).
 
 Names: `living.standard` (id of the lived standard), `living.cost` (this year's cost, 0 with parents or provided housing), `living.risk`. Function `standard_cost(standard)`: what that standard would cost the player now (city index and home waiver applied), for example `when: standard_cost(core-loop/rich) <= money`.
+## NPC careers
+
+Entry kinds are the occupation kinds of `npc_careers.group` that no kind promotes to. A kind with `npc: false`, `confines`, `provides_housing`, `duration_years` or `loan` is never given to an NPC, nor is the `retired` kind outside retirement. Pay expressions run with the NPC as subject: `quality.*` reads their own qualities (so `raise_bonus` is 0) and `city.wage_index` their city (100% without one). A `kind: generator` item may list `jobs: [{ label, tier }]`; a spawned person gets one at random as a static job (no career), and its tier counts the same thresholds as `person.income_tier`: the number of `tiers` that yearly income (held pay, or the static tier's threshold, plus a twentieth of their money) reaches.
+
 ## Repeatable actions
 
 A normal action is limited by `once`, `cooldown` or `max_per_life`. An action with `repeatable: true` has no `cooldown` (a build error) and stays selectable all year; its returns diminish instead. The Core counts uses per action storylet per year, and per bound person for `scope: person` actions (time with Mom and time with Dad count separately). The counters are life state (`World.uses`), reset at every age-up, rebuilt by replaying the choice log and part of the world hash.
@@ -270,6 +275,8 @@ journal("text")                      die("cause")
 ```
 
 A `kind: generator` item in `people/` sets `first_names` (a list used for every gender, or `{ male: [...], female: [...] }` pools where non-binary people draw from both), `last_names`, `age`, optional `stats`, and an optional `gender`: a fixed value (`gender: female`) or integer weights (`gender: { male: 1, female: 3 }`; omitted genders weigh 0; default male 1, female 1). A spawned person's gender is drawn from these weights and their first name from that gender's pool, so a Pack can spawn a person of a chosen gender.
+
+`person.money += n | -= n` (only in `scope: person`) changes that person's money, not the player's; no other `person.*` name can be assigned.
 
 `move_to(city)` puts the player in a city (family and everyone else stay); `move_in()` and `merge_money()` (in `scope: person`, bound to a partner) move a partner in and merge their money; `move_out()` ends living with parents (under 18 a guardian takes over instead) and picks the starting standard of living; `set_standard(standard)` chooses one (ignored with parents).
 

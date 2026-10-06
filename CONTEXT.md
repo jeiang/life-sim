@@ -92,6 +92,13 @@ _Avoid_: Run, playthrough
 A role a person holds, such as student at a school or employee in a job, with a ladder, yearly pay or tuition, and performance. A person can hold several at once, limited by the exclusivity groups their kinds declare (for example one school, one full-time job). Past occupations remain on record as history. Packs test group membership with `in_group(g)` (currently holding one in the group) and `years_in_group(g)` (years across every occupation in the group, held or past); there is no effect that ends a whole group, so packs end occupations one by one with `end_occupation`.
 _Avoid_: Job, enrollment, career (as a model term)
 
+**NPC career**:
+The simulated job of a person the player holds a career role (`partner`, `spouse`, adult `child`) toward: a real occupation drawn from the Packs' entry rungs, paid yearly into that person's own money, with promotion, job loss and retirement rolls. It stops (record kept) when they leave the role. Other people only have a static job label and income tier.
+_Avoid_: Job simulation for parents, siblings, friends or coworkers (they are static)
+
+**Joint money**:
+Once a partner's money is merged into the player's (`merge_money()`, marriage without a prenup), their pay goes to the player. With a prenup it stays in `person.money`.
+
 **City**:
 A Pack-defined place to live, with a cost index (cost of living relative to the baseline), a wage index (pay multiplier) and a birth weight. Every life has one. Countries come later with the Relocation pack.
 _Avoid_: Town, location, region
@@ -159,6 +166,18 @@ _Avoid_: Grind, spam, cooldown (the opposite rule)
 **Trip** (Vacations Pack):
 A solo vacation or cruise, a priced repeatable action in the `activities/travel` submenu. The player picks a **price tier** (1-5 steps of the amount picker, cheapest first; only affordable tiers are offered) and, for a vacation, a destination type (beach, city, mountains, theme park, abroad); better tiers shift weight from bad events to great ones. A trip's death outcome (about 1 in 10,000) has the cause "travel accident". Under 16 only a **family trip** decision exists (living with a parent; raises closeness with each living parent).
 _Avoid_: Holiday (use Trip), tier (alone)
+
+**Table limit**:
+The most a casino game takes per bet, set per game by the gambling Pack (a minimum too). The amount picker never offers more than the player's cash or the limit. The **VIP room** raises every limit ten-fold; it opens once, from lifetime losses or from wealth that has gambled. Gambling is never on credit.
+_Avoid_: Bet cap, max stake
+
+**Gambling habit**:
+The hidden `gambling_heat` quality, 0-100. Four or more casino bets in a year raise it, lighter years lower it. A high habit can tip into **addiction** (urges, withdrawal, yearly happiness hits), ended by three clean steps (a year away from the tables or a free support meeting each count one).
+_Avoid_: Gambling problem, gambling stat
+
+**Casino ban**:
+A multi-year refusal at every casino, set by the "suspected of cheating" event after a streak of five or more wins in a row. It does not close the lottery.
+_Avoid_: Blacklist
 
 **Expression**:
 A short formula in the pack language, used for conditions, weights, chances, and effect statements.

@@ -166,7 +166,18 @@ function person(v: unknown, p: string): Person {
     o.withParents === undefined
       ? undefined
       : bool(o.withParents, `${p}.withParents`);
+  const job =
+    o.job === undefined
+      ? undefined
+      : (() => {
+          const j = obj(o.job, `${p}.job`);
+          return {
+            label: str(j.label, `${p}.job.label`),
+            tier: int(j.tier, `${p}.job.tier`),
+          };
+        })();
   return {
+    ...(job === undefined ? {} : { job }),
     ...(cityId === undefined ? {} : { cityId }),
     ...(withParents === undefined ? {} : { withParents }),
     ...(withGuardian === undefined ? {} : { withGuardian }),

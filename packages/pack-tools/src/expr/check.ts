@@ -248,6 +248,12 @@ export function checkStmt(c: Checker, env: CheckEnv, s: Stmt): Effect | null {
         s.target,
         `'${path}' cannot be assigned; assignable: ${Object.keys(ASSIGNABLE).join(", ")}`,
       );
+    if (root === "person" && path !== "person.money")
+      return err(
+        c,
+        s.target,
+        `'${path}' cannot be assigned (on a person only 'person.money' can)`,
+      );
     if (declared === undefined) {
       return err(
         c,

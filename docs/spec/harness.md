@@ -7,6 +7,7 @@ Decided in [Balance harness scope](https://github.com/jeiang/life-sim/issues/20)
 - `packages/harness`: a Node CLI that runs the same Core package and compiled Pack bundles as the app, with no UI.
 - `pnpm harness --lives N --profile <name> --seed <S>`: unlimited runs for local tuning (for example 100,000 lives).
 - `--jobs N` (default: the available cores; `0` also means the available cores): split the lives across `N` `node:worker_threads` workers. Each worker compiles the Packs once and plays batches of lives; results are merged in life order, so `report.md` and `report.json` are byte-identical for any `N` and identical to a single-thread run of the same seeds. Neither file records the run time (it varies); the CLI prints it. Faults found in a worker are reported with their life seed as before. `--jobs 1` runs in-process without workers.
+- The report's `population` block (and "Population per save" table) gives, per finished save, the persons in the world, the persons other than the player who hold or held a job (NPC careers, #131), and the serialized world size in bytes, each with p50, p99 and max.
 
 ## Full run in CI
 
@@ -23,6 +24,7 @@ Every choice comes from the seeded RNG, so a run is reproducible from its seed.
 | `spender` | Buys whenever affordable, takes loans when offered |
 | `idle` | Takes no voluntary actions; answers events at random |
 | `grinder` | 12 random repeatable actions a year, to stress diminishing returns; opt-in (`--profile grinder`), not part of `all` |
+| `gambler` | Four voluntary moves a year, all on the Gambling Pack's casino games and lottery (random game, amount uniform over the allowed grid); applies for work only when nothing is left to bet on. Answers events at random, never goes to support meetings |
 
 ## CI check `harness`
 
@@ -51,6 +53,7 @@ It **reports** without failing, in `report.md` and `report.json` in the check ou
 - repeated activities: per repeatable action, uses per year lived, mean and maximum uses in a year it was used, and the share of those years past the full-effect and reduced ranges;
 - Vacations (only when Pack `vacations` is loaded): trips per life by price tier, trip spending as a share of gross earnings, travel deaths per 10,000 trips, and median net worth of travellers against non-travellers within each profile;
 - stats at 100: share of living lives at the cap, per stat, by decade of age;
+- gambling (when the Gambling Pack is loaded): share of lives that staked anything and share ever addicted, per profile; addiction and recovery rates, bans and VIP rooms; lifetime stakes per gambler; and per game the bets, stakes, net change of cash and realised return (stakes plus net, over stakes). A gambling action that leaves cash below zero is an assertion fault;
 - stat distributions by age.
 
 Balance bands that fail CI (for example a median age at death outside a range) can be added once content settles. Until then, balance findings guide authoring but never block merges.

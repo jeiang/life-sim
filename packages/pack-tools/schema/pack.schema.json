@@ -274,6 +274,97 @@
         }
       }
     },
+    "npc_careers": {
+      "additionalProperties": false,
+      "title": "NPC careers",
+      "type": "object",
+      "required": [
+        "roles",
+        "start_age",
+        "retire_age",
+        "group",
+        "hire",
+        "promotion",
+        "job_loss",
+        "tiers"
+      ],
+      "properties": {
+        "roles": {
+          "minItems": 1,
+          "description": "Roles the player holds toward people who get a simulated career",
+          "type": "array",
+          "items": {
+            "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+            "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+            "type": "string"
+          }
+        },
+        "start_age": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "retire_age": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "group": {
+          "minLength": 1,
+          "description": "Exclusivity group of the jobs NPCs hold",
+          "type": "string"
+        },
+        "retired": {
+          "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
+          "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
+          "type": "string"
+        },
+        "hire": {
+          "pattern": "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$",
+          "description": "Yearly chance an unemployed person with a work history is hired",
+          "type": "string"
+        },
+        "promotion": {
+          "pattern": "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$",
+          "description": "Yearly chance of a promotion once `promotion_years` are served",
+          "type": "string"
+        },
+        "job_loss": {
+          "pattern": "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$",
+          "description": "Yearly chance of losing the job",
+          "type": "string"
+        },
+        "tiers": {
+          "description": "Ascending yearly-income thresholds in minor units; the income tier is how many are reached",
+          "type": "array",
+          "items": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "education": {
+          "description": "Flag qualities rolled once when a career starts, in order; `needs` names a flag that must already be true",
+          "type": "array",
+          "items": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": ["quality", "chance"],
+            "properties": {
+              "quality": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "chance": {
+                "pattern": "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$",
+                "type": "string"
+              },
+              "needs": {
+                "minLength": 1,
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
     "living": {
       "additionalProperties": false,
       "title": "Living costs",

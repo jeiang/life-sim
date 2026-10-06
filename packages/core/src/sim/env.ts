@@ -13,6 +13,7 @@ import {
 } from "../state/types.ts";
 import { getPerson } from "../state/world.ts";
 import { countKin, kinshipLabel, kinshipOf } from "./kinship.ts";
+import { incomeTier } from "./careers.ts";
 import {
   confinementOf,
   costIndexOf,
@@ -131,6 +132,8 @@ function personField(
     const k = kinshipOf(world, world.playerId, id);
     return k ? kinshipLabel(k, p.gender) : "acquaintance";
   }
+  if (field === "money") return p.money;
+  if (field === "income_tier") return incomeTier(world, idx, id);
   if (field.startsWith("stat.")) return p.stats[field.slice(5)] ?? 0;
   if (field.startsWith("quality."))
     return qualityOf(p, idx, field.slice(8)) as Value;

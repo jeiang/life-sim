@@ -23,6 +23,7 @@ import {
   type SaveFile,
   sell,
   serializeSave,
+  serializeWorld,
   setAssertSink,
   setChanceDropSink,
   setDecisionSink,
@@ -112,9 +113,14 @@ export interface LifeResult {
   /** Chance hits the yearly cap dropped, by Pack id (the storylet id's prefix). */
   readonly capDrops: Readonly<Record<string, number>>;
   readonly samples: readonly YearSample[];
+  /** Persons in the final world and how many of them (not the player) hold or held a job; null without a world. */
+  readonly persons: number | null;
+  readonly careers: number;
+  /** Length of the serialized final world, bytes (UTF-8 for the ASCII-only canonical text). */
+  readonly saveBytes: number;
   readonly loansOpened: number;
   /** People in the final world (the player and everyone ever met or born). */
-  readonly persons: number;
+  readonly familyPersons: number;
   readonly loansDefaulted: number;
   readonly repossessions: number;
   readonly everDegree: boolean;
@@ -133,6 +139,7 @@ export interface LifeResult {
       { readonly slots: readonly number[]; readonly spent: number }
     >
   >;
+  readonly gambling: GamblingLife;
 }
 
 /**
@@ -147,6 +154,37 @@ function unresolvedFamily(w: World): string | null {
   }
   return null;
 }
+
+/** What one Gambling-Pack action did over a life: bets, stakes placed and money paid back. */
+export interface GameStats {
+  bets: number;
+  wagered: number;
+  /** Net change of cash over all bets (winnings less stakes). */
+  net: number;
+}
+
+export interface GamblingLife {
+  /** Action id -> its totals (only actions that moved `gambling_wagered`). */
+  readonly games: Readonly<Record<string, GameStats>>;
+  /** Lifetime stakes placed, any game, event or lottery. */
+  readonly wagered: number;
+  /** Casino or lottery bets at least once. */
+  readonly gambled: boolean;
+  /** Years lived addicted (counted at each age-up). */
+  readonly addictedYears: number;
+  readonly everAddicted: boolean;
+  /** Was addicted once and no longer is at the end. */
+  readonly recovered: boolean;
+  /** Banned from the casinos at least once. */
+  readonly everBanned: boolean;
+  readonly vip: boolean;
+}
+
+const WAGERED = "gambling_wagered";
+const qnum = (w: World, id: string): number => {
+  const v = playerOf(w).qualities[id];
+  return typeof v === "number" ? v : 0;
+};
 
 const playerOf = (w: World) => {
   const p = w.persons.get(w.playerId);
@@ -289,6 +327,17 @@ export function runLife(
     return true;
   };
 
+  const games: Record<string, GameStats> = {};
+  let addictedYears = 0;
+  let everAddicted = false;
+  let everBanned = false;
+  const noteGambling = (): void => {
+    if (!w) return;
+    const me = playerOf(w);
+    if (me.qualities.gambling_addicted === true) everAddicted = true;
+    if (qnum(w, "gambling_banned_until") > 0) everBanned = true;
+  };
+
   const apply = (m: Move): void => {
     if (!w) return;
     if (m.t === "action") {
@@ -299,7 +348,20 @@ export function runLife(
         a.slots[m.slot - 1] = (a.slots[m.slot - 1] as number) + 1;
         a.spent += m.amount;
       }
+      const cashBefore = playerOf(w).money;
+      const wageredBefore = qnum(w, WAGERED);
       w = runAction(w, bundles, m.id, m.target, m.amount).world;
+      if (!resolve()) return;
+      const placed = qnum(w, WAGERED) - wageredBefore;
+      if (placed > 0) {
+        const g = games[m.id] ?? { bets: 0, wagered: 0, net: 0 };
+        games[m.id] = g;
+        g.bets++;
+        g.wagered += placed;
+        g.net += playerOf(w).money - cashBefore;
+        if (playerOf(w).money < 0)
+          fault("assertion", `${m.id} left money below 0`);
+      }
     } else if (m.t === "buy") w = purchase(w, bundles, m.kind, m.mode).world;
     else w = sell(w, bundles, m.asset).world;
   };
@@ -339,6 +401,7 @@ export function runLife(
         apply(m);
         if (!resolve()) break;
         noteHome();
+        noteGambling();
       }
       if (faults.some((f) => f.kind === "stuck")) break;
       if (!w || w.ended) break;
@@ -358,6 +421,8 @@ export function runLife(
       if (draw) yearDecisions.push({ age, ...draw });
       if (!resolve()) break;
       noteHome();
+      noteGambling();
+      if (playerOf(w).qualities.gambling_addicted === true) addictedYears++;
       yearEvents.push(totalFires(w) - firesBefore);
       yearChoices.push({ age, n: firesIn(w, choiceIds) - choicesBefore });
       trackLoans(loansBefore, w);
@@ -451,8 +516,17 @@ export function runLife(
     yearUses,
     capDrops,
     samples,
+    persons: final ? final.persons.size : null,
+    careers: final
+      ? [...final.persons.values()].filter(
+          (p) =>
+            p.id !== final.playerId &&
+            (p.occupations.length > 0 || p.occupationHistory.length > 0),
+        ).length
+      : 0,
+    saveBytes: final ? serializeWorld(final).length : 0,
     loansOpened: loanIds.size,
-    persons: final?.persons.size ?? 0,
+    familyPersons: final?.persons.size ?? 0,
     loansDefaulted: defaulted.size,
     repossessions,
     everDegree: me
@@ -461,6 +535,17 @@ export function runLife(
         )
       : false,
     everEmployed,
+    gambling: {
+      games,
+      wagered: final ? qnum(final, WAGERED) : 0,
+      gambled: final ? qnum(final, WAGERED) > 0 : false,
+      addictedYears,
+      everAddicted,
+      recovered:
+        everAddicted && me ? me.qualities.gambling_addicted !== true : false,
+      everBanned,
+      vip: me ? me.qualities.gambling_vip === true : false,
+    },
     retired: retired || all.some((o) => isRetired(o.kindId)),
     moveOutAge,
     kickedOut:

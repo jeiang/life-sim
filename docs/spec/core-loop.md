@@ -46,6 +46,7 @@ About 12 jobs in 4 ladders, each rung with pay, requirements, and a promotion ta
 - NPC yearly pass: aging, stat drift, and a few NPC storylets (for example a parent's illness or death).
 - Core-loop declares the roles `partner`, `spouse` and `child` (no content creates them yet), so core-loop content can be guarded on them; a later Pack turns people into them with `relationship(p).role = ...`.
 - No dating, marriage, or children in core-loop itself (later Pack).
+- NPC careers: people in the `partner`, `spouse` and (once 18) `child` roles work a real job from the `full-time` group, chosen at the first start among entry rungs they qualify for (degrees are rolled once), paid yearly into their own money (`person.money`). Each year: 3% chance of losing the job (40% yearly hire afterwards), 30% chance to be promoted once the rung's `promotion_years` are served, retirement at 65 into the `retired` pension. Leaving the role (breakup, divorce) keeps the record but stops pay and rolls. A person whose money was merged into the player's (`merge_money()`, marriage without a prenup) pays their earnings to the player; otherwise it stays in `person.money`. Everyone else (parents, siblings, friends, coworkers) has a static job label and income tier from the generator's `jobs` list.
 
 ## Shop and assets (`assets/shopping`)
 

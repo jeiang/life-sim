@@ -10,6 +10,7 @@ import {
   DEFAULT_REPEAT,
   type FamilyDecl,
   type LivingDecl,
+  type NpcCareersDecl,
   type PackBundle,
   type QualityDecl,
   type RepeatCurve,
@@ -40,6 +41,8 @@ export interface PackIndex {
   readonly currency: { readonly symbol: string; readonly digits: number };
   /** Starting family from the first manifest that declares one. */
   readonly family: FamilyDecl | undefined;
+  /** NPC careers from the first manifest that declares them. */
+  readonly npcCareers: NpcCareersDecl | undefined;
   /** Default repeat curve: the first manifest that sets one, else `DEFAULT_REPEAT`. */
   readonly repeat: RepeatCurve;
   /** Event draw settings from the first manifest that declares them. */
@@ -90,6 +93,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
   let year: PackIndex["year"] | undefined;
   let family: FamilyDecl | undefined;
   let living: LivingDecl | undefined;
+  let npcCareers: NpcCareersDecl | undefined;
   const standards: CompiledStandard[] = [];
   const owners = new Map<string, string>();
   let repeat: RepeatCurve | undefined;
@@ -120,6 +124,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     if (b.currency) currency = b.currency;
     if (!year && b.year) year = b.year;
     if (!family && b.family) family = b.family;
+    if (!npcCareers && b.npcCareers) npcCareers = b.npcCareers;
     if (!repeat && b.repeat) repeat = b.repeat;
   }
   const events = [...storylets.values()]
@@ -143,6 +148,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     qualities,
     currency,
     family,
+    npcCareers,
     repeat: repeat ?? DEFAULT_REPEAT,
     year: year ?? { slots: [0, 0], cap: Number.MAX_SAFE_INTEGER },
   };

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
+id: gambling
+version: 1
+depends: [core-loop]
+qualities:
+  # Lifetime totals, minor units. `lost` counts stakes lost; `wagered` every stake placed.
+  - { id: gambling_wagered, type: int, min: 0, default: 0 }
+  - { id: gambling_lost, type: int, min: 0, default: 0 }
+  # Consecutive winning bets (a win streak can look like cheating).
+  - { id: gambling_streak, type: int, min: 0, default: 0 }
+  # Casino bets since the last age-up; the year-end event turns this into habit.
+  - { id: gambling_bets_year, type: int, min: 0, default: 0 }
+  # Habit, 0-100. Frequent casino betting raises it; quiet years lower it.
+  - { id: gambling_heat, type: int, min: 0, max: 100, default: 0 }
+  - { id: gambling_addicted, type: flag, default: false }
+  # Progress to recovery: a year away adds 1, a support meeting adds 1; 3 ends the addiction.
+  - { id: gambling_recovery, type: int, min: 0, default: 0 }
+  # Age until which the casinos refuse the player.
+  - { id: gambling_banned_until, type: int, min: 0, default: 0 }
+  # VIP room open (higher table limits).
+  - { id: gambling_vip, type: flag, default: false }
+  # Two-step hands (blackjack, poker): the stake in the pot and the hand dealt.
+  - { id: gambling_pot, type: int, min: 0, default: 0 }
+  - { id: gambling_hand, type: int, min: 0, default: 0 }

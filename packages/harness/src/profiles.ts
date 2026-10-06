@@ -202,7 +202,7 @@ const grinder: Profile = {
       ),
     );
     const rows = unlockedActions(w, ctx).filter((r) => repeatable.has(r.id));
-    return rows.length === 0 ? null : asMove(pick(rows, rng));
+    return rows.length === 0 ? null : asMove(pick(rows, rng), rng);
   },
   pickChoice: uniformChoice,
 };

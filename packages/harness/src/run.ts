@@ -18,6 +18,7 @@ import {
   sell,
   serializeSave,
   setAssertSink,
+  setChanceDropSink,
   setDecisionSink,
   standardOf,
   streamFor,
@@ -84,6 +85,8 @@ export interface LifeResult {
   }[];
   /** Per age-up: uses of repeatable actions in the year just ended, keyed like `World.uses`. */
   readonly yearUses: readonly Readonly<Record<string, number>>[];
+  /** Chance hits the yearly cap dropped, by Pack id (the storylet id's prefix). */
+  readonly capDrops: Readonly<Record<string, number>>;
   readonly samples: readonly YearSample[];
   readonly loansOpened: number;
   readonly loansDefaulted: number;
@@ -186,6 +189,13 @@ export function runLife(
   let lastDraw: { queued: number; empty: number } | null = null;
   setDecisionSink((d) => {
     lastDraw = d;
+  });
+  const capDrops: Record<string, number> = {};
+  setChanceDropSink((ids) => {
+    for (const id of ids) {
+      const pack = id.slice(0, id.indexOf("/"));
+      capDrops[pack] = (capDrops[pack] ?? 0) + 1;
+    }
   });
   const choiceIds = new Set<string>();
   for (const b of bundles)
@@ -324,6 +334,7 @@ export function runLife(
   } finally {
     setAssertSink(null);
     setDecisionSink(null);
+    setChanceDropSink(null);
   }
 
   const final = w;
@@ -342,6 +353,7 @@ export function runLife(
     yearChoices,
     yearDecisions,
     yearUses,
+    capDrops,
     samples,
     loansOpened: loanIds.size,
     loansDefaulted: defaulted.size,

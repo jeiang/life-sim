@@ -9,6 +9,7 @@ export {
   type DecisionDraw,
   makeEnv,
   setAssertSink,
+  setChanceDropSink,
   setDecisionSink,
 } from "./env.ts";
 export { playFixedLife } from "./fixed-life.ts";

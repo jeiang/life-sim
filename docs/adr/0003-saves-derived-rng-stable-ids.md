@@ -7,3 +7,4 @@ Each life is autosaved to IndexedDB after every action and age-up as a World sna
 - Age-up runs in a fixed order: age every person, then settlement (occupations, loans, assets, in id order), then the player's events, then the NPC yearly pass. Changing this order changes every seeded outcome.
 - A choice log replays exactly only on the build that wrote it. Replay is a debugging and test tool, not a save format.
 - Saves can be lost when the browser evicts storage, so export/import is the backup path. The app nudges for it when `navigator.storage.persist()` returns false.
+- The yearly cap never favours a Pack by id: when chance hits exceed the cap, the survivors come from a keyed draw (purpose key `year/chance-cap/<i>`), taken only when the cap actually bites, so years where it does not are unchanged. Only Pack `core-loop` may declare the singleton `year` and `family` manifest blocks, so a Pack sorting before it cannot silently replace them.

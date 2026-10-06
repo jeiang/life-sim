@@ -13,7 +13,7 @@ import {
   personsInIdOrder,
   updatePerson,
 } from "../state/world.ts";
-import { reportDecisions } from "./env.ts";
+import { reportChanceDrops, reportDecisions } from "./env.ts";
 import { livesWithParents, startLivingOnOwn } from "./living.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import { indexBundles, type PackIndex } from "./pack-index.ts";
@@ -116,6 +116,33 @@ function rollChance(
     if (rng.chanceBp(bp)) hits.push(c);
   }
   return [w, hits];
+}
+
+/**
+ * Keep at most `cap` chance hits. When the cap bites, survivors are a uniform keyed draw
+ * (`year/chance-cap/<i>`, partial Fisher-Yates), never id order, so no Pack is favoured; they
+ * keep their id order. Nothing is drawn when the hits already fit.
+ */
+function capChance(
+  world: World,
+  hits: readonly Candidate[],
+  cap: number,
+): [World, Candidate[]] {
+  const keep = Math.max(0, cap);
+  if (hits.length <= keep) return [world, [...hits]];
+  let w = world;
+  const order = hits.map((_, i) => i);
+  for (let i = 0; i < keep; i++) {
+    const [w2, rng] = nextStream(w, clockAge(w), `year/chance-cap/${i}`);
+    w = w2;
+    const j = i + rng.int(order.length - i);
+    [order[i], order[j]] = [order[j] as number, order[i] as number];
+  }
+  const kept = new Set(order.slice(0, keep));
+  reportChanceDrops(
+    hits.filter((_, i) => !kept.has(i)).map((c) => c.storylet.id),
+  );
+  return [w, hits.filter((_, i) => kept.has(i))];
 }
 
 /** Draw up to `slots` candidates by weight, without replacement. */
@@ -227,7 +254,8 @@ function drawWithDecisions(
     slots,
     "year/flavour",
   );
-  const all = [...chance, ...decisions, ...flavour].slice(
+  const [w4, kept] = capChance(w3, chance, idx.year.cap);
+  const all = [...kept, ...decisions, ...flavour].slice(
     0,
     Math.max(0, idx.year.cap),
   );
@@ -236,7 +264,7 @@ function drawWithDecisions(
     queued: all.filter(isDecision).length,
     empty: need - decisions.length,
   });
-  return [w3, all.map(asEvent)];
+  return [w4, all.map(asEvent)];
 }
 
 /** The player's events for this age-up: chance events first, then flavour slots, under the cap. */
@@ -263,8 +291,9 @@ function drawEvents(world: World, idx: PackIndex): [World, QueuedEvent[]] {
     slots,
     "year/flavour",
   );
-  const all = [...chance, ...flavour].slice(0, Math.max(0, idx.year.cap));
-  return [w3, all.map(asEvent)];
+  const [w4, kept] = capChance(w3, chance, idx.year.cap);
+  const all = [...kept, ...flavour].slice(0, Math.max(0, idx.year.cap));
+  return [w4, all.map(asEvent)];
 }
 
 /** NPC yearly pass: `scope: person` events, chance events rolled per person, one flavour slot each. */

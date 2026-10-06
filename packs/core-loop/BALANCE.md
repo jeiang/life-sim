@@ -73,3 +73,9 @@ First drafts (health -3/-2 and risk 200-250% for homeless) put the median age at
 10,000 lives, seed 20260101, all profiles: no faults. Median age at death 73 (`idle` 73, `random` 75, `spender` 72, `studious` 73); p10 49, p90 93. Net worth (major units): age 18 median 150; age 40 median 220k (p10 0, p90 800k); age 65 median 1.04M (p10 0, p90 2.85M). Employment 64% of person-years aged 25-64.
 
 Years lived on their own that were homeless: 45.5% overall (idle 100%, random 47.7%, spender 25.2%, studious 8.8%). Standard by age (share of lives, with parents / homeless / thrifty / average / higher): age 30 58.8 / 22.7 / 5.0 / 13.3 / 0.1; age 40 14.9 / 39.8 / 7.4 / 37.2 / 0.7; age 60 0.2 / 43.7 / 8.6 / 44.6 / 2.9; age 80 0 / 39.6 / 9.5 / 44.9 / 6.0. Loans: 57,197 opened, 13.7% had a missed payment, 2,017 repossessions.
+
+## Student loan pays the school (#144)
+
+`take_loan` credits the principal to the player, and `tuition_by_loan` zeroes yearly tuition, so enrolling with a loan handed the player $28k-$40k of spendable cash. Each of the four enrol choices now runs `money -= N` right after `take_loan`, so money is unchanged at enrolment and the loan balance is N (pack version 6).
+
+10,000 lives, seed 20260101, all profiles, 0 faults, before -> after: degree rate 36.2% -> 36.0%; median net worth at 65 $1.042M -> $1.007M; median age at death 73 -> 73. Side effect: loans with a missed payment 13.7% -> 20.4% (loan count 57,197 -> 57,209), because the player no longer holds the loan as cash to service it.

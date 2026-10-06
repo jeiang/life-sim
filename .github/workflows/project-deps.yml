@@ -36,6 +36,6 @@ jobs:
         with:
           script: |
             const run = require("./.github/scripts/project-deps.cjs");
-            await run({ github, getOctokit, context, core });
+            await run({ github, context, core });
       - if: env.PROJECT_TOKEN == ''
         run: echo "::notice::PROJECT_TOKEN secret is not set; skipping project dependency sync. See docs/spec/ci.md."

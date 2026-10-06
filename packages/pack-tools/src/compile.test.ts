@@ -460,6 +460,32 @@ describe("build checks fail", () => {
     );
   });
 
+  test("generator first-name pools and gender weights compile; all-zero weights are rejected", () => {
+    const people = (extra: string) =>
+      sub(
+        "  first_names: [Sam, Alex]\n",
+        `  first_names:\n    male: [Sam]\n    female: [Alex]\n${extra}`,
+      );
+    const r = compilePacks(
+      fixture({
+        "base/people/names.yaml": people("  gender: { female: 3 }\n"),
+      }),
+    );
+    expect(r.diagnostics.map(formatDiagnostic)).toEqual([]);
+    const gen = r.bundles[0]?.people.find((p) => p.id === "base/local");
+    if (gen?.type !== "generator") throw new Error("no generator");
+    expect(gen.firstNames).toEqual({
+      male: ["Sam"],
+      female: ["Alex"],
+      nonbinary: ["Sam", "Alex"],
+    });
+    expect(gen.genderWeights).toEqual({ male: 0, female: 3, nonbinary: 0 });
+    expectError(
+      { "base/people/names.yaml": people("  gender: { male: 0 }\n") },
+      "gender weights need at least one above 0",
+    );
+  });
+
   test("unknown person in relationship effect", () => {
     expectError(
       {

@@ -40,12 +40,79 @@
             "type": "string"
           },
           "first_names": {
-            "minItems": 1,
-            "type": "array",
-            "items": {
-              "minLength": 1,
-              "type": "string"
-            }
+            "description": "A list for every gender, or `{ male, female }` pools (non-binary people draw from both)",
+            "anyOf": [
+              {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": ["male", "female"],
+                "properties": {
+                  "male": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "female": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "gender": {
+            "description": "Fixed gender, or draw weights per gender (default male 1, female 1)",
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "const": "male",
+                    "type": "string"
+                  },
+                  {
+                    "const": "female",
+                    "type": "string"
+                  },
+                  {
+                    "const": "nonbinary",
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "male": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "female": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "nonbinary": {
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                }
+              }
+            ]
           },
           "last_names": {
             "minItems": 1,

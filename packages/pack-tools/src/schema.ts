@@ -401,13 +401,42 @@ export const StandardSchema = obj(
   "Standard of living",
 );
 
+const NameList = Type.Array(Type.String({ minLength: 1 }), { minItems: 1 });
+const GenderName = Type.Union([
+  Type.Literal("male"),
+  Type.Literal("female"),
+  Type.Literal("nonbinary"),
+]);
+
 export const PeopleSchema = Type.Union(
   [
     obj({ kind: Type.Literal("role"), id: Id, label: Label }),
     obj({
       kind: Type.Literal("generator"),
       id: Id,
-      first_names: Type.Array(Type.String({ minLength: 1 }), { minItems: 1 }),
+      first_names: Type.Union(
+        [NameList, obj({ male: NameList, female: NameList })],
+        {
+          description:
+            "A list for every gender, or `{ male, female }` pools (non-binary people draw from both)",
+        },
+      ),
+      gender: Type.Optional(
+        Type.Union(
+          [
+            GenderName,
+            obj({
+              male: Type.Optional(Type.Integer({ minimum: 0 })),
+              female: Type.Optional(Type.Integer({ minimum: 0 })),
+              nonbinary: Type.Optional(Type.Integer({ minimum: 0 })),
+            }),
+          ],
+          {
+            description:
+              "Fixed gender, or draw weights per gender (default male 1, female 1)",
+          },
+        ),
+      ),
       last_names: Type.Array(Type.String({ minLength: 1 }), { minItems: 1 }),
       age: Range,
       stats: Type.Optional(Type.Record(Name, Range)),

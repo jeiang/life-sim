@@ -4,6 +4,7 @@
  * is an AST (ADR 0004), and every reference has been resolved and kind-checked.
  */
 import type { Effect, Expr } from "./expr/index.ts";
+import type { Gender } from "./state/types.ts";
 
 /** Bundle format version; bump when the shape below changes incompatibly. */
 export const PACK_BUNDLE_FORMAT = 1;
@@ -218,7 +219,10 @@ export interface CompiledRole {
 export interface CompiledGenerator {
   readonly type: "generator";
   readonly id: string;
-  readonly firstNames: readonly string[];
+  /** First-name pool per gender (non-binary: both pools, unless the source gave a neutral list). */
+  readonly firstNames: Readonly<Record<Gender, readonly string[]>>;
+  /** Draw weights per gender; a weight of 0 never draws. Default male 1, female 1. */
+  readonly genderWeights: Readonly<Record<Gender, number>>;
   readonly lastNames: readonly string[];
   /** Inclusive age range at spawn. */
   readonly age: readonly [number, number];

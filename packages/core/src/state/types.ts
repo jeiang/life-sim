@@ -60,8 +60,12 @@ export interface Asset {
 export type Gender = "male" | "female" | "nonbinary";
 export const GENDERS: readonly Gender[] = ["male", "female", "nonbinary"];
 
-/** Genders the person generator draws from. */
-export const GENERATED_GENDERS: readonly Gender[] = ["male", "female"];
+/** Default draw weights of a generator that sets no `gender`: male and female equally. */
+export const DEFAULT_GENDER_WEIGHTS: Readonly<Record<Gender, number>> = {
+  male: 1,
+  female: 1,
+  nonbinary: 0,
+};
 
 /** Pronoun placeholder fields (`{n.subject}`, `{n.Subject}`); an absent gender reads as neutral. */
 export const PRONOUN_FIELDS: readonly string[] = [

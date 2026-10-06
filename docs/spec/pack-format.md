@@ -198,6 +198,8 @@ relationship(<person>).role = role   (replaces all the player's role rows toward
 journal("text")                      die("cause")
 ```
 
+A `kind: generator` item in `people/` sets `first_names` (a list used for every gender, or `{ male: [...], female: [...] }` pools where non-binary people draw from both), `last_names`, `age`, optional `stats`, and an optional `gender`: a fixed value (`gender: female`) or integer weights (`gender: { male: 1, female: 3 }`; omitted genders weigh 0; default male 1, female 1). A spawned person's gender is drawn from these weights and their first name from that gender's pool, so a Pack can spawn a person of a chosen gender.
+
 `move_to(city)` puts the player in a city (family and everyone else stay); `move_out()` ends living with parents and picks the starting standard of living; `set_standard(standard)` chooses one (ignored with parents).
 
 ## Text

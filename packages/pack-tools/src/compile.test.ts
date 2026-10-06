@@ -82,7 +82,7 @@ describe("valid fixture", () => {
   test("compiles with namespaced ids and resolved references", () => {
     const r = compilePacks(VALID);
     expect(r.diagnostics.map(formatDiagnostic)).toEqual([]);
-    expect(r.bundles.map((b) => b.id)).toEqual(["base", "extra"]);
+    expect(r.bundles.map((b) => b.id)).toEqual(["base", "core-loop", "extra"]);
     const base = r.bundles[0];
     const offer = base?.storylets.find((s) => s.id === "base/first-job-offer");
     expect(offer?.chance).toBe(400);
@@ -92,7 +92,7 @@ describe("valid fixture", () => {
       "start_occupation",
       ["id", "base/cashier"],
     ]);
-    const extra = r.bundles[1];
+    const extra = r.bundles[2];
     expect(extra?.storylets[0]?.outcomes[0]?.effects[0]).toEqual([
       "do",
       "start_occupation",
@@ -553,20 +553,19 @@ describe("build checks fail", () => {
   });
 
   const FAMILY = `family:
-  player: local
-  parent: { role: neighbour, generator: local, count: 2 }
-  sibling: { role: neighbour, generator: local, count: [0, 2] }
+  player: base/local
+  parent: { role: base/neighbour, generator: base/local, count: 2 }
+  sibling: { role: base/neighbour, generator: base/local, count: [0, 2] }
 `;
 
   test("manifest family resolves to full ids; dangling or inverted ranges fail", () => {
     const withFamily = (f: string) => ({
-      "base/pack.yaml": (t: string) =>
-        t.replace("migrations:", `${f}migrations:`),
+      "core-loop/pack.yaml": (t: string) => `${t}${f}`,
     });
     const r = compilePacks(fixture(withFamily(FAMILY)));
     expect(r.ok).toBe(true);
     if (r.ok)
-      expect(r.bundles.find((b) => b.id === "base")?.family).toEqual({
+      expect(r.bundles.find((b) => b.id === "core-loop")?.family).toEqual({
         player: "base/local",
         parent: { role: "base/neighbour", generator: "base/local", count: 2 },
         sibling: {
@@ -578,15 +577,32 @@ describe("build checks fail", () => {
     expectError(
       withFamily(
         FAMILY.replace(
-          "generator: local, count: 2",
-          "generator: nobody, count: 2",
+          "generator: base/local, count: 2",
+          "generator: base/nobody, count: 2",
         ),
       ),
-      "dangling reference 'nobody'",
+      "dangling reference 'base/nobody'",
     );
     expectError(
       withFamily(FAMILY.replace("[0, 2]", "[2, 0]")),
       "count range minimum exceeds maximum",
+    );
+  });
+
+  test("only core-loop may declare year or family", () => {
+    expectError(
+      {
+        "extra/pack.yaml": (t: string) =>
+          `${t}year:\n  slots: [1, 1]\n  cap: 2\n`,
+      },
+      "only Pack 'core-loop' may declare 'year'",
+    );
+    expectError(
+      {
+        "extra/pack.yaml": (t: string) =>
+          `${t}${FAMILY.replaceAll("base/", "extra/")}`,
+      },
+      "only Pack 'core-loop' may declare 'family'",
     );
   });
 

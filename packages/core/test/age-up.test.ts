@@ -13,6 +13,7 @@ import {
   openLoan,
   type PackBundle,
   putAsset,
+  setChanceDropSink,
   setQuality,
   startStorylet,
   type World,
@@ -64,7 +65,10 @@ describe("newLife", () => {
     expect(kin.length).toBeLessThanOrEqual(4);
     for (const r of kin)
       expect(getPerson(w, r.to).familyName).toBe(p.familyName);
-    expect(w.packVersions).toEqual([{ id: "life", version: "1" }]);
+    expect(w.packVersions).toEqual([
+      { id: "core-loop", version: "1" },
+      { id: "life", version: "1" },
+    ]);
   });
 
   test("same seed, same life; other seeds differ", () => {
@@ -319,14 +323,87 @@ describe("pending storylets", () => {
 });
 
 describe("year draw", () => {
-  test("cap keeps chance events before flavour, in id order", () => {
-    const capped = withYear([3, 3], 2);
-    const { lines } = ageUp(life(["chaos"]), capped);
+  test("cap keeps chance events before flavour", () => {
+    const { lines } = ageUp(life(["chaos"]), withYear([3, 3], 2));
     expect(lines.filter((l) => l.startsWith("Chance")).length).toBe(2);
     expect(lines.filter((l) => l.startsWith("Flavour")).length).toBe(0);
-    const one = ageUp(life(["chaos"]), withYear([3, 3], 1)).lines;
-    expect(one.filter((l) => l.startsWith("Chance A"))).toHaveLength(1);
-    expect(one.filter((l) => l.startsWith("Chance B"))).toHaveLength(0);
+  });
+
+  describe("when the cap bites, chance hits from two Packs survive in proportion", () => {
+    const life0 = bundles.find((b) => b.id === "life") as PackBundle;
+    const shell = bundles.find((b) => b.id === "core-loop") as PackBundle;
+    const named = (id: string) =>
+      life0.storylets.find(
+        (s) => s.id === `life/${id}`,
+      ) as PackBundle["storylets"][number];
+    /** Pack `first` and Pack `second` (sorting after) each hold one 100% chance event. */
+    function twoPacks(first: string, second: string): readonly PackBundle[] {
+      const owner = (id: string, from: string): PackBundle => ({
+        ...shell,
+        id,
+        storylets: [{ ...named(from), id: `${id}/${from}` }],
+      });
+      const rest: PackBundle = {
+        ...life0,
+        storylets: life0.storylets.filter((s) => !/-chance$/.test(s.id)),
+      };
+      return [
+        rest,
+        owner(first, "a-chance"),
+        owner(second, "b-chance"),
+        shell,
+      ].map((b) => ({
+        ...b,
+        year: { slots: [0, 0] as [number, number], cap: 1 },
+      }));
+    }
+    const survivors = (
+      bs: readonly PackBundle[],
+      n: number,
+    ): Record<string, number> => {
+      const out: Record<string, number> = {};
+      for (let seed = 1; seed <= n; seed++) {
+        let w = newLife(bs, seed);
+        w = setQuality(w, w.playerId, "chaos", true);
+        const { lines } = ageUp(w, bs);
+        const hit = lines.filter((l) => l.startsWith("Chance"));
+        expect(hit).toHaveLength(1);
+        const key = (hit[0] as string).slice(0, 8);
+        out[key] = (out[key] ?? 0) + 1;
+      }
+      return out;
+    };
+
+    test.each([
+      ["aaa", "zzz"],
+      ["zzz", "aaa"],
+    ] as const)("packs %s then %s", (first, second) => {
+      const counts = Object.values(survivors(twoPacks(first, second), 300));
+      expect(counts).toHaveLength(2);
+      for (const c of counts) {
+        expect(c).toBeGreaterThan(110);
+        expect(c).toBeLessThan(190);
+      }
+    });
+
+    test("deterministic, and drops are reported per hit", () => {
+      const bs = twoPacks("aaa", "zzz");
+      const run = () => {
+        const dropped: string[] = [];
+        setChanceDropSink((ids) => dropped.push(...ids));
+        try {
+          let w = newLife(bs, 9);
+          w = setQuality(w, w.playerId, "chaos", true);
+          const r = ageUp(w, bs);
+          return { hash: worldHash(r.world), lines: r.lines, dropped };
+        } finally {
+          setChanceDropSink(null);
+        }
+      };
+      const first = run();
+      expect(run()).toEqual(first);
+      expect(first.dropped).toHaveLength(1);
+    });
   });
 
   test("flavour slots draw distinct events by weight, up to the slot count", () => {

@@ -121,6 +121,8 @@ export interface Report {
       }
     >;
   };
+  /** Chance hits dropped by the yearly cap, by Pack id (Packs with none are omitted). */
+  readonly capDrops: Record<string, number>;
   readonly death: {
     readonly ended: number;
     readonly unfinished: number;
@@ -230,6 +232,7 @@ export class Aggregate {
   private readonly decAtLeast = [0, 0, 0];
   private decEmpty = 0;
   private decEmptyYears = 0;
+  private readonly capDrops = new Map<string, number>();
   private readonly profileDec = new Map<string, number[]>();
   private choiceEvents5 = 0;
   private years5 = 0;
@@ -339,6 +342,8 @@ export class Aggregate {
       this.profileChoice.set(r.profile, list);
       list.push(all);
     }
+    for (const [pack, n] of Object.entries(r.capDrops))
+      this.capDrops.set(pack, (this.capDrops.get(pack) ?? 0) + n);
     for (const y of r.yearDecisions) {
       if (y.age < 5) continue;
       const pd = this.profileDec.get(r.profile) ?? [0, 0, 0, 0];
@@ -581,6 +586,9 @@ export class Aggregate {
             ]),
         ),
       },
+      capDrops: Object.fromEntries(
+        [...this.capDrops].sort((a, b) => (a[0] < b[0] ? -1 : 1)),
+      ),
       death: {
         ended: this.deathAges.length,
         unfinished: this.unfinished,
@@ -754,6 +762,13 @@ export function renderMarkdown(
   );
   for (const [k, v] of Object.entries(r.decisions.byProfile))
     L.push(`| ${k} | ${v.atLeast1}% | ${v.atLeast2}% | ${v.atLeast3}% |`);
+  L.push("", "## Chance events dropped by the yearly cap", "");
+  const drops = Object.entries(r.capDrops);
+  if (drops.length === 0) L.push("None.");
+  else {
+    L.push("| pack | dropped |", "|---|---|");
+    for (const [k, n] of drops) L.push(`| ${k} | ${n} |`);
+  }
   L.push(
     "",
     "## Choice events",

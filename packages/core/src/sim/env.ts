@@ -129,6 +129,20 @@ export function reportDecisions(draw: DecisionDraw): void {
   decisionSink?.(draw);
 }
 
+let chanceDropSink: ((ids: readonly string[]) => void) | null = null;
+
+/** Report the chance hits dropped by the yearly cap (storylet keys, one call per capped age-up); `null` stops. */
+export function setChanceDropSink(
+  sink: ((ids: readonly string[]) => void) | null,
+): void {
+  chanceDropSink = sink;
+}
+
+/** @internal Used by the year draw. */
+export function reportChanceDrops(ids: readonly string[]): void {
+  chanceDropSink?.(ids);
+}
+
 /** Expression environment (ADR 0004) over the world. Only the whitelisted names exist. */
 export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
   const subject = getPerson(world, scope.subject);

@@ -32,7 +32,7 @@ packs/<pack-id>/
 | `living` | Living costs: `default` (standard chosen on moving out), `housing_share` (percent of the cost an owned home removes) and `home_category` (item kind category that counts as a home). Needs `standards`. |
 | `exclusivity` | Occupation exclusivity groups (for example `school`, `full-time`). |
 | `repeat` | Default curve for repeatable actions: `{ full: 10, reduced: 20, factor: 25% }` (see Repeatable actions). Any field left out takes the value shown. The first manifest that sets it wins. |
-| `year` | Event draw settings: flavour slot count range and the yearly event cap, `decisions` / `decisions_min_age` (decision slots per year, see Year draw), plus optional `quiet` lines the Core journals for a year in which nothing else happened (every age gets a journal group). |
+| `year` | Only Pack `core-loop` may declare this block or the `family` block (any other Pack declaring either is a compile error). Event draw settings: flavour slot count range and the yearly event cap, `decisions` / `decisions_min_age` (decision slots per year, see Year draw), plus optional `quiet` lines the Core journals for a year in which nothing else happened (every age gets a journal group). |
 | `migrations` | Renamed ids (`old -> new`) and removed ids (with a fallback). |
 
 ## Composition
@@ -157,7 +157,7 @@ At each age-up, after settlement (ADR 0003):
 1. Every eligible event with `chance` rolls independently.
 2. If the manifest declares `year.decisions`, the Core draws **decision slots** (below). Choice events (storylets with `choices`) then no longer compete for flavour slots; they come only from chance rolls and decision slots.
 3. The Core then draws flavour slots (count from the manifest range) by `weight` from the eligible weighted events.
-4. The yearly cap from the manifest limits the total. When the cap is reached, chance events are kept first, then decisions, then flavour events, in id order.
+4. The yearly cap from the manifest limits the total. When the cap is reached, chance events are kept first, then decisions, then flavour events. If the chance hits alone exceed the cap, the survivors are a uniform random choice among the hits (purpose keys `year/chance-cap/<i>`), not id order, so no Pack is favoured; they are then delivered in id order. Nothing is drawn when the hits fit under the cap. The balance harness reports the chance events dropped by the cap per Pack.
 
 ### Decision slots
 

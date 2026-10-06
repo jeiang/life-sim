@@ -61,6 +61,9 @@ function percentBp(text: string): number {
   return Number(whole) * 100 + Number(frac.padEnd(2, "0"));
 }
 
+/** The one Pack allowed to declare the singleton `year` and `family` blocks. */
+const CORE_LOOP = "core-loop";
+
 export type Kind =
   | "storylet"
   | "occupation"
@@ -622,6 +625,13 @@ class PackCompiler {
           this.err(["qualities", i, "default"], "default is outside min/max");
       }
     }
+    if (this.pack.id !== CORE_LOOP)
+      for (const key of ["year", "family"] as const)
+        if (m[key])
+          this.err(
+            [key],
+            `only Pack '${CORE_LOOP}' may declare '${key}' (the first declaration would silently replace its own)`,
+          );
     if (m.year && m.year.slots[0] > m.year.slots[1])
       this.err(["year", "slots"], "slot range minimum exceeds maximum");
     if (m.year?.decisions) {

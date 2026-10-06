@@ -115,7 +115,10 @@ describe("schema migrations", () => {
     const save = parseSave(JSON.stringify(raw));
     expect(save.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(save.graveyard).toEqual([]);
-    expect(save.packVersions).toEqual([{ id: "life", version: "1" }]);
+    expect(save.packVersions).toEqual([
+      { id: "core-loop", version: "1" },
+      { id: "life", version: "1" },
+    ]);
     const mig = save.lives.map((l) => l.world)[0] as World;
     expect(mig.pending).toBeNull();
     expect(mig.ended).toBeNull();
@@ -210,6 +213,7 @@ describe("pack migrations", () => {
       "life/new#7": { count: 1, lastAge: 4 },
     });
     expect(m.packVersions).toEqual([
+      { id: "core-loop", version: "1" },
       { id: "life", version: String(b.version) },
     ]);
   });
@@ -270,7 +274,9 @@ describe("pack migrations", () => {
       next({ renamed: { "life/job": "life/work" }, removed: {} }),
     ]);
     expect(m.graveyard[0]?.obituary.career[0]?.kindId).toBe("life/work");
-    expect(m.packVersions[0]?.version).toBe(String(base.version + 1));
+    expect(m.packVersions.find((v) => v.id === "life")?.version).toBe(
+      String(base.version + 1),
+    );
   });
 });
 

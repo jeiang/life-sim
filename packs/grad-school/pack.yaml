@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
+id: grad-school
+version: 1
+depends: [core-loop]
+qualities:
+  # Program being applied for while the admission and funding steps run: 0 none,
+  # 1 medical school, 2 law school, 3 business school (MBA), 4 PhD. Reset when the program starts.
+  - { id: grad_applying, type: int, min: 0, max: 4, default: 0 }
+  # Program the player is enrolled in (same numbering); 0 when not enrolled.
+  - { id: grad_program, type: int, min: 0, max: 4, default: 0 }
+  # Yearly tuition and length of the program being applied for or attended, minor units and years.
+  - { id: grad_tuition, type: int, min: 0, default: 0 }
+  - { id: grad_years, type: int, min: 0, default: 0 }
+  # Shares of the yearly tuition, percent. Scholarship: 100 full, 50 partial, 0 none.
+  # Parents: what they agreed to pay. The rest is the player's: cash, or the grad loan.
+  - { id: grad_scholarship, type: int, min: 0, max: 100, default: 0 }
+  - { id: grad_parents, type: int, min: 0, max: 100, default: 0 }
+  # The player's share of tuition is borrowed (debt builds up, repayment starts at graduation or drop-out).
+  - { id: grad_loan, type: flag, default: false }
+  # Borrowed so far for the current program, minor units; becomes one grad loan when the program ends.
+  - { id: grad_debt, type: int, min: 0, default: 0 }
+  # Grades, 0-100. Slipping grades step the scholarship down.
+  - { id: grad_gpa, type: int, min: 0, max: 100, default: 0 }
+  # Degrees (each school once per life).
+  - { id: grad_degree_medical, type: flag, default: false }
+  - { id: grad_degree_law, type: flag, default: false }
+  - { id: grad_degree_mba, type: flag, default: false }
+  - { id: grad_degree_phd, type: flag, default: false }
+  # Passed the medical boards / the bar.
+  - { id: grad_licensed_medical, type: flag, default: false }
+  - { id: grad_licensed_law, type: flag, default: false }
+  # Exam preparation, 0-5; spent by taking an exam.
+  - { id: grad_prep, type: int, min: 0, max: 5, default: 0 }

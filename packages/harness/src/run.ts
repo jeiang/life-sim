@@ -3,8 +3,8 @@ import {
   canAgeUp,
   choose,
   costIndexOf,
-  getPerson,
   describePending,
+  getPerson,
   indexBundles,
   type Loan,
   livesWithParents,
@@ -23,8 +23,8 @@ import {
   serializeSave,
   setAssertSink,
   setChanceDropSink,
-  settleLiving,
   setDecisionSink,
+  settleLiving,
   standardOf,
   streamFor,
   type World,
@@ -45,7 +45,12 @@ const CHAIN_CAP = 64;
 /** Chance (1 in N) per year of a save round-trip check, besides the final world. */
 const SAVE_CHECK_ONE_IN = 8;
 
-export type FaultKind = "exception" | "assertion" | "stuck" | "save-mismatch" | "minor-living-cost";
+export type FaultKind =
+  | "exception"
+  | "assertion"
+  | "stuck"
+  | "save-mismatch"
+  | "minor-living-cost";
 
 export interface Fault {
   readonly kind: FaultKind;

@@ -40,6 +40,7 @@ About 12 jobs in 4 ladders, each rung with pay, requirements, and a promotion ta
 ## People
 
 - At birth: two parents and 0-2 siblings, generated from Pack data.
+- Every generated person, the player included, gets a gender (male or female, drawn from the same stream as their other traits). Text uses it through pronoun placeholders; people without a gender (old saves) read as neutral (they/them/their). Nonbinary is chosen only in god mode (#105).
 - At school start: 2-3 classmates. At job start: 2 coworkers.
 - Verbs (Relationships menu, profile): spend time, conversation, ask for money (family), befriend (classmates, coworkers).
 - NPC yearly pass: aging, stat drift, and a few NPC storylets (for example a parent's illness or death).

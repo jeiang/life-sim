@@ -1,13 +1,15 @@
 import { type Expr, evaluate } from "../expr/index.ts";
-import type {
-  Asset,
-  Loan,
-  Obituary,
-  ObituaryOccupation,
-  Occupation,
-  Person,
-  PersonId,
-  World,
+import {
+  type Asset,
+  GENERATED_GENDERS,
+  type Gender,
+  type Loan,
+  type Obituary,
+  type ObituaryOccupation,
+  type Occupation,
+  type Person,
+  type PersonId,
+  type World,
 } from "../state/types.ts";
 import {
   addJournalLine,
@@ -252,6 +254,7 @@ export function spawnPerson(
     givenName,
     familyName: opts.familyName ?? drawn,
     age: lo + rng.int(hi - lo + 1),
+    gender: GENERATED_GENDERS[rng.int(GENERATED_GENDERS.length)] as Gender,
     stats,
   });
   return [

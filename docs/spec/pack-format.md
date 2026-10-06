@@ -202,7 +202,7 @@ journal("text")                      die("cause")
 
 ## Text
 
-- Inline English. Placeholders (`{player.first_name}`, `{money}`, or a person bound by `spawn_person(...) as <name>`) are checked at build time against what is in scope.
+- Inline English. Placeholders (`{player.first_name}`, `{money}`, or a person bound by `spawn_person(...) as <name>`) are checked at build time against what is in scope. Every person reference (`player`, `person`, a bound name) also has pronoun placeholders from that person's gender: `{n.subject}` (he/she/they), `{n.object}` (him/her/them), `{n.possessive}` (his/her/their), and capitalised `{n.Subject}`, `{n.Object}`, `{n.Possessive}` for sentence starts. A person with no gender (old saves) reads as they/them/their. Pronouns do not conjugate verbs, so write text that works for "they" (past tense, or "{n.first_name} says").
 - Localization later extracts strings keyed by content id and field path. Keyed text is not required now.
 
 ## Icons

@@ -1,5 +1,11 @@
 import type { FamilyDecl, PackBundle } from "../pack.ts";
-import type { CustomStart, PersonId, World } from "../state/types.ts";
+import {
+  type CustomStart,
+  GENERATED_GENDERS,
+  type Gender,
+  type PersonId,
+  type World,
+} from "../state/types.ts";
 import {
   addJournalLine,
   clamp,
@@ -97,11 +103,15 @@ export function newLife(
   }
   const qualities: Record<string, number | boolean> = {};
   for (const [id, q] of idx.qualities) qualities[id] = q.default;
+  // Drawn last and always, so the other draws match a plain life.
+  const drawnGender = GENERATED_GENDERS[
+    rng.int(GENERATED_GENDERS.length)
+  ] as Gender;
   let w = updatePerson(w0, w0.playerId, (p) => ({
     ...p,
     givenName,
     familyName,
-    ...(custom ? { gender: custom.gender } : {}),
+    gender: custom?.gender ?? drawnGender,
     stats,
     qualities,
   }));

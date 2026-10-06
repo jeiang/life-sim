@@ -429,6 +429,28 @@ describe("build checks fail", () => {
     );
   });
 
+  test("pronoun placeholders resolve for the player and spawned people only", () => {
+    const ok = compilePacks(
+      fixture({
+        "base/storylets/work.yaml": sub(
+          'journal("Met {n.first_name} {n.last_name}.")',
+          'journal("{n.Subject} met {player.object}; {n.possessive} day.")',
+        ),
+      }),
+    );
+    expect(ok.diagnostics.map(formatDiagnostic)).toEqual([]);
+    expectError(
+      {
+        "base/storylets/work.yaml": sub(
+          'journal("Met {n.first_name} {n.last_name}.")',
+          'journal("{m.subject} met {n.pronoun}.")',
+        ),
+      },
+      "unknown placeholder '{m.subject}'",
+      "unknown placeholder '{n.pronoun}'",
+    );
+  });
+
   test("unknown person in relationship effect", () => {
     expectError(
       {

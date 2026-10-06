@@ -31,6 +31,11 @@
         "description": "Relative weight when a life picks its birth city",
         "type": "integer"
       },
+      "wage_index": {
+        "pattern": "^\\d+(\\.\\d{1,2})?%$",
+        "description": "Pay multiplier for working here, as a percent literal (default `100%`); read by pay expressions as `city.wage_index`",
+        "type": "string"
+      },
       "country": {
         "minLength": 1,
         "description": "Country the city belongs to, a plain string for now (no country content type yet)",

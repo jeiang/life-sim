@@ -69,12 +69,16 @@ A role a person holds, such as student at a school or employee in a job, with a 
 _Avoid_: Job, enrollment, career (as a model term)
 
 **City**:
-A Pack-defined place to live, with a cost index (cost of living relative to the baseline) and a birth weight. Every life has one. Countries come later with the Relocation pack.
+A Pack-defined place to live, with a cost index (cost of living relative to the baseline), a wage index (pay multiplier) and a birth weight. Every life has one. Countries come later with the Relocation pack.
 _Avoid_: Town, location, region
 
 **Living situation**:
 Whether a person lives with their parents (free) or on their own. Ends for the player by moving out, being asked to leave by the parents, or the last parent dying; the player is never forced out by age.
 _Avoid_: Housing status, residence
+
+**Standard of living**:
+A Pack-defined level of spending (homeless to ultra-rich) with a base yearly cost, yearly happiness and health effects and an illness and death risk multiplier. The player on their own chooses one and pays its cost, scaled by the city cost index, each settlement; short of savings they live the best one they can afford that year.
+_Avoid_: Lifestyle, rent, tier
 
 **Money**:
 An integer amount in minor units of the single currency the Pack sets.
@@ -91,7 +95,7 @@ The single step that advances the world by exactly one year.
 _Avoid_: Turn, tick, next year
 
 **Settlement**:
-The fixed phase of an age-up, after aging and before events, in which occupations pay or charge, loans take payments, and assets change value.
+The fixed phase of an age-up, after aging and before events, in which occupations pay or charge, the player on their own pays living costs, loans take payments, and assets change value.
 _Avoid_: Payday, upkeep
 
 **Storylet**:

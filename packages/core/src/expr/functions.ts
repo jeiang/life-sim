@@ -19,6 +19,8 @@ export const FUNCTIONS = {
   has_occupation: { params: ["id"], returns: "bool" },
   owns: { params: ["id"], returns: "bool" },
   years_in: { params: ["id"], returns: "int" },
+  /** Yearly cost for the player of a standard of living now (city index and home waiver applied). */
+  standard_cost: { params: ["id"], returns: "int" },
   /** Average closeness (integer) to the living people the player holds this role toward; 0 with none. */
   role_closeness: { params: ["id"], returns: "int" },
   /** Living people the player holds this role toward. */
@@ -37,8 +39,10 @@ export const EFFECTS = {
   die: { params: ["string"], returns: "bool" },
   /** Move the player to a city (family and others stay where they are). */
   move_to: { params: ["id"], returns: "bool" },
-  /** Stop living with parents. */
+  /** Stop living with parents; takes the default standard of living or the best affordable. */
   move_out: { params: [], returns: "bool" },
+  /** Choose a standard of living (ignored while living with parents). */
+  set_standard: { params: ["id"], returns: "bool" },
 } as const satisfies Record<string, Signature>;
 
 export type AssignOp = "=" | "+=" | "-=";

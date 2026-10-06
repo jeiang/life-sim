@@ -67,12 +67,20 @@ About 10 item kinds, bought through the purchase dialog:
 
 ## Cities and living situation (`cities`, `assets/housing`)
 
-- Six cities with cost indexes from 70% to 180% and birth weights. A life is born in a weighted-random city; its parents and siblings live there. The cost index is read by [living costs](#standards-of-living) later; for now it only shows on the profile.
+- Six cities with cost indexes from 70% to 180% and birth weights. A life is born in a weighted-random city; its parents and siblings live there. The cost index scales [living costs](#standards-of-living-standards-assetshousing); the wage index scales pay.
 - Living situation: with parents (free) or on your own. Actions in `assets/housing`: **Move out** (age 18+, while living with parents) and **Move to another city** (on your own, one-off $2,500, one choice per other city, or stay).
 - **Kicked out:** from 18, while living with parents, the yearly chance (`parents-ask-you-to-leave`) is 1% plus 0.04% per point of missing parent closeness, plus 0.75% per living sibling, plus 1.5% per step of parental impatience (one step per year after 30, capped at 10 steps, so +15%). The player is never forced out automatically. All of these numbers sit in that storylet's `chance`, so a later cultural pack can change them.
 - When no parent is alive, living with parents ends at the next age-up.
 - The profile shows the city and the living situation. Journal lines: moved out, asked to leave, moved to a city.
 - Siblings are not modelled as leaving home: every living sibling counts as still at home.
+
+## Standards of living (`standards`, `assets/housing`)
+
+- Seven standards: homeless, thrifty, average, above average, wealthy, rich, ultra-rich, with base yearly costs of $0, $9k, $18k, $32k, $60k, $120k and $300k at a 100% cost index, scaled by the city cost index. Lower standards cost happiness and health every year and raise illness and death chances (homeless 115%, thrifty 105%); higher ones add happiness and health up to a cap and lower the risk.
+- An owned home in the current city removes 40% of the cost. The **Standard of living** action sets the standard at any time (choices you cannot afford are hidden). On moving out the default is average, or the best affordable.
+- Charged at age-up while on your own, after pay. Short of savings, the player lives the best standard they can afford that year (a journal line), and the chosen standard is tried again next year. Money never goes negative.
+- Salaries are gross pay (about $6k for a teen cashier to $115k for a senior engineer at a 100% wage index), multiplied by the current city's wage index (80% to 150%). Pensions, raises and the windfall raise bonus are scaled the same way.
+- The profile shows the current standard and its yearly cost. Harness numbers and targets are in [BALANCE.md](../../packs/core-loop/BALANCE.md).
 
 ## Activities (`activities`)
 

@@ -92,6 +92,11 @@ export interface CompiledOccupationKind {
   readonly durationYears?: number;
   readonly promotesTo?: string;
   readonly promotionYears?: number;
+  /**
+   * While held, housing is provided (for example prison, boarding school): no living cost is
+   * charged and the standard's effects do not apply.
+   */
+  readonly providesHousing?: boolean;
   /** Loan kind that can finance it (student loan). */
   readonly loan?: string;
 }
@@ -139,8 +144,42 @@ export interface CompiledCity {
   readonly costIndexBp: number;
   /** Relative weight when a life picks its birth city. */
   readonly weight: number;
+  /** Pay multiplier for working here, basis points (10000 = 100%). */
+  readonly wageIndexBp: number;
   /** Country the city belongs to, a plain string until countries exist as content. */
   readonly country?: string;
+}
+
+/**
+ * A standard of living. Standards are ordered by `cost`; a lower one costs less, hurts more
+ * and raises illness and death risk.
+ */
+export interface CompiledStandard {
+  readonly id: string;
+  readonly label: string;
+  readonly icon?: IconRef;
+  /** Base yearly cost, minor units, before the city cost index (0 for homeless). */
+  readonly cost: number;
+  /** Yearly change to the player's happiness and health. */
+  readonly happiness: number;
+  readonly health: number;
+  /**
+   * Positive changes stop at this stat value (0-100); negative ones always apply. A stat
+   * already above it stays where it is.
+   */
+  readonly cap: number;
+  /** Multiplier for illness and death chances, read as `living.risk`; basis points, 10000 = 100%. */
+  readonly riskBp: number;
+}
+
+/** Living-cost settings of a Pack (the first manifest that declares them wins). */
+export interface LivingDecl {
+  /** Standard chosen on moving out when affordable (full id). */
+  readonly defaultStandard: string;
+  /** Share of the cost an owned home in the current city removes, basis points. */
+  readonly housingShareBp: number;
+  /** Item kind category that counts as a home. */
+  readonly homeCategory: string;
 }
 
 export interface CompiledRole {
@@ -208,6 +247,8 @@ export interface PackBundle {
     /** Neutral lines for a year in which nothing else was journaled. */
     readonly quiet?: readonly string[];
   };
+  /** Living costs; needs `standards`. */
+  readonly living?: LivingDecl;
   /** Starting family; ids are full. The first Pack that declares one wins. */
   readonly family?: FamilyDecl;
   readonly migrations: PackMigrations;
@@ -217,5 +258,6 @@ export interface PackBundle {
   readonly items: readonly CompiledItemKind[];
   readonly loans: readonly CompiledLoanKind[];
   readonly cities: readonly CompiledCity[];
+  readonly standards: readonly CompiledStandard[];
   readonly people: readonly CompiledPeopleItem[];
 }

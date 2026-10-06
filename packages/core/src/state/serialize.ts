@@ -110,6 +110,14 @@ function person(v: unknown, p: string): Person {
   const o = obj(v, p);
   const cityId =
     o.cityId === undefined ? undefined : str(o.cityId, `${p}.cityId`);
+  const standardId =
+    o.standardId === undefined
+      ? undefined
+      : str(o.standardId, `${p}.standardId`);
+  const livedStandardId =
+    o.livedStandardId === undefined
+      ? undefined
+      : str(o.livedStandardId, `${p}.livedStandardId`);
   const withParents =
     o.withParents === undefined
       ? undefined
@@ -117,6 +125,8 @@ function person(v: unknown, p: string): Person {
   return {
     ...(cityId === undefined ? {} : { cityId }),
     ...(withParents === undefined ? {} : { withParents }),
+    ...(standardId === undefined ? {} : { standardId }),
+    ...(livedStandardId === undefined ? {} : { livedStandardId }),
     id: int(o.id, `${p}.id`),
     givenName: str(o.givenName, `${p}.givenName`),
     familyName: str(o.familyName, `${p}.familyName`),

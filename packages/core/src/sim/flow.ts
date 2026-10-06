@@ -13,7 +13,8 @@ import {
   personsInIdOrder,
   updatePerson,
 } from "../state/world.ts";
-import { livesWithParents, reportDecisions } from "./env.ts";
+import { reportDecisions } from "./env.ts";
+import { livesWithParents, startLivingOnOwn } from "./living.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import { indexBundles, type PackIndex } from "./pack-index.ts";
 import { settle } from "./settle.ts";
@@ -307,7 +308,7 @@ function endLivingWithParents(world: World, idx: PackIndex): World {
   );
   if (parentAlive) return world;
   return addJournalLine(
-    updatePerson(world, player.id, (p) => ({ ...p, withParents: false })),
+    startLivingOnOwn(world, idx, player.id),
     player.age,
     "With no parent left, you are on your own now.",
   );

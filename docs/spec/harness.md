@@ -38,6 +38,7 @@ It **reports** without failing, in `report.md` and `report.json` in the check ou
 - net worth at ages 18, 40, and 65;
 - degree rate, employment rate, and retirement rate;
 - loan defaults and repossessions;
+- living standards: share of lives with parents or at each standard by decade of age, and the homeless share of years lived on their own, overall and per profile;
 - housing: age at moving out, share moved out and kicked out (of lives reaching 18), and share still living with their parents at 30 and 40, overall and per profile;
 - stat distributions by age.
 

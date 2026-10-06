@@ -69,19 +69,28 @@ const kind = <T extends { kindId: string }>(
   });
 
 function person(p: Person, r: Resolve): Person {
-  const { cityId, ...rest } = p;
+  const { cityId, standardId, livedStandardId, ...rest } = p;
   const city = cityId === undefined ? null : r(cityId);
+  const standard = standardId === undefined ? null : r(standardId);
+  const lived = livedStandardId === undefined ? null : r(livedStandardId);
   return {
     ...rest,
     ...(city === null ? {} : { cityId: city }),
+    ...(standard === null ? {} : { standardId: standard }),
+    ...(lived === null ? {} : { livedStandardId: lived }),
     stats: keys(p.stats, r),
     qualities: keys<QualityValue>(p.qualities, r),
     occupations: kind<Occupation>(p.occupations, r),
     occupationHistory: kind<Occupation>(p.occupationHistory, r),
-    assets: kind<Asset>(p.assets, r).map((a) => ({
-      ...a,
-      qualities: keys(a.qualities, r),
-    })),
+    assets: kind<Asset>(p.assets, r).map((a) => {
+      const { cityId: assetCity, ...fields } = a;
+      const city = assetCity === undefined ? null : r(assetCity);
+      return {
+        ...fields,
+        ...(city === null ? {} : { cityId: city }),
+        qualities: keys(a.qualities, r),
+      };
+    }),
     loans: kind<Loan>(p.loans, r),
   };
 }

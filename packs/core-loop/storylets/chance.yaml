@@ -5,7 +5,7 @@
 - id: flu-season
   icon: 🤧
   trigger: event
-  chance: 9%
+  chance: 900 * living.risk / 10000
   when: age >= 1
   text: "{player.first_name} comes down with the flu."
   outcomes:
@@ -42,7 +42,7 @@
 - id: serious-illness
   icon: 🏥
   trigger: event
-  chance: 1.5%
+  chance: 150 * living.risk / 10000
   when: age >= 20
   text: "A worrying diagnosis sends {player.first_name} into a long round of treatment."
   outcomes:
@@ -151,7 +151,7 @@
     - weight: 1
       effects:
         - money += 100000
-        - quality.raise_bonus += 50000
+        - quality.raise_bonus += 150000
         - stat.happiness += 5
 
 - id: fender-bender

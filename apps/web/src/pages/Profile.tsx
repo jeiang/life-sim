@@ -1,5 +1,12 @@
 import { bundles } from "virtual:packs";
-import { isGodLife, listActions, livesWithParents, netWorth } from "@life/core";
+import {
+  isGodLife,
+  listActions,
+  livesWithParents,
+  livingCost,
+  netWorth,
+  standardOf,
+} from "@life/core";
 import { PackIcon } from "../components/Emoji.tsx";
 import { GodBadge } from "../components/GodFields.tsx";
 import { MenuList } from "../components/MenuList.tsx";
@@ -40,6 +47,8 @@ export function Profile() {
         <p class="p-4 text-text-muted">Nobody found.</p>
       </PageFrame>
     );
+
+  const standard = standardOf(p, packIndex);
 
   const rel = w.relationships.find(
     (r) =>
@@ -100,6 +109,20 @@ export function Profile() {
               value={livesWithParents(p) ? "With parents" : "On your own"}
               testid="profile-living"
             />
+            {!livesWithParents(p) && standard && (
+              <>
+                <Row
+                  label="Standard of living"
+                  value={standard.label}
+                  testid="profile-standard"
+                />
+                <Row
+                  label="Yearly cost"
+                  value={money(livingCost(p, packIndex))}
+                  testid="profile-living-cost"
+                />
+              </>
+            )}
           </Section>
           <Section title="Occupations">
             {p.occupations.length === 0 ? (

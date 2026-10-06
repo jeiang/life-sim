@@ -10,6 +10,7 @@ import {
   updatePerson,
 } from "../state/world.ts";
 import { makeEnv, qualityOf, type Scope } from "./env.ts";
+import { livesWithParents, startLivingOnOwn } from "./living.ts";
 import {
   dropAsset,
   endLife,
@@ -152,7 +153,19 @@ function applyEffect(
           return updatePerson(w, who, (p) => ({ ...p, cityId: city }));
         }
         case "move_out":
-          return updatePerson(w, who, (p) => ({ ...p, withParents: false }));
+          return startLivingOnOwn(w, idx, who);
+        case "set_standard": {
+          const id = str(args[0], w, idx, scope);
+          if (!idx.standardsById.has(id))
+            throw new RangeError("unknown standard");
+          return livesWithParents(getPerson(w, who))
+            ? w
+            : updatePerson(w, who, (p) => ({
+                ...p,
+                standardId: id,
+                livedStandardId: id,
+              }));
+        }
         case "journal":
           return addJournalLine(
             w,

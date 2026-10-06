@@ -51,6 +51,8 @@ export function createWorld(opts: {
     schemaVersion: SCHEMA_VERSION,
     seed: opts.seed >>> 0,
     playerId: 0,
+    generation: 0,
+    worldYear: 0,
     nextId: 0,
     persons: new Map(),
     relationships: [],
@@ -200,6 +202,6 @@ export function nextStream(
   const counter = world.rngCounters[key] ?? 0;
   return [
     { ...world, rngCounters: { ...world.rngCounters, [key]: counter + 1 } },
-    streamFor(world.seed, age, purposeKey, counter),
+    streamFor(world.seed, age, purposeKey, counter, world.generation),
   ];
 }

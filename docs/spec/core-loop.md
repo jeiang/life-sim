@@ -112,6 +112,11 @@ About 60, plus NPC and mortality storylets:
 - A mortality storylet whose yearly chance rises with age and falls with health, plus a few accident and illness deaths among the chance events.
 - Death shows an obituary (age, cause, net worth, career, education), then the life moves to the graveyard. There is no heir and no continue-as-child.
 
+## Generations and the world clock
+
+- Core carries a generation index (0 for the founder) in every RNG stream derivation, and a world-year counter that advances once per age-up and keeps running across generations. Series read the world year, not the player's age.
+- `succeed(world, heirId)` is the Core primitive that moves the player pointer to a living heir: generation +1, and the storylet firing log, roll-site counters and repeatable-action counters reset. The core-loop Pack does not use it yet (no heir above).
+
 ## Chart
 
 The first chart series is net worth over age (cash plus asset values minus loan balances), shown from the Assets menu and the player profile.

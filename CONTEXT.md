@@ -40,6 +40,14 @@ _Avoid_: NPC, character
 The person the user currently controls; a pointer into the world, which can move (for example to a child).
 _Avoid_: Self, protagonist, hero
 
+**Generation**:
+The index of the player's line: 0 for the founder, +1 each time the player pointer moves to an heir (succession). Part of every RNG stream derivation, so an heir never replays the founder's draws; succession also resets the storylet firing log and repeatable-action counters.
+_Avoid_: Life number, dynasty depth
+
+**World year**:
+A counter of years elapsed in the world: +1 per age-up, never reset by succession. Price series read it instead of the player's age.
+_Avoid_: Calendar year, game year
+
 **Stat**:
 A Pack-declared integer from 0 to 100 on a person, shown to the user as a bar (for example Happiness, Health).
 _Avoid_: Attribute, bar

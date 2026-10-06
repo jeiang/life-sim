@@ -238,6 +238,8 @@ export type ChoiceEntry =
       readonly mode: "cash" | "loan";
     }
   | { readonly t: "sell"; readonly asset: number }
+  /** Succession: the player pointer moves to a living heir. */
+  | { readonly t: "succeed"; readonly heir: PersonId }
   /** God mode: always entry 0 of a custom life; replay feeds it to `newLife`. */
   | ({ readonly t: "start" } & CustomStart)
   /** God mode: set one of the player's stats (0-100). */
@@ -257,6 +259,10 @@ export interface World {
   readonly seed: number;
   /** The player pointer. */
   readonly playerId: PersonId;
+  /** Generation index: 0 for the founder, +1 each succession; part of every RNG stream. */
+  readonly generation: number;
+  /** World years elapsed (+1 per age-up, never reset by succession); price series read it. */
+  readonly worldYear: number;
   /** Next id to allocate for persons, occupations, loans and assets. */
   readonly nextId: number;
   readonly persons: ReadonlyMap<PersonId, Person>;

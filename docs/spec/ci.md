@@ -4,13 +4,14 @@ Decided in [CI runner and check placement](https://github.com/jeiang/life-sim/is
 
 ## Runner
 
-- buildbot-nix on `ricklent`, the existing cluster CI. It evaluates the flake and builds every check and package on x86_64-linux for each pull request and each push, and reports the results as GitHub status checks.
-- Setup (one time): install the buildbot GitHub App on `jeiang/life-sim` (needed while the repo is private; it becomes public before the first deploy, see [deploy](deploy.md#visibility)) and add the repo topic `build-with-buildbot`. buildbot's `userAllowlist` already includes `jeiang`. Branch protection is available on the user's GitHub Pro plan.
-- After a merge, default-branch outputs are pushed to garret (`cache.jeiang.dev`) by a timer within about 5 minutes, so cluster deploys can download them. Pull-request outputs are not pushed.
+- Pull requests are gated by GitHub Actions on GitHub-hosted `ubuntu-latest` runners (`.github/workflows/ci.yml`, workflow `ci`). Nix comes from `cachix/install-nix-action`; the Nix store is cached per leg with `nix-community/cache-nix-action` (GitHub's Actions cache, no secret). Actions are pinned by commit SHA and the workflow has `permissions: contents: read`.
+- Jobs: `eval` (`nix flake check --no-build`), `check (<name>)` (a matrix leg per flake check below, each `nix build .#checks.x86_64-linux.<name>`), and `package` (`nix build .#packages.x86_64-linux.default`). Runs are cancelled per ref when a newer push arrives.
+- buildbot-nix on `ricklent` (cluster CI) builds only `main` after a merge and pushes the outputs to garret (`cache.jeiang.dev`) within about 5 minutes so cluster deploys can download them. It never builds pull requests and is not a required check.
+- The separate `harness-10k` workflow (10,000 lives) is informational and not required.
 
 ## Checks
 
-All checks are hermetic `checks.<system>.*` flake outputs, so `nix flake check` runs the same set locally and in CI.
+All checks are hermetic `checks.<system>.*` flake outputs, so `nix flake check` runs the same set locally and in CI (the `typecheck` step runs inside `vitest`).
 
 | Check | What it does |
 |---|---|
@@ -47,23 +48,6 @@ The e2e specs and a stub page live in `e2e/`; the app e2e suites extend this set
 
 ## Merge flow
 
-- `main` is protected. Changes land through pull requests only, and every buildbot check is required to merge. Build subagents work on branches and open pull requests.
+- `main` is protected. Changes land through pull requests only. Required status contexts: `eval`, `package`, and `check (biome)`, `check (vitest)`, `check (versions)`, `check (packs)`, `check (e2e)`, `check (harness)`. Not strict (an up-to-date branch is not required) and enforced for admins. Adding a flake check means adding it to the matrix and to the required contexts.
+- Build subagents work on branches, open pull requests, and merge them when the `ci` checks are green.
 - Running `nix flake check` locally on the Mac (aarch64-darwin) before pushing is optional.
-
-## Project dependency sync
-
-`.github/workflows/project-deps.yml` (script: `.github/scripts/project-deps.cjs`, run by `actions/github-script`, pinned by commit SHA) keeps the Status field of user project #2 in sync with GitHub issue dependencies ("blocked by" links). It is the only GitHub Actions workflow; CI proper stays on buildbot.
-
-- Triggers: `issues` closed/reopened (recomputes the issues the changed issue blocks), hourly `schedule` and `workflow_dispatch` (recompute every open project issue; catches new links and manual edits).
-- Only two transitions, so it is conservative. Blocked becomes Todo when no blocker is open, with one comment, "Unblocked: all blockers are closed (#a, #b).". Todo or empty becomes Blocked when a blocker is open and the issue has no assignee and no open linked pull request. In Progress, Done, and closed issues are never touched. Re-running changes nothing.
-- Token split: the default `GITHUB_TOKEN` (`issues: write`) reads issue data and posts the comment; `PROJECT_TOKEN` is used only for Projects v2 reads and updates.
-- Without the `PROJECT_TOKEN` secret the job logs a notice and skips.
-
-### `PROJECT_TOKEN` setup (one time)
-
-`GITHUB_TOKEN` cannot write user-owned Projects v2, and fine-grained personal access tokens have no Projects permission for user-owned projects, so a classic personal access token is required.
-
-1. GitHub, Settings, Developer settings, Personal access tokens, Tokens (classic), Generate new token (classic).
-2. Scope: `project` only (the repository is public, so no `repo` scope is needed). Set an expiry and generate. Copy the token.
-3. Add it as a repository secret: `gh secret set PROJECT_TOKEN --repo jeiang/life-sim` (paste when prompted), or Settings, Secrets and variables, Actions, New repository secret.
-4. Optionally run it once: `gh workflow run project-deps.yml --repo jeiang/life-sim`.

@@ -350,7 +350,17 @@ export function open(
         scopeFor(w, ev.scope, s.id),
       ),
     );
-  return runOutcome(w, idx, s, s.outcomes, ev.scope, depth, ev.amount, carryBp, auto);
+  return runOutcome(
+    w,
+    idx,
+    s,
+    s.outcomes,
+    ev.scope,
+    depth,
+    ev.amount,
+    carryBp,
+    auto,
+  );
 }
 
 /** Resolve a choice of the open storylet (journals its text and the outcome, runs effects). */

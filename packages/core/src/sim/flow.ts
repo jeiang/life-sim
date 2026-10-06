@@ -408,7 +408,7 @@ function npcPass(world: World, idx: PackIndex): World {
     w = w2;
     for (const c of [...chance, ...flavour]) {
       if (!isEligible(w, idx, c.storylet, c.scope)) continue;
-      w = open(w, idx, asEvent(c), 0, true);
+      w = open(w, idx, asEvent(c), 0, 10000, true);
     }
   }
   return w.ended ? w : endLivingWithParents(w, idx);

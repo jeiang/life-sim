@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/kind.schema.json
+label: Jurisdiction
+fields:
+  death_penalty: { type: int }   # 1 when courts here can sentence murder to death, else 0

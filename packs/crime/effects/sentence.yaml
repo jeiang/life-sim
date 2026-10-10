@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/effects.schema.json
+# Sentencing blocks of the court chain. `serve` is the custodial base; the others fix the release and parole ages.
+- id: convict
+  effects:
+    - quality.crime_convictions += 1
+    - quality.crime_record = true
+    - quality.crime_years_clean = 0
+    - quality.crime_wanted = false
+    - quality.crime_severity = 0
+- id: probation
+  effects:
+    - quality.crime_term = 0
+    - crime.convict()
+- id: serve
+  params: [term, release_age, parole_age]
+  effects:
+    - quality.crime_term = term
+    - quality.crime_release_age = release_age
+    - quality.crime_parole_age = parole_age
+    - quality.crime_sentences += 1
+    - crime.convict()
+    - quality.crime_on_parole = false
+    - quality.crime_behaviour = 50
+    - quality.crime_respect = 0
+    - quality.crime_gang = false
+    - quality.crime_cellmate = false
+    - quality.crime_escape_used = false
+- id: serve_adult
+  params: [term]
+  effects:
+    - crime.serve(term, age + term, age + term / 2)
+- id: serve_juvenile
+  params: [term]
+  effects:
+    - crime.serve(term, min(age + term, 18), min(age + term / 2, 18))

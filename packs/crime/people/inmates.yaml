@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/people.schema.json
+# The cellmate: one inmate per sentence, spawned at custody intake.
+- { kind: role, id: inmate, label: Cellmate }
+- kind: generator
+  id: inmate-gen
+  age: [19, 55]
+  stats:
+    happiness: [30, 70]
+    health: [40, 90]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
+- kind: generator
+  id: inmate-gen-juvenile
+  age: [13, 17]
+  stats:
+    happiness: [30, 70]
+    health: [50, 100]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]

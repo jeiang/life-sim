@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# Committing crimes, being arrested and tried, and what a conviction does to the record.
+provides:
+  qualities:
+    - crime_severity
+    - crime_lawyer
+    - crime_murders
+    - crime_arrests
+    - crime_sentences
+    - crime_convictions
+    - crime_appeals
+    - crime_years_clean
+  tags:
+    - crime
+  effects:
+    - convict
+    - probation
+    - serve
+    - serve_adult
+    - serve_juvenile
+  readables:
+    - crime_death_penalty
+  kinds:
+    - crime_jurisdiction
+requires:
+  - core-loop/stats
+  - core-loop/hiring
+  - core-loop/careers
+  - core-loop/education
+  - core-loop/family
+  - karma/score

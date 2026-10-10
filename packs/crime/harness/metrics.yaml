@@ -1,0 +1,82 @@
+# Harness metrics for the Crime Pack; the schema is docs/spec/harness.md#pack-metrics.
+title: Crime
+intro: Arrest, conviction and imprisonment by profile (`criminal` commits crimes on purpose; `random` has crime down-weighted), and what a conviction costs. Money is in minor units.
+measures:
+  arrests: { quality: crime_arrests, at: end }
+  arrested: { when: "arrests > 0" }
+  convictions: { quality: crime_convictions, at: end }
+  convicted: { when: "convictions > 0" }
+  sentences: { quality: crime_sentences, at: end }
+  imprisoned: { when: "sentences > 0" }
+  record_ever: { quality: crime_record, at: ever }
+  record_end: { quality: crime_record, at: end }
+  executed: { death: executed }
+  murdered_someone: { fires: { storylet: crime/murder } }
+  assaulted: { fires: { storylet: crime/assault } }
+  property_crimes: { fires: { tag: crime } }
+  offender: { when: "property_crimes > 0 or murdered_someone > 0 or assaulted > 0" }
+  nw65: { snapshot: net_worth, ages: [65] }
+stats:
+  offenders:
+    kind: share
+    when: offender
+    by: profile
+    label: committed a crime
+  arrested_share:
+    kind: share
+    when: arrested
+    by: profile
+    label: arrested
+  arrested_of_offenders:
+    kind: share
+    when: arrested
+    of: offender
+    label: offenders arrested
+  convicted_share:
+    kind: share
+    when: convicted
+    by: profile
+    label: convicted
+  imprisoned_share:
+    kind: share
+    when: imprisoned
+    by: profile
+    label: sentenced to custody
+  record_share:
+    kind: share
+    when: record_ever
+    by: profile
+    label: had a record
+  record_end_share:
+    kind: share
+    when: record_end
+    by: profile
+    label: record still on file at the end
+  executed_share:
+    kind: share
+    when: executed
+    label: executed
+  arrests_per_arrested:
+    kind: dist
+    value: arrests
+    of: arrested
+    label: arrests per arrested life
+  nw65_convicted:
+    kind: median
+    value: nw65
+    of: convicted
+    ages: [65]
+    label: net worth at 65, convicted lives (median)
+  nw65_clean:
+    kind: median
+    value: nw65
+    of: "not convicted"
+    ages: [65]
+    label: net worth at 65, never convicted (median)
+blocks:
+  - text: An offender is a life that opened any crime action.
+  - stats: [offenders, arrested_share, convicted_share, imprisoned_share, record_share, record_end_share]
+  - stats: [arrested_of_offenders, executed_share]
+  - stats: [arrests_per_arrested]
+  - text: Net worth at 65 (minor units).
+  - stats: [nw65_convicted, nw65_clean]

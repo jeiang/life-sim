@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# Confinement: the custodial sentence, the cell, and the people in it.
+provides:
+  qualities:
+    - crime_term
+    - crime_release_age
+    - crime_parole_age
+    - crime_death_row
+    - crime_on_parole
+    - crime_behaviour
+    - crime_respect
+    - crime_gang
+    - crime_cellmate
+    - crime_escape_used
+    - crime_escaped
+  occupations:
+    - prison
+    - juvenile_detention
+    - prison_work
+  roles:
+    - inmate
+  generators:
+    - inmate-gen
+    - inmate-gen-juvenile
+requires:
+  - core-loop/careers
+  - core-loop/family

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/occupations.schema.json
+# Confining occupations. Exclusivity groups are core-loop's singleton block, so prison and juvenile detention sit in
+# `full-time` (starting one ends a held full-time job) and the prison job in `part-time`. Confinement provides housing.
+- id: prison
+  label: Prison
+  icon: 🔒
+  group: full-time
+  requires: age >= 18
+  pay: 0
+  confines: { menus: true, events: true }
+- id: juvenile_detention
+  label: Juvenile detention
+  icon: 🏫
+  group: full-time
+  requires: age < 18
+  pay: 0
+  confines: { menus: true, events: true }
+- id: prison_work
+  label: Prison job
+  icon: 🧹
+  group: part-time
+  requires: age >= 18
+  pay: 25000
+  confines: { menus: true, events: true }

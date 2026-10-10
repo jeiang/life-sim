@@ -32,7 +32,7 @@ Storylets, repeatable actions and the yearly event draw. Part of the [Pack forma
 | `id`, `icon`, `tags` | Identity; optional icon (see Icons); free tags for grouping. `custody-ok` is a Core-owned tag: see [Confinement](content-kinds.md#confinement). `wager` marks a storylet in which the player risks money; the balance harness reports its realised return. |
 | `trigger` | `event` (drawn at age-up) or `action` (offered in a menu). |
 | `menu` | For actions: the menu path, `<top>` or `<top>/<submenu>`, where the top is one of `occupation`, `assets`, `relationships`, `activities` (see [screens](screens.md#menu-ids)). |
-| `scope` | Optional binding, evaluated once per bound item. `loan` (events only): once per loan the player holds, with `loan` bound (for example a missed-payment event). `person`: once per non-player person during the NPC yearly pass, with `person` bound (NPC storylets); on an action, the UI offers it for a chosen person. `die(...)` kills the bound person, and `relationship(person).closeness += n` changes the tie to them. Without `scope`, only the player and storylet-local names are in scope. |
+| `scope` | Optional binding, evaluated once per bound item. `loan` (events only): once per loan the player holds, with `loan` bound (for example a missed-payment event). `person`: once per non-player person during the NPC yearly pass, with `person` bound (NPC storylets); an event with `choices` is instead a decision the player faces (see [Person decisions](#person-decisions)); on an action, the UI offers it for a chosen person. `die(...)` kills the bound person, and `relationship(person).closeness += n` changes the tie to them. Without `scope`, only the player and storylet-local names are in scope. |
 | `target` | With `scope: person`: role ids the person must hold toward the player (for example `[core-loop/parent]`). `person.role`, `person.alive` and `person.age` are readable. |
 | `when` | Eligibility condition (boolean expression). |
 | `chance` | Event that rolls independently each year at this probability. |
@@ -78,6 +78,31 @@ At each age-up, after settlement (ADR 0003):
 
 Slots chain. Slot 1 fires with probability p1. Slot k rolls only if slot k-1 fired, and fires with probability p_k / p_(k-1) (slot 2: 50/90, slot 3: 30/50), so the run of fired slots reaches k with probability exactly p_k. Each roll has its own stable RNG purpose key, `decision-slot/<k>`.
 
-Choice events that hit in the chance pass count toward the fired slots. Each remaining fired slot draws one eligible choice event with a `weight` (respecting `when`, `once`, `cooldown`, `max_per_life`; no storylet twice in a year; purpose key `decision-pick/<n>`). A fired slot with nothing eligible stays empty. Chance events can add decisions beyond the slots, so the delivered 'at least' rates are never below the targets.
+Choice events that hit in the chance pass count toward the fired slots. Each remaining fired slot draws one eligible choice event with a `weight` (a `scope: person` one counts once, see [Person decisions](#person-decisions); respecting `when`, `once`, `cooldown`, `max_per_life`; no storylet twice in a year; purpose key `decision-pick/<n>`). A fired slot with nothing eligible stays empty. Chance events can add decisions beyond the slots, so the delivered 'at least' rates are never below the targets.
+
+### Person decisions
+
+A `scope: person` event with `choices` is a decision for the player, not an NPC reaction: the NPC pass skips it (it keeps the person events without choices). With a `weight` it competes in the decision slots (and, without `year.decisions`, the flavour slots) as **one candidate however many people it could open for**; its weight is the highest weight among the people it is eligible for. When it is drawn, the Core picks one eligible person uniformly at random in id order (`when`, `target`, `once`, `cooldown`, `max_per_life` are checked per person; purpose key `person-pick/<storylet>`, drawn only for a storylet that made the final queue) and the player decides with that person bound: `person.*` reads, and effects such as `relationship(person).closeness += 5`, `person.quality.mood += 1` or `die(...)` act on them. A storylet no person is eligible for is not a candidate. With a `chance` it instead rolls per eligible person like any chance event (key `<storylet>@person:<id>`), and each hit counts toward the slots. A `next:` chain that reaches a person decision from the player's own decision pends for the player too; from an NPC-pass event it takes the first enabled choice for the person.
+
+```yaml
+- id: borrow-from-friend            # one friend picked at random once drawn
+  trigger: event
+  scope: person
+  target: [core-loop/friend]
+  weight: 10
+  when: not person.quality.owes_you
+  text: "{person.first_name} asks to borrow $200."
+  choices:
+    - label: Lend it
+      outcomes:
+        - text: "{person.first_name} promises to pay you back."
+          effects:
+            - money -= 20000
+            - person.quality.owes_you = true
+    - label: Say no
+      outcomes:
+        - effects:
+            - relationship(person).closeness += -5
+```
 
 The queued decisions open one after another: the player resolves each (and its `next:` chain) and the next opens. The life cannot age up until the queue is empty.

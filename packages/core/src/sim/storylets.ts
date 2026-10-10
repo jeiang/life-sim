@@ -245,6 +245,7 @@ function runOutcome(
   depth: number,
   amount?: number,
   carryBp = 10000,
+  auto = false,
 ): World {
   const curve = curveOf(idx, s);
   const base = scopeFor(world, ref, s.id, amount);
@@ -291,13 +292,15 @@ function runOutcome(
     },
     depth + 1,
     bp,
+    auto,
   );
 }
 
 /**
  * Open a storylet. Without choices it resolves now (text, one weighted outcome, effects,
- * then `next`). With choices it becomes `world.pending` for the player, except in
- * `scope: person` where the first enabled choice is taken for events. Records the firing.
+ * then `next`). With choices it becomes `world.pending` for the player, except with `auto`
+ * (the NPC pass and its `next:` chains) in `scope: person`, where the first enabled choice is
+ * taken for the person. Records the firing.
  */
 export function open(
   world: World,
@@ -305,6 +308,7 @@ export function open(
   ev: QueuedEvent,
   depth = 0,
   carryBp = 10000,
+  auto = false,
 ): World {
   if (world.ended || depth > MAX_CHAIN) return world;
   const s = idx.storylets.get(ev.storyletId);
@@ -317,7 +321,7 @@ export function open(
     w = { ...w, uses: { ...w.uses, [key]: (w.uses[key] ?? 0) + 1 } };
   }
   if (s.choices.length > 0) {
-    if (ev.scope?.kind === "person" && s.trigger === "event") {
+    if (auto && ev.scope?.kind === "person" && s.trigger === "event") {
       const scope = scopeFor(w, ev.scope, s.id);
       const c = s.choices.find((x) => evalBool(x.when, w, idx, scope));
       if (!c) return w;
@@ -335,6 +339,7 @@ export function open(
         depth,
         ev.amount,
         carryBp,
+        true,
       );
     }
     return {

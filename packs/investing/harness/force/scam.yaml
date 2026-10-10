@@ -1,0 +1,6 @@
+# Forced script (docs/spec/harness.md#forced-outcomes): the first Ponzi scheme offered is believed and the 10% stake is lost.
+description: A Ponzi scheme takes a 10% stake
+steps:
+  - roll: outcome/investing/ponzi-scheme
+    value: "The fund collapses. The organisers are gone and so is the money."
+  - choose: "Put in 10%*"

@@ -1,0 +1,169 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Insider tips".
+
+- id: insider-tip
+  icon: 🤫
+  trigger: event
+  tags: [money, relationship]
+  scope: person
+  target: [core-loop/parent, core-loop/sibling, core-loop/friend]
+  chance: 0.1%
+  when: "age >= 18 and person.age >= 25 and person.quality.invest_tip_age < age and (units(investing/total-market) > 0 or units(investing/world-index) > 0 or units(investing/acme-robotics) > 0 or units(investing/northwind-foods) > 0 or units(investing/lumen-energy) > 0 or units(investing/quark-coin) > 0) and (forecast(investing/total-market) > 2000 or forecast(investing/world-index) > 2000 or forecast(investing/acme-robotics) > 2000 or forecast(investing/northwind-foods) > 2000 or forecast(investing/lumen-energy) > 2000 or forecast(investing/quark-coin) > 2000)"
+  text: "{person.first_name} pulls you aside at the next family gathering and drops their voice."
+  outcomes:
+    - weight: min(20, max(0, (forecast(investing/total-market) - 2000) / 100))
+      when: forecast(investing/total-market) > 2000
+      text: The total market fund is about to rip. Put what you can spare into it, and don't ask how I know.
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: insider-total-market
+    - weight: min(20, max(0, (forecast(investing/world-index) - 2000) / 100))
+      when: forecast(investing/world-index) > 2000
+      text: The world index fund is due a big year. Quietly, mind you.
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: insider-world-index
+    - weight: min(20, max(0, (forecast(investing/acme-robotics) - 2000) / 100))
+      when: forecast(investing/acme-robotics) > 2000
+      text: Acme Robotics is about to take off. Someone in their finance office owes me a favor, so trust me on this.
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: insider-acme-robotics
+    - weight: min(20, max(0, (forecast(investing/northwind-foods) - 2000) / 100))
+      when: forecast(investing/northwind-foods) > 2000
+      text: Northwind Foods has a contract coming through. It is going to be big, and it is going to be soon.
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: insider-northwind-foods
+    - weight: min(20, max(0, (forecast(investing/lumen-energy) - 2000) / 100))
+      when: forecast(investing/lumen-energy) > 2000
+      text: Lumen Energy is about to jump. The board is not telling anyone yet, so you did not hear it from me.
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: insider-lumen-energy
+    - weight: min(20, max(0, (forecast(investing/quark-coin) - 2000) / 100))
+      when: forecast(investing/quark-coin) > 2000
+      text: Quark Coin is about to go parabolic. Get in before the news does.
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: insider-quark-coin
+
+- id: insider-total-market
+  icon: 📈
+  trigger: event
+  chance: 0%
+  text: Acting on an inside tip about the Total Market Index Fund is not quite legal. It is also a very good tip.
+  choices:
+    - label: Back it with 40% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put 40% of your cash into the Total Market Index Fund and try not to think about it.
+          effects:
+            - trade(investing/total-market, money * 2 / 5)
+            - "quality.invest_insider_age = age"
+            - "journal(\"Acted on an insider tip about the Total Market Index Fund.\")"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You let it go. Some tips are better left alone.
+
+- id: insider-world-index
+  icon: 📈
+  trigger: event
+  chance: 0%
+  text: Acting on an inside tip about the World Index Fund is not quite legal. The tip is about as clean as these things get.
+  choices:
+    - label: Back it with 40% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put 40% of your cash into the World Index Fund and wait for the good news.
+          effects:
+            - trade(investing/world-index, money * 2 / 5)
+            - "quality.invest_insider_age = age"
+            - "journal(\"Acted on an insider tip about the World Index Fund.\")"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You let it go. Some tips are better left alone.
+
+- id: insider-acme-robotics
+  icon: 🤖
+  trigger: event
+  chance: 0%
+  text: Acting on an inside tip about Acme Robotics is not quite legal. Nobody has ever said that to your face and meant it.
+  choices:
+    - label: Back it with 40% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put 40% of your cash into Acme Robotics and try not to refresh the price every five minutes.
+          effects:
+            - trade(investing/acme-robotics, money * 2 / 5)
+            - "quality.invest_insider_age = age"
+            - "journal(\"Acted on an insider tip about Acme Robotics.\")"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You let it go. Some tips are better left alone.
+
+- id: insider-northwind-foods
+  icon: 🥫
+  trigger: event
+  chance: 0%
+  text: Acting on an inside tip about Northwind Foods is not quite legal. Everyone in the room seemed to know, so maybe it is not much of a secret.
+  choices:
+    - label: Back it with 40% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put 40% of your cash into Northwind Foods and start planning what to do with the profit.
+          effects:
+            - trade(investing/northwind-foods, money * 2 / 5)
+            - "quality.invest_insider_age = age"
+            - "journal(\"Acted on an insider tip about Northwind Foods.\")"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You let it go. Some tips are better left alone.
+
+- id: insider-lumen-energy
+  icon: 💡
+  trigger: event
+  chance: 0%
+  text: Acting on an inside tip about Lumen Energy is not quite legal. The tip came with a wink, which is never a good sign or a bad one.
+  choices:
+    - label: Back it with 40% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put 40% of your cash into Lumen Energy and keep the confirmation email open in a tab.
+          effects:
+            - trade(investing/lumen-energy, money * 2 / 5)
+            - "quality.invest_insider_age = age"
+            - "journal(\"Acted on an insider tip about Lumen Energy.\")"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You let it go. Some tips are better left alone.
+
+- id: insider-quark-coin
+  icon: 🪙
+  trigger: event
+  chance: 0%
+  text: Acting on an inside tip about Quark Coin is not quite legal. Your gut says it is also the riskiest thing you could do this year.
+  choices:
+    - label: Back it with 40% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put 40% of your cash into Quark Coin and tell yourself you can afford to lose it.
+          effects:
+            - trade(investing/quark-coin, money * 2 / 5)
+            - "quality.invest_insider_age = age"
+            - "journal(\"Acted on an insider tip about Quark Coin.\")"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You let it go. Some tips are better left alone.

@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
+# Age at which the player acted on an insider tip (0 = never). A later Crime bridge reads it.
+- { id: invest_insider_age, type: int, min: 0, default: 0 }
+# Scams the player lost money to; each one lowers the weight of the next offer.
+- { id: invest_scams, type: int, min: 0, default: 0 }
+# Per person: the last age this person gave the player a market tip (once per source per year).
+- { id: invest_tip_age, type: int, min: 0, default: 0, scope: person }
+# Value of everything held at the last age-up (the `portfolio` name), written by the on_age_up_post hook for harness measures.
+- { id: invest_portfolio, type: int, min: 0, default: 0 }

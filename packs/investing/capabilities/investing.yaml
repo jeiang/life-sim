@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# Stats (smarts) and family roles (parent, sibling, friend, partner, spouse) of core-loop.
+requires:
+  - core-loop/stats
+  - core-loop/family
+provides:
+  qualities:
+    # Read by a later Crime bridge (#58, #103); nothing in this Pack reads it.
+    - invest_insider_age

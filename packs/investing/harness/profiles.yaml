@@ -1,0 +1,28 @@
+# Simulated player profiles of the Investing Pack; the schema is docs/spec/harness.md#simulated-player-profiles.
+# The harness cannot trade on the market screen, so both profiles invest through tips: they take the tipped
+# trade (a quarter of their cash, or a sale) and turn down scams and the 5%/10% stakes.
+profiles:
+  investor:
+    description: "Asks a relative or friend, reads the news or buys the book (one source at a time, each at most once a year; looks for work otherwise) and takes the trade a tip offers (a quarter of their cash, a sale, an insider back); declines every scam. No look-ahead at prices"
+    moves: 2
+    once_per_year: true
+    choice:
+      prefer: ["put in a quarter*", "sell*", "back it*", "walk away"]
+      avoid: ["go all in*", "put in 10%*", "put in 5%*"]
+    rules:
+      - ids: [investing/ask-for-tip, investing/read-the-news, investing/read-investing-book]
+      - ids: ["*/apply-*"]
+  tipstacker:
+    description: "Asks every source each year (the smartest relative or friend first, then the book and the news) and trades on all of them. Approximates the majority rule (decision 4, G2): the harness cannot compare two tips, so it takes each one"
+    moves: 4
+    once_per_year: true
+    choice:
+      prefer: ["put in a quarter*", "sell*", "back it*", "walk away"]
+      avoid: ["go all in*", "put in 10%*", "put in 5%*"]
+    rules:
+      - ids: [investing/ask-for-tip]
+        pick: max
+        by: person.stat.smarts
+      - ids: [investing/read-investing-book]
+      - ids: [investing/read-the-news]
+      - ids: ["*/apply-*"]

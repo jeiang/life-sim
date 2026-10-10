@@ -1,0 +1,983 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Source tips".
+
+- id: ask-for-tip
+  icon: 💡
+  trigger: action
+  menu: relationships
+  label: Ask for a tip
+  tags: [relationship]
+  scope: person
+  target: [core-loop/parent, core-loop/sibling, core-loop/friend, core-loop/partner, core-loop/spouse]
+  when: "age >= 18 and person.age >= 18 and person.quality.invest_tip_age < age"
+  text: "You ask {person.first_name} whether they have heard anything about the markets."
+  outcomes:
+    - weight: "(forecast(investing/total-market) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10"
+      when: price(investing/total-market) > 0
+      text: "{person.first_name} swears the Total market fund is about to climb."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-total-market
+    - weight: "(forecast(investing/total-market) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10"
+      when: price(investing/total-market) > 0
+      text: "{person.first_name} says to get out of the Total market fund before it slides."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-total-market-sell
+    - weight: "(forecast(investing/world-index) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10"
+      when: price(investing/world-index) > 0
+      text: "{person.first_name} says the World index fund is due a good year."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-world-index
+    - weight: "(forecast(investing/world-index) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10"
+      when: price(investing/world-index) > 0
+      text: "{person.first_name} warns that the World index fund is heading for a rough one."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-world-index-sell
+    - weight: "(forecast(investing/income-bond-fund) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10"
+      when: price(investing/income-bond-fund) > 0
+      text: "{person.first_name} says the Income bond fund is about to pay off nicely."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-income-bond-fund
+    - weight: "(forecast(investing/income-bond-fund) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10"
+      when: price(investing/income-bond-fund) > 0
+      text: "{person.first_name} says the Income bond fund is about to wobble. Get out."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-income-bond-fund-sell
+    - weight: "(forecast(investing/corporate-bond-fund) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10"
+      when: price(investing/corporate-bond-fund) > 0
+      text: "{person.first_name} says the Corporate bond fund is quietly about to rise."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-corporate-bond-fund
+    - weight: "(forecast(investing/corporate-bond-fund) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10"
+      when: price(investing/corporate-bond-fund) > 0
+      text: "{person.first_name} says the Corporate bond fund is about to slip."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-corporate-bond-fund-sell
+    - weight: "(forecast(investing/acme-robotics) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10"
+      when: price(investing/acme-robotics) > 0
+      text: "{person.first_name} has a friend who says Acme Robotics is about to take off."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-acme-robotics
+    - weight: "(forecast(investing/acme-robotics) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10"
+      when: price(investing/acme-robotics) > 0
+      text: "{person.first_name} says Acme Robotics is about to crash, so sell."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-acme-robotics-sell
+    - weight: "(forecast(investing/northwind-foods) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10"
+      when: price(investing/northwind-foods) > 0
+      text: "{person.first_name} says people always eat, so Northwind Foods is going up."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-northwind-foods
+    - weight: "(forecast(investing/northwind-foods) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10"
+      when: price(investing/northwind-foods) > 0
+      text: "{person.first_name} says Northwind Foods has a bad year coming."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-northwind-foods-sell
+    - weight: "(forecast(investing/lumen-energy) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10"
+      when: price(investing/lumen-energy) > 0
+      text: "{person.first_name} says Lumen Energy is about to light up the market."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-lumen-energy
+    - weight: "(forecast(investing/lumen-energy) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10"
+      when: price(investing/lumen-energy) > 0
+      text: "{person.first_name} says Lumen Energy is about to go dark."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-lumen-energy-sell
+    - weight: "(forecast(investing/quark-coin) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10"
+      when: price(investing/quark-coin) > 0
+      text: "{person.first_name} says Quark Coin is about to moon. Trust the feeling."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-quark-coin
+    - weight: "(forecast(investing/quark-coin) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10"
+      when: price(investing/quark-coin) > 0
+      text: "{person.first_name} says Quark Coin is about to crash, so sell it."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-quark-coin-sell
+    - weight: "(forecast(investing/pinecrest-mining) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10"
+      when: price(investing/pinecrest-mining) > 0
+      text: "{person.first_name} says Pinecrest Mining is about to strike gold."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-pinecrest-mining
+    - weight: "(forecast(investing/pinecrest-mining) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10"
+      when: price(investing/pinecrest-mining) > 0
+      text: "{person.first_name} says Pinecrest Mining is about to dig itself into a hole."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-pinecrest-mining-sell
+    - weight: "(forecast(investing/brightwave-labs) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10"
+      when: price(investing/brightwave-labs) > 0
+      text: "{person.first_name} says Brightwave Labs is about to light up."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-brightwave-labs
+    - weight: "(forecast(investing/brightwave-labs) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10"
+      when: price(investing/brightwave-labs) > 0
+      text: "{person.first_name} says Brightwave Labs is about to fizzle."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-brightwave-labs-sell
+    - weight: "(forecast(investing/gov-bond-5) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10"
+      when: price(investing/gov-bond-5) > 0
+      text: "{person.first_name} says the 5-year government bond is about to tick up. Boring, but right."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-gov-bond-5
+    - weight: "(forecast(investing/gov-bond-5) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10"
+      when: price(investing/gov-bond-5) > 0
+      text: "{person.first_name} says the 5-year government bond is about to tick down. Cash out."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-gov-bond-5-sell
+    - weight: "(forecast(investing/gov-bond-10) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10"
+      when: price(investing/gov-bond-10) > 0
+      text: "{person.first_name} says the 10-year government bond is about to tick up."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-gov-bond-10
+    - weight: "(forecast(investing/gov-bond-10) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10"
+      when: price(investing/gov-bond-10) > 0
+      text: "{person.first_name} says the 10-year government bond is about to tick down."
+      effects:
+        - "person.quality.invest_tip_age = age"
+      next: tip-gov-bond-10-sell
+
+- id: read-the-news
+  icon: 📰
+  trigger: action
+  menu: activities/investing
+  label: Read the financial news
+  tags: [learning]
+  cooldown: 1
+  text: You skim the financial pages over breakfast.
+  outcomes:
+    - weight: "(forecast(investing/total-market) > 0) ? 70 : 30"
+      when: price(investing/total-market) > 0
+      text: A financial column says the Total market fund is set to climb.
+      next: tip-total-market
+    - weight: "(forecast(investing/total-market) > 0) ? 30 : 70"
+      when: price(investing/total-market) > 0
+      text: A financial column says the Total market fund is set to slide.
+      next: tip-total-market-sell
+    - weight: "(forecast(investing/world-index) > 0) ? 70 : 30"
+      when: price(investing/world-index) > 0
+      text: A market note expects the World index fund to have a good year.
+      next: tip-world-index
+    - weight: "(forecast(investing/world-index) > 0) ? 30 : 70"
+      when: price(investing/world-index) > 0
+      text: A market note expects the World index fund to have a rough year.
+      next: tip-world-index-sell
+    - weight: "(forecast(investing/income-bond-fund) > 0) ? 70 : 30"
+      when: price(investing/income-bond-fund) > 0
+      text: A bond column says the Income bond fund is about to pay off.
+      next: tip-income-bond-fund
+    - weight: "(forecast(investing/income-bond-fund) > 0) ? 30 : 70"
+      when: price(investing/income-bond-fund) > 0
+      text: A bond column says the Income bond fund is about to wobble.
+      next: tip-income-bond-fund-sell
+    - weight: "(forecast(investing/corporate-bond-fund) > 0) ? 70 : 30"
+      when: price(investing/corporate-bond-fund) > 0
+      text: A bond column says the Corporate bond fund is quietly about to rise.
+      next: tip-corporate-bond-fund
+    - weight: "(forecast(investing/corporate-bond-fund) > 0) ? 30 : 70"
+      when: price(investing/corporate-bond-fund) > 0
+      text: A bond column says the Corporate bond fund is about to slip.
+      next: tip-corporate-bond-fund-sell
+    - weight: "(forecast(investing/acme-robotics) > 0) ? 70 : 30"
+      when: price(investing/acme-robotics) > 0
+      text: A business page says Acme Robotics is about to take off.
+      next: tip-acme-robotics
+    - weight: "(forecast(investing/acme-robotics) > 0) ? 30 : 70"
+      when: price(investing/acme-robotics) > 0
+      text: A business page says Acme Robotics is about to crash.
+      next: tip-acme-robotics-sell
+    - weight: "(forecast(investing/northwind-foods) > 0) ? 70 : 30"
+      when: price(investing/northwind-foods) > 0
+      text: A business page says Northwind Foods is about to climb.
+      next: tip-northwind-foods
+    - weight: "(forecast(investing/northwind-foods) > 0) ? 30 : 70"
+      when: price(investing/northwind-foods) > 0
+      text: A business page says Northwind Foods has a bad year coming.
+      next: tip-northwind-foods-sell
+    - weight: "(forecast(investing/lumen-energy) > 0) ? 70 : 30"
+      when: price(investing/lumen-energy) > 0
+      text: An energy column says Lumen Energy is about to light up.
+      next: tip-lumen-energy
+    - weight: "(forecast(investing/lumen-energy) > 0) ? 30 : 70"
+      when: price(investing/lumen-energy) > 0
+      text: An energy column says Lumen Energy is about to go dark.
+      next: tip-lumen-energy-sell
+    - weight: "(forecast(investing/quark-coin) > 0) ? 70 : 30"
+      when: price(investing/quark-coin) > 0
+      text: A crypto blog says Quark Coin is about to moon.
+      next: tip-quark-coin
+    - weight: "(forecast(investing/quark-coin) > 0) ? 30 : 70"
+      when: price(investing/quark-coin) > 0
+      text: A crypto blog says Quark Coin is about to crash.
+      next: tip-quark-coin-sell
+    - weight: "(forecast(investing/pinecrest-mining) > 0) ? 70 : 30"
+      when: price(investing/pinecrest-mining) > 0
+      text: A mining column says Pinecrest Mining is about to strike gold.
+      next: tip-pinecrest-mining
+    - weight: "(forecast(investing/pinecrest-mining) > 0) ? 30 : 70"
+      when: price(investing/pinecrest-mining) > 0
+      text: A mining column says Pinecrest Mining is about to dig itself into a hole.
+      next: tip-pinecrest-mining-sell
+    - weight: "(forecast(investing/brightwave-labs) > 0) ? 70 : 30"
+      when: price(investing/brightwave-labs) > 0
+      text: A tech column says Brightwave Labs is about to light up.
+      next: tip-brightwave-labs
+    - weight: "(forecast(investing/brightwave-labs) > 0) ? 30 : 70"
+      when: price(investing/brightwave-labs) > 0
+      text: A tech column says Brightwave Labs is about to fizzle.
+      next: tip-brightwave-labs-sell
+    - weight: "(forecast(investing/gov-bond-5) > 0) ? 70 : 30"
+      when: price(investing/gov-bond-5) > 0
+      text: A bond column says the 5-year government bond is about to tick up.
+      next: tip-gov-bond-5
+    - weight: "(forecast(investing/gov-bond-5) > 0) ? 30 : 70"
+      when: price(investing/gov-bond-5) > 0
+      text: A bond column says the 5-year government bond is about to tick down.
+      next: tip-gov-bond-5-sell
+    - weight: "(forecast(investing/gov-bond-10) > 0) ? 70 : 30"
+      when: price(investing/gov-bond-10) > 0
+      text: A bond column says the 10-year government bond is about to tick up.
+      next: tip-gov-bond-10
+    - weight: "(forecast(investing/gov-bond-10) > 0) ? 30 : 70"
+      when: price(investing/gov-bond-10) > 0
+      text: A bond column says the 10-year government bond is about to tick down.
+      next: tip-gov-bond-10-sell
+
+- id: read-investing-book
+  icon: 📚
+  trigger: action
+  menu: activities/investing
+  label: "Buy an investing book ($25)"
+  tags: [learning]
+  when: age >= 18 and money >= 2500
+  cooldown: 1
+  text: A paperback on investing is on sale. You pick it up.
+  outcomes:
+    - weight: "(forecast(investing/total-market) > 0) ? 80 : 20"
+      when: price(investing/total-market) > 0
+      text: The chapter on index funds makes sense. It says the Total market fund is set to climb, and you believe it.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-total-market
+    - weight: "(forecast(investing/total-market) > 0) ? 20 : 80"
+      when: price(investing/total-market) > 0
+      text: The chapter on index funds makes sense. It says the Total market fund is set to slide, and you believe it.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-total-market-sell
+    - weight: "(forecast(investing/world-index) > 0) ? 80 : 20"
+      when: price(investing/world-index) > 0
+      text: The book's example is a World index fund, and it is due a good year.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-world-index
+    - weight: "(forecast(investing/world-index) > 0) ? 20 : 80"
+      when: price(investing/world-index) > 0
+      text: The book's example is a World index fund, and it is heading for a rough year.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-world-index-sell
+    - weight: "(forecast(investing/income-bond-fund) > 0) ? 80 : 20"
+      when: price(investing/income-bond-fund) > 0
+      text: A section on bond funds says the Income bond fund is about to pay off.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-income-bond-fund
+    - weight: "(forecast(investing/income-bond-fund) > 0) ? 20 : 80"
+      when: price(investing/income-bond-fund) > 0
+      text: A section on bond funds says the Income bond fund is about to wobble.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-income-bond-fund-sell
+    - weight: "(forecast(investing/corporate-bond-fund) > 0) ? 80 : 20"
+      when: price(investing/corporate-bond-fund) > 0
+      text: A section on corporate bonds says the Corporate bond fund is quietly about to rise.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-corporate-bond-fund
+    - weight: "(forecast(investing/corporate-bond-fund) > 0) ? 20 : 80"
+      when: price(investing/corporate-bond-fund) > 0
+      text: A section on corporate bonds says the Corporate bond fund is about to slip.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-corporate-bond-fund-sell
+    - weight: "(forecast(investing/acme-robotics) > 0) ? 80 : 20"
+      when: price(investing/acme-robotics) > 0
+      text: The stock-picking chapter is sure Acme Robotics is about to take off.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-acme-robotics
+    - weight: "(forecast(investing/acme-robotics) > 0) ? 20 : 80"
+      when: price(investing/acme-robotics) > 0
+      text: The stock-picking chapter is sure Acme Robotics is about to crash.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-acme-robotics-sell
+    - weight: "(forecast(investing/northwind-foods) > 0) ? 80 : 20"
+      when: price(investing/northwind-foods) > 0
+      text: The stock-picking chapter says Northwind Foods is about to climb.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-northwind-foods
+    - weight: "(forecast(investing/northwind-foods) > 0) ? 20 : 80"
+      when: price(investing/northwind-foods) > 0
+      text: The stock-picking chapter says Northwind Foods has a bad year coming.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-northwind-foods-sell
+    - weight: "(forecast(investing/lumen-energy) > 0) ? 80 : 20"
+      when: price(investing/lumen-energy) > 0
+      text: The stock-picking chapter says Lumen Energy is about to light up.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-lumen-energy
+    - weight: "(forecast(investing/lumen-energy) > 0) ? 20 : 80"
+      when: price(investing/lumen-energy) > 0
+      text: The stock-picking chapter says Lumen Energy is about to go dark.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-lumen-energy-sell
+    - weight: "(forecast(investing/quark-coin) > 0) ? 80 : 20"
+      when: price(investing/quark-coin) > 0
+      text: A chapter on speculative coins says Quark Coin is about to moon.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-quark-coin
+    - weight: "(forecast(investing/quark-coin) > 0) ? 20 : 80"
+      when: price(investing/quark-coin) > 0
+      text: A chapter on speculative coins says Quark Coin is about to crash.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-quark-coin-sell
+    - weight: "(forecast(investing/pinecrest-mining) > 0) ? 80 : 20"
+      when: price(investing/pinecrest-mining) > 0
+      text: A chapter on penny stocks says Pinecrest Mining is about to strike gold.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-pinecrest-mining
+    - weight: "(forecast(investing/pinecrest-mining) > 0) ? 20 : 80"
+      when: price(investing/pinecrest-mining) > 0
+      text: A chapter on penny stocks says Pinecrest Mining is about to dig itself into a hole.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-pinecrest-mining-sell
+    - weight: "(forecast(investing/brightwave-labs) > 0) ? 80 : 20"
+      when: price(investing/brightwave-labs) > 0
+      text: A chapter on penny stocks says Brightwave Labs is about to light up.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-brightwave-labs
+    - weight: "(forecast(investing/brightwave-labs) > 0) ? 20 : 80"
+      when: price(investing/brightwave-labs) > 0
+      text: A chapter on penny stocks says Brightwave Labs is about to fizzle.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-brightwave-labs-sell
+    - weight: "(forecast(investing/gov-bond-5) > 0) ? 80 : 20"
+      when: price(investing/gov-bond-5) > 0
+      text: The bond chapter says the 5-year government bond is about to tick up.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-gov-bond-5
+    - weight: "(forecast(investing/gov-bond-5) > 0) ? 20 : 80"
+      when: price(investing/gov-bond-5) > 0
+      text: The bond chapter says the 5-year government bond is about to tick down.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-gov-bond-5-sell
+    - weight: "(forecast(investing/gov-bond-10) > 0) ? 80 : 20"
+      when: price(investing/gov-bond-10) > 0
+      text: The bond chapter says the 10-year government bond is about to tick up.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-gov-bond-10
+    - weight: "(forecast(investing/gov-bond-10) > 0) ? 20 : 80"
+      when: price(investing/gov-bond-10) > 0
+      text: The bond chapter says the 10-year government bond is about to tick down.
+      effects:
+        - money -= 2500
+        - stat.smarts += 1
+      next: tip-gov-bond-10-sell
+
+- id: tip-total-market
+  icon: 📈
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says the Total market fund is about to climb. Do you put money in?
+  choices:
+    - label: Put in 5% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a small slice and keep the rest in your pocket.
+          effects:
+            - trade(investing/total-market, money / 20)
+    - label: Put in a quarter of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a big slice and try not to think about it.
+          effects:
+            - trade(investing/total-market, money / 4)
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You leave your cash where it is.
+
+- id: tip-total-market-sell
+  icon: 📉
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says the Total market fund is about to slide. Do you sell?
+  choices:
+    - label: Sell a quarter of your holding
+      when: units(investing/total-market) > 0
+      outcomes:
+        - weight: 1
+          text: You sell a quarter of your holding and feel smart about it.
+          effects:
+            - "trade(investing/total-market, 0 - holding_value(investing/total-market) / 4)"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You hold on to what you have.
+
+- id: tip-world-index
+  icon: 📈
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says the World index fund is due a good year. Do you put money in?
+  choices:
+    - label: Put in 5% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a small slice and keep the rest in your pocket.
+          effects:
+            - trade(investing/world-index, money / 20)
+    - label: Put in a quarter of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a big slice and try not to think about it.
+          effects:
+            - trade(investing/world-index, money / 4)
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You leave your cash where it is.
+
+- id: tip-world-index-sell
+  icon: 📉
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says the World index fund is heading for a rough year. Do you sell?
+  choices:
+    - label: Sell a quarter of your holding
+      when: units(investing/world-index) > 0
+      outcomes:
+        - weight: 1
+          text: You sell a quarter of your holding and feel smart about it.
+          effects:
+            - "trade(investing/world-index, 0 - holding_value(investing/world-index) / 4)"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You hold on to what you have.
+
+- id: tip-income-bond-fund
+  icon: 📈
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says the Income bond fund is about to pay off nicely. Do you put money in?
+  choices:
+    - label: Put in 5% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a small slice and keep the rest in your pocket.
+          effects:
+            - trade(investing/income-bond-fund, money / 20)
+    - label: Put in a quarter of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a big slice and try not to think about it.
+          effects:
+            - trade(investing/income-bond-fund, money / 4)
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You leave your cash where it is.
+
+- id: tip-income-bond-fund-sell
+  icon: 📉
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says the Income bond fund is about to wobble. Do you sell?
+  choices:
+    - label: Sell a quarter of your holding
+      when: units(investing/income-bond-fund) > 0
+      outcomes:
+        - weight: 1
+          text: You sell a quarter of your holding and feel smart about it.
+          effects:
+            - "trade(investing/income-bond-fund, 0 - holding_value(investing/income-bond-fund) / 4)"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You hold on to what you have.
+
+- id: tip-corporate-bond-fund
+  icon: 📈
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says the Corporate bond fund is quietly about to rise. Do you put money in?
+  choices:
+    - label: Put in 5% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a small slice and keep the rest in your pocket.
+          effects:
+            - trade(investing/corporate-bond-fund, money / 20)
+    - label: Put in a quarter of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a big slice and try not to think about it.
+          effects:
+            - trade(investing/corporate-bond-fund, money / 4)
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You leave your cash where it is.
+
+- id: tip-corporate-bond-fund-sell
+  icon: 📉
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says the Corporate bond fund is about to slip. Do you sell?
+  choices:
+    - label: Sell a quarter of your holding
+      when: units(investing/corporate-bond-fund) > 0
+      outcomes:
+        - weight: 1
+          text: You sell a quarter of your holding and feel smart about it.
+          effects:
+            - "trade(investing/corporate-bond-fund, 0 - holding_value(investing/corporate-bond-fund) / 4)"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You hold on to what you have.
+
+- id: tip-acme-robotics
+  icon: 📈
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says Acme Robotics is about to take off. Do you put money in?
+  choices:
+    - label: Put in 5% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a small slice and keep the rest in your pocket.
+          effects:
+            - trade(investing/acme-robotics, money / 20)
+    - label: Put in a quarter of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a big slice and try not to think about it.
+          effects:
+            - trade(investing/acme-robotics, money / 4)
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You leave your cash where it is.
+
+- id: tip-acme-robotics-sell
+  icon: 📉
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says Acme Robotics is about to crash. Do you sell?
+  choices:
+    - label: Sell a quarter of your holding
+      when: units(investing/acme-robotics) > 0
+      outcomes:
+        - weight: 1
+          text: You sell a quarter of your holding and feel smart about it.
+          effects:
+            - "trade(investing/acme-robotics, 0 - holding_value(investing/acme-robotics) / 4)"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You hold on to what you have.
+
+- id: tip-northwind-foods
+  icon: 📈
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says Northwind Foods is about to climb. Do you put money in?
+  choices:
+    - label: Put in 5% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a small slice and keep the rest in your pocket.
+          effects:
+            - trade(investing/northwind-foods, money / 20)
+    - label: Put in a quarter of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a big slice and try not to think about it.
+          effects:
+            - trade(investing/northwind-foods, money / 4)
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You leave your cash where it is.
+
+- id: tip-northwind-foods-sell
+  icon: 📉
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says Northwind Foods has a bad year coming. Do you sell?
+  choices:
+    - label: Sell a quarter of your holding
+      when: units(investing/northwind-foods) > 0
+      outcomes:
+        - weight: 1
+          text: You sell a quarter of your holding and feel smart about it.
+          effects:
+            - "trade(investing/northwind-foods, 0 - holding_value(investing/northwind-foods) / 4)"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You hold on to what you have.
+
+- id: tip-lumen-energy
+  icon: 📈
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says Lumen Energy is about to light up. Do you put money in?
+  choices:
+    - label: Put in 5% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a small slice and keep the rest in your pocket.
+          effects:
+            - trade(investing/lumen-energy, money / 20)
+    - label: Put in a quarter of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a big slice and try not to think about it.
+          effects:
+            - trade(investing/lumen-energy, money / 4)
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You leave your cash where it is.
+
+- id: tip-lumen-energy-sell
+  icon: 📉
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says Lumen Energy is about to go dark. Do you sell?
+  choices:
+    - label: Sell a quarter of your holding
+      when: units(investing/lumen-energy) > 0
+      outcomes:
+        - weight: 1
+          text: You sell a quarter of your holding and feel smart about it.
+          effects:
+            - "trade(investing/lumen-energy, 0 - holding_value(investing/lumen-energy) / 4)"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You hold on to what you have.
+
+- id: tip-quark-coin
+  icon: 📈
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says Quark Coin is about to moon. Do you put money in?
+  choices:
+    - label: Put in 5% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a small slice and keep the rest in your pocket.
+          effects:
+            - trade(investing/quark-coin, money / 20)
+    - label: Put in a quarter of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a big slice and try not to think about it.
+          effects:
+            - trade(investing/quark-coin, money / 4)
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You leave your cash where it is.
+
+- id: tip-quark-coin-sell
+  icon: 📉
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says Quark Coin is about to crash. Do you sell?
+  choices:
+    - label: Sell a quarter of your holding
+      when: units(investing/quark-coin) > 0
+      outcomes:
+        - weight: 1
+          text: You sell a quarter of your holding and feel smart about it.
+          effects:
+            - "trade(investing/quark-coin, 0 - holding_value(investing/quark-coin) / 4)"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You hold on to what you have.
+
+- id: tip-pinecrest-mining
+  icon: 📈
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says Pinecrest Mining is about to strike gold. Do you put money in?
+  choices:
+    - label: Put in 5% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a small slice and keep the rest in your pocket.
+          effects:
+            - trade(investing/pinecrest-mining, money / 20)
+    - label: Put in a quarter of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a big slice and try not to think about it.
+          effects:
+            - trade(investing/pinecrest-mining, money / 4)
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You leave your cash where it is.
+
+- id: tip-pinecrest-mining-sell
+  icon: 📉
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says Pinecrest Mining is about to dig itself into a hole. Do you sell?
+  choices:
+    - label: Sell a quarter of your holding
+      when: units(investing/pinecrest-mining) > 0
+      outcomes:
+        - weight: 1
+          text: You sell a quarter of your holding and feel smart about it.
+          effects:
+            - "trade(investing/pinecrest-mining, 0 - holding_value(investing/pinecrest-mining) / 4)"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You hold on to what you have.
+
+- id: tip-brightwave-labs
+  icon: 📈
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says Brightwave Labs is about to light up. Do you put money in?
+  choices:
+    - label: Put in 5% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a small slice and keep the rest in your pocket.
+          effects:
+            - trade(investing/brightwave-labs, money / 20)
+    - label: Put in a quarter of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a big slice and try not to think about it.
+          effects:
+            - trade(investing/brightwave-labs, money / 4)
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You leave your cash where it is.
+
+- id: tip-brightwave-labs-sell
+  icon: 📉
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says Brightwave Labs is about to fizzle. Do you sell?
+  choices:
+    - label: Sell a quarter of your holding
+      when: units(investing/brightwave-labs) > 0
+      outcomes:
+        - weight: 1
+          text: You sell a quarter of your holding and feel smart about it.
+          effects:
+            - "trade(investing/brightwave-labs, 0 - holding_value(investing/brightwave-labs) / 4)"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You hold on to what you have.
+
+- id: tip-gov-bond-5
+  icon: 📈
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says the 5-year government bond is about to tick up. Do you put money in?
+  choices:
+    - label: Put in 5% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a small slice and keep the rest in your pocket.
+          effects:
+            - trade(investing/gov-bond-5, money / 20)
+    - label: Put in a quarter of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a big slice and try not to think about it.
+          effects:
+            - trade(investing/gov-bond-5, money / 4)
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You leave your cash where it is.
+
+- id: tip-gov-bond-5-sell
+  icon: 📉
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says the 5-year government bond is about to tick down. Do you sell?
+  choices:
+    - label: Sell a quarter of your holding
+      when: units(investing/gov-bond-5) > 0
+      outcomes:
+        - weight: 1
+          text: You sell a quarter of your holding and feel smart about it.
+          effects:
+            - "trade(investing/gov-bond-5, 0 - holding_value(investing/gov-bond-5) / 4)"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You hold on to what you have.
+
+- id: tip-gov-bond-10
+  icon: 📈
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says the 10-year government bond is about to tick up. Do you put money in?
+  choices:
+    - label: Put in 5% of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a small slice and keep the rest in your pocket.
+          effects:
+            - trade(investing/gov-bond-10, money / 20)
+    - label: Put in a quarter of your cash
+      when: money >= 20000
+      outcomes:
+        - weight: 1
+          text: You put in a big slice and try not to think about it.
+          effects:
+            - trade(investing/gov-bond-10, money / 4)
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You leave your cash where it is.
+
+- id: tip-gov-bond-10-sell
+  icon: 📉
+  trigger: event
+  tags: [money]
+  chance: 0%
+  text: A tip says the 10-year government bond is about to tick down. Do you sell?
+  choices:
+    - label: Sell a quarter of your holding
+      when: units(investing/gov-bond-10) > 0
+      outcomes:
+        - weight: 1
+          text: You sell a quarter of your holding and feel smart about it.
+          effects:
+            - "trade(investing/gov-bond-10, 0 - holding_value(investing/gov-bond-10) / 4)"
+    - label: Pass
+      outcomes:
+        - weight: 1
+          text: You hold on to what you have.

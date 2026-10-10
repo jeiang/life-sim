@@ -15,11 +15,12 @@ import {
 } from "../state/world.ts";
 import { npcCareerYear } from "./careers.ts";
 import { reportChanceDrops, reportDecisions } from "./env.ts";
+import { guardianOf, guardianPhrase } from "./guardian.ts";
 import { runHook } from "./hooks.ts";
 import {
   ADULT_AGE,
-  guardianOf,
   livesWithGuardian,
+  livesWithoutGuardian,
   livesWithParents,
   startLivingOnOwn,
 } from "./living.ts";
@@ -416,7 +417,11 @@ function endLivingWithParents(world: World, idx: PackIndex): World {
           "You are 18: your guardian hands over your assets and you are on your own now.",
         );
   const role = idx.family?.parent.role;
-  if (!role || (!livesWithParents(player) && player.age >= ADULT_AGE))
+  if (
+    !role ||
+    livesWithoutGuardian(player) ||
+    (!livesWithParents(player) && player.age >= ADULT_AGE)
+  )
     return world;
   const parentAlive = world.relationships.some(
     (r) =>
@@ -436,7 +441,7 @@ function endLivingWithParents(world: World, idx: PackIndex): World {
   return addJournalLine(
     next,
     player.age,
-    `With no parent left, ${guardian ? `${guardian.givenName} ${guardian.familyName} becomes your guardian` : "a guardian takes you in"}. Your assets are held in trust until you are 18.`,
+    `With no parent left, ${guardianPhrase(guardian)}. Your assets are held in trust until you are 18.`,
   );
 }
 

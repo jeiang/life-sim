@@ -400,8 +400,15 @@ export interface HouseholdDecl {
   readonly partnerRole: string;
   /** Share of the standard's cost a moved-in partner pays, basis points. */
   readonly partnerShareBp: number;
-  /** Roles a guardian is drawn from (an adult relative); only names them in the journal. */
-  readonly guardianRoles: readonly string[];
+  /** Kinship ids a guardian is drawn from, in order of preference; none left: an unnamed guardian. */
+  readonly guardianKin: readonly string[];
+  /** Chance a minor with a living parent who leaves home gets no guardian; absent: always one. */
+  readonly noGuardian?: {
+    /** Minimum age for the roll; younger always get a guardian. */
+    readonly fromAge: number;
+    /** Basis points, player scope. */
+    readonly chance: Expr;
+  };
 }
 
 export interface CompiledRole {

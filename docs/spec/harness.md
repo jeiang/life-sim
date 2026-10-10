@@ -170,9 +170,9 @@ It **reports** without failing, in `report.md` and `report.json` in the check ou
 - degree rate, employment rate, and retirement rate;
 - loan defaults and repossessions;
 - living standards: share of lives with parents or at each standard by decade of age, and the homeless share of years lived on their own, overall and per profile, and the living cost as a percent of income by household shape (alone, with children, with a partner sharing);
-- invariant (fault `minor-living-cost`): no living cost is charged while the player is under 18;
+- invariant (fault `minor-living-cost`): no living cost is charged under 16, and none is charged under 18 unless the player left home with no guardian (a no-guardian minor under 16 is a fault too);
 - invariant (fault `unresolved-family`): every person the player holds a family role toward (`parent`, `sibling`, `child`, `grandparent`) has a kinship id, checked each age-up;
-- housing: age at moving out, share moved out and kicked out (of lives reaching 18), and share still living with their parents at 30 and 40, overall and per profile;
+- housing: age at moving out, share moved out and kicked out (of lives reaching 18), and share still living with their parents at 30 and 40, overall and per profile; lives put out at 16-17 and the share of those with no guardian;
 - repeated activities: per repeatable action, uses per year lived, mean and maximum uses in a year it was used, and the share of those years past the full-effect and reduced ranges;
 - stats at 100: share of living lives at the cap, per stat, by decade of age;
 - wagers: for storylets tagged `wager`, plays (outcomes that changed money), net money, the stake (worst single loss) and the realised return (below 100% loses money on average);

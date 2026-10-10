@@ -54,7 +54,7 @@ A Pack may also name a sequence of these statements and call it as `<pack>.<macr
 
 `person.money += n | -= n` (only in `scope: person`) changes that person's money, not the player's; no other `person.*` name can be assigned.
 
-`move_to(city)` puts the player in a city (family and everyone else stay); `move_in()` and `merge_money()` (in `scope: person`, bound to a partner) move a partner in and merge their money; `move_out()` ends living with parents (under 18 a guardian takes over instead) and picks the starting standard of living; `set_standard(standard)` chooses one (ignored with parents).
+`move_to(city)` puts the player in a city (family and everyone else stay); `move_in()` and `merge_money()` (in `scope: person`, bound to a partner) move a partner in and merge their money; `move_out()` ends living with parents (under 18 a guardian takes over instead, unless a 16-17 year old with a living parent rolls the Pack's `no_guardian` chance and lives on their own) and picks the starting standard of living; `set_standard(standard)` chooses one (ignored with parents).
 
 `set_will(mode)` makes or removes the player's will: `even` (the cash is split evenly among the children), `spouse` (all of it to the living spouse), `charity`, or `none` to remove it; `will_heir(person)` leaves all the cash to one named person (`person`, or a name bound by `spawn_person ... as <name>`; no person in scope does nothing). A later call replaces the earlier will. `has_will()` is true while one is made. The mode is a bare word checked at build time. The will is read at the player's death ([estate rule](../core-loop.md#the-estate)) and then cleared; see [the will](state.md#the-will).
 

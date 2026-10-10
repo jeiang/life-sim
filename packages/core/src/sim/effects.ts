@@ -20,9 +20,10 @@ import {
 } from "../state/world.ts";
 import { enterRole } from "./careers.ts";
 import { makeEnv, qualityOf, type Scope, tableRef } from "./env.ts";
+import { moveOut } from "./guardian.ts";
 import { runHook } from "./hooks.ts";
 import { linkFamilyRole } from "./kinship.ts";
-import { livesWithParents, startLivingOnOwn } from "./living.ts";
+import { livesWithParents } from "./living.ts";
 import { grantUnit, removeHolding, tradeHolding } from "./market.ts";
 import { occupationStarted, reachMilestone } from "./milestones.ts";
 import {
@@ -250,7 +251,7 @@ function applyEffect(
           return updatePerson(w, who, (p) => ({ ...p, cityId: city }));
         }
         case "move_out":
-          return startLivingOnOwn(w, idx, who);
+          return moveOut(w, idx, who);
         case "move_in":
         case "merge_money": {
           const pid = scope.person;

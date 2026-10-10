@@ -10,6 +10,7 @@ import {
   indexBundles,
   kinshipOf,
   type Loan,
+  livesWithoutGuardian,
   livesWithParents,
   livingBreakdown,
   livingCost,
@@ -156,6 +157,10 @@ export interface LifeResult {
   readonly moveOutAge: number | null;
   /** The parents asked the player to leave. */
   readonly kickedOut: boolean;
+  /** The parents put the player out at 16-17 (a minor leaving home with a living parent). */
+  readonly putOut: boolean;
+  /** The player lived on their own under 18 with no guardian at some point. */
+  readonly noGuardian: boolean;
   /** Sum of positive occupation pay over the life (gross, minor units). */
   readonly earnings: number;
   /** Declared Pack metrics of the life (`packs/<id>/harness/metrics.yaml`), by Pack id. */
@@ -322,6 +327,7 @@ export function runLife(
   let everEmployed = false;
   let retired = false;
   let moveOutAge: number | null = null;
+  let noGuardian = false;
   let earnings = 0;
   let w: World | null = null;
 
@@ -496,12 +502,17 @@ export function runLife(
       if (employed) everEmployed = true;
       if (me.occupations.some((o) => isRetired(o.kindId))) retired = true;
       if (me.age < 18) {
-        // Invariant: no living cost is ever charged to a minor.
+        // Invariant: no living cost is charged to a minor, except one on their own with no guardian.
+        const alone = livesWithoutGuardian(me);
+        if (alone) noGuardian = true;
         const settled = getPerson(settleLiving(w, index), me.id);
-        if (
-          livingCost(w, index, me) !== 0 ||
-          settled.money !== me.money ||
-          settled.livedStandardId !== me.livedStandardId
+        if (me.age < 16 && alone)
+          fault("minor-living-cost", `no guardian at age ${me.age}`);
+        else if (
+          !alone &&
+          (livingCost(w, index, me) !== 0 ||
+            settled.money !== me.money ||
+            settled.livedStandardId !== me.livedStandardId)
         )
           fault("minor-living-cost", `living cost charged at age ${me.age}`);
       }
@@ -631,6 +642,9 @@ export function runLife(
     }),
     retired: retired || all.some((o) => isRetired(o.kindId)),
     moveOutAge,
+    putOut:
+      (final?.storyletLog["core-loop/parents-put-you-out"]?.count ?? 0) > 0,
+    noGuardian,
     kickedOut:
       (final?.storyletLog["core-loop/parents-ask-you-to-leave"]?.count ?? 0) >
       0,

@@ -27,6 +27,7 @@ import {
   costIndexOf,
   dependentsOf,
   livesWithGuardian,
+  livesWithoutGuardian,
   livesWithParents,
   livingBreakdown,
   livingCost,
@@ -358,6 +359,7 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
       if (path === "city.id") return subject.cityId ?? "";
       if (path === "living.with_parents") return livesWithParents(subject);
       if (path === "living.with_guardian") return livesWithGuardian(subject);
+      if (path === "living.no_guardian") return livesWithoutGuardian(subject);
       if (path === "living.dependents")
         return dependentsOf(world, idx, subject);
       if (path.startsWith("loan.") && scope.loan) {

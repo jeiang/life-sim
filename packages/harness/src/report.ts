@@ -163,6 +163,10 @@ export interface Report {
     readonly movedOut: number;
     /** Percent of lives reaching 18 in which the parents asked the player to leave. */
     readonly kickedOut: number;
+    /** Lives in which the player was put out of the house at 16-17. */
+    readonly putOut: number;
+    /** Percent of those put out who got no guardian (on their own with living costs). */
+    readonly noGuardian: number;
     /** Percent of lives reaching 30 / 40 still living with their parents at that age. */
     readonly withParents30: number;
     readonly withParents40: number;
@@ -336,6 +340,8 @@ export class Aggregate {
   private adultYears = 0;
   /** Per profile (and "all"): [reached18, movedOut, kickedOut, reached30, with30, reached40, with40]. */
   private readonly home = new Map<string, number[]>();
+  private putOutLives = 0;
+  private noGuardianLives = 0;
 
   /** Effective repeat curve per repeatable action, to count years past it. */
   private readonly curves = new Map<string, RepeatCurve>();
@@ -532,6 +538,10 @@ export class Aggregate {
       const withAt = (a: number): boolean =>
         r.samples.some((s) => s.age === a && s.withParents);
       if (r.moveOutAge !== null) this.moveOutAges.push(r.moveOutAge);
+      if (r.putOut) {
+        this.putOutLives++;
+        if (r.noGuardian) this.noGuardianLives++;
+      }
       for (const key of ["all", r.profile]) {
         const h = this.home.get(key) ?? [0, 0, 0, 0, 0, 0, 0];
         this.home.set(key, h);
@@ -751,6 +761,8 @@ export class Aggregate {
       },
       housing: {
         moveOutAge: dist(this.moveOutAges),
+        putOut: this.putOutLives,
+        noGuardian: pct(this.noGuardianLives, this.putOutLives),
         ...homeShares(this.home.get("all")),
         byProfile: Object.fromEntries(
           [...this.home]
@@ -1065,6 +1077,8 @@ export function renderMarkdown(
   L.push(
     "",
     "Moved out and kicked out are shares of lives reaching 18; with parents is the share of lives reaching that age.",
+    "",
+    `Put out at 16-17: ${hs.putOut} lives; ${hs.noGuardian}% of them got no guardian.`,
     "",
   );
   const lv = r.living;

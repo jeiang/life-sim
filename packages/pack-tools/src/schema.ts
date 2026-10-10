@@ -464,10 +464,24 @@ export const ManifestSchema = obj(
                   description:
                     "Share of the standard's cost a partner who moved in pays, as a percent literal",
                 }),
-                guardian_roles: Type.Array(Ref, {
+                guardian_kin: Type.Array(Type.String({ minLength: 1 }), {
                   description:
-                    "Roles a guardian is drawn from (an adult relative); the first living one is named in the journal",
+                    "Kinship ids a guardian is drawn from, in order of preference (an adult living relative); the highest closeness within one kinship id goes first. None left: an unnamed guardian",
                 }),
+                no_guardian: Type.Optional(
+                  obj(
+                    {
+                      from_age: Type.Integer({
+                        minimum: 0,
+                        maximum: 17,
+                        description:
+                          "A minor of at least this age with a living parent who leaves home may get no guardian",
+                      }),
+                      chance: Src,
+                    },
+                    "Chance of no guardian, basis points (player scope expression, may read stats and readables; clamped to 0-10000)",
+                  ),
+                ),
               },
               "Household costs and guardians",
             ),

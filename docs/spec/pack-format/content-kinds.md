@@ -98,15 +98,18 @@ living:
     dependent_cost: 400000    # base yearly cost per dependent at home, minor units, before the city cost index
     partner_role: partner     # role of a partner who can move in and share costs
     partner_share: 50%        # share of the standard's cost (after the home's housing share) the partner pays
-    guardian_roles: [sibling] # adult relatives a guardian is drawn from (only named in the journal)
+    guardian_kin: [grandparent, aunt-uncle, sibling, cousin] # kinship ids a guardian is drawn from, in order
+    no_guardian:              # optional: a minor who leaves home with a living parent may get no guardian
+      from_age: 16            # younger always get a guardian; so do orphans (no living parent)
+      chance: (200 - karma_value - stat.smarts) * 5 / 2   # basis points, player scope, clamped to 0-10000
 ```
 
 - **Dependents:** each living person the player holds `dependent_role` toward who still lives with their parents (under 18, or `withParents`) adds `dependent_cost x city cost index`. The term disappears when the child moves out or dies.
 - **Partner sharing:** `move_in()` (in a `scope: person` storylet bound to the partner) marks the player's link to that partner as living together. At settlement the partner pays `partner_share` of the standard's cost from their own money, up to what they have; the player pays the rest. `merge_money()` (same scope) moves the partner's money to the player and marks the link merged: no separate share is charged afterwards (marriage without a prenup). A prenup simply never calls it.
-- **With guardian:** a minor with no living parent (the last parent died, god mode with no parents, a minor heir) lives with a guardian (`Person.withGuardian`). `move_out()` never applies under 18, it takes this path instead. The cost is waived (the same hook as `provides_housing`, so no standard, no standard effects, `living.risk` reads 100%), and the minor's money and assets sit in trust: the shop is closed until 18. At 18 the guardian situation ends and the player is on their own with the default (or best affordable) standard.
+- **With guardian:** a minor with no living parent (the last parent died, god mode with no parents, a minor heir) lives with a guardian (`Person.withGuardian`). `move_out()` under 18 takes this path instead (see below for the exception). The guardian is the closest living adult kin in `guardian_kin` order (highest closeness first within one kinship id), never a minor, else unnamed. A minor aged `no_guardian.from_age` or more with a living parent rolls `no_guardian.chance` (basis points; stream `guardian/none/<person>`): on a hit they live on their own with the default (or best affordable) standard, living cost and standard effects, no trust (`living.no_guardian`). The cost is waived (the same hook as `provides_housing`, so no standard, no standard effects, `living.risk` reads 100%), and the minor's money and assets sit in trust: the shop is closed until 18. At 18 the guardian situation ends and the player is on their own with the default (or best affordable) standard.
 - Standard effects and `living.risk` never apply below 18.
 
-Names: `living.dependents` (dependents at home), `living.with_guardian`. `living.cost` and `standard_cost(standard)` include both household terms.
+Names: `living.dependents` (dependents at home), `living.with_guardian`, `living.no_guardian` (a minor on their own). `living.cost` and `standard_cost(standard)` include both household terms.
 
 ## Confinement
 

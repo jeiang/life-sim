@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/readables.schema.json
+# True while in a grad school stage.
+- { kind: readable, id: grad_enrolled, type: bool, expr: in_group(school) and quality.grad_program > 0 }
+# Yearly tuition the player's side still owes: after the scholarship, then the parents' share.
+- { kind: readable, id: grad_tuition_due, type: int, expr: quality.grad_tuition * (100 - quality.grad_scholarship) / 100 * (100 - quality.grad_parents) / 100 }
+# What the school stage charges in cash this year: nothing while the tuition is borrowed.
+- { kind: readable, id: grad_tuition_cash, type: int, expr: "quality.grad_loan ? 0 : grad_tuition_due" }
+# What the yearly hook adds to the borrowed tuition.
+- { kind: readable, id: grad_debt_accrual, type: int, expr: "(grad_enrolled and quality.grad_loan) ? grad_tuition_due : 0" }

@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+provides:
+  qualities:
+    - grad_program
+    - grad_tuition
+    - grad_scholarship
+    - grad_parents
+    - grad_loan
+    - grad_debt
+    - grad_gpa
+    - grad_cheated
+    - grad_degree_medical
+    - grad_degree_law
+    - grad_degree_mba
+    - grad_degree_phd
+  readables:
+    - grad_enrolled
+    - grad_tuition_due
+    - grad_tuition_cash
+    - grad_debt_accrual
+  occupations:
+    - grad-medical-school
+    - grad-law-school
+    - grad-mba-program
+    - grad-phd-program
+  loans:
+    - grad-loan
+  milestones:
+    - grad_medical_graduated
+    - grad_law_graduated
+    - grad_mba_graduated
+    - grad_phd_graduated
+requires:
+  - core-loop/stats
+  - core-loop/education
+  - core-loop/economy
+  - core-loop/family

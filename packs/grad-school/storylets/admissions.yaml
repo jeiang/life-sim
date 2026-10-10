@@ -1,0 +1,245 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Grad school admissions".
+
+- id: apply-medical-school
+  icon: 🩺
+  trigger: action
+  menu: occupation/education
+  label: Apply to medical school
+  tags: [education, apply]
+  when: "age >= 22 and (quality.has_degree_nursing or quality.has_degree_engineering) and not in_group(school) and quality.grad_program == 0 and not quality.grad_degree_medical"
+  cooldown: 1
+  text: Medical school wants transcripts, a personal statement and three references. Send an application?
+  outcomes:
+    - weight: 5
+      when: stat.smarts < 40
+      text: A surprise envelope. The committee took a long shot on you.
+      next: admit-medical-school
+    - weight: 95
+      when: stat.smarts < 40
+      text: A short letter arrives. Not this year. You can apply again next year.
+      effects:
+        - stat.happiness -= 2
+    - weight: 25
+      when: stat.smarts >= 40 and stat.smarts < 70
+      text: A thick envelope with a crest on the front. You are in.
+      next: admit-medical-school
+    - weight: 75
+      when: stat.smarts >= 40 and stat.smarts < 70
+      text: Waitlisted, then rejected. You can apply again next year.
+      effects:
+        - stat.happiness -= 3
+    - weight: 50
+      when: stat.smarts >= 70
+      text: Your interview goes brilliantly and the offer follows that week.
+      next: admit-medical-school
+    - weight: 50
+      when: stat.smarts >= 70
+      text: The committee has too many strong candidates. You are not one of them this year.
+      effects:
+        - stat.happiness -= 3
+
+- id: admit-medical-school
+  icon: 🩺
+  trigger: event
+  chance: 0%
+  text: Medical school starts this autumn, along with the twelve-hour shifts you were warned about.
+  outcomes:
+    - weight: 1
+      text: You enroll in medical school. Four years of lectures, labs and night shifts start now.
+      effects:
+        - "quality.grad_program = 1"
+        - "quality.grad_tuition = 3000000"
+        - "quality.grad_loan = false"
+        - "quality.grad_parents = 0"
+        - "quality.grad_scholarship = 0"
+        - "quality.grad_debt = 0"
+        - "quality.grad_gpa = 50 + stat.smarts / 4"
+        - "schedule(grad-school/grad-year-review, after: 1-1 years)"
+        - "schedule(grad-school/graduate-medical-school, after: 4-4 years)"
+        - "start_occupation(grad-school/grad-medical-school)"
+        - stat.happiness += 4
+        - "journal(\"Admitted to medical school at age {age}.\")"
+      next: grad-scholarship-offer
+
+- id: apply-law-school
+  icon: 📜
+  trigger: action
+  menu: occupation/education
+  label: Apply to law school
+  tags: [education, apply]
+  when: "age >= 22 and (quality.has_degree_business or quality.has_degree_arts) and not in_group(school) and quality.grad_program == 0 and not quality.grad_degree_law"
+  cooldown: 1
+  text: Law school wants a personal statement, an admissions test score and a letter from a professor. Send an application?
+  outcomes:
+    - weight: 10
+      when: stat.smarts < 40
+      text: The admissions panel has a soft spot for long shots, and so do you.
+      next: admit-law-school
+    - weight: 90
+      when: stat.smarts < 40
+      text: A form letter arrives with one kind line at the bottom. You can apply again next year.
+      effects:
+        - stat.happiness -= 2
+    - weight: 30
+      when: stat.smarts >= 40 and stat.smarts < 70
+      text: A letter with a law school crest. You are in.
+      next: admit-law-school
+    - weight: 70
+      when: stat.smarts >= 40 and stat.smarts < 70
+      text: Your application is rejected. The panel wants more legal experience than you have. You can apply again next year.
+      effects:
+        - stat.happiness -= 3
+    - weight: 55
+      when: stat.smarts >= 70
+      text: The panel loves your essay. An offer comes back by return post.
+      next: admit-law-school
+    - weight: 45
+      when: stat.smarts >= 70
+      text: Rejected, despite a good file. The competition was ferocious. Try again next year.
+      effects:
+        - stat.happiness -= 3
+
+- id: admit-law-school
+  icon: 📜
+  trigger: event
+  chance: 0%
+  text: Law school starts, with reading lists longer than your arm.
+  outcomes:
+    - weight: 1
+      text: You enroll in law school. Three years of case law and cold calls start now.
+      effects:
+        - "quality.grad_program = 2"
+        - "quality.grad_tuition = 2400000"
+        - "quality.grad_loan = false"
+        - "quality.grad_parents = 0"
+        - "quality.grad_scholarship = 0"
+        - "quality.grad_debt = 0"
+        - "quality.grad_gpa = 50 + stat.smarts / 4"
+        - "schedule(grad-school/grad-year-review, after: 1-1 years)"
+        - "schedule(grad-school/graduate-law-school, after: 3-3 years)"
+        - "start_occupation(grad-school/grad-law-school)"
+        - stat.happiness += 4
+        - "journal(\"Admitted to law school at age {age}.\")"
+      next: grad-scholarship-offer
+
+- id: apply-mba
+  icon: 💼
+  trigger: action
+  menu: occupation/education
+  label: Apply to business school (MBA)
+  tags: [education, apply]
+  when: "age >= 22 and (quality.has_degree_business or quality.has_degree_engineering) and not in_group(school) and quality.grad_program == 0 and not quality.grad_degree_mba"
+  cooldown: 1
+  text: The MBA program wants test scores, an essay and two references. Send an application?
+  outcomes:
+    - weight: 10
+      when: stat.smarts < 40
+      text: An offer, and a note that they like your ambition more than your spreadsheet.
+      next: admit-mba
+    - weight: 90
+      when: stat.smarts < 40
+      text: Rejected. Your test scores were not quite enough. You can apply again next year.
+      effects:
+        - stat.happiness -= 2
+    - weight: 35
+      when: stat.smarts >= 40 and stat.smarts < 70
+      text: An acceptance email lands in your inbox at midnight. You are in.
+      next: admit-mba
+    - weight: 65
+      when: stat.smarts >= 40 and stat.smarts < 70
+      text: Rejected after a long wait. Round two is next year.
+      effects:
+        - stat.happiness -= 3
+    - weight: 60
+      when: stat.smarts >= 70
+      text: The committee loved your case study. Admitted.
+      next: admit-mba
+    - weight: 40
+      when: stat.smarts >= 70
+      text: Rejected despite a strong interview. Reapply next year.
+      effects:
+        - stat.happiness -= 3
+
+- id: admit-mba
+  icon: 💼
+  trigger: event
+  chance: 0%
+  text: The MBA program starts with a case study before breakfast.
+  outcomes:
+    - weight: 1
+      text: You enroll in the MBA program. Two years of case studies and networking dinners start now.
+      effects:
+        - "quality.grad_program = 3"
+        - "quality.grad_tuition = 2000000"
+        - "quality.grad_loan = false"
+        - "quality.grad_parents = 0"
+        - "quality.grad_scholarship = 0"
+        - "quality.grad_debt = 0"
+        - "quality.grad_gpa = 50 + stat.smarts / 4"
+        - "schedule(grad-school/grad-year-review, after: 1-1 years)"
+        - "schedule(grad-school/graduate-mba-program, after: 2-2 years)"
+        - "start_occupation(grad-school/grad-mba-program)"
+        - stat.happiness += 4
+        - "journal(\"Admitted to business school (MBA) at age {age}.\")"
+      next: grad-scholarship-offer
+
+- id: apply-phd
+  icon: 🔬
+  trigger: action
+  menu: occupation/education
+  label: Apply to a PhD program
+  tags: [education, apply]
+  when: "age >= 22 and (quality.has_degree_business or quality.has_degree_engineering or quality.has_degree_nursing or quality.has_degree_arts) and not in_group(school) and quality.grad_program == 0 and not quality.grad_degree_phd"
+  cooldown: 1
+  text: A PhD program wants a research statement, a writing sample and a professor willing to vouch for you. Send an application?
+  outcomes:
+    - weight: 8
+      when: stat.smarts < 40
+      text: A lab with an empty desk and a bigger budget than you expected says yes.
+      next: admit-phd
+    - weight: 92
+      when: stat.smarts < 40
+      text: The rejection says your research statement needed more research. You can apply again next year.
+      effects:
+        - stat.happiness -= 2
+    - weight: 30
+      when: stat.smarts >= 40 and stat.smarts < 70
+      text: The department admits you to the PhD program. The stipend is small, but it is a stipend.
+      next: admit-phd
+    - weight: 70
+      when: stat.smarts >= 40 and stat.smarts < 70
+      text: Rejected. The department wants a clearer research question.
+      effects:
+        - stat.happiness -= 3
+    - weight: 55
+      when: stat.smarts >= 70
+      text: Your writing sample gets passed around the department. Admitted, with a stipend.
+      next: admit-phd
+    - weight: 45
+      when: stat.smarts >= 70
+      text: Rejected by the one department you wanted. Try again next year.
+      effects:
+        - stat.happiness -= 3
+
+- id: admit-phd
+  icon: 🔬
+  trigger: event
+  chance: 0%
+  text: A PhD is five years of reading, failing and reading more.
+  outcomes:
+    - weight: 1
+      text: You enroll in the PhD program. The stipend covers rent, roughly.
+      effects:
+        - "quality.grad_program = 4"
+        - "quality.grad_tuition = 0"
+        - "quality.grad_loan = false"
+        - "quality.grad_parents = 0"
+        - "quality.grad_scholarship = 0"
+        - "quality.grad_debt = 0"
+        - "quality.grad_gpa = 50 + stat.smarts / 4"
+        - "schedule(grad-school/grad-year-review, after: 1-1 years)"
+        - "schedule(grad-school/graduate-phd-program, after: 5-5 years)"
+        - "start_occupation(grad-school/grad-phd-program)"
+        - stat.happiness += 4
+        - "journal(\"Admitted to a PhD program at age {age}.\")"

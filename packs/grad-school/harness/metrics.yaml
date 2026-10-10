@@ -1,0 +1,314 @@
+# Harness metrics of the Grad School Pack; the schema is docs/spec/harness.md#pack-metrics.
+title: Grad school
+intro: Entry, completion and drop-out per school, scholarship outcomes and step-downs, parents paying, licensing exams, career top rungs and net worth of grad paths against bachelor-only lives. Core's `random`, `studious` and the Pack's `scholar` profile are the ones that open the grad menus.
+measures:
+  enrolled_program: { quality: grad_program, at: ever }
+  any_enrolled: { when: "enrolled_program > 0" }
+  deg_medical: { quality: grad_degree_medical, at: end }
+  deg_law: { quality: grad_degree_law, at: end }
+  deg_mba: { quality: grad_degree_mba, at: end }
+  deg_phd: { quality: grad_degree_phd, at: end }
+  any_degree: { when: "deg_medical > 0 or deg_law > 0 or deg_mba > 0 or deg_phd > 0" }
+  licensed_medical: { quality: grad_licensed_medical, at: end }
+  licensed_law: { quality: grad_licensed_law, at: end }
+  parents_paid: { quality: grad_parents, at: ever }
+  loan_used: { quality: grad_loan, at: ever }
+  scholarship_held: { quality: grad_scholarship, at: ever }
+  net_worth: { snapshot: net_worth, ages: [40, 65] }
+  enrol_medical: { fires: { storylet: grad-school/admit-medical-school } }
+  enrol_law: { fires: { storylet: grad-school/admit-law-school } }
+  enrol_mba: { fires: { storylet: grad-school/admit-mba } }
+  enrol_phd: { fires: { storylet: grad-school/admit-phd } }
+  grad_medical: { fires: { storylet: grad-school/graduate-medical-school } }
+  grad_law: { fires: { storylet: grad-school/graduate-law-school } }
+  grad_mba: { fires: { storylet: grad-school/graduate-mba-program } }
+  grad_phd: { fires: { storylet: grad-school/graduate-phd-program } }
+  dropouts: { fires: { storylet: grad-school/drop-out-grad } }
+  sittings_medical: { fires: { storylet: grad-school/sit-medical-boards } }
+  sittings_bar: { fires: { storylet: grad-school/sit-bar-exam } }
+  funding_gaps: { fires: { storylet: grad-school/grad-funding-gap } }
+  dishonesty_cases: { fires: { storylet: grad-school/grad-dishonesty-case } }
+  chief_of_medicine: { fires: { storylet: grad-school/promote-chief } }
+  ceo_offers: { fires: { storylet: grad-school/ceo-offer } }
+  missed_payments: { fires: { storylet: core-loop/missed-payment } }
+  pass_medical: { outcome: { storylet: grad-school/sit-medical-boards, key: c0.o0 } }
+  cheat_pass_medical: { outcome: { storylet: grad-school/sit-medical-boards, key: c1.o0 } }
+  pass_bar: { outcome: { storylet: grad-school/sit-bar-exam, key: c0.o0 } }
+  cheat_pass_bar: { outcome: { storylet: grad-school/sit-bar-exam, key: c1.o0 } }
+  sch_none_a: { outcome: { storylet: grad-school/grad-scholarship-offer, key: o0 } }
+  sch_none_b: { outcome: { storylet: grad-school/grad-scholarship-offer, key: o1 } }
+  sch_part_a: { outcome: { storylet: grad-school/grad-scholarship-offer, key: o2 } }
+  sch_part_b: { outcome: { storylet: grad-school/grad-scholarship-offer, key: o3 } }
+  sch_full: { outcome: { storylet: grad-school/grad-scholarship-offer, key: o4 } }
+  step_full_to_part_a: { outcome: { storylet: grad-school/grad-scholarship-review, key: o1 } }
+  step_full_to_part_b: { outcome: { storylet: grad-school/grad-scholarship-review, key: o3 } }
+  step_part_to_none: { outcome: { storylet: grad-school/grad-scholarship-review, key: o4 } }
+  parents_all: { outcome: { storylet: grad-school/ask-parents-tuition, key: o0 } }
+  parents_half: { outcome: { storylet: grad-school/ask-parents-tuition, key: o1 } }
+  judge_made: { outcome: { storylet: grad-school/judge-offer, key: o0 } }
+  residents: { outcome: { storylet: grad-school/apply-residency, key: o0 } }
+  associates: { outcome: { storylet: grad-school/apply-associate-lawyer, key: o0 } }
+  managers: { outcome: { storylet: grad-school/business-manager-result, key: o0 } }
+  postdocs: { outcome: { storylet: grad-school/postdoc-interview, key: o0 } }
+  tenure_granted: { outcome: { storylet: grad-school/tenure-review, key: o0 } }
+stats:
+  lives:
+    kind: count
+    label: lives
+    by: profile
+  entry:
+    kind: share
+    label: entered grad school
+    when: any_enrolled
+    by: profile
+  enrol_medical:
+    kind: mean
+    label: medical enrolments per life
+    value: enrol_medical
+    by: profile
+    decimals: 3
+  done_medical:
+    kind: ratio
+    label: medical completion
+    num: grad_medical
+    den: enrol_medical
+    by: profile
+    decimals: 1
+  enrol_law:
+    kind: mean
+    label: law enrolments per life
+    value: enrol_law
+    by: profile
+    decimals: 3
+  done_law:
+    kind: ratio
+    label: law completion
+    num: grad_law
+    den: enrol_law
+    by: profile
+    decimals: 1
+  enrol_mba:
+    kind: mean
+    label: mba enrolments per life
+    value: enrol_mba
+    by: profile
+    decimals: 3
+  done_mba:
+    kind: ratio
+    label: mba completion
+    num: grad_mba
+    den: enrol_mba
+    by: profile
+    decimals: 1
+  enrol_phd:
+    kind: mean
+    label: phd enrolments per life
+    value: enrol_phd
+    by: profile
+    decimals: 3
+  done_phd:
+    kind: ratio
+    label: phd completion
+    num: grad_phd
+    den: enrol_phd
+    by: profile
+    decimals: 1
+  degree:
+    kind: share
+    label: hold a grad degree
+    when: any_degree
+    by: profile
+  dropouts:
+    kind: mean
+    label: drop-outs per life
+    value: dropouts
+    by: profile
+    decimals: 3
+  sch_any:
+    kind: share
+    label: held a scholarship
+    when: scholarship_held > 0
+    of: any_enrolled
+    by: profile
+  sch_full:
+    kind: mean
+    label: full scholarships per enrolment life
+    value: sch_full
+    of: any_enrolled
+    by: profile
+    decimals: 3
+  step_down_full:
+    kind: mean
+    label: full to partial step-downs per life
+    value: step_full_to_part_a
+    of: any_enrolled
+    by: profile
+    decimals: 3
+  step_down_none:
+    kind: mean
+    label: partial to none step-downs per life
+    value: step_part_to_none
+    of: any_enrolled
+    by: profile
+    decimals: 3
+  parents_paid:
+    kind: share
+    label: parents paid all or part
+    when: parents_paid > 0
+    of: any_enrolled
+    by: profile
+  loan_used:
+    kind: share
+    label: borrowed tuition
+    when: loan_used
+    of: any_enrolled
+    by: profile
+  missed:
+    kind: mean
+    label: missed loan payments per grad life
+    value: missed_payments
+    of: any_enrolled
+    by: profile
+    decimals: 3
+  dishonesty:
+    kind: mean
+    label: dishonesty cases per life
+    value: dishonesty_cases
+    by: profile
+    decimals: 4
+  pass_medical:
+    kind: ratio
+    label: medical boards honest passes per sitting
+    num: pass_medical
+    den: sittings_medical
+    by: profile
+    decimals: 1
+  pass_bar:
+    kind: ratio
+    label: bar honest passes per sitting
+    num: pass_bar
+    den: sittings_bar
+    by: profile
+    decimals: 1
+  sittings_medical:
+    kind: mean
+    label: medical sittings per life
+    value: sittings_medical
+    by: profile
+    decimals: 3
+  sittings_bar:
+    kind: mean
+    label: bar sittings per life
+    value: sittings_bar
+    by: profile
+    decimals: 3
+  chief:
+    kind: ratio
+    label: chief of medicine per medical degree
+    num: chief_of_medicine
+    den: grad_medical
+    by: profile
+    decimals: 1
+  judge:
+    kind: ratio
+    label: judge per law degree
+    num: judge_made
+    den: grad_law
+    by: profile
+    decimals: 1
+  ceo:
+    kind: ratio
+    label: CEO per MBA
+    num: ceo_offers
+    den: grad_mba
+    by: profile
+    decimals: 1
+  full_prof:
+    kind: ratio
+    label: full professor per PhD
+    num: tenure_granted
+    den: grad_phd
+    by: profile
+    decimals: 1
+  residents:
+    kind: mean
+    label: residents per life
+    value: residents
+    by: profile
+    decimals: 3
+  associates:
+    kind: mean
+    label: associate lawyers per life
+    value: associates
+    by: profile
+    decimals: 3
+  managers:
+    kind: mean
+    label: business managers per life
+    value: managers
+    by: profile
+    decimals: 3
+  postdocs:
+    kind: mean
+    label: postdocs per life
+    value: postdocs
+    by: profile
+    decimals: 3
+  nw_grad:
+    kind: median
+    label: grad lives
+    value: net_worth
+    of: any_degree
+    by: profile
+    ages: [40, 65]
+    format: money
+  nw_bachelor:
+    kind: median
+    label: no grad degree
+    value: net_worth
+    of: not any_degree
+    by: profile
+    ages: [40, 65]
+    format: money
+blocks:
+  - stats:
+      - lives
+      - entry
+      - degree
+      - dropouts
+  - stats:
+      - enrol_medical
+      - enrol_law
+      - enrol_mba
+      - enrol_phd
+      - done_medical
+      - done_law
+      - done_mba
+      - done_phd
+  - stats:
+      - sch_any
+      - sch_full
+      - step_down_full
+      - step_down_none
+      - parents_paid
+      - loan_used
+      - missed
+      - dishonesty
+  - stats:
+      - sittings_medical
+      - pass_medical
+      - sittings_bar
+      - pass_bar
+  - stats:
+      - residents
+      - associates
+      - managers
+      - postdocs
+      - chief
+      - judge
+      - ceo
+      - full_prof
+  - text: "Median net worth (major units) at 40 and 65 of lives with a grad degree and of lives without one:"
+  - stats:
+      - nw_grad
+      - nw_bachelor

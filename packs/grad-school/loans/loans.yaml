@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/loans.schema.json
+- id: grad-loan
+  label: Graduate loan
+  icon: 🎓
+  rate: 6.5%
+  term_years: 20
+  down_payment: 0%
+  secured: false

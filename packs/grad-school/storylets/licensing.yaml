@@ -1,0 +1,109 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Grad licensing exams".
+
+- id: sit-medical-boards
+  icon: 🩺
+  trigger: action
+  menu: activities/career
+  label: Sit the medical boards
+  tags: [education]
+  when: "(quality.grad_degree_medical and not quality.grad_licensed_medical) and not in_group(school)"
+  cooldown: 1
+  text: "Three days in a testing hall, one question after another, while the clock on the wall loses ground. {player.first_name} is about to find out whether the years of school count."
+  choices:
+    - label: Sit it straight
+      outcomes:
+        - weight: "30 + stat.smarts / 2 + 8 * quality.grad_prep"
+          text: The letter arrives in the spring. You passed, and you may now practice medicine under supervision.
+          effects:
+            - "quality.grad_licensed_medical = true"
+            - "quality.grad_prep = 0"
+            - stat.happiness += 4
+            - "journal(\"Passed the medical boards.\")"
+        - weight: "60 - stat.smarts / 4 - 4 * quality.grad_prep"
+          text: You miss the cut-off by a handful of points. The letter is very polite about it.
+          effects:
+            - "quality.grad_prep = 0"
+            - stat.happiness -= 4
+            - "journal(\"Failed the medical boards.\")"
+    - label: Cheat
+      outcomes:
+        - weight: "60 + stat.smarts / 2 + 10 * quality.grad_prep"
+          text: Nobody notices the notes tucked in your cuff, and the letter says you passed.
+          effects:
+            - "quality.grad_licensed_medical = true"
+            - "quality.grad_cheated = true"
+            - "schedule(grad-school/grad-dishonesty-case, after: 1-1 years)"
+            - "quality.grad_prep = 0"
+            - stat.happiness -= 2
+            - "journal(\"Passed the medical boards with help you should not have had.\")"
+        - weight: 30
+          text: A proctor spots the notes in your cuff. The exam is void, and the file goes on record.
+          effects:
+            - "quality.grad_cheated = true"
+            - "schedule(grad-school/grad-dishonesty-case, after: 1-1 years)"
+            - "quality.grad_prep = 0"
+            - stat.happiness -= 8
+            - "journal(\"Caught cheating on the medical boards.\")"
+
+- id: sit-bar-exam
+  icon: 📜
+  trigger: action
+  menu: activities/career
+  label: Sit the bar exam
+  tags: [education]
+  when: "(quality.grad_degree_law and not quality.grad_licensed_law) and not in_group(school)"
+  cooldown: 1
+  text: "Two days of essays and multiple choice in a hall that smells of toner. {player.first_name} gets one shot a year at a bar card, and today is that shot."
+  choices:
+    - label: Sit it straight
+      outcomes:
+        - weight: "30 + stat.smarts / 2 + 8 * quality.grad_prep"
+          text: The results post at midnight. You passed the bar and can take on clients.
+          effects:
+            - "quality.grad_licensed_law = true"
+            - "quality.grad_prep = 0"
+            - stat.happiness += 4
+            - "journal(\"Passed the bar exam.\")"
+        - weight: "60 - stat.smarts / 4 - 4 * quality.grad_prep"
+          text: You fail the essay section by a few points. The next sitting is a year away.
+          effects:
+            - "quality.grad_prep = 0"
+            - stat.happiness -= 4
+            - "journal(\"Failed the bar exam.\")"
+    - label: Cheat
+      outcomes:
+        - weight: "60 + stat.smarts / 2 + 10 * quality.grad_prep"
+          text: You lean on a classmate's essay plan, nobody catches it, and you are admitted to the bar.
+          effects:
+            - "quality.grad_licensed_law = true"
+            - "quality.grad_cheated = true"
+            - "schedule(grad-school/grad-dishonesty-case, after: 1-1 years)"
+            - "quality.grad_prep = 0"
+            - stat.happiness -= 2
+            - "journal(\"Passed the bar exam with help you should not have had.\")"
+        - weight: 30
+          text: The proctor reads your phone log, and the exam is voided on the spot. The file goes on record.
+          effects:
+            - "quality.grad_cheated = true"
+            - "schedule(grad-school/grad-dishonesty-case, after: 1-1 years)"
+            - "quality.grad_prep = 0"
+            - stat.happiness -= 8
+            - "journal(\"Caught cheating on the bar exam.\")"
+
+- id: grad-exam-prep
+  icon: 📚
+  trigger: action
+  menu: activities/career
+  label: Study for your licensing exam
+  tags: [education, learning]
+  when: "((quality.grad_degree_medical and not quality.grad_licensed_medical) or (quality.grad_degree_law and not quality.grad_licensed_law)) and quality.grad_prep < 5 and not in_group(school)"
+  repeatable: true
+  text: "Old practice papers, flashcards at the kitchen table, and a highlighter running low. {player.first_name} starts to see the patterns in the questions."
+  outcomes:
+    - weight: 1
+      text: You work through the practice papers until the questions stop looking new.
+      effects:
+        - "quality.grad_prep += 1"
+        - stat.smarts += 1
+        - stat.happiness -= 2

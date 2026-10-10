@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+provides:
+  qualities:
+    - grad_judge_offered
+  occupations:
+    - resident-doctor
+    - attending-doctor
+    - chief-of-medicine
+    - associate-lawyer
+    - partner-lawyer
+    - judge
+    - business-manager
+    - ceo
+    - postdoc
+    - assistant-professor
+    - associate-professor
+    - full-professor
+requires:
+  - core-loop/stats
+  - core-loop/careers
+  - core-loop/hiring
+  - core-loop/family

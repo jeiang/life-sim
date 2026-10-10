@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "MBA business career".
+
+- id: apply-business-manager
+  trigger: action
+  menu: activities/job-board
+  label: Apply for a business manager job
+  tags: [job, apply]
+  when: "quality.grad_degree_mba and not in_group(school) and not in_group(\"full-time\") and not hiring_blocked"
+  cooldown: 1
+  text: You dust off the MBA, tailor your resume, and send it to every company with a corner office.
+  outcomes:
+    - weight: 1
+      text: The application is in. Now you wait for someone to call back.
+      effects:
+        - "quality.interview_score = 0"
+      next: business-manager-interview
+
+- id: business-manager-interview
+  trigger: event
+  chance: 0%
+  text: "The hiring manager leans back. \"Tell me about a time you made a call with incomplete numbers.\""
+  choices:
+    - label: Walk them through the model you built
+      outcomes:
+        - weight: 60
+          text: You explain the model cleanly. They nod, and they write something down.
+          effects:
+            - "quality.interview_score += 2"
+          next: business-manager-result
+        - weight: 40
+          text: You explain it, but you skip the part where it nearly failed. They notice.
+          effects:
+            - "quality.interview_score += 1"
+          next: business-manager-result
+    - label: Admit you have never run a team
+      outcomes:
+        - weight: 50
+          text: You say so plainly. They respect the honesty, and they write something down.
+          effects:
+            - "quality.interview_score += 1"
+          next: business-manager-result
+        - weight: 50
+          text: You ramble. The silence after your answer is very long.
+          next: business-manager-result
+
+- id: business-manager-result
+  trigger: event
+  chance: 0%
+  text: A week later your phone rings.
+  outcomes:
+    - weight: "30 + quality.interview_score * 15 + stat.smarts / 4"
+      text: "They want you. The title has \"Manager\" in it, and the salary has a comma."
+      effects:
+        - "start_occupation(grad-school/business-manager)"
+        - "quality.raise_bonus = 0"
+        - "quality.work_effort = 0"
+        - "spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1"
+        - "spawn_person(core-loop/coworker, core-loop/coworker-gen) as c2"
+        - stat.happiness += 4
+        - "journal(\"You got the business manager job.\")"
+    - weight: "50 - quality.interview_score * 10"
+      text: They thank you for your time. It is the coldest email you have ever read.
+      effects:
+        - stat.happiness -= 2
+        - "journal(\"The business manager job went to someone else.\")"
+
+- id: ceo-offer
+  icon: 🏢
+  trigger: event
+  tags: [job, promotion]
+  chance: 1.00%
+  when: "has_occupation(grad-school/business-manager) and years_in(grad-school/business-manager) >= 5"
+  once: true
+  text: The board chair asks to see you. Her office smells like money and carpet cleaner.
+  outcomes:
+    - weight: 1
+      text: She offers you the top job. You take a long breath and say yes.
+      effects:
+        - "start_occupation(grad-school/ceo)"
+        - "quality.times_promoted += 1"
+        - stat.happiness += 6
+        - "journal(\"The board named you CEO.\")"

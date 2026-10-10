@@ -1,0 +1,31 @@
+allow:
+- code: L003
+  subject: grad-school/grad-year-review
+  reason: "Mandatory step scheduled by the admit-* steps and by itself (GAPS-RESOLVED: no chance 100%); lint does not follow `schedule`."
+- code: L003
+  subject: grad-school/graduate-medical-school
+  reason: "Mandatory step scheduled by admit-medical-school (GAPS-RESOLVED: no chance 100%); lint does not follow `schedule`."
+- code: L003
+  subject: grad-school/graduate-law-school
+  reason: "Mandatory step scheduled by admit-law-school (GAPS-RESOLVED: no chance 100%); lint does not follow `schedule`."
+- code: L003
+  subject: grad-school/graduate-mba-program
+  reason: "Mandatory step scheduled by admit-mba (GAPS-RESOLVED: no chance 100%); lint does not follow `schedule`."
+- code: L003
+  subject: grad-school/graduate-phd-program
+  reason: "Mandatory step scheduled by admit-phd (GAPS-RESOLVED: no chance 100%); lint does not follow `schedule`."
+- code: L003
+  subject: grad-school/grad-scholarship-review
+  reason: "Mandatory step scheduled by the offer and by itself (GAPS-RESOLVED: no chance 100%); lint does not follow `schedule`."
+- code: L003
+  subject: grad-school/grad-dishonesty-case
+  reason: "Mandatory step scheduled by the cheat outcomes of the licensing exams (GAPS-RESOLVED: no chance 100%); lint does not follow `schedule`."
+- code: L003
+  subject: grad-school/grad-funding-gap
+  reason: "Mandatory step opened by next from the scholarship review and the dishonesty case (both reached by schedule) (GAPS-RESOLVED: no chance 100%); lint does not follow `schedule`."
+- code: L003
+  subject: grad-school/promote-attending
+  reason: "Mandatory step scheduled by apply-residency (GAPS-RESOLVED: no chance 100%); lint does not follow `schedule`."
+- code: L003
+  subject: grad-school/partner-track
+  reason: "Mandatory step scheduled by apply-associate-lawyer (GAPS-RESOLVED: no chance 100%); lint does not follow `schedule`."

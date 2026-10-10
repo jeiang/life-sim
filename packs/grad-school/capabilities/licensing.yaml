@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+provides:
+  qualities:
+    - grad_prep
+    - grad_licensed_medical
+    - grad_licensed_law
+requires:
+  - core-loop/stats

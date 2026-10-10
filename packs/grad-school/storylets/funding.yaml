@@ -1,0 +1,98 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Paying for grad school".
+
+- id: pay-tuition-cash
+  icon: 💵
+  trigger: action
+  menu: occupation/education
+  label: Pay tuition from savings
+  tags: [money, education]
+  when: "grad_enrolled and quality.grad_tuition > 0 and quality.grad_loan and money >= grad_tuition_due"
+  cooldown: 1
+  text: The school wants its money every year. Savings are where the money lives.
+  outcomes:
+    - weight: 1
+      text: You will cover the bills from savings, one year at a time.
+      effects:
+        - "quality.grad_loan = false"
+        - "journal(\"Tuition will come out of savings each year.\")"
+
+- id: take-grad-loan
+  icon: 🏦
+  trigger: action
+  menu: occupation/education
+  label: Borrow the tuition
+  tags: [loan, education]
+  when: "grad_enrolled and quality.grad_tuition > 0 and not quality.grad_loan"
+  cooldown: 1
+  text: The school takes a promise to pay instead of cash. The promise comes due after the degree.
+  outcomes:
+    - weight: 1
+      text: The tuition goes on a tab. You will settle it when the program ends.
+      effects:
+        - "quality.grad_loan = true"
+        - "journal(\"Tuition will go on a graduate loan, settled when the program ends.\")"
+
+- id: ask-parents-tuition
+  icon: 👪
+  trigger: action
+  menu: occupation/education
+  label: Ask your parents to pay tuition
+  tags: [family, money]
+  when: "grad_enrolled and quality.grad_tuition > 0 and quality.grad_parents < 100"
+  cooldown: 1
+  text: Your parents have opinions about your education, and most of them are about money.
+  outcomes:
+    - weight: "role_closeness(core-loop/parent) * quality.family_wealth / 20"
+      text: They will pay the rest of the bill. You can stop thinking about tuition for now.
+      effects:
+        - "quality.grad_parents = 100"
+        - "journal(\"Your parents agreed to pay the rest of the tuition.\")"
+    - weight: "role_closeness(core-loop/parent) * quality.family_wealth / 10"
+      when: "quality.grad_parents == 0"
+      text: They will cover half. The rest is still yours to find.
+      effects:
+        - "quality.grad_parents = 50"
+        - "journal(\"Your parents agreed to cover half the tuition.\")"
+    - weight: "100 - role_closeness(core-loop/parent) * quality.family_wealth / 5"
+      text: They are sorry, but they cannot help this time.
+
+- id: grad-funding-gap
+  icon: 🧮
+  trigger: event
+  chance: 0%
+  when: "grad_enrolled and quality.grad_tuition > 0"
+  text: Your scholarship shrank, and the school wants the difference this year. Who pays it?
+  choices:
+    - label: Keep paying as before
+      outcomes:
+        - weight: 1
+          text: The extra just joins the rest of your tuition.
+    - label: Borrow the extra
+      when: "not quality.grad_loan"
+      outcomes:
+        - weight: 1
+          text: Your share of tuition goes on a loan from now on. Dull, but manageable.
+          effects:
+            - "quality.grad_loan = true"
+    - label: Pay from savings
+      when: "quality.grad_loan and money >= grad_tuition_due"
+      outcomes:
+        - weight: 1
+          text: Savings will cover the bill each year. The school stops sending letters.
+          effects:
+            - "quality.grad_loan = false"
+    - label: Ask your parents to cover more
+      when: "quality.grad_parents < 100"
+      outcomes:
+        - weight: "role_closeness(core-loop/parent) * quality.family_wealth / 20"
+          text: They agree to take the rest of your tuition from now on.
+          effects:
+            - "quality.grad_parents = 100"
+        - weight: "role_closeness(core-loop/parent) * quality.family_wealth / 10"
+          when: "quality.grad_parents == 0"
+          text: They agree to cover half of your tuition from now on.
+          effects:
+            - "quality.grad_parents = 50"
+        - weight: "100 - role_closeness(core-loop/parent) * quality.family_wealth / 5"
+          text: They are short this year. The gap is still yours to cover.

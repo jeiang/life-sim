@@ -13,13 +13,14 @@ profiles:
       - ids: [crime/shoplift, crime/pickpocket, crime/steal-a-car, crime/burglary, crime/fraud, crime/armed-robbery]
       - ids: ["*/apply-*"]
   killer:
-    description: Murders someone as soon as the confirm step offers it; exists for the death-penalty forced script
+    description: Murders someone from 18 (juvenile courts cannot sentence to death) as soon as the confirm step offers it; exists for the death-penalty forced script
     default: false
     moves: 1
     choice:
       prefer: ["go through with it", "plead not guilty", "cooperate"]
     rules:
-      - ids: [crime/murder]
+      - when: { age_at_least: 18 }
+        ids: [crime/murder]
 # Crime stays rare in every profile but its own: the actions are down-weighted by orders of magnitude (the confirm step alone does not stop a uniform picker), including in profiles other Packs declare.
 adjust:
   - { profile: "*", except: [criminal, killer], tags: [crime], weight: 0.004 }

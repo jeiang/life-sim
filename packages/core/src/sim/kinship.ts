@@ -89,6 +89,11 @@ const MAX_DEPTH = 3;
 
 const isBlood = (l: ParentLink): boolean => l.kind !== "step";
 
+/** True for the marriage role: `spouse` or any pack's `.../spouse`. */
+export function isSpouseRole(role: string): boolean {
+  return role === "spouse" || role.endsWith("/spouse");
+}
+
 /** Spouses: both ends of a `spouse` role row. The marriage role is any pack's `.../spouse`. */
 function spouseMap(world: World): Map<PersonId, PersonId[]> {
   const out = new Map<PersonId, Set<PersonId>>();
@@ -97,7 +102,7 @@ function spouseMap(world: World): Map<PersonId, PersonId[]> {
     out.set(a, set.add(b));
   };
   for (const r of world.relationships) {
-    if (r.role !== "spouse" && !r.role.endsWith("/spouse")) continue;
+    if (!isSpouseRole(r.role)) continue;
     add(r.from, r.to);
     add(r.to, r.from);
   }

@@ -10,6 +10,7 @@ import {
   getPerson,
   grantAsset,
   indexBundles,
+  isJointSpouse,
   killPerson,
   listShop,
   livingBreakdown,
@@ -34,7 +35,9 @@ const tmp = mkdtempSync(join(tmpdir(), "household-"));
 cpSync(packsDir, tmp, { recursive: true });
 writeFileSync(
   join(tmp, "core-loop", "storylets", "zz-household-test.yaml"),
-  `- { id: t-move-in, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "In.", outcomes: [{ weight: 1, effects: [move_in()] }] }
+  `- { id: t-wed, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "Wed.", outcomes: [{ weight: 1, effects: [relationship(person).role = spouse] }] }
+- { id: t-divorce, trigger: action, scope: person, target: [core-loop/spouse], menu: assets/housing, text: "Divorce.", outcomes: [{ weight: 1, effects: [relationship(person).role = friend] }] }
+- { id: t-move-in, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "In.", outcomes: [{ weight: 1, effects: [move_in()] }] }
 - { id: t-merge, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "Merge.", outcomes: [{ weight: 1, effects: [merge_money()] }] }
 `,
 );
@@ -151,6 +154,20 @@ describe("partner cost sharing", () => {
     // Moving in again after merging does not undo the merge.
     w = startStorylet(w, bundles, "core-loop/t-move-in", pid).world;
     expect(cost(w)).toBe(base);
+  });
+
+  test("marrying keeps the merge; a role change away from the household ends it", () => {
+    let [w, pid] = partnerWorld(5e8);
+    w = startStorylet(w, bundles, "core-loop/t-merge", pid).world;
+    w = startStorylet(w, bundles, "core-loop/t-wed", pid).world;
+    expect(isJointSpouse(w, idx, pid)).toBe(true);
+    w = startStorylet(w, bundles, "core-loop/t-divorce", pid).world;
+    expect(isJointSpouse(w, idx, pid)).toBe(false);
+    expect(
+      w.relationships.some((r) => r.to === pid && r.household !== undefined),
+    ).toBe(false);
+    const back = deserializeWorld(serializeWorld(w));
+    expect(isJointSpouse(back, idx, pid)).toBe(false);
   });
 
   test("the household flag survives a save round trip", () => {

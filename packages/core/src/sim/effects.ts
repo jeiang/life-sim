@@ -23,7 +23,7 @@ import { enterRole } from "./careers.ts";
 import { makeEnv, qualityOf, type Scope, tableRef } from "./env.ts";
 import { moveOut } from "./guardian.ts";
 import { runHook } from "./hooks.ts";
-import { linkFamilyRole } from "./kinship.ts";
+import { isSpouseRole, linkFamilyRole } from "./kinship.ts";
 import { livesWithParents } from "./living.ts";
 import { grantUnit, removeHolding, tradeHolding } from "./market.ts";
 import { occupationStarted, reachMilestone } from "./milestones.ts";
@@ -86,10 +86,14 @@ function setRole(
   const rows = w.relationships.filter((r) => r.from === from && r.to === to);
   if (rows.length === 0) return w;
   const closeness = Math.max(...rows.map((r) => r.closeness));
-  // The household state (together, merged money) belongs to the pair, not to the role.
-  const household = rows.some((r) => r.household === "merged")
-    ? "merged"
-    : rows.find((r) => r.household)?.household;
+  // The household state (together, merged money) carries only between household roles
+  // (partner to spouse, a marriage); any other role (ex, friend, ...) ends it.
+  const household =
+    role === idx.living?.household?.partnerRole || isSpouseRole(role)
+      ? rows.some((r) => r.household === "merged")
+        ? "merged"
+        : rows.find((r) => r.household)?.household
+      : undefined;
   const next = linkFamilyRole(
     putRelationship(
       {

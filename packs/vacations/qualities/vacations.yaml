@@ -1,2 +1,4 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
 - { id: vac_family_trip_age, type: int, min: 0, default: 0 }
+# Tier of the trip just booked (1 cheapest, 5 dearest). Written by the tier choice of take-vacation/go-on-cruise, read by the chained destination/voyage weights and gains (survives `next`).
+- { id: vac_tier, type: int, min: 0, max: 5, default: 0 }

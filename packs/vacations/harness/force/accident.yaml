@@ -1,7 +1,8 @@
-# Forced script (docs/spec/harness.md#forced-outcomes): the first beach holiday ends in the travel accident (1 in 10,000 trips unforced).
+# Forced script (docs/spec/harness.md#forced-outcomes): the first beach holiday (any vacation tier) ends in the travel accident (1 in 10,000 trips unforced).
 description: A beach holiday ends in a fatal rip current
 profile: random
 steps:
+  - choose: "Budget*"
   - choose: Beach
-  - roll: outcome/vacations/take-vacation
+  - roll: outcome/vacations/vacation-destination
     value: "A rip current drags you out too far, and the lifeguards reach you too late."

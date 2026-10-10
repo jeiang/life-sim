@@ -24,11 +24,10 @@ export interface GraveyardEntry {
 export interface SaveFile {
   /** Core save schema version (`SAVE_SCHEMA_VERSION`). */
   readonly schemaVersion: number;
-  /** Packs (and versions) the file's lives were last saved with, sorted by id. */
-  readonly packVersions: readonly {
-    readonly id: string;
-    readonly version: string;
-  }[];
+  /** Capability ids the file's lives were last saved with, sorted. */
+  readonly capabilities: readonly string[];
+  /** Pack migration ids already applied to the file's lives, sorted. */
+  readonly appliedMigrations: readonly string[];
   readonly lives: readonly SavedLife[];
   readonly graveyard: readonly GraveyardEntry[];
 }

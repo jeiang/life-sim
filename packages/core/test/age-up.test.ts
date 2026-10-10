@@ -65,10 +65,9 @@ describe("newLife", () => {
     expect(kin.length).toBeLessThanOrEqual(4);
     for (const r of kin)
       expect(getPerson(w, r.to).familyName).toBe(p.familyName);
-    expect(w.packVersions).toEqual([
-      { id: "core-loop", version: "0" },
-      { id: "life", version: "0" },
-    ]);
+    expect(w.capabilities).toEqual(
+      bundles.flatMap((b) => b.capabilities).sort(),
+    );
   });
 
   test("same seed, same life; other seeds differ", () => {

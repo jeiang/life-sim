@@ -7,7 +7,7 @@ import type { Effect, Expr } from "./expr/index.ts";
 import type { Gender } from "./state/types.ts";
 
 /** Bundle format version; bump when the shape below changes incompatibly. */
-export const PACK_BUNDLE_FORMAT = 2;
+export const PACK_BUNDLE_FORMAT = 3;
 
 /** `twemoji:<codepoints>` (for example `twemoji:1f4bc`) or `gameicons:<author>/<name>`. */
 export type IconRef = string;
@@ -316,7 +316,9 @@ export interface StaticJob {
 
 export type CompiledPeopleItem = CompiledRole | CompiledGenerator;
 
-export interface PackMigrations {
+/** One `migrations/<name>.yaml` of a Pack; its id is `<pack>/<name>`. */
+export interface PackMigration {
+  readonly id: string;
   /** Old full id -> new full id. */
   readonly renamed: Readonly<Record<string, string>>;
   /** Removed full id -> optional fallback full id. */
@@ -403,7 +405,8 @@ export interface PackBundle {
   readonly family?: FamilyDecl;
   /** NPC careers; only Pack `core-loop` may declare it. */
   readonly npcCareers?: NpcCareersDecl;
-  readonly migrations: PackMigrations;
+  /** Sorted by id. Saves record the ids they have applied. */
+  readonly migrations: readonly PackMigration[];
   /** All content below is sorted by id. */
   readonly storylets: readonly CompiledStorylet[];
   readonly occupations: readonly CompiledOccupationKind[];
@@ -412,16 +415,4 @@ export interface PackBundle {
   readonly cities: readonly CompiledCity[];
   readonly standards: readonly CompiledStandard[];
   readonly people: readonly CompiledPeopleItem[];
-}
-
-/**
- * Position of a Pack in its own migration history: the number of rename and removal entries.
- * Saves record it (as `packVersions`) to tell which migrations they have not yet seen. Packs
- * carry no integer version; this is replaced by applied migration ids with the save schema reset.
- */
-export function packRevision(b: PackBundle): number {
-  return (
-    Object.keys(b.migrations.renamed).length +
-    Object.keys(b.migrations.removed).length
-  );
 }

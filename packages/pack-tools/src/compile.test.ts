@@ -654,18 +654,61 @@ describe("build checks fail", () => {
 
   test("migrations must point at things that exist, and not at ids still present", () => {
     expectError(
-      { "base/pack.yaml": sub("to: first-job-offer", "to: nowhere") },
+      {
+        "base/migrations/initial.yaml": sub(
+          "to: first-job-offer",
+          "to: nowhere",
+        ),
+      },
       "rename target 'nowhere' does not exist",
     );
     expectError(
-      { "base/pack.yaml": sub("from: old-job-offer", "from: cashier") },
+      {
+        "base/migrations/initial.yaml": sub(
+          "from: old-job-offer",
+          "from: cashier",
+        ),
+      },
       "'cashier' is renamed but still exists",
     );
     expectError(
       {
-        "base/pack.yaml": sub("fallback: first-job-offer", "fallback: missing"),
+        "base/migrations/initial.yaml": sub(
+          "fallback: first-job-offer",
+          "fallback: missing",
+        ),
       },
       "dangling reference 'missing'",
+    );
+  });
+
+  test("each migrations/<name>.yaml is one migration with id <pack>/<name>", () => {
+    const r = compilePacks(
+      fixture({
+        "base/migrations/second.yaml":
+          "rename:\n  - { from: older, to: cashier }\n",
+      }),
+    );
+    expect(r.diagnostics.map(formatDiagnostic)).toEqual([]);
+    if (!r.ok) return;
+    const base = r.bundles.find((b) => b.id === "base");
+    expect(base?.migrations.map((m) => m.id)).toEqual([
+      "base/initial",
+      "base/second",
+    ]);
+    expect(base?.migrations[1]?.renamed).toEqual({
+      "base/older": "base/cashier",
+    });
+  });
+
+  test("a migration file name and body are checked", () => {
+    expectError(
+      { "base/migrations/Bad Name.yaml": "rename: []\n" },
+      "migration file name 'Bad Name'",
+    );
+    expectError(
+      { "base/migrations/second.yaml": "rename:\n  - { from: a }\n" },
+      "base/migrations/second.yaml",
     );
   });
 

@@ -1,4 +1,4 @@
-import { type FamilyDecl, type PackBundle, packRevision } from "../pack.ts";
+import type { FamilyDecl, PackBundle } from "../pack.ts";
 import type {
   ChoiceEntry,
   CustomStart,
@@ -81,16 +81,13 @@ export function newLife(
     ...(idx.family ?? DEFAULT_FAMILY),
     ...opts.family,
   };
-  const packVersions = bundles.map((b) => ({
-    id: b.id,
-    version: String(packRevision(b)),
-  }));
 
   // The player's name, stats and qualities.
   const seeded = createWorld({
     seed,
     player: { givenName: "", familyName: "", age: 0 },
-    packVersions,
+    capabilities: bundles.flatMap((b) => b.capabilities),
+    appliedMigrations: bundles.flatMap((b) => b.migrations.map((m) => m.id)),
   });
   const [w0, rng] = nextStream(seeded, 0, "birth/player");
   const genId =

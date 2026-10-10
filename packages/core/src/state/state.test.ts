@@ -24,10 +24,8 @@ function sample(seed = 42): World {
   let w = createWorld({
     seed,
     player: { givenName: "Ada", familyName: "Lee", age: 18 },
-    packVersions: [
-      { id: "core-loop", version: "1.0.0" },
-      { id: "base", version: "0.1.0" },
-    ],
+    capabilities: ["base/economy", "core-loop/engine"],
+    appliedMigrations: ["base/initial"],
   });
   const [w2, kid] = addPerson(w, {
     givenName: "Sam",
@@ -130,7 +128,7 @@ test("hash changes with any state change and is pinned for a fixture", () => {
   expect(worldHash(addMoney(w, w.playerId, 1))).not.toBe(h);
   expect(worldHash(sample(43))).not.toBe(h);
   expect(worldHash(addJournalLine(w, 18, "!"))).not.toBe(h);
-  expect(h).toMatchInlineSnapshot(`"058535bed3c20d80"`);
+  expect(h).toMatchInlineSnapshot(`"7648b03c47a68232"`);
 });
 
 test("nextStream advances per-site counters only, and a save reload cannot reroll", () => {

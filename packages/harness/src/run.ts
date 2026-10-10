@@ -13,7 +13,6 @@ import {
   netWorth,
   newLife,
   type PackBundle,
-  packRevision,
   parseSave,
   purchase,
   REPOSSESSION_MISSES,
@@ -220,9 +219,10 @@ function describeError(e: unknown): string {
 function checkSave(w: World, bundles: readonly PackBundle[]): string | null {
   const save: SaveFile = {
     schemaVersion: SAVE_SCHEMA_VERSION,
-    packVersions: bundles
-      .map((b) => ({ id: b.id, version: String(packRevision(b)) }))
-      .sort((a, b) => (a.id < b.id ? -1 : 1)),
+    capabilities: bundles.flatMap((b) => b.capabilities).sort(),
+    appliedMigrations: bundles
+      .flatMap((b) => b.migrations.map((m) => m.id))
+      .sort(),
     lives: [{ id: "harness", name: "harness", world: w }],
     graveyard: [],
   };

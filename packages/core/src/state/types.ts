@@ -305,11 +305,6 @@ export type ChoiceEntry =
   /** God mode: set the player's money (minor units). */
   | { readonly t: "god-money"; readonly value: number };
 
-export interface PackVersion {
-  readonly id: string;
-  readonly version: string;
-}
-
 export interface World {
   /** Core save schema version; see `SCHEMA_VERSION`. */
   readonly schemaVersion: number;
@@ -345,8 +340,15 @@ export interface World {
   readonly uses: Readonly<Record<string, number>>;
   /** Every player choice so far, in order; see `replay`. */
   readonly choiceLog: readonly ChoiceEntry[];
-  /** Packs (and versions) the save was made with, sorted by id. */
-  readonly packVersions: readonly PackVersion[];
+  /** Capability ids (`<pack>/<feature>`) the life was made with, sorted. */
+  readonly capabilities: readonly string[];
+  /** Ids (`<pack>/<name>`) of the Pack migrations this world has already had applied, sorted. */
+  readonly appliedMigrations: readonly string[];
 }
 
-export const SCHEMA_VERSION = 5;
+/**
+ * Core save schema version. 6 is the one-time reset (capability ids and migration ids replace
+ * pack versions): older saves are rejected, not upgraded. No compatibility is promised before
+ * the first `v<N>` release tag.
+ */
+export const SCHEMA_VERSION = 6;

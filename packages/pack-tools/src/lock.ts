@@ -7,7 +7,7 @@ import type { Diagnostic } from "./diagnostics.ts";
 /**
  * `packs/<id>/ids.lock.json`: every id the previous release shipped. A maintainer rewrites it
  * with `cli.ts lock packs` when cutting a release. The build fails if a locked id has
- * disappeared without a `migrations` entry in `pack.yaml` (ADR 0003).
+ * disappeared without an entry in a `migrations/<name>.yaml` (ADR 0003).
  */
 export const LockSchema = Type.Object(
   {

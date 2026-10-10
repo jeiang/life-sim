@@ -290,7 +290,8 @@ describe("persistence", () => {
   const file = (w: World) =>
     ({
       schemaVersion: SAVE_SCHEMA_VERSION,
-      packVersions: [],
+      capabilities: [],
+      appliedMigrations: [],
       lives: [{ id: "a", name: "A", world: w }],
       graveyard: [],
     }) as SaveFile;
@@ -318,20 +319,5 @@ describe("persistence", () => {
     const back = parseSave(serializeSave(file(w))).lives[0]?.world as World;
     expect(worldHash(back)).toBe(worldHash(w));
     expect(me(back).holdings).toEqual(me(w).holdings);
-  });
-
-  test("an older save without markets loads and starts its series at the next settlement", () => {
-    const json = JSON.parse(serializeSave(file(traded())));
-    const old = json.lives[0].world;
-    old.schemaVersion = 4;
-    old.market = undefined;
-    for (const p of old.persons) p.holdings = undefined;
-    json.schemaVersion = 4;
-    const loaded = parseSave(JSON.stringify(json)).lives[0]?.world as World;
-    expect(loaded.market).toEqual({});
-    expect(me(loaded).holdings).toEqual([]);
-    const next = ageUp(loaded, bundles).world;
-    expect(price(next, INDEX)).toBe(10000);
-    expect(next.market[INDEX]?.from).toBe(next.worldYear);
   });
 });

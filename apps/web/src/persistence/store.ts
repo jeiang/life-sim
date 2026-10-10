@@ -2,9 +2,9 @@ import {
   applyPackMigrations,
   applyPackMigrationsToSave,
   canonicalStringify,
+  checkSaveVersion,
   type GraveyardEntry,
   migrateObituary,
-  migrateSave,
   type PackBundle,
   readSave,
   SAVE_SCHEMA_VERSION,
@@ -58,15 +58,16 @@ const graveRow = (g: GraveyardEntry): Row => ({
   data: canonicalStringify(g),
 });
 
-/** Decode one row through the Core migration chain by wrapping it as a one-entry save file. */
+/** Decode one row through the Core save checks by wrapping it as a one-entry save file. */
 function decode(
   row: Row,
   kind: "lives" | "graveyard",
 ): SavedLife | GraveyardEntry {
   const entry: unknown = JSON.parse(row.data);
-  const file = migrateSave({
+  const file = checkSaveVersion({
     schemaVersion: row.schemaVersion,
-    packVersions: [],
+    capabilities: [],
+    appliedMigrations: [],
     lives: kind === "lives" ? [entry] : [],
     graveyard: kind === "graveyard" ? [entry] : [],
   });
@@ -214,14 +215,14 @@ export async function openLifeStore(
     async exportAll(bundles) {
       const lives = await self.loadLives(bundles);
       const grave = await self.loadGraveyard(bundles);
-      const packs = new Map<string, string>();
-      for (const l of lives.items)
-        for (const p of l.world.packVersions) packs.set(p.id, p.version);
+      const sorted = (ids: Iterable<string>) =>
+        [...new Set(ids)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
       const save: SaveFile = {
         schemaVersion: SAVE_SCHEMA_VERSION,
-        packVersions: [...packs]
-          .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-          .map(([id, version]) => ({ id, version })),
+        capabilities: sorted(lives.items.flatMap((l) => l.world.capabilities)),
+        appliedMigrations: sorted(
+          lives.items.flatMap((l) => l.world.appliedMigrations),
+        ),
         lives: lives.items,
         graveyard: grave.items,
       };

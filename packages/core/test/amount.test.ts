@@ -160,7 +160,8 @@ describe("amount input", () => {
     ).world;
     const file = {
       schemaVersion: SAVE_SCHEMA_VERSION,
-      packVersions: [{ id: "amt", version: "1" }],
+      capabilities: [],
+      appliedMigrations: [],
       lives: [{ id: "a", name: "A", updatedAt: 1, world: w }],
       graveyard: [],
     };
@@ -168,25 +169,5 @@ describe("amount input", () => {
     const loaded = back.lives[0]?.world as World;
     expect(loaded.pending?.amount).toBe(400);
     expect(worldHash(loaded)).toBe(worldHash(w));
-  });
-
-  test("a version 1 save loads: no amounts on its log or pending storylet", () => {
-    const w = withMoney(5000);
-    const j = JSON.parse(serializeWorld(w));
-    j.schemaVersion = 1;
-    const save = parseSave(
-      JSON.stringify({
-        schemaVersion: 1,
-        packVersions: [{ id: "amt", version: "1" }],
-        lives: [{ id: "a", name: "A", updatedAt: 1, world: j }],
-        graveyard: [],
-      }),
-    );
-    const loaded = save.lives[0]?.world as World;
-    expect(loaded.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
-    expect(money(loaded)).toBe(5000);
-    expect(
-      runAction(loaded, bundles, "amt/donate", undefined, 200).world.choiceLog,
-    ).toHaveLength(1);
   });
 });

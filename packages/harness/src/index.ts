@@ -1,5 +1,17 @@
 export { type LifeMetrics, MetricCollector } from "./collect.ts";
 export {
+  compileScript,
+  type ForcedReport,
+  type ForceEntry,
+  type ForceScript,
+  type ForceSet,
+  forceSetOf,
+  loadScripts,
+  parseForceArg,
+  parseRolls,
+  SCRIPTED_ID,
+} from "./force.ts";
+export {
   type HarnessOptions,
   type HarnessResult,
   lifeSeedFor,
@@ -27,3 +39,4 @@ export {
   type LifeResult,
   runLife,
 } from "./run.ts";
+export { type ForcedRolls, forceRolls } from "./testing.ts";

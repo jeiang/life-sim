@@ -1,5 +1,6 @@
 import { DEFAULT_REPEAT, type PackBundle, type RepeatCurve } from "@life/core";
 import { type Dist, dist, pct } from "./dist.ts";
+import type { ForcedReport } from "./force.ts";
 import type { PackMetrics } from "./metrics.ts";
 import {
   PackMetricsAggregate,
@@ -757,14 +758,39 @@ const major = (n: number): number => Math.round(n / 100);
 
 export function renderMarkdown(
   r: Report,
-  meta: { seed: number; profiles: readonly string[] },
+  meta: {
+    seed: number;
+    profiles: readonly string[];
+    forced?: ForcedReport | undefined;
+  },
 ): string {
   const L: string[] = [];
   L.push("# Balance harness report", "");
+  if (meta.forced)
+    L.push(
+      "> **FORCED RUN**: rolls, choices or actions below were forced. These lives are not an unbiased sample and are not replayable from a choice log.",
+      "",
+    );
   L.push(
     `Lives: ${r.lives} · profiles: ${meta.profiles.join(", ")} · base seed: ${meta.seed} · faults: **${r.faults.total}**`,
     "",
   );
+  if (meta.forced) {
+    L.push(
+      `## Forced${meta.forced.script ? `: ${meta.forced.script}` : ""}`,
+      "",
+      "| Forced | Fires | Lives |",
+      "|---|---|---|",
+    );
+    for (const e of meta.forced.entries)
+      L.push(`| ${e.label} | ${e.fires} | ${e.lives} |`);
+    L.push("");
+    if (meta.forced.neverMatched.length > 0)
+      L.push(
+        `**Never matched (failure):** ${meta.forced.neverMatched.join("; ")}`,
+        "",
+      );
+  }
   L.push("## Population per save", "");
   L.push("| | p50 | p99 | max |", "|---|---|---|---|");
   for (const [label, d] of [

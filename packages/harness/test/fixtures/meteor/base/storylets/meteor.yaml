@@ -1,0 +1,22 @@
+# One life in 10,000 years ends here unforced.
+- id: meteor
+  trigger: event
+  chance: 0.01%
+  text: A shadow crosses the sky.
+  outcomes:
+    - weight: 9999
+      text: It misses.
+      effects:
+        - stat.happiness += 1
+    - weight: 1
+      text: A meteor strikes.
+      effects:
+        - die("meteor")
+- id: tidy
+  label: Tidy up
+  trigger: action
+  menu: activities/rest
+  text: You tidy.
+  outcomes:
+    - effects:
+        - stat.happiness += 1

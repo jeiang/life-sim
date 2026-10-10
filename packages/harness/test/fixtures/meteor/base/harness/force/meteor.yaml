@@ -1,0 +1,9 @@
+description: The meteor strikes in the first year (rolled at the age reached, 1) of every life
+steps:
+  - age: 0
+    do: base/tidy
+  - age: 1
+    roll: base/meteor
+    value: hit
+  - roll: outcome/base/meteor
+    value: A meteor strikes.

@@ -36,8 +36,10 @@ export function LivesPage() {
                     {isGodLife(l.world) && <GodBadge />}
                   </span>
                   <span class="block text-sm text-text-muted">
-                    Age {p?.age ?? 0}
-                    {p ? `, ${money(p.money)}` : ""}
+                    {l.world.ended
+                      ? `Died at age ${p?.age ?? 0}: choose an heir or finish`
+                      : `Age ${p?.age ?? 0}`}
+                    {!l.world.ended && p ? `, ${money(p.money)}` : ""}
                   </span>
                 </button>
               </li>

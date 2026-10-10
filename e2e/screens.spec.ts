@@ -137,22 +137,91 @@ test("credits list every icon source and license", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
 });
 
-test("death shows the obituary, then the life list; the life is in the graveyard", async ({
+type LifeHook = {
+  die(): void;
+  addChild(age: number): void;
+  flushSaves(): Promise<void>;
+};
+const hook = <K extends keyof LifeHook>(
+  page: Page,
+  name: K,
+  ...args: Parameters<LifeHook[K]>
+) =>
+  page.evaluate(
+    ([n, a]) =>
+      (
+        window as unknown as {
+          __life: Record<string, (...x: unknown[]) => unknown>;
+        }
+      ).__life[n as string]?.(...(a as unknown[])),
+    [name, args] as const,
+  );
+
+test("with no living child the line ends: finishing moves the life to the graveyard", async ({
   page,
 }) => {
   await page.goto("/");
   await expect(ageButton(page)).toBeVisible();
-  await page.evaluate(() =>
-    (window as unknown as { __life: { die(): void } }).__life.die(),
-  );
+  await hook(page, "die");
   await expect(page.getByRole("heading", { name: "Obituary" })).toBeVisible();
   await expect(page.getByText("Age at death")).toBeVisible();
   await expect(page.getByText("Net worth")).toBeVisible();
-  await page.getByRole("button", { name: "Back to your lives" }).click();
+  await expect(page.getByText(/No living child can carry on/)).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Choose an heir" }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "Finish this life" }).click();
   await expect(page.getByRole("heading", { name: "Your lives" })).toBeVisible();
   await expect(page.getByText("No life in progress.")).toBeVisible();
   await page.getByRole("button", { name: "Graveyard" }).click();
   await expect(lifeButtons(page)).toHaveCount(1);
   await lifeButtons(page).first().click();
   await expect(page.getByText("Age at death")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Journal" })).toBeVisible();
+});
+
+test("a dead life stays listed until the player chooses; reload mid-choice keeps it", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(ageButton(page)).toBeVisible();
+  await hook(page, "addChild", 12);
+  await hook(page, "die");
+  await expect(page.getByRole("heading", { name: "Obituary" })).toBeVisible();
+  await hook(page, "flushSaves");
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Obituary" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Continue as Kid Heir, age 12/ }),
+  ).toBeVisible();
+  // Not in the graveyard yet.
+  await page.getByRole("button", { name: "Back to your lives" }).click();
+  await expect(page.getByText(/Died at age .*choose an heir/)).toBeVisible();
+  await page.getByRole("button", { name: "Graveyard" }).click();
+  await expect(page.getByText("No one has died yet.")).toBeVisible();
+});
+
+test("die, pick an heir, continue, die again: two graveyard entries in one family", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(ageButton(page)).toBeVisible();
+  await hook(page, "addChild", 12);
+  await hook(page, "die");
+  await page.getByRole("button", { name: /Continue as Kid Heir/ }).click();
+  // The heir plays on: the game screen is back and the age button works.
+  await expect(ageButton(page)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Obituary" })).toHaveCount(0);
+  await hook(page, "die");
+  await expect(page.getByRole("heading", { name: "Obituary" })).toBeVisible();
+  await expect(page.getByText(/No living child can carry on/)).toBeVisible();
+  await page.getByRole("button", { name: "Finish this life" }).click();
+  await page.getByRole("button", { name: "Graveyard" }).click();
+  await expect(lifeButtons(page)).toHaveCount(2);
+  await expect(page.getByText(/Generation 1\./)).toBeVisible();
+  await expect(page.getByText(/Generation 2\./)).toBeVisible();
+  await expect(page.getByRole("region", { name: /family$/ })).toHaveCount(1);
+  await lifeButtons(page).nth(1).click();
+  await expect(page.getByRole("heading", { name: "Journal" })).toBeVisible();
+  await expect(page.getByText(/carries on after/)).toBeVisible();
 });

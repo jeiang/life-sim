@@ -1,7 +1,8 @@
 import type { PackBundle } from "../pack.ts";
+import type { NetWorthPoint } from "../sim/networth.ts";
 import { checkWorldState } from "../state/containers.ts";
 import { canonicalStringify, deserializeWorld } from "../state/serialize.ts";
-import type { Obituary, World } from "../state/types.ts";
+import type { JournalEntry, Obituary, World } from "../state/types.ts";
 import { checkSaveVersion, SAVE_SCHEMA_VERSION, SaveError } from "./migrate.ts";
 import { applyPackMigrations } from "./pack-migrations.ts";
 import type { GraveyardEntry, SavedLife, SaveFile } from "./types.ts";
@@ -57,10 +58,9 @@ function world(v: unknown, p: string): World {
   }
 }
 
-function obituary(v: unknown, p: string): Obituary {
-  if (!isObj(v)) return bad(p, "an object");
-  // Reuse the world parser's obituary check by embedding it in a minimal world.
-  const w = world(
+/** Reuse the world parser's checks for one field by embedding it in a minimal world. */
+function embedded(field: "ended" | "journal", v: unknown, p: string): World {
+  return world(
     {
       schemaVersion: SAVE_SCHEMA_VERSION,
       seed: 0,
@@ -71,16 +71,48 @@ function obituary(v: unknown, p: string): Obituary {
       journal: [],
       rngCounters: {},
       pending: null,
-      ended: v,
+      ended: null,
       storyletLog: {},
       uses: {},
       choiceLog: [],
       capabilities: [],
       appliedMigrations: [],
+      [field]: v,
     },
     p,
   );
-  return w.ended as Obituary;
+}
+
+function obituary(v: unknown, p: string): Obituary {
+  if (!isObj(v)) return bad(p, "an object");
+  return embedded("ended", v, p).ended as Obituary;
+}
+
+function journal(v: unknown, p: string): readonly JournalEntry[] {
+  if (v === undefined) return [];
+  if (!Array.isArray(v)) return bad(p, "a list");
+  return embedded("journal", v, p).journal;
+}
+
+function netWorthSeries(v: unknown, p: string): readonly NetWorthPoint[] {
+  if (v === undefined) return [];
+  if (!Array.isArray(v)) return bad(p, "a list");
+  return v.map((x: unknown, i: number) => {
+    if (!isObj(x)) return bad(`${p}[${i}]`, "an object");
+    const { age, value } = x;
+    if (typeof age !== "number" || !Number.isFinite(age))
+      return bad(`${p}[${i}].age`, "a number");
+    if (typeof value !== "number" || !Number.isFinite(value))
+      return bad(`${p}[${i}].value`, "a number");
+    return { age, value };
+  });
+}
+
+function generation(v: unknown, p: string): number {
+  if (v === undefined) return 0;
+  return typeof v === "number" && Number.isSafeInteger(v) && v >= 0
+    ? v
+    : bad(p, "a whole number");
 }
 
 function ids(list: readonly { id: string }[], what: string): void {
@@ -117,11 +149,17 @@ export function readSave(raw: Json): SaveFile {
       const p = `graveyard[${i}]`;
       if (!isObj(g)) return bad(p, "an object");
       const updatedAt = optTime(g.updatedAt, `${p}.updatedAt`);
+      const id = str(g.id, `${p}.id`);
       return {
-        id: str(g.id, `${p}.id`),
+        id,
+        // Additive fields: an entry written before generations existed is generation 0 of its own life.
+        lifeId: g.lifeId === undefined ? id : str(g.lifeId, `${p}.lifeId`),
+        generation: generation(g.generation, `${p}.generation`),
         name: str(g.name, `${p}.name`),
         ...(updatedAt === undefined ? {} : { updatedAt }),
         obituary: obituary(g.obituary, `${p}.obituary`),
+        journal: journal(g.journal, `${p}.journal`),
+        netWorth: netWorthSeries(g.netWorth, `${p}.netWorth`),
       };
     },
   );

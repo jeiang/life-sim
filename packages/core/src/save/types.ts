@@ -1,4 +1,5 @@
-import type { Obituary, World } from "../state/types.ts";
+import type { NetWorthPoint } from "../sim/networth.ts";
+import type { JournalEntry, Obituary, World } from "../state/types.ts";
 
 /** One ongoing life in the life list. */
 export interface SavedLife {
@@ -11,13 +12,24 @@ export interface SavedLife {
   readonly world: World;
 }
 
-/** A finished life in the graveyard. */
+/**
+ * One finished generation of a life in the graveyard. A life that passes to an heir
+ * (succession) leaves one entry per generation, keyed `lifeId/generation`.
+ */
 export interface GraveyardEntry {
-  /** The id the life had while ongoing. */
+  /** `${lifeId}/${generation}`. Entries written before generations existed keep the bare life id. */
   readonly id: string;
+  /** The id the life had while ongoing; shared by every generation of it. */
+  readonly lifeId: string;
+  /** The generation that died (`World.generation` at death; 0 for the founder). */
+  readonly generation: number;
   readonly name: string;
   readonly updatedAt?: number;
   readonly obituary: Obituary;
+  /** That generation's journal, archived at death (succession clears it). */
+  readonly journal: readonly JournalEntry[];
+  /** That generation's net worth by age, as the UI recorded it. */
+  readonly netWorth: readonly NetWorthPoint[];
 }
 
 /** The whole save: what is exported and imported as one file. */

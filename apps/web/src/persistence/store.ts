@@ -5,6 +5,7 @@ import {
   checkSaveVersion,
   type GraveyardEntry,
   migrateObituary,
+  type NetWorthPoint,
   type PackBundle,
   readSave,
   SAVE_SCHEMA_VERSION,
@@ -52,6 +53,27 @@ const lifeRow = (life: SavedLife): Row => ({
   data: canonicalStringify({ ...life, world: worldToJson(life.world) }),
 });
 
+/** The graveyard entry for the generation that just died in `life` (`life.world.ended` set). */
+function graveyardEntryOf(
+  life: SavedLife,
+  netWorth: readonly NetWorthPoint[],
+): GraveyardEntry {
+  const obituary = life.world.ended;
+  if (!obituary)
+    throw new Error("Only a life that has ended can move to the graveyard.");
+  const generation = life.world.generation;
+  return {
+    id: `${life.id}/${generation}`,
+    lifeId: life.id,
+    generation,
+    name: life.name,
+    ...(life.updatedAt === undefined ? {} : { updatedAt: life.updatedAt }),
+    obituary,
+    journal: life.world.journal,
+    netWorth,
+  };
+}
+
 const graveRow = (g: GraveyardEntry): Row => ({
   id: g.id,
   schemaVersion: SAVE_SCHEMA_VERSION,
@@ -91,10 +113,24 @@ export interface LifeStore {
   ): Promise<Loaded<GraveyardEntry>>;
   deleteLife(id: string): Promise<void>;
   /**
-   * In one transaction: write the life's obituary to the graveyard and delete the life.
+   * The player chose to finish the life. In one transaction: archive the dead generation
+   * (obituary, journal, net worth series) in the graveyard and delete the life.
    * `life.world.ended` must be set (only death moves a life to the graveyard).
    */
-  moveToGraveyard(life: SavedLife): Promise<GraveyardEntry>;
+  moveToGraveyard(
+    life: SavedLife,
+    netWorth: readonly NetWorthPoint[],
+  ): Promise<GraveyardEntry>;
+  /**
+   * The player chose an heir. In one transaction: archive the dead generation (`dead.world` is
+   * the ended world, as it was before `succeed`) in the graveyard and store `next`, the same
+   * life continued as the heir.
+   */
+  succeedLife(
+    dead: SavedLife,
+    next: SavedLife,
+    netWorth: readonly NetWorthPoint[],
+  ): Promise<GraveyardEntry>;
   /** Everything as one `SaveFile` (what export writes). Rows that fail to load are omitted and reported. */
   exportAll(
     bundles: readonly PackBundle[],
@@ -193,21 +229,20 @@ export async function openLifeStore(
         await request(tx.objectStore(LIVES).delete(id));
       }),
 
-    async moveToGraveyard(life) {
-      const obituary = life.world.ended;
-      if (!obituary)
-        throw new Error(
-          "Only a life that has ended can move to the graveyard.",
-        );
-      const entry: GraveyardEntry = {
-        id: life.id,
-        name: life.name,
-        ...(life.updatedAt === undefined ? {} : { updatedAt: life.updatedAt }),
-        obituary,
-      };
+    async moveToGraveyard(life, netWorth) {
+      const entry = graveyardEntryOf(life, netWorth);
       await run(db, [LIVES, GRAVEYARD], "readwrite", async (tx) => {
         await request(tx.objectStore(GRAVEYARD).put(graveRow(entry)));
         await request(tx.objectStore(LIVES).delete(life.id));
+      });
+      return entry;
+    },
+
+    async succeedLife(dead, next, netWorth) {
+      const entry = graveyardEntryOf(dead, netWorth);
+      await run(db, [LIVES, GRAVEYARD], "readwrite", async (tx) => {
+        await request(tx.objectStore(GRAVEYARD).put(graveRow(entry)));
+        await request(tx.objectStore(LIVES).put(lifeRow(next)));
       });
       return entry;
     },
@@ -239,8 +274,14 @@ export async function openLifeStore(
         let livesSkipped = 0;
         let graveyardAdded = 0;
         for (const life of migrated.lives) {
-          // A life already in the graveyard stays dead, whatever an older backup says.
-          if ((await request(grave.getKey(life.id))) !== undefined) {
+          // A generation already in the graveyard stays dead, whatever an older backup says
+          // (the bare life id is the key of an entry written before generations existed).
+          if (
+            (await request(
+              grave.getKey(`${life.id}/${life.world.generation}`),
+            )) !== undefined ||
+            (await request(grave.getKey(life.id))) !== undefined
+          ) {
             livesSkipped++;
             continue;
           }
@@ -268,8 +309,19 @@ export async function openLifeStore(
         for (const g of migrated.graveyard) {
           if ((await request(grave.getKey(g.id))) !== undefined) continue;
           await request(grave.put(graveRow(g)));
-          // A life that died after the backup was made must not linger as ongoing.
-          await request(lives.delete(g.id));
+          // A generation that died after the backup was made must not linger as ongoing; a
+          // stored life already past it (an heir carries on) stays.
+          const row = (await request(lives.get(g.lifeId))) as Row | undefined;
+          if (row) {
+            let generation = -1;
+            try {
+              generation = (decode(row, "lives") as SavedLife).world.generation;
+            } catch {
+              // unreadable: leave it untouched
+            }
+            if (generation >= 0 && generation <= g.generation)
+              await request(lives.delete(g.lifeId));
+          }
           graveyardAdded++;
         }
         return { livesAdded, livesReplaced, livesSkipped, graveyardAdded };

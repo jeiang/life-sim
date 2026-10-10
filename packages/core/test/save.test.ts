@@ -93,9 +93,41 @@ describe("round trip", () => {
     expect(dead.ended?.cause).toBe("illness");
     const save: SaveFile = {
       ...fileOf(dead),
-      graveyard: [{ id: "g1", name: "Old", obituary: dead.ended as Obituary }],
+      graveyard: [
+        {
+          id: "g1/0",
+          lifeId: "g1",
+          generation: 0,
+          name: "Old",
+          obituary: dead.ended as Obituary,
+          journal: dead.journal,
+          netWorth: [
+            { age: 0, value: 0 },
+            { age: 1, value: 250 },
+          ],
+        },
+      ],
     };
     expect(parseSave(serializeSave(save))).toEqual(save);
+  });
+
+  test("a graveyard entry without generation fields is generation 0 of its own life", () => {
+    const alive = play(4, 6, [0]);
+    const dead = endLife(alive, alive.playerId, "illness");
+    const text = serializeSave({
+      ...fileOf(dead),
+      graveyard: [],
+    });
+    const raw = JSON.parse(text);
+    raw.graveyard = [{ id: "old", name: "Old", obituary: dead.ended }];
+    const [g] = parseSave(JSON.stringify(raw)).graveyard;
+    expect(g).toMatchObject({
+      id: "old",
+      lifeId: "old",
+      generation: 0,
+      journal: [],
+      netWorth: [],
+    });
   });
 });
 
@@ -241,8 +273,12 @@ describe("pack migrations", () => {
       ...fileOf(w),
       graveyard: [
         {
-          id: "g",
+          id: "g/0",
+          lifeId: "g",
+          generation: 0,
           name: "G",
+          journal: [],
+          netWorth: [],
           obituary: {
             personId: 1,
             givenName: "A",

@@ -1,5 +1,7 @@
 import { bundles } from "virtual:packs";
 import {
+  addParentLink,
+  addPerson,
   ageUp,
   type CompiledItemKind,
   type CompiledStorylet,
@@ -12,6 +14,7 @@ import {
   type GraveyardEntry,
   godSetMoney,
   godSetStat,
+  heirsOf,
   indexBundles,
   listActions,
   listShop,
@@ -26,7 +29,9 @@ import {
   runAction,
   type SavedLife,
   type ShopRow,
+  type SimResult,
   sell,
+  succeed,
   trade,
   type World,
 } from "@life/core";
@@ -110,8 +115,14 @@ export const lives = signal<readonly SavedLife[]>([]);
 export const graveyard = signal<readonly GraveyardEntry[]>([]);
 /** The id of the life in `world`, or null while the life list is showing. */
 export const currentLifeId = signal<string | null>(null);
-/** Set when the current life ends: the obituary screen shows until acknowledged. */
-export const deathObituary = signal<Obituary | null>(null);
+/**
+ * Set while the current life's player is dead: the obituary screen (heir picker) shows until
+ * the player continues as an heir or finishes the life. The life stays in the life list, so a
+ * reload in between returns here.
+ */
+export const deathObituary = computed<Obituary | null>(() =>
+  currentLifeId.value === null ? null : world.value.ended,
+);
 /** Rows that could not be loaded (damaged or from a newer build). */
 export const loadProblems = signal<readonly LoadProblem[]>([]);
 /** Why saving is unavailable (storage could not open), or null. */
@@ -154,7 +165,6 @@ export async function refreshLists(): Promise<void> {
 function saveWorld(id: string, w: World): void {
   if (!autosaver) return;
   lastSaved = w;
-  if (w.ended) deathObituary.value = w.ended;
   void autosaver
     .save(id, lifeName(w), w)
     .then(() => {
@@ -162,7 +172,6 @@ function saveWorld(id: string, w: World): void {
         persistRequested = true;
         void requestPersistence();
       }
-      if (w.ended) return refreshLists();
     })
     .catch(() => {
       // surfaced through `saveError`
@@ -400,7 +409,17 @@ if (import.meta.env.VITE_E2E) {
         },
       };
     },
-    /** End the player's life now (the obituary shows and the life moves to the graveyard). */
+    flushSaves,
+    /** Give the player a living child of this age (a possible heir). */
+    addChild(age: number): void {
+      const [w, id] = addPerson(world.value, {
+        givenName: "Kid",
+        familyName: "Heir",
+        age,
+      });
+      world.value = addParentLink(w, id, w.playerId);
+    },
+    /** End the player's life now (the obituary and heir picker show; the life stays listed until chosen). */
     die(): void {
       world.value = endLife(world.value, world.value.playerId, "an e2e test");
     },
@@ -510,8 +529,79 @@ export async function showLifeList(): Promise<void> {
   await refreshLists();
 }
 
-/** After the obituary: back to the life list. */
-export async function dismissObituary(): Promise<void> {
-  deathObituary.value = null;
-  await showLifeList();
+/** One person who may inherit, for the picker. */
+export interface HeirView {
+  readonly id: number;
+  readonly name: string;
+  readonly age: number;
+}
+
+/** The dead player's living children, who may carry on the line. Empty unless the life has ended. */
+export const heirs = computed<readonly HeirView[]>(() => {
+  const w = world.value;
+  if (!w.ended) return [];
+  return heirsOf(w).map((id) => {
+    const p = w.persons.get(id);
+    return {
+      id,
+      name: p ? `${p.givenName} ${p.familyName}` : `Person ${id}`,
+      age: p?.age ?? 0,
+    };
+  });
+});
+
+/**
+ * Continue as one of the dead player's children: the finished generation moves to the graveyard
+ * and the same life carries on with the heir, both written in one transaction. Returns an
+ * error message, or null.
+ */
+export async function chooseHeir(heirId: number): Promise<string | null> {
+  const id = currentLifeId.value;
+  const dead = world.value;
+  if (id === null || !dead.ended) return "This life has not ended.";
+  let r: SimResult;
+  try {
+    r = succeed(dead, bundles, heirId);
+  } catch (e) {
+    return e instanceof Error ? e.message : String(e);
+  }
+  const series = netWorthHistory.value;
+  await flushSaves();
+  if (store) {
+    try {
+      await store.succeedLife(
+        { id, name: lifeName(dead), updatedAt: Date.now(), world: dead },
+        { id, name: lifeName(r.world), updatedAt: Date.now(), world: r.world },
+        series,
+      );
+    } catch (e) {
+      return e instanceof Error ? e.message : String(e);
+    }
+  }
+  enter(id, r.world);
+  latestLines.value = r.lines;
+  await refreshLists();
+  return null;
+}
+
+/** Finish the dead player's life: it moves to the graveyard and the life list shows. */
+export async function finishLife(): Promise<string | null> {
+  const id = currentLifeId.value;
+  const dead = world.value;
+  if (id === null || !dead.ended) return "This life has not ended.";
+  const series = netWorthHistory.value;
+  await flushSaves();
+  if (store) {
+    try {
+      await store.moveToGraveyard(
+        { id, name: lifeName(dead), updatedAt: Date.now(), world: dead },
+        series,
+      );
+    } catch (e) {
+      return e instanceof Error ? e.message : String(e);
+    }
+  }
+  currentLifeId.value = null;
+  await refreshLists();
+  return null;
 }

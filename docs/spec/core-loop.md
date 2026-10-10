@@ -135,7 +135,7 @@ About 60, plus NPC and mortality storylets:
 ## Death and the end of a life
 
 - A mortality storylet whose yearly chance rises with age and falls with health, plus a few accident and illness deaths among the chance events.
-- Death shows an obituary (age, cause, net worth, career, education). With a living child the player may continue as them ([Succession](#succession)); otherwise, or when the player chooses to finish, the life moves to the graveyard. The Core does not pick: it offers `heirsOf` and `succeed`, and the web flow (#220) asks.
+- Death shows an obituary (age, cause, net worth, career, education). With a living child the player may continue as them ([Succession](#succession)); otherwise, or when the player chooses to finish, the life moves to the graveyard. The Core does not pick: it offers `heirsOf` and `succeed`, and the web flow asks: the obituary screen lists the heirs (`heirsOf`) and offers "Finish this life". The dead life stays in the life list, autosaved, until the player chooses; a reload in between returns to the obituary. Choosing an heir archives the finished generation in the graveyard and stores the heir's world in one transaction; finishing archives it and removes the life.
 
 ## Generations and the world clock
 

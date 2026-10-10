@@ -6,9 +6,10 @@ export interface Autosaver {
   /**
    * Queue a save of this life's world. Call after every action and age-up. Writes run one
    * at a time in call order, and a write still waiting for its turn is replaced by a newer
-   * one for the same life, so rapid taps never pile up. A world with `ended` set moves the
-   * life to the graveyard instead (one transaction). Resolves when this snapshot (or a
-   * newer one for the same life) is stored; rejects if the write failed.
+   * one for the same life, so rapid taps never pile up. A world with `ended` is saved like any
+   * other: the life stays in the life list until the player chooses an heir or finishes it
+   * (`LifeStore.succeedLife`, `moveToGraveyard`). Resolves when this snapshot (or a newer one
+   * for the same life) is stored; rejects if the write failed.
    */
   save(id: string, name: string, world: World): Promise<void>;
   /** Resolves when every queued write has finished (success or failure). */
@@ -45,8 +46,7 @@ export function createAutosaver(
       const [id, job] = queue.entries().next().value as [string, Queued];
       queue.delete(id);
       try {
-        if (job.life.world.ended) await store.moveToGraveyard(job.life);
-        else await store.saveLife(job.life);
+        await store.saveLife(job.life);
         lastError.value = null;
         for (const w of job.waiters) w.resolve();
       } catch (e) {

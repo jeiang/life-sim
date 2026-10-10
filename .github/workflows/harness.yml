@@ -2,15 +2,13 @@ name: harness
 
 # The 10,000-life balance run. buildbot's `harness` flake check only runs 1,000
 # lives; the full run is too slow for it, so it runs here on a free runner.
+# It runs on main, on demand, and on pull requests carrying the `balance` label.
 on:
   pull_request:
+    types: [labeled, synchronize]
   push:
     branches: [main]
   workflow_dispatch:
-
-concurrency:
-  group: harness-${{ github.ref }}
-  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -20,6 +18,12 @@ permissions:
 jobs:
   harness:
     name: harness-10k
+    # Unlabeled PRs skip the job (and never reach concurrency, so an unrelated
+    # label or push cannot cancel a running labeled run).
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'balance')
+    concurrency:
+      group: harness-${{ github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:

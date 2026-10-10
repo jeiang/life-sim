@@ -29,4 +29,4 @@ remove:
 - A rename's target must exist, and neither a renamed nor a removed id may still exist.
 - A fallback is a full or short content id, or a declared `stat.`/`quality.`/`state.` name.
 - On load, every installed migration whose id is not in the world's `appliedMigrations` is applied once (persons, relationships, the open storylet, storylet log, repeatable-action counters, the obituary), then its id is recorded. Applying is pure and idempotent.
-- A shipped id (`ids.lock.json`) that disappears needs an entry in some migration file or the build fails.
+- A shipped id that disappears needs an entry in some migration file or the build fails. Shipped means listed in `ids.lock.json` as committed at the last `v<N>` release tag; the file is written only by the tag workflow, never edited in a pull request, and the check is skipped when no tag exists yet.

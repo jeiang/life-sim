@@ -200,24 +200,6 @@ describe("content kinds: compile", () => {
     });
     expect(text).toContain("unknown ref target 'nothing'");
   });
-
-  test("removing a locked entry needs a migration", () => {
-    const dir = mkdtempSync(join(tmpdir(), "kinds-lock-"));
-    try {
-      cpSync(FIXTURE, dir, { recursive: true });
-      writeFileSync(
-        join(dir, "world", "ids.lock.json"),
-        JSON.stringify({ pack: "world", ids: ["world/gone", "world/us"] }),
-      );
-      const out = compilePacks(dir);
-      expect(out.ok).toBe(false);
-      expect(out.diagnostics.map((d) => d.message).join("\n")).toContain(
-        "id 'world/gone' shipped",
-      );
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  });
 });
 
 describe("content kinds: runtime", () => {

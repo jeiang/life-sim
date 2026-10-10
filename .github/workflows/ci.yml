@@ -46,6 +46,20 @@ jobs:
       - name: Build check
         run: nix build ".#checks.x86_64-linux.${{ matrix.name }}" -L --no-link
 
+  # The hermetic `packs` check has no git history; this job validates with tags
+  # so removed ids are compared against ids.lock.json at the last v<N> tag.
+  ids-lock:
+    name: ids-lock
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      - name: Validate Packs against the last release lock
+        run: nix develop -c bash -c 'pnpm install --frozen-lockfile && node --experimental-strip-types packages/pack-tools/src/cli.ts validate packs'
+
   package:
     name: package
     runs-on: ubuntu-latest

@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import type {
   CompiledChoice,
   CompiledCity,
@@ -48,7 +48,7 @@ import { buildCredits, type CreditsManifest } from "./credits.ts";
 import type { Diagnostic } from "./diagnostics.ts";
 import { type CheckEnv, compileExpr } from "./expr/index.ts";
 import { resolveIcon } from "./icons.ts";
-import { readLock } from "./lock.ts";
+import { ReleaseLocks } from "./lock.ts";
 import {
   type Capability,
   CapabilitySchema,
@@ -191,6 +191,8 @@ export interface CompileOutput {
   readonly credits: CreditsManifest;
   /** Full content ids and declared names per Pack, as written to `ids.lock.json`. */
   readonly ids: ReadonlyMap<string, readonly string[]>;
+  /** Non-error remarks, for example that the shipped-id check was skipped. */
+  readonly notes: readonly string[];
 }
 
 interface LoadedPack {
@@ -501,12 +503,14 @@ class Compiler {
   readonly index = new Map<string, Map<string, Kind>>();
   readonly icons = new Map<string, IconUse>();
   readonly ids = new Map<string, string[]>();
+  readonly releaseLocks: ReleaseLocks;
 
   readonly packsDir: string;
   readonly only: readonly string[] | undefined;
   constructor(packsDir: string, only?: readonly string[]) {
     this.packsDir = packsDir;
     this.only = only;
+    this.releaseLocks = new ReleaseLocks(packsDir);
   }
 
   run(): CompileOutput {
@@ -544,6 +548,7 @@ class Compiler {
       icons: this.icons,
       credits: buildCredits(twemoji, authors),
       ids: this.ids,
+      notes: this.releaseLocks.note ? [this.releaseLocks.note] : [],
     };
   }
 
@@ -3153,15 +3158,15 @@ class PackCompiler {
   private idLock(m: Manifest, migs: readonly PackMigration[]): void {
     const current = this.currentIds(m);
     this.c.ids.set(this.pack.id, [...current].sort());
-    const lock = readLock(
-      join(this.pack.dir, "ids.lock.json"),
-      `${this.pack.id}/ids.lock.json`,
+    const shipped = this.c.releaseLocks.read(
+      basename(this.pack.dir),
       this.c.diags,
     );
-    if (!lock) return;
+    if (!shipped) return;
+    const { lock, file } = shipped;
     if (lock.pack !== this.pack.id)
       this.c.diags.push({
-        file: `${this.pack.id}/ids.lock.json`,
+        file,
         path: "pack",
         message: `lock is for Pack '${lock.pack}'`,
       });

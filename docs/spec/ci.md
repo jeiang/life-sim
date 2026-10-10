@@ -6,6 +6,7 @@ Decided in [CI runner and check placement](https://github.com/jeiang/life-sim/is
 
 - Pull requests are gated by GitHub Actions on GitHub-hosted `ubuntu-latest` runners (`.github/workflows/ci.yml`, workflow `ci`). Nix comes from `cachix/install-nix-action`; the Nix store is cached per leg with `nix-community/cache-nix-action` (GitHub's Actions cache, no secret). Actions are pinned by commit SHA and the workflow has `permissions: contents: read`.
 - Jobs: `eval` (`nix flake check --no-build`), `check (<name>)` (a matrix leg per flake check below, each `nix build .#checks.x86_64-linux.<name>`), and `package` (`nix build .#packages.x86_64-linux.default`). Runs are cancelled per ref when a newer push arrives.
+- `ids-lock` runs `pack-tools validate packs` on a full clone with tags, so the shipped-id check (against `ids.lock.json` at the last `v<N>` tag) runs; the hermetic `packs` check has no git history and skips it. Pull requests do not edit `ids.lock.json`.
 - buildbot-nix on `ricklent` (cluster CI) builds only `main` after a merge and pushes the outputs to garret (`cache.jeiang.dev`) within about 5 minutes so cluster deploys can download them. It never builds pull requests and is not a required check.
 - The separate `harness-10k` workflow (10,000 lives) is informational and not required.
 

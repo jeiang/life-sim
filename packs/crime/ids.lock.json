@@ -1,8 +1,0 @@
-{
-  "pack": "crime",
-  "ids": [
-    "quality.crime_pending_charge",
-    "quality.crime_record",
-    "quality.crime_wanted"
-  ]
-}

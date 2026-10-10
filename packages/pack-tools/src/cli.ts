@@ -9,7 +9,7 @@ import { writeSchemas } from "./schema-export.ts";
 const USAGE = `usage:
   cli.ts validate <packs-dir>            compile and report errors, write nothing
   cli.ts build <packs-dir> <out-dir>     validate, then write bundles, icons and credits
-  cli.ts lock <packs-dir>                record the current ids as the released ids (ids.lock.json)
+  cli.ts lock <packs-dir>                rewrite ids.lock.json (tag workflow only; PRs never edit locks)
   cli.ts schema [out-dir]                write JSON Schemas (default: packages/pack-tools/schema)
 `;
 
@@ -30,6 +30,7 @@ function main(argv: string[]): number {
     return 2;
   }
   const result = compilePacks(a);
+  for (const note of result.notes) console.log(`note: ${note}`);
   if (!result.ok) {
     for (const d of result.diagnostics) console.error(formatDiagnostic(d));
     console.error(`\n${result.diagnostics.length} error(s)`);

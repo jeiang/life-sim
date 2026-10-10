@@ -23,7 +23,7 @@ The spec lists `storylets/`, `occupations/`, `items/`, `people/`. The compiler a
 
 ## Permanent ids
 
-`packs/<id>/ids.lock.json` (`{ pack, ids[] }`) records the ids of the last release: every content id plus `stat.<id>` and `quality.<id>`. If a locked id is gone, the build fails unless `migrations.rename` (`from`, `to`) or `migrations.remove` (`id`, optional `fallback`) in `pack.yaml` names it. Run `cli.ts lock packs` after cutting a release to refresh the lock. A Pack with no lock file has not been released yet.
+`packs/<id>/ids.lock.json` (`{ pack, ids[] }`) records the ids of the last release: every content id plus `stat.<id>` and `quality.<id>`. If a locked id is gone, the build fails unless a `migrations/<name>.yaml` names it with `rename` (`from`, `to`) or `remove` (`id`, optional `fallback`). Run `cli.ts lock packs` after cutting a release to refresh the lock. A Pack with no lock file has not been released yet.
 
 ## Output (`build packs <out>`)
 

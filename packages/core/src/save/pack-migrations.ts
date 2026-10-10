@@ -1,4 +1,4 @@
-import { type PackBundle, packRevision } from "../pack.ts";
+import type { PackBundle, PackMigration } from "../pack.ts";
 import type {
   Asset,
   Loan,
@@ -13,19 +13,22 @@ import type { SaveFile } from "./types.ts";
 
 type Resolve = (id: string) => string | null;
 
+const sortedIds = (ids: Iterable<string>): string[] =>
+  [...new Set(ids)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+
+const allMigrations = (bundles: readonly PackBundle[]): PackMigration[] =>
+  bundles.flatMap((b) => b.migrations);
+
 /**
- * Merge the migration tables of every bundle into one resolver: an old id becomes its
- * renamed id (chains followed), its removal fallback, or null when removed without one.
- * Unlisted ids pass through.
+ * Merge migrations into one resolver: an old id becomes its renamed id (chains followed),
+ * its removal fallback, or null when removed without one. Unlisted ids pass through.
  */
-function resolver(bundles: readonly PackBundle[]): Resolve {
+function resolver(migrations: readonly PackMigration[]): Resolve {
   const renamed = new Map<string, string>();
   const removed = new Map<string, string | null>();
-  for (const b of bundles) {
-    for (const [from, to] of Object.entries(b.migrations.renamed))
-      renamed.set(from, to);
-    for (const [from, to] of Object.entries(b.migrations.removed))
-      removed.set(from, to);
+  for (const m of migrations) {
+    for (const [from, to] of Object.entries(m.renamed)) renamed.set(from, to);
+    for (const [from, to] of Object.entries(m.removed)) removed.set(from, to);
   }
   return (id) => {
     let cur = id;
@@ -116,27 +119,22 @@ export function migrateObituary(
   o: Obituary,
   bundles: readonly PackBundle[],
 ): Obituary {
-  return obituary(o, resolver(bundles));
+  return obituary(o, resolver(allMigrations(bundles)));
 }
 
 /**
  * Apply the Pack migrations (renames, removals with optional fallback) to a loaded World,
- * for every Pack whose recorded version is older than the installed one, then record the
- * installed versions. Removed content without a fallback is dropped from persons, the open
+ * for every installed migration whose id the World has not yet applied, then record the
+ * installed migration ids. Removed content without a fallback is dropped from persons, the open
  * storylet and the storylet log; obituary history keeps old ids. Pure and idempotent.
  */
 export function applyPackMigrations(
   world: World,
   bundles: readonly PackBundle[],
 ): World {
-  const recorded = new Map(
-    world.packVersions.map((p) => [p.id, Number(p.version)]),
-  );
-  const stale = bundles.filter((b) => {
-    const v = recorded.get(b.id);
-    return v !== undefined && v < packRevision(b);
-  });
-  const r = resolver(stale);
+  const applied = new Set(world.appliedMigrations);
+  const pending = allMigrations(bundles).filter((m) => !applied.has(m.id));
+  const r = resolver(pending);
 
   const persons = new Map<number, Person>();
   for (const [id, p] of world.persons) persons.set(id, person(p, r));
@@ -146,18 +144,18 @@ export function applyPackMigrations(
     return role === null ? [] : [{ ...x, role }];
   });
 
-  let pending = world.pending;
-  if (pending) {
-    const id = r(pending.storyletId);
-    if (id === null) pending = null;
+  let open = world.pending;
+  if (open) {
+    const id = r(open.storyletId);
+    if (id === null) open = null;
     else {
-      const rest = pending.rest && {
-        events: pending.rest.events.flatMap((e) => {
+      const rest = open.rest && {
+        events: open.rest.events.flatMap((e) => {
           const eid = r(e.storyletId);
           return eid === null ? [] : [{ ...e, storyletId: eid }];
         }),
       };
-      pending = { ...pending, storyletId: id, ...(rest ? { rest } : {}) };
+      open = { ...open, storyletId: id, ...(rest ? { rest } : {}) };
     }
   }
 
@@ -186,27 +184,18 @@ export function applyPackMigrations(
     uses[nk] = (uses[nk] ?? 0) + n;
   }
 
-  const installed = new Map(
-    bundles.map((b) => [b.id, String(packRevision(b))]),
-  );
-  const packVersions = [
-    ...new Set([...world.packVersions.map((p) => p.id), ...installed.keys()]),
-  ]
-    .sort()
-    .map((id) => ({
-      id,
-      version: installed.get(id) ?? recorded.get(id)?.toString() ?? "0",
-    }));
-
   return {
     ...world,
     persons,
     relationships,
-    pending,
+    pending: open,
     storyletLog,
     uses,
     ended: world.ended ? obituary(world.ended, r) : null,
-    packVersions,
+    appliedMigrations: sortedIds([
+      ...world.appliedMigrations,
+      ...pending.map((m) => m.id),
+    ]),
   };
 }
 
@@ -215,14 +204,14 @@ export function applyPackMigrationsToSave(
   save: SaveFile,
   bundles: readonly PackBundle[],
 ): SaveFile {
-  const r = resolver(bundles);
+  const migrations = allMigrations(bundles);
+  const r = resolver(
+    migrations.filter((m) => !save.appliedMigrations.includes(m.id)),
+  );
   const lives = save.lives.map((l) => ({
     ...l,
     world: applyPackMigrations(l.world, bundles),
   }));
-  const installed = new Map(
-    bundles.map((b) => [b.id, String(packRevision(b))]),
-  );
   return {
     ...save,
     lives,
@@ -230,9 +219,9 @@ export function applyPackMigrationsToSave(
       ...g,
       obituary: obituary(g.obituary, r),
     })),
-    packVersions: save.packVersions.map((p) => ({
-      ...p,
-      version: installed.get(p.id) ?? p.version,
-    })),
+    appliedMigrations: sortedIds([
+      ...save.appliedMigrations,
+      ...migrations.map((m) => m.id),
+    ]),
   };
 }

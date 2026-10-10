@@ -10,7 +10,7 @@ import { trade } from "./trade.ts";
 
 /**
  * Rebuild a life from its seed and choice log (ADR 0003). Reproduces the same world hash
- * only on the build and Pack versions that wrote the log, with the same `newLife` options.
+ * only on the build and capabilities that wrote the log, with the same `newLife` options.
  */
 export function replay(
   seed: number,

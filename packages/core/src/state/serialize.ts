@@ -432,12 +432,11 @@ export function deserializeWorld(text: string): World {
     storyletLog: storyletLog(o.storyletLog, "$.storyletLog"),
     uses: intRecord(o.uses, "$.uses"),
     choiceLog: choiceLog(o.choiceLog, "$.choiceLog"),
-    packVersions: arr(o.packVersions, "$.packVersions").map((x, i) => {
-      const v = obj(x, `$.packVersions[${i}]`);
-      return {
-        id: str(v.id, `$.packVersions[${i}].id`),
-        version: str(v.version, `$.packVersions[${i}].version`),
-      };
-    }),
+    capabilities: arr(o.capabilities, "$.capabilities").map((x, i) =>
+      str(x, `$.capabilities[${i}]`),
+    ),
+    appliedMigrations: arr(o.appliedMigrations, "$.appliedMigrations").map(
+      (x, i) => str(x, `$.appliedMigrations[${i}]`),
+    ),
   };
 }

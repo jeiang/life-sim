@@ -50,4 +50,3 @@ living:
     partner_role: partner
     partner_share: 50%
     guardian_roles: [sibling]
-migrations: {}

@@ -7,8 +7,3 @@ stats:
   - { id: happiness, label: Happiness, icon: 😀, start: [50, 100] }
   - { id: smarts, label: Smarts, start: [0, 100] }
 exclusivity: [school, full-time]
-migrations:
-  rename:
-    - { from: old-job-offer, to: first-job-offer }
-  remove:
-    - { id: retired-event, fallback: first-job-offer }

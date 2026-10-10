@@ -10,6 +10,6 @@ The Pack compiler (Node, at build time) fails on any of:
 - Expressions that fail to parse, reference undeclared names, or have type errors (for example an integer where a boolean is needed).
 - Required capabilities that no Pack provides, capability cycles, references or names not exported by a required capability, or dangling ids in references, `next`, or effects.
 - Unknown placeholders or unknown icons.
-- Ids removed or renamed without a migration entry.
+- Ids removed or renamed without an entry in a `migrations/<name>.yaml`.
 
 The output is one JSON bundle per Pack (validated content plus expression ASTs), the icon subset, and the credits manifest.

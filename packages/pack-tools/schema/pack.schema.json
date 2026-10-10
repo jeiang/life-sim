@@ -370,44 +370,6 @@
           }
         }
       }
-    },
-    "migrations": {
-      "additionalProperties": false,
-      "type": "object",
-      "properties": {
-        "rename": {
-          "type": "array",
-          "items": {
-            "additionalProperties": false,
-            "type": "object",
-            "required": ["from", "to"],
-            "properties": {
-              "from": {
-                "type": "string"
-              },
-              "to": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "remove": {
-          "type": "array",
-          "items": {
-            "additionalProperties": false,
-            "type": "object",
-            "required": ["id"],
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "fallback": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      }
     }
   }
 }

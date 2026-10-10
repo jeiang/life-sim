@@ -1,7 +1,7 @@
-import { type PackBundle, packRevision } from "../pack.ts";
+import type { PackBundle } from "../pack.ts";
 import { canonicalStringify, deserializeWorld } from "../state/serialize.ts";
 import type { Obituary, World } from "../state/types.ts";
-import { migrateSave, SAVE_SCHEMA_VERSION, SaveError } from "./migrate.ts";
+import { checkSaveVersion, SAVE_SCHEMA_VERSION, SaveError } from "./migrate.ts";
 import type { GraveyardEntry, SavedLife, SaveFile } from "./types.ts";
 
 type Json = Record<string, unknown>;
@@ -37,15 +37,9 @@ const optTime = (v: unknown, p: string): number | undefined =>
       ? v
       : bad(p, "a number");
 
-function packVersions(v: unknown, p: string): SaveFile["packVersions"] {
+function strings(v: unknown, p: string): string[] {
   if (!Array.isArray(v)) return bad(p, "a list");
-  return v.map((x, i) => {
-    if (!isObj(x)) return bad(`${p}[${i}]`, "an object");
-    return {
-      id: str(x.id, `${p}[${i}].id`),
-      version: str(x.version, `${p}[${i}].version`),
-    };
-  });
+  return v.map((x, i) => str(x, `${p}[${i}]`));
 }
 
 function world(v: unknown, p: string): World {
@@ -79,7 +73,8 @@ function obituary(v: unknown, p: string): Obituary {
       storyletLog: {},
       uses: {},
       choiceLog: [],
-      packVersions: [],
+      capabilities: [],
+      appliedMigrations: [],
     },
     p,
   );
@@ -132,7 +127,8 @@ export function readSave(raw: Json): SaveFile {
   ids(graveyard, "graveyard entries");
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
-    packVersions: packVersions(raw.packVersions, "packVersions"),
+    capabilities: strings(raw.capabilities, "capabilities"),
+    appliedMigrations: strings(raw.appliedMigrations, "appliedMigrations"),
     lives,
     graveyard,
   };
@@ -146,7 +142,7 @@ export function parseSave(text: string): SaveFile {
   } catch {
     throw new SaveError("This file is not valid JSON, so it cannot be a save.");
   }
-  return readSave(migrateSave(raw));
+  return readSave(checkSaveVersion(raw));
 }
 
 export type ImportResult =
@@ -155,7 +151,7 @@ export type ImportResult =
 
 /**
  * Validate an imported file (text or parsed JSON). With `bundles`, also reject saves that
- * need a Pack this build lacks or a newer Pack version than it has. Never throws.
+ * need a capability this build lacks. Never throws.
  */
 export function validateImport(
   input: unknown,
@@ -172,24 +168,18 @@ export function validateImport(
         );
       }
     }
-    const save = readSave(migrateSave(raw));
+    const save = readSave(checkSaveVersion(raw));
     if (bundles) {
-      const have = new Map(bundles.map((b) => [b.id, packRevision(b)]));
-      const needed = [
-        ...save.packVersions,
-        ...save.lives.flatMap((l) => l.world.packVersions),
-      ];
-      for (const { id, version } of needed) {
-        const cur = have.get(id);
-        if (cur === undefined)
+      const have = new Set(bundles.flatMap((b) => b.capabilities));
+      const needed = new Set([
+        ...save.capabilities,
+        ...save.lives.flatMap((l) => l.world.capabilities),
+      ]);
+      for (const id of [...needed].sort())
+        if (!have.has(id))
           throw new SaveError(
-            `This save needs the content pack "${id}", which this version of the game does not include.`,
+            `This save needs the capability "${id}", which this version of the game does not include. Update the app and try again.`,
           );
-        if (Number(version) > cur)
-          throw new SaveError(
-            `This save was made with a newer "${id}" content pack (version ${version}; this build has ${cur}). Update the app and try again.`,
-          );
-      }
     }
     return { ok: true, save };
   } catch (e) {

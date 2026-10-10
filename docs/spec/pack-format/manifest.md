@@ -14,13 +14,12 @@ The `pack.yaml` manifest, how Packs compose, and capability files. Part of the [
 | `repeat` | Default curve for repeatable actions: `{ full: 10, reduced: 20, factor: 25% }` (see Repeatable actions). Any field left out takes the value shown. The first manifest that sets it wins. |
 | `year` | Only Pack `core-loop` may declare this block or the `family` block (any other Pack declaring either is a compile error). Event draw settings: flavour slot count range and the yearly event cap, `decisions` / `decisions_min_age` (decision slots per year, see Year draw), plus optional `quiet` lines the Core journals for a year in which nothing else happened (every age gets a journal group). |
 | `npc_careers` | Only Pack `core-loop`. Who gets a simulated career and how it runs: `roles`, `start_age`, `retire_age`, `group` (exclusivity group of NPC jobs), `retired` (pension kind), yearly percents `hire`, `promotion`, `job_loss`, ascending `tiers` (yearly-income thresholds in minor units), `education` (flag qualities rolled once at career start, each with `chance` and optional `needs`). See [NPC careers](content-kinds.md#npc-careers). |
-| `migrations` | Renamed ids (`old -> new`) and removed ids (with a fallback). |
 
 ## Composition
 
 - Add-only. A Pack can add content and reference ids that the Packs it requires export through capabilities. It cannot override or patch another Pack's content.
 - Stat and quality ids are bare and shared by every loaded Pack, so no two Packs may declare the same one. The compiler (and `indexBundles` at load) rejects a duplicate with an error naming both Packs and the id. Convention: a Pack prefixes its own qualities with its short name (`vac_`, `gambling_`, `moved_`). A quality several Packs need (for example `criminal_record`) is declared once in `core-loop`, and other Packs require a `core-loop` capability that provides it.
-- Content ids are permanent. A shipped id that disappears without a migration entry fails the build (compared against the previous release's id list).
+- Content ids are permanent. A shipped id that disappears without an entry in a `migrations/<name>.yaml` fails the build (compared against the previous release's id list). See [Saves and migrations](saves.md).
 
 ## Qualities
 

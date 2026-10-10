@@ -4,7 +4,6 @@ import {
   type Holding,
   type JournalEntry,
   type Loan,
-  type PackVersion,
   type Person,
   type PersonId,
   type QualityValue,
@@ -42,11 +41,15 @@ export function allocId(world: World): [World, number] {
   return [{ ...world, nextId: world.nextId + 1 }, world.nextId];
 }
 
+const sortedIds = (ids: readonly string[]): string[] =>
+  [...new Set(ids)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+
 /** A world whose only person is the player. */
 export function createWorld(opts: {
   seed: number;
   player: PersonDraft;
-  packVersions?: readonly PackVersion[];
+  capabilities?: readonly string[];
+  appliedMigrations?: readonly string[];
 }): World {
   const empty: World = {
     schemaVersion: SCHEMA_VERSION,
@@ -65,9 +68,8 @@ export function createWorld(opts: {
     storyletLog: {},
     uses: {},
     choiceLog: [],
-    packVersions: [...(opts.packVersions ?? [])].sort((a, b) =>
-      a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
-    ),
+    capabilities: sortedIds(opts.capabilities ?? []),
+    appliedMigrations: sortedIds(opts.appliedMigrations ?? []),
   };
   const [world, id] = addPerson(empty, opts.player);
   return { ...world, playerId: id };

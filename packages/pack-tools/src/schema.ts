@@ -299,20 +299,27 @@ export const ManifestSchema = obj(
         "Living costs",
       ),
     ),
-    migrations: Type.Optional(
-      obj({
-        rename: Type.Optional(
-          Type.Array(obj({ from: Type.String(), to: Type.String() })),
-        ),
-        remove: Type.Optional(
-          Type.Array(
-            obj({ id: Type.String(), fallback: Type.Optional(Type.String()) }),
-          ),
-        ),
-      }),
-    ),
   },
   "Pack manifest (pack.yaml)",
+);
+
+/**
+ * `packs/<id>/migrations/<name>.yaml` (docs/spec/pack-format.md). One file per migration; its
+ * id is `<pack>/<name>`. Saves record the ids they have applied. Lists are block lists, so
+ * concurrent edits merge cleanly.
+ */
+export const MigrationSchema = obj(
+  {
+    rename: Type.Optional(
+      Type.Array(obj({ from: Type.String(), to: Type.String() })),
+    ),
+    remove: Type.Optional(
+      Type.Array(
+        obj({ id: Type.String(), fallback: Type.Optional(Type.String()) }),
+      ),
+    ),
+  },
+  "Pack migration (migrations/<name>.yaml)",
 );
 
 const Outcome = obj({
@@ -689,6 +696,7 @@ export const FILE_SCHEMAS = {
   "pack.schema.json": ManifestSchema,
   "capability.schema.json": CapabilitySchema,
   "qualities.schema.json": list(QualitySchema, "Qualities"),
+  "migration.schema.json": MigrationSchema,
   "storylets.schema.json": list(StoryletSchema, "Storylets"),
   "occupations.schema.json": list(OccupationSchema, "Occupation kinds"),
   "items.schema.json": list(ItemSchema, "Item kinds"),
@@ -699,6 +707,7 @@ export const FILE_SCHEMAS = {
 } as const;
 
 export type Capability = Static<typeof CapabilitySchema>;
+export type Migration = Static<typeof MigrationSchema>;
 export type Manifest = Static<typeof ManifestSchema>;
 export type StoryletSrc = Static<typeof StoryletSchema>;
 export type OccupationSrc = Static<typeof OccupationSchema>;

@@ -132,7 +132,8 @@ describe("decision slots", () => {
       if (d.queued < 3) continue;
       const file = {
         schemaVersion: SAVE_SCHEMA_VERSION,
-        packVersions: [{ id: "dec", version: "1" }],
+        capabilities: [],
+        appliedMigrations: [],
         lives: [{ id: "a", name: "A", updatedAt: 1, world: w0 }],
         graveyard: [],
       };
@@ -155,7 +156,8 @@ describe("decision slots", () => {
       };
       const text = serializeSave({
         schemaVersion: SAVE_SCHEMA_VERSION,
-        packVersions: [{ id: "dec", version: "1" }],
+        capabilities: [],
+        appliedMigrations: [],
         lives: [{ id: "a", name: "A", updatedAt: 1, world: legacy }],
         graveyard: [],
       } as never);

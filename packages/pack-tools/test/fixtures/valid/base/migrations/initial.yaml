@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=../../../../../schema/migration.schema.json
+rename:
+  - { from: old-job-offer, to: first-job-offer }
+remove:
+  - { id: retired-event, fallback: first-job-offer }

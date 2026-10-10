@@ -7,18 +7,18 @@ import {
   ageUp,
   applyPackMigrations,
   applyPackMigrationsToSave,
+  checkSaveVersion,
   choose,
   endLife,
   getPerson,
-  type Migration,
-  migrateSave,
   newLife,
   type Obituary,
   type PackBundle,
-  packRevision,
+  type PackMigration,
   parseSave,
   putAsset,
   SAVE_SCHEMA_VERSION,
+  SaveError,
   type SaveFile,
   serializeSave,
   serializeWorld,
@@ -47,7 +47,10 @@ function play(seed: number, years: number, picks: number[]): World {
 function fileOf(...worlds: World[]): SaveFile {
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
-    packVersions: [{ id: "life", version: "0" }],
+    capabilities: bundles.flatMap((b) => b.capabilities).sort(),
+    appliedMigrations: bundles
+      .flatMap((b) => b.migrations.map((m) => m.id))
+      .sort(),
     lives: worlds.map((world, i) => ({
       id: `life-${i}`,
       name: `Life ${i}`,
@@ -96,82 +99,52 @@ describe("round trip", () => {
   });
 });
 
-describe("schema migrations", () => {
-  const v0 = () => {
-    const w = play(3, 4, [0]);
-    const j = JSON.parse(serializeWorld(w));
-    delete j.pending;
-    delete j.ended;
-    delete j.storyletLog;
-    delete j.choiceLog;
-    j.schemaVersion = 0;
-    return {
-      w,
-      raw: { schemaVersion: 0, lives: [{ id: "a", name: "A", world: j }] },
-    };
-  };
-
-  test("a synthetic v0 save migrates to the current schema", () => {
-    const { w, raw } = v0();
-    const save = parseSave(JSON.stringify(raw));
-    expect(save.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
-    expect(save.graveyard).toEqual([]);
-    expect(save.packVersions).toEqual([
-      { id: "core-loop", version: "0" },
-      { id: "life", version: "0" },
-    ]);
-    const mig = save.lives.map((l) => l.world)[0] as World;
-    expect(mig.pending).toBeNull();
-    expect(mig.ended).toBeNull();
-    expect(mig.storyletLog).toEqual({});
-    expect(mig.choiceLog).toEqual([]);
-    expect(mig.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
-    expect(mig.seed).toBe(w.seed);
-    expect(getPerson(mig, mig.playerId).age).toBe(getPerson(w, w.playerId).age);
-  });
-
-  test("a v1 save without use counters loads with none", () => {
-    const w = play(3, 4, [0]);
-    const j = JSON.parse(serializeWorld(w));
-    delete j.uses;
-    j.schemaVersion = 1;
-    const raw = {
-      schemaVersion: 1,
-      lives: [{ id: "a", name: "A", world: j }],
-      graveyard: [],
-      packVersions: [],
-    };
-    const mig = parseSave(JSON.stringify(raw)).lives[0]?.world as World;
-    expect(mig.uses).toEqual({});
-    expect(mig.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
-  });
-
-  test("steps run in order up to the target", () => {
-    const calls: number[] = [];
-    const step =
-      (n: number): Migration =>
-      (raw) => {
-        calls.push(n);
-        return { ...raw, [`s${n}`]: true };
-      };
-    const out = migrateSave(
-      { schemaVersion: 1 },
-      { 1: step(1), 2: step(2) },
-      3,
+describe("save schema reset", () => {
+  test("a world records capability ids and applied migration ids, sorted", () => {
+    const w = newLife(bundles, 3);
+    expect(w.capabilities).toEqual(
+      bundles.flatMap((b) => b.capabilities).sort(),
     );
-    expect(calls).toEqual([1, 2]);
-    expect(out).toMatchObject({ schemaVersion: 3, s1: true, s2: true });
+    expect(w.capabilities.length).toBeGreaterThan(0);
+    expect(w.appliedMigrations).toEqual(
+      bundles.flatMap((b) => b.migrations.map((m) => m.id)).sort(),
+    );
+    expect("packVersions" in w).toBe(false);
   });
 
-  test("a gap in the chain and a newer save are refused", () => {
-    expect(() => migrateSave({ schemaVersion: 0 }, {}, 1)).toThrow(/too old/);
-    expect(() => migrateSave({ schemaVersion: 9 })).toThrow(/newer version/);
+  test("a save from an older schema is rejected with a clear message", () => {
+    for (const v of [0, 1, 5]) {
+      const raw = { schemaVersion: v, lives: [], graveyard: [] };
+      expect(() => parseSave(JSON.stringify(raw))).toThrow(
+        /older, incompatible version.*cannot be upgraded/,
+      );
+      expect(() => checkSaveVersion(raw)).toThrow(SaveError);
+    }
+    const old = {
+      schemaVersion: 5,
+      lives: [],
+      graveyard: [],
+    };
+    const r = validateImport(old, bundles);
+    expect(r.ok).toBe(false);
+    expect(r.ok ? "" : r.error).toMatch(/older, incompatible/);
+  });
+
+  test("a newer save is refused", () => {
+    expect(() => checkSaveVersion({ schemaVersion: 99 })).toThrow(
+      /newer version/,
+    );
   });
 });
 
 describe("pack migrations", () => {
   const base = bundles[0] as PackBundle;
-  const next = (m: PackBundle["migrations"]): PackBundle => ({
+  const mig = (
+    id: string,
+    renamed: Record<string, string>,
+    removed: Record<string, string | null> = {},
+  ): PackMigration => ({ id: `life/${id}`, renamed, removed });
+  const next = (...m: PackMigration[]): PackBundle => ({
     ...base,
     migrations: m,
   });
@@ -199,10 +172,15 @@ describe("pack migrations", () => {
 
   test("renames rewrite ids, removals fall back or drop", () => {
     const w = worldWithContent();
-    const b = next({
-      renamed: { "life/car": "life/auto", "life/old": "life/new" },
-      removed: { "life/gone": null },
-    });
+    const b = next(
+      mig(
+        "m1",
+        { "life/car": "life/auto", "life/old": "life/new" },
+        {
+          "life/gone": null,
+        },
+      ),
+    );
     const m = applyPackMigrations(w, [b]);
     expect(getPerson(m, m.playerId).assets.map((a) => a.kindId)).toEqual([
       "life/auto",
@@ -212,46 +190,49 @@ describe("pack migrations", () => {
       "life/new": { count: 3, lastAge: 9 },
       "life/new#7": { count: 1, lastAge: 4 },
     });
-    expect(m.packVersions).toEqual([
-      { id: "core-loop", version: "0" },
-      { id: "life", version: String(packRevision(b)) },
-    ]);
+    expect(m.appliedMigrations).toEqual(
+      [...w.appliedMigrations, "life/m1"].sort(),
+    );
   });
 
   test("removal with fallback substitutes; without, drops the asset and pending", () => {
     const w = worldWithContent();
     const fb = applyPackMigrations(w, [
-      next({ renamed: {}, removed: { "life/car": "life/bike" } }),
+      next(mig("m1", {}, { "life/car": "life/bike" })),
     ]);
     expect(getPerson(fb, fb.playerId).assets[0]?.kindId).toBe("life/bike");
     const dropped = applyPackMigrations(w, [
-      next({ renamed: {}, removed: { "life/car": null, "life/old": null } }),
+      next(mig("m1", {}, { "life/car": null, "life/old": null })),
     ]);
     expect(getPerson(dropped, dropped.playerId).assets).toEqual([]);
     expect(dropped.pending).toBeNull();
   });
 
-  test("up-to-date saves are untouched and migration is idempotent", () => {
+  test("a migration id applies once: recorded ids are skipped, and re-applying is a no-op", () => {
     const w0 = worldWithContent();
-    // Recorded at revision 1: the one rename below is already applied.
+    const m1 = mig("m1", { "life/car": "life/auto" });
+    const b = next(m1);
+    // The world already recorded m1: its rename must not run again.
     const w: World = {
       ...w0,
-      packVersions: [
-        { id: "core-loop", version: "0" },
-        { id: "life", version: "1" },
-      ],
+      appliedMigrations: [...w0.appliedMigrations, m1.id].sort(),
     };
-    const same = {
-      ...base,
-      migrations: { renamed: { "life/car": "life/auto" }, removed: {} },
-    };
-    expect(serializeWorld(applyPackMigrations(w, [same]))).toBe(
-      serializeWorld(w),
-    );
-    const b = next({ renamed: { "life/car": "life/auto" }, removed: {} });
-    const once = applyPackMigrations(w, [b]);
+    expect(serializeWorld(applyPackMigrations(w, [b]))).toBe(serializeWorld(w));
+    // A world that has not seen m1 gets it applied, once.
+    const once = applyPackMigrations(w0, [b]);
+    expect(getPerson(once, once.playerId).assets[0]?.kindId).toBe("life/auto");
+    expect(once.appliedMigrations).toContain(m1.id);
     expect(serializeWorld(applyPackMigrations(once, [b]))).toBe(
       serializeWorld(once),
+    );
+    // Only the new migration runs when an older one was already applied.
+    const m2 = mig("m2", { "life/auto": "life/vehicle" });
+    const twice = applyPackMigrations(once, [next(m1, m2)]);
+    expect(getPerson(twice, twice.playerId).assets[0]?.kindId).toBe(
+      "life/vehicle",
+    );
+    expect(twice.appliedMigrations).toEqual(
+      [...once.appliedMigrations, m2.id].sort(),
     );
   });
 
@@ -279,16 +260,10 @@ describe("pack migrations", () => {
       ],
     };
     const m = applyPackMigrationsToSave(save, [
-      next({ renamed: { "life/job": "life/work" }, removed: {} }),
+      next(mig("m1", { "life/job": "life/work" })),
     ]);
     expect(m.graveyard[0]?.obituary.career[0]?.kindId).toBe("life/work");
-    expect(m.packVersions.find((v) => v.id === "life")?.version).toBe(
-      String(
-        packRevision(
-          next({ renamed: { "life/job": "life/work" }, removed: {} }),
-        ),
-      ),
-    );
+    expect(m.appliedMigrations).toContain("life/m1");
   });
 });
 
@@ -320,15 +295,23 @@ describe("import validation", () => {
     expect(err(dup)).toMatch(/share the id/);
   });
 
-  test("rejects incompatible versions and unknown packs", () => {
+  test("rejects a newer save and a save needing a capability this build lacks", () => {
     const newer = good();
     newer.schemaVersion = SAVE_SCHEMA_VERSION + 1;
     expect(err(newer)).toMatch(/newer version of the game/);
-    const newPack = good();
-    newPack.lives[0].world.packVersions = [{ id: "life", version: "99" }];
-    expect(err(newPack, bundles)).toMatch(/newer "life" content pack/);
-    const other = good();
-    other.lives[0].world.packVersions = [{ id: "zzz", version: "1" }];
-    expect(err(other, bundles)).toMatch(/needs the content pack "zzz"/);
+    const lacking = good();
+    lacking.lives[0].world.capabilities = [
+      ...lacking.lives[0].world.capabilities,
+      "zzz/unknown",
+    ];
+    expect(err(lacking, bundles)).toMatch(
+      /needs the capability "zzz\/unknown"/,
+    );
+    const fileLevel = good();
+    fileLevel.capabilities = ["zzz/other"];
+    expect(err(fileLevel, bundles)).toMatch(
+      /needs the capability "zzz\/other"/,
+    );
+    expect(validateImport(lacking).ok).toBe(true);
   });
 });

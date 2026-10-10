@@ -8,6 +8,7 @@ Decided in [Pack format and expression language](https://github.com/jeiang/life-
 packs/<pack-id>/
   pack.yaml                  # manifest (no qualities: they live in qualities/)
   capabilities/<feature>.yaml  # one file per feature: provides and requires (see Capabilities)
+  migrations/<name>.yaml     # one file per migration: renamed and removed ids (see saves.md)
   qualities/<topic>.yaml     # list of quality declarations (see Qualities)
   CONTEXT.md                 # glossary of the terms this Pack owns
   BALANCE.md                 # balance targets, harness profiles and report notes

@@ -7,9 +7,7 @@ export {
   worldToJson,
 } from "./codec.ts";
 export {
-  MIGRATIONS,
-  type Migration,
-  migrateSave,
+  checkSaveVersion,
   SAVE_SCHEMA_VERSION,
   SaveError,
 } from "./migrate.ts";

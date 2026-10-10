@@ -20,7 +20,7 @@ import type {
   LivingDecl,
   NpcCareersDecl,
   PackBundle,
-  PackMigrations,
+  PackMigration,
   QualityDecl,
   RepeatCurve,
   StatDecl,
@@ -49,6 +49,8 @@ import {
   type LoanSrc,
   type Manifest,
   ManifestSchema,
+  type Migration,
+  MigrationSchema,
   OccupationSchema,
   type OccupationSrc,
   PeopleSchema,
@@ -134,6 +136,15 @@ interface LoadedPack {
   qualities: LoadedQuality[];
   items: LoadedItem[];
   capabilities: LoadedCapability[];
+  migrations: LoadedMigration[];
+}
+
+/** One `migrations/<name>.yaml`; its id is `<pack>/<name>`. */
+interface LoadedMigration {
+  id: string;
+  src: Source;
+  rename: NonNullable<Migration["rename"]>;
+  remove: NonNullable<Migration["remove"]>;
 }
 
 /** One quality declaration and where it was written, for diagnostics. */
@@ -478,6 +489,7 @@ class Compiler {
     }
     const qualities = this.loadQualities(d, dir);
     const capabilities = this.loadCapabilities(d, dir);
+    const migrations = this.loadMigrations(d, dir);
     // Stat and quality ids share the expression namespace `stat.<id>` / `quality.<id>`.
     const idx = new Map<string, Kind>();
     for (const it of items) idx.set(`${manifest.id}/${it.id}`, it.kind);
@@ -490,6 +502,7 @@ class Compiler {
       qualities,
       items,
       capabilities,
+      migrations,
     });
   }
 
@@ -581,6 +594,39 @@ class Compiler {
         file,
         provides: (value as Capability).provides ?? {},
         requires: (value as Capability).requires ?? [],
+      });
+    }
+    return out;
+  }
+
+  private loadMigrations(d: string, dir: string): LoadedMigration[] {
+    const out: LoadedMigration[] = [];
+    const migDir = join(dir, "migrations");
+    for (const f of this.listYaml(migDir)) {
+      const file = this.rel(d, "migrations", f);
+      const stem = f.replace(/\.ya?ml$/, "");
+      if (!/^[a-z0-9][a-z0-9_-]*$/.test(stem)) {
+        this.diags.push({
+          file,
+          path: "",
+          message: `migration file name '${stem}' must match ^[a-z0-9][a-z0-9_-]*$`,
+        });
+        continue;
+      }
+      const src = parseYaml(
+        file,
+        readFileSync(join(migDir, f), "utf8"),
+        this.diags,
+        true,
+      );
+      if (!src) continue;
+      const value = src.value ?? {};
+      if (!validate(src, MigrationSchema, value, [], this.diags)) continue;
+      out.push({
+        id: `${d}/${stem}`,
+        src,
+        rename: (value as Migration).rename ?? [],
+        remove: (value as Migration).remove ?? [],
       });
     }
     return out;
@@ -844,7 +890,7 @@ class PackCompiler {
     const qualities = this.pack.qualities.map(
       (q) => ({ ...q.decl }) as QualityDecl,
     );
-    const migrations = this.migrations(m);
+    const migrations = this.migrations(pack, m);
     this.idLock(m, migrations);
     return {
       format: PACK_BUNDLE_FORMAT,
@@ -1853,56 +1899,62 @@ class PackCompiler {
     return ids;
   }
 
-  private migrations(m: Manifest): PackMigrations {
+  private migrations(pack: LoadedPack, m: Manifest): PackMigration[] {
     const current = this.currentIds(m);
-    const renamed: Record<string, string> = {};
-    const removed: Record<string, string | null> = {};
-    for (const [i, r] of (m.migrations?.rename ?? []).entries()) {
-      const from = this.migId(r.from, ["migrations", "rename", i, "from"]);
-      const to = this.migId(r.to, ["migrations", "rename", i, "to"]);
-      if (!from || !to) continue;
-      if (current.has(from))
-        this.err(
-          ["migrations", "rename", i, "from"],
-          `'${r.from}' is renamed but still exists`,
-        );
-      if (!current.has(to))
-        this.err(
-          ["migrations", "rename", i, "to"],
-          `rename target '${r.to}' does not exist`,
-        );
-      renamed[from] = to;
-    }
-    for (const [i, r] of (m.migrations?.remove ?? []).entries()) {
-      const id = this.migId(r.id, ["migrations", "remove", i, "id"]);
-      if (!id) continue;
-      if (current.has(id))
-        this.err(
-          ["migrations", "remove", i, "id"],
-          `'${r.id}' is removed but still exists`,
-        );
-      let fallback: string | null = null;
-      if (r.fallback !== undefined) {
-        fallback =
-          /^(stat|quality)\./.test(r.fallback) && current.has(r.fallback)
-            ? r.fallback
-            : (this.ref(r.fallback, undefined, [
-                "migrations",
-                "remove",
-                i,
-                "fallback",
-              ]) ?? null);
-      }
-      removed[id] = fallback;
-    }
     const sorted = <T>(o: Record<string, T>): Record<string, T> =>
       Object.fromEntries(
         Object.entries(o).sort(([a], [b]) => (a < b ? -1 : 1)),
       );
-    return { renamed: sorted(renamed), removed: sorted(removed) };
+    const out: PackMigration[] = [];
+    for (const mig of pack.migrations) {
+      this.src = mig.src;
+      const renamed: Record<string, string> = {};
+      const removed: Record<string, string | null> = {};
+      for (const [i, r] of mig.rename.entries()) {
+        const from = this.migId(r.from, ["rename", i, "from"]);
+        const to = this.migId(r.to, ["rename", i, "to"]);
+        if (!from || !to) continue;
+        if (current.has(from))
+          this.err(
+            ["rename", i, "from"],
+            `'${r.from}' is renamed but still exists`,
+          );
+        if (!current.has(to))
+          this.err(
+            ["rename", i, "to"],
+            `rename target '${r.to}' does not exist`,
+          );
+        renamed[from] = to;
+      }
+      for (const [i, r] of mig.remove.entries()) {
+        const id = this.migId(r.id, ["remove", i, "id"]);
+        if (!id) continue;
+        if (current.has(id))
+          this.err(
+            ["remove", i, "id"],
+            `'${r.id}' is removed but still exists`,
+          );
+        let fallback: string | null = null;
+        if (r.fallback !== undefined) {
+          fallback =
+            /^(stat|quality)\./.test(r.fallback) && current.has(r.fallback)
+              ? r.fallback
+              : (this.ref(r.fallback, undefined, ["remove", i, "fallback"]) ??
+                null);
+        }
+        removed[id] = fallback;
+      }
+      out.push({
+        id: mig.id,
+        renamed: sorted(renamed),
+        removed: sorted(removed),
+      });
+    }
+    this.src = pack.manifestSrc;
+    return out.sort((a, b) => (a.id < b.id ? -1 : 1));
   }
 
-  private idLock(m: Manifest, mig: PackMigrations): void {
+  private idLock(m: Manifest, migs: readonly PackMigration[]): void {
     const current = this.currentIds(m);
     this.c.ids.set(this.pack.id, [...current].sort());
     const lock = readLock(
@@ -1919,10 +1971,10 @@ class PackCompiler {
       });
     for (const id of lock.ids) {
       if (current.has(id)) continue;
-      if (id in mig.renamed || id in mig.removed) continue;
+      if (migs.some((x) => id in x.renamed || id in x.removed)) continue;
       this.err(
-        ["migrations"],
-        `id '${id}' shipped in the last release but is gone; add a rename or remove entry to 'migrations' in pack.yaml`,
+        [],
+        `id '${id}' shipped in the last release but is gone; add a rename or remove entry in a new migrations/<name>.yaml`,
       );
     }
   }

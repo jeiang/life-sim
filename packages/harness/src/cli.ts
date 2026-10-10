@@ -13,13 +13,14 @@ import {
 } from "./profiles.ts";
 import { renderMarkdown } from "./report.ts";
 
-const USAGE = `usage: pnpm harness --lives N [--profile random|studious|spender|idle|gambler|grinder|all|a,b] [--seed S] [--out dir] [--packs dir] [--life-seed X] [--jobs N]
-       pnpm harness --check-packs [--packs dir]
+const USAGE = `usage: pnpm harness --lives N [--profile random|studious|spender|idle|gambler|grinder|all|a,b] [--seed S] [--out dir] [--packs a,b] [--packs-dir dir] [--life-seed X] [--jobs N]
+       pnpm harness --check-packs [--packs a,b] [--packs-dir dir]
   --lives      lives to simulate (default 100)
   --profile    simulated player profile(s); several are dealt to lives in turn (default all)
   --seed       base seed, uint32 (default 1)
   --out        write report.md and report.json here
-  --packs      Packs directory (default: the repository's packs/)
+  --packs      load only these Packs and the Packs they require (default: every Pack)
+  --packs-dir  Packs directory (default: the repository's packs/)
   --jobs       worker threads (default: available cores); the report is identical for any N
   --check-packs  validate every Pack's harness/metrics.yaml against the compiled Packs, then exit (0 valid, 2 not)
   --life-seed  run one life with exactly this life seed (to replay a reported fault)
@@ -46,6 +47,7 @@ const { values: a } = parseArgs({
     seed: { type: "string" },
     out: { type: "string" },
     packs: { type: "string" },
+    "packs-dir": { type: "string" },
     "life-seed": { type: "string" },
     jobs: { type: "string" },
     "check-packs": { type: "boolean" },
@@ -75,10 +77,16 @@ const lifeSeed =
     : int("life-seed", a["life-seed"], 0);
 const jobs = int("jobs", a.jobs, 0);
 const packsDir = resolve(
-  a.packs ?? join(dirname(fileURLToPath(import.meta.url)), "../../../packs"),
+  a["packs-dir"] ??
+    join(dirname(fileURLToPath(import.meta.url)), "../../../packs"),
 );
 
-const compiled = compilePacks(packsDir);
+const only =
+  a.packs === undefined
+    ? undefined
+    : a.packs.split(",").filter((p) => p !== "");
+if (only?.length === 0) fail("--packs needs at least one Pack id");
+const compiled = compilePacks(packsDir, only ? { only } : {});
 if (!compiled.ok) {
   for (const d of compiled.diagnostics) console.error(formatDiagnostic(d));
   console.error(`The Packs in ${packsDir} do not compile.`);
@@ -109,7 +117,12 @@ const run = {
 const { report, seconds } =
   resolveJobs(jobs) === 1
     ? runHarness(run)
-    : await runHarnessParallel({ ...run, packsDir, jobs });
+    : await runHarnessParallel({
+        ...run,
+        packsDir,
+        ...(only ? { only } : {}),
+        jobs,
+      });
 const md = renderMarkdown(report, { seed, profiles });
 if (a.out) {
   mkdirSync(a.out, { recursive: true });

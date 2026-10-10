@@ -11,6 +11,12 @@ import { type ProfileSpec, selectProfiles } from "./profile-spec.ts";
 import { Aggregate, type Report } from "./report.ts";
 import { type LifeResult, runLife } from "./run.ts";
 
+/** Shard `index` (0-based) of `count`: lives `i` with `i % count === index`. */
+export interface Shard {
+  readonly index: number;
+  readonly count: number;
+}
+
 export interface HarnessOptions {
   readonly bundles: readonly PackBundle[];
   /** Pack metrics to collect and report (`loadMetrics`); none by default. */
@@ -26,6 +32,8 @@ export interface HarnessOptions {
   readonly lifeSeed?: number;
   /** Forced rolls, choices and actions (`--force`, forced scripts); absent: an unforced run. */
   readonly force?: ForceSet;
+  /** Play only the lives whose index is `shard.index` modulo `shard.count`; seeds are unchanged. */
+  readonly shard?: Shard;
 }
 
 export interface HarnessResult {
@@ -52,6 +60,7 @@ export function runLives(
     | "lifeSeed"
     | "metrics"
     | "force"
+    | "shard"
   >,
   from: number,
   to: number,
@@ -63,6 +72,7 @@ export function runLives(
   const profiles = selectProfiles(registry, opts.profiles);
   const out: LifeResult[] = [];
   for (let i = from; i < to; i++) {
+    if (opts.shard && i % opts.shard.count !== opts.shard.index) continue;
     const seed = opts.lifeSeed ?? lifeSeedFor(opts.seed, i);
     const profile = profiles[i % profiles.length] as ProfileSpec;
     const r = runLife(

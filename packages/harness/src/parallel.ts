@@ -16,7 +16,7 @@ const BATCH = 32;
 export interface Job
   extends Pick<
     HarnessOptions,
-    "lives" | "profiles" | "seed" | "lifeSeed" | "force"
+    "lives" | "profiles" | "seed" | "lifeSeed" | "force" | "shard"
   > {
   readonly from: number;
   readonly to: number;
@@ -35,6 +35,8 @@ export type WorkerOut =
 export interface ParallelOptions extends HarnessOptions {
   /** Directory `bundles` were compiled from; every worker compiles it once for itself. */
   readonly packsDir: string;
+  /** Called with every life, in life order. */
+  readonly onLife?: (r: LifeResult) => void;
   /** Pack subset every worker compiles (with its required closure); unset means every Pack. */
   readonly only?: readonly string[];
   /** Worker threads; 0 or unset means the available cores. */
@@ -89,6 +91,7 @@ export function runHarnessParallel(
         seed: opts.seed,
         ...(opts.lifeSeed === undefined ? {} : { lifeSeed: opts.lifeSeed }),
         ...(opts.force ? { force: opts.force } : {}),
+        ...(opts.shard ? { shard: opts.shard } : {}),
         from,
         to: Math.min(from + BATCH, total),
       };
@@ -116,6 +119,7 @@ export function runHarnessParallel(
             for (const life of r) {
               agg.add(life);
               tally?.add(life);
+              opts.onLife?.(life);
             }
             nextToAdd += BATCH;
           }

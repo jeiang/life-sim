@@ -3,6 +3,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { compilePacks, formatDiagnostic } from "@life/pack-tools";
+import type { ForcedReport } from "./force.ts";
 import {
   type ForceEntry,
   type ForceScript,
@@ -20,16 +21,28 @@ import {
   type ProfileSpec,
   selectProfiles,
 } from "./profile-spec.ts";
-import { renderMarkdown } from "./report.ts";
+import { type Report, renderMarkdown } from "./report.ts";
+import type { LifeResult } from "./run.ts";
+import {
+  failures,
+  findShardFiles,
+  type Merged,
+  mergeShards,
+  parseFailOn,
+  parseShard,
+  shardRunOf,
+  writeShard,
+} from "./shard.ts";
 
 /** Profile ids the loaded Packs declare, for the usage text (empty until the Packs load). */
 let known: readonly ProfileSpec[] = [];
 
 const usage =
-  (): string => `usage: pnpm harness --lives N [--profile ${known.length > 0 ? `${known.map((p) => p.id).join("|")}|` : ""}all|a,b] [--seed S] [--out dir] [--packs a,b] [--packs-dir dir] [--life-seed X] [--jobs N] [--force [age:]key=value,...] [--script name|file]
+  (): string => `usage: pnpm harness --lives N [--profile ${known.length > 0 ? `${known.map((p) => p.id).join("|")}|` : ""}all|a,b] [--seed S] [--out dir] [--packs a,b] [--packs-dir dir] [--life-seed X] [--jobs N] [--force [age:]key=value,...] [--script name|file] [--shard i/n] [--fail-on faults,never-fired]
        pnpm harness --check-packs [--packs a,b] [--packs-dir dir]
        pnpm harness --list-profiles [--packs a,b] [--packs-dir dir]
        pnpm harness --list-scripts [--packs a,b] [--packs-dir dir]
+       pnpm harness merge <dir> [--out dir] [--fail-on faults,never-fired] [--packs a,b] [--packs-dir dir]
   --lives      lives to simulate (default 100)
   --profile    simulated player profile(s), declared by Packs; several are dealt to lives in turn (default all: every profile not marked \`default: false\`)
   --seed       base seed, uint32 (default 1)
@@ -42,7 +55,10 @@ const usage =
   --list-scripts  print the forced scripts the Packs declare, then exit
   --check-packs  validate every Pack's harness/metrics.yaml, harness/profiles.yaml and harness/force/*.yaml against the compiled Packs, then exit (0 valid, 2 not)
   --list-profiles  print the profiles the Packs declare (id, Pack, whether in \`all\`), then exit
+  --shard      run only shard i of n (\`2/4\`): lives whose index mod n is i-1, with the usual seeds; writes shard-i-of-n.json.gz to --out (required) for \`merge\`
+  --fail-on    also exit 1 on: never-fired (content no life reached, listed per Pack); engine faults and never-matched forced entries always fail
   --life-seed  run one life with exactly this life seed (to replay a reported fault)
+  merge <dir>  combine the shard-*.json.gz files found under <dir> (recursively) into one report.md/report.json (in --out, default <dir>), identical to an unsharded run
 Exit status 1 when any engine fault is found or a forced entry never matched.
 `;
 
@@ -59,7 +75,54 @@ function int(name: string, v: string | undefined, dflt: number): number {
   return n;
 }
 
-const { values: a } = parseArgs({
+/** Write the report files, print the summary and faults, and exit 1 when the run fails. */
+function finish(
+  report: Report,
+  forced: ForcedReport | undefined,
+  seed: number,
+  profiles: readonly string[],
+  seconds: number | null,
+  outDir: string | undefined,
+): never {
+  const md = renderMarkdown(report, { seed, profiles, forced });
+  if (outDir) {
+    mkdirSync(outDir, { recursive: true });
+    writeFileSync(join(outDir, "report.md"), md);
+    writeFileSync(
+      join(outDir, "report.json"),
+      `${JSON.stringify(
+        { run: { seed, profiles }, ...report, ...(forced ? { forced } : {}) },
+        null,
+        2,
+      )}\n`,
+    );
+  }
+  const nw40 = report.netWorth["40"];
+  console.log(
+    [
+      `harness: ${report.lives} lives (${profiles.join(", ")})${seconds === null ? "" : ` in ${seconds.toFixed(1)} s`}`,
+      `faults: ${report.faults.total}${
+        report.faults.total
+          ? ` (${Object.entries(report.faults.byKind)
+              .map(([k, n]) => `${k} ${n}`)
+              .join(", ")})`
+          : ""
+      }`,
+      `age at death: median ${report.death.age?.p50 ?? "-"}, p10 ${report.death.age?.p10 ?? "-"}, p90 ${report.death.age?.p90 ?? "-"}; ${report.death.unfinished} unfinished`,
+      `net worth at 40 (median, minor units): ${nw40?.p50 ?? "-"}`,
+      `events per year: mean ${report.eventsPerYear.mean}; never fired: ${report.storylets.neverFired.length}`,
+    ].join("\n"),
+  );
+  for (const f of report.faults.first.slice(0, 10))
+    console.error(
+      `FAULT ${f.kind} [${f.profile} life-seed ${f.seed} age ${f.age}]: ${f.message}`,
+    );
+  const why = failures(report, forced, failOn.on);
+  for (const line of why) console.error(`FAIL ${line}`);
+  process.exit(why.length > 0 ? 1 : 0);
+}
+
+const { values: a, positionals } = parseArgs({
   options: {
     lives: { type: "string" },
     profile: { type: "string" },
@@ -75,8 +138,15 @@ const { values: a } = parseArgs({
     force: { type: "string" },
     script: { type: "string" },
     help: { type: "boolean" },
+    shard: { type: "string" },
+    "fail-on": { type: "string" },
   },
+  allowPositionals: true,
 });
+const failOn = parseFailOn(a["fail-on"] ?? "");
+if (failOn.unknown.length > 0)
+  fail(`unknown --fail-on '${failOn.unknown.join(",")}' (faults, never-fired)`);
+
 const packsDir = resolve(
   a["packs-dir"] ??
     join(dirname(fileURLToPath(import.meta.url)), "../../../packs"),
@@ -137,7 +207,26 @@ if (a["list-scripts"]) {
     console.log(`${x.name}\t${x.profile ?? SCRIPTED_ID}\t${x.description}`);
   process.exit(0);
 }
-
+if (positionals[0] === "merge") {
+  const dir = positionals[1];
+  if (!dir || positionals.length > 2) fail("usage: harness merge <dir>");
+  let merged: Merged;
+  try {
+    merged = mergeShards(findShardFiles(dir), compiled.bundles, loaded.metrics);
+  } catch (e) {
+    console.error(`merge: ${e instanceof Error ? e.message : String(e)}`);
+    process.exit(2);
+  }
+  finish(
+    merged.report,
+    merged.forced,
+    merged.run.seed,
+    merged.run.profiles,
+    null,
+    a.out ?? dir,
+  );
+}
+if (positionals.length > 0) fail(`unexpected argument '${positionals[0]}'`);
 let script: ForceScript | undefined;
 if (a.script !== undefined) {
   script = scriptSet.scripts.find((x) => x.name === a.script);
@@ -184,6 +273,12 @@ const profiles = script
 if (profiles.length === 0)
   fail("no profiles: no Pack declares a default profile");
 
+const shard = a.shard === undefined ? undefined : parseShard(a.shard);
+if (a.shard !== undefined && !shard)
+  fail("--shard must be i/n with 1 <= i <= n, such as 2/4");
+if (shard && lifeSeed !== undefined)
+  fail("--shard cannot be combined with --life-seed");
+
 const run = {
   bundles: compiled.bundles,
   metrics: loaded.metrics,
@@ -193,54 +288,27 @@ const run = {
   seed,
   ...(lifeSeed === undefined ? {} : { lifeSeed }),
   ...(force ? { force } : {}),
+  ...(shard ? { shard } : {}),
 };
+const shardLives: LifeResult[] = [];
+const onLife = shard ? (r: LifeResult) => void shardLives.push(r) : undefined;
 const { report, forced, seconds } =
   resolveJobs(jobs) === 1
-    ? runHarness(run)
+    ? runHarness(run, onLife)
     : await runHarnessParallel({
         ...run,
         packsDir,
         ...(only ? { only } : {}),
+        ...(onLife ? { onLife } : {}),
         jobs,
       });
-const md = renderMarkdown(report, { seed, profiles, forced });
-if (a.out) {
-  mkdirSync(a.out, { recursive: true });
-  writeFileSync(join(a.out, "report.md"), md);
-  writeFileSync(
-    join(a.out, "report.json"),
-    `${JSON.stringify(
-      { run: { seed, profiles }, ...report, ...(forced ? { forced } : {}) },
-      null,
-      2,
-    )}\n`,
+if (shard) {
+  if (!a.out) fail("--shard needs --out: the shard's lives are written there");
+  writeShard(
+    a.out,
+    shardRunOf(seed, lives, profiles, force),
+    shard,
+    shardLives,
   );
 }
-
-const nw40 = report.netWorth["40"];
-console.log(
-  [
-    `harness: ${report.lives} lives (${profiles.join(", ")}) in ${seconds.toFixed(1)} s`,
-    `faults: ${report.faults.total}${
-      report.faults.total
-        ? ` (${Object.entries(report.faults.byKind)
-            .map(([k, n]) => `${k} ${n}`)
-            .join(", ")})`
-        : ""
-    }`,
-    `age at death: median ${report.death.age?.p50 ?? "-"}, p10 ${report.death.age?.p10 ?? "-"}, p90 ${report.death.age?.p90 ?? "-"}; ${report.death.unfinished} unfinished`,
-    `net worth at 40 (median, minor units): ${nw40?.p50 ?? "-"}`,
-    `events per year: mean ${report.eventsPerYear.mean}; never fired: ${report.storylets.neverFired.length}`,
-  ].join("\n"),
-);
-for (const f of report.faults.first.slice(0, 10))
-  console.error(
-    `FAULT ${f.kind} [${f.profile} life-seed ${f.seed} age ${f.age}]: ${f.message}`,
-  );
-if (forced && forced.neverMatched.length > 0) {
-  for (const label of forced.neverMatched)
-    console.error(`FORCED never matched: ${label}`);
-}
-process.exit(
-  report.faults.total > 0 || (forced && forced.neverMatched.length > 0) ? 1 : 0,
-);
+finish(report, forced, seed, profiles, seconds, a.out);

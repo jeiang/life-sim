@@ -20,8 +20,8 @@ profiles:
       prefer: ["go through with it", "plead not guilty", "cooperate"]
     rules:
       - ids: [crime/murder]
-# Crime stays rare in the uniform `random` profile: its actions are down-weighted by orders of magnitude (the confirm step alone does not stop a uniform picker).
+# Crime stays rare in every profile but its own: the actions are down-weighted by orders of magnitude (the confirm step alone does not stop a uniform picker), including in profiles other Packs declare.
 adjust:
-  - { profile: random, tags: [crime], weight: 0.004 }
-  - { profile: random, ids: [crime/murder, crime/assault], weight: 0.1 }
+  - { profile: "*", except: [criminal, killer], tags: [crime], weight: 0.004 }
+  - { profile: "*", except: [criminal, killer], ids: [crime/murder, crime/assault], weight: 0.1 }
   - { profile: criminal, ids: [crime/escape-attempt], weight: 0.1 }

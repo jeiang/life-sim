@@ -300,7 +300,10 @@ function compileRule(
 }
 
 interface AdjustDecl extends WeightAdjust {
+  /** A profile id, or a glob (`*`, `?`) matching every registered profile id. */
   readonly profile: string;
+  /** Profile ids or globs the adjust skips; names no profile carries are ignored. */
+  readonly except: readonly string[];
   /** A diagnostic for a problem with the entry's `profile`. */
   readonly at: (message: string) => Diagnostic;
 }
@@ -384,9 +387,25 @@ export function compileProfiles(
     else
       root.adjust.forEach((a, i) => {
         const path: Path = ["adjust", i];
-        const o = l.obj(path, a, ["profile", "tags", "ids", "weight"]);
+        const o = l.obj(path, a, [
+          "profile",
+          "except",
+          "tags",
+          "ids",
+          "weight",
+        ]);
         if (o === null) return;
         const profile = l.str([...path, "profile"], o.profile, "a profile id");
+        const except: string[] = [];
+        if (o.except !== undefined) {
+          if (!Array.isArray(o.except) || o.except.length === 0)
+            l.err([...path, "except"], "expected a non-empty list of profiles");
+          else
+            o.except.forEach((e, j) => {
+              const s = l.str([...path, "except", j], e, "a profile id");
+              if (s !== null) except.push(s);
+            });
+        }
         const tagList: string[] = [];
         if (o.tags !== undefined) {
           if (!Array.isArray(o.tags) || o.tags.length === 0)
@@ -421,6 +440,7 @@ export function compileProfiles(
         adjusts.push({
           pack,
           profile,
+          except,
           tags: tagList,
           ids,
           weight,
@@ -604,7 +624,20 @@ export function loadProfiles(
     }
   }
   // Pack order, then file order: multipliers of one profile compose by multiplication.
+  // A glob `profile` resolves here, against every Pack's profiles; an `except` naming nothing is ignored.
   for (const a of adjusts) {
+    const { pack, tags, ids, weight } = a;
+    const entry = { pack, tags, ids, weight };
+    if (/[*?]/.test(a.profile)) {
+      const re = globToRegExp(a.profile, true);
+      const skip = a.except.map((e) => globToRegExp(e, true));
+      for (let i = 0; i < profiles.length; i++) {
+        const p = profiles[i] as ProfileSpec;
+        if (!re.test(p.id) || skip.some((s) => s.test(p.id))) continue;
+        profiles[i] = { ...p, weights: [...p.weights, entry] };
+      }
+      continue;
+    }
     const i = profiles.findIndex((p) => p.id === a.profile);
     const p = profiles[i];
     if (p === undefined) {
@@ -615,11 +648,8 @@ export function loadProfiles(
       );
       continue;
     }
-    const { pack, tags, ids, weight } = a;
-    profiles[i] = {
-      ...p,
-      weights: [...p.weights, { pack, tags, ids, weight }],
-    };
+    if (a.except.includes(p.id)) continue;
+    profiles[i] = { ...p, weights: [...p.weights, entry] };
   }
   return { profiles, diagnostics };
 }

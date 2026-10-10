@@ -1,4 +1,4 @@
-import { cpSync, mkdtempSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -368,6 +368,30 @@ describe("pack-contributed profile weights and ranked picks", () => {
     expect(total(cheapest)).toBe(cheapest["base/tidy"]);
     const tied = play(profileSpecs, "tied");
     expect(total(tied)).toBe(tied["shady/mug"]);
+  });
+
+  test("a glob profile adjusts every profile except the listed ones", () => {
+    const glob = mkdtempSync(join(tmpdir(), "harness-glob-adjust-"));
+    cpSync(dir, glob, { recursive: true });
+    const file = join(glob, "shady/harness/profiles.yaml");
+    writeFileSync(
+      file,
+      readFileSync(file, "utf8").replace(
+        "adjust:",
+        `adjust:
+  - { profile: "*", except: [random, ranker, ghost], tags: [crime], weight: 0.5 }
+  - { profile: "ra*", except: [ranker], ids: ["shady/mug"], weight: 0.25 }
+  - { profile: ranker, except: [ranker], tags: [crime], weight: 0.1 }`,
+      ),
+    );
+    const loaded = loadProfiles(glob, bundlesOf(glob));
+    expect(loaded.diagnostics).toEqual([]);
+    const weights = (id: string) =>
+      loaded.profiles.find((p) => p.id === id)?.weights.map((w) => w.weight);
+    expect(weights("random")).toEqual([0.25, 0.05]);
+    expect(weights("ranker")).toEqual([]);
+    expect(weights("cheapest")).toEqual([0.5]);
+    expect(weights("tied")).toEqual([0.5]);
   });
 
   test("bad adjust and by entries are reported with their paths", () => {

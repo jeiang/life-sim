@@ -111,9 +111,12 @@ A Pack may re-weight the random pick of any registered profile, including one an
 adjust:
   - { profile: random, tags: [crime], weight: 0.05 }      # actions carrying any of these tags
   - { profile: random, ids: ["crime/mug-*"], weight: 0.5 } # or whose id matches any of these globs
+  - { profile: "*", except: [criminal, killer], tags: [crime], weight: 0.05 } # every profile but these
 ```
 
 `profile` is a registry id (unknown: a diagnostic at the entry); `tags` and/or `ids` select the actions (a tag no action carries, or a glob that matches nothing, is an error; an entry with neither is an error; with both, an action matches either); `weight` is a multiplier above 0 and up to 100. A rule whose `pick` is `random` (the default) draws among its candidates with each one weighted by the product of the multipliers of every entry that selects it, so a candidate selected by two entries gets both. Entries are merged in Pack load order, then file order, which makes the result deterministic. Multipliers apply to the random pick of actions only: `first`, `max`, `min`, `shop` rules, event choices, the amount drawn and the number of moves are unchanged. Weights are scaled to parts per 10,000 (at least 1). When no candidate in a pick is selected, the profile draws exactly as without `adjust`, so a profile nobody adjusts plays the same lives as before, and adjusting a profile changes only that profile's lives. The test fixture `packages/harness/test/fixtures/adjust` is the worked example.
+
+`profile` may also be a glob (`*` matches any run of characters, `?` one character, so `"*"` is every profile), with an optional `except` list of profile ids or globs to skip. A glob is resolved after every Pack's profiles have loaded, so it reaches profiles that other Packs declare, and a crime-only load still validates; it adds the entry to each matching profile in Pack load order, then file order, like an exact id. A glob that matches no profile, and an `except` name that no profile carries, are ignored. `except` also works with an exact `profile`.
 
 | Profile | Pack | Behaviour |
 |---|---|---|

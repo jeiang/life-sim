@@ -1,6 +1,6 @@
 # life-sim
 
-Offline BitLife-style life sim PWA. TypeScript Core, Preact + signals web app, pnpm workspace, Nix flake. See `CONTEXT.md`, `docs/adr/`, `docs/spec/`.
+Offline BitLife-style life sim PWA. TypeScript Core, Preact + signals web app, pnpm workspace, Nix flake. See `CONTEXT.md`, `docs/adr/`, `docs/spec/`. Agents adding content follow [docs/pipeline/README.md](docs/pipeline/README.md).
 
 ## Layout
 

@@ -1,0 +1,12 @@
+description: A scholar admitted to any school borrows the extra when a scholarship shrinks, then pays the tuition from savings
+profile: scholar
+steps:
+  - roll: outcome/grad-school/apply-mba
+    value: 0
+  - roll: outcome/grad-school/apply-law-school
+    value: 0
+  - roll: outcome/grad-school/apply-medical-school
+    value: 0
+  - choose: "Borrow the extra"
+  - roll: outcome/grad-school/pay-tuition-cash
+    value: 0

@@ -121,7 +121,12 @@ describe("guards", () => {
 
   test("grandchild events need a grandchild", () => {
     const withGrandchild = (age: number): World => {
-      const [w2, child] = withPerson(adultOf(5, age), "child", "sibling-gen", 30);
+      const [w2, child] = withPerson(
+        adultOf(5, age),
+        "child",
+        "sibling-gen",
+        30,
+      );
       const [w3, grandchild] = withPerson(w2, "friend", "sibling-gen", 3);
       return addParentLink(w3, grandchild, child);
     };

@@ -51,7 +51,7 @@
 - tags: family, relationship, spend-time
 - repeatable: true
 - text: You clear the evening for {person.first_name}.
-- opens: 0.1..0.5 per life
+- opens: 0.02..0.5 per life
 
 ### outcomes
 - outcome: 50

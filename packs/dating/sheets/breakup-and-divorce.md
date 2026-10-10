@@ -14,6 +14,8 @@
 > `divorce-forced` is the chain step DrDateAffairs reaches by `next` from affair-caught and partner-cheat-found when the partner is a spouse. It shares the custody choices, cash split and prenup branch with `divorce`.
 > Engine bug, filed as core: `setRole` keeps the `household: merged` flag after a role change.
 
+> Tweak (focused sim): break-up and divorce rates are those of the `unfaithful` profile (it breaks up from 60 and divorces from 30); `divorce-forced` needs a caught affair while married, which the profile rarely reaches.
+
 ## heartbreak
 - trigger: event
 - icon: 💔
@@ -58,7 +60,7 @@
 - needs: role dating/ex: role id, no range: the role a former partner or spouse moves to after the player breaks up or divorces; keeps no pay, no household
 - tags: relationship
 - text: You work up the nerve to end things with {person.first_name}.
-- opens: 0.5..1.5 per life
+- opens: 0.05..1.5 per life
 
 ### outcomes
 - outcome: 60
@@ -156,7 +158,7 @@
 - needs: role dating/ex: role id, no range: the role a former partner or spouse moves to after the player breaks up or divorces; keeps no pay, no household
 - tags: relationship
 - text: The marriage cannot survive what just came out, and {person.first_name} files for divorce.
-- opens: 0.05..0.3 per life
+- opens: 0.005..0.3 per life
 
 ### choice: You keep the kids
 - when: count_kin(child, 0, 17) > 0

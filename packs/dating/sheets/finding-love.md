@@ -133,7 +133,7 @@
 ## dating-app
 - trigger: event
 - icon: 📱
-- weight: 3
+- weight: 2
 - when: age >= 18 and count_role(core-loop/partner, 0, 100) == 0 and count_role(core-loop/spouse, 0, 100) == 0
 - cooldown: 6
 - text: A friend nudges you to try a dating app.

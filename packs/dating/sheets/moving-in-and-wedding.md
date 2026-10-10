@@ -13,6 +13,8 @@
 > Costs come from the player's cash (`money -=`). Amounts are minor units: elope $800, small wedding $12,000, big wedding $40,000, prenup $1,500.
 > `once: true` on an action with `scope: person` counts per bound partner, so a declined move-in is final for that partner.
 
+> Tweak (focused sim): wedding and prenup bands are the `romantic` profile (about half of its lives marry); random lives plan 0.05 a life.
+
 ## move-in-together
 - trigger: action
 - icon: 🏠
@@ -23,7 +25,7 @@
 - when: person.closeness >= 50
 - once: true
 - text: You ask {person.first_name} to move in and split the bills.
-- opens: 0.25..0.55 per life
+- opens: 0.25..1.0 per life
 
 ### outcomes
 - outcome: 75
@@ -44,7 +46,7 @@
 - when: person.quality.dating_engaged and person.closeness >= 60 and age >= 18 and count_role(core-loop/spouse, 0, 100) == 0 and not milestone_reached(married) and money >= 80000
 - once: true
 - text: You start planning the big day with {person.first_name}.
-- opens: 0.2..0.4 per life
+- opens: 0.2..0.6 per life
 - needs: quality dating_engaged: flag, default false, scope person: the partner accepted a proposal; set by the propose accept in the finding chain
 
 > The action is offered only to an engaged partner, and only with cash for the cheapest option (elope). Each choice hands on to `wedding-prenup` with `next`; the person carries over because both storylets have `scope: person`.
@@ -79,7 +81,7 @@
 - scope: person
 - target: core-loop/partner
 - text: Before the vows, you and {person.first_name} sit down with a lawyer to talk about money.
-- opens: 0.2..0.4 per life
+- opens: 0.2..0.6 per life
 - needs: quality dating_prenup: flag, default false: the player signed a prenup, so savings stay separate after the wedding
 
 > A chain step (`chance: 0%`), reached only by `next` from `plan-wedding`, and a person decision the player answers.

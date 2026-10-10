@@ -12,6 +12,8 @@
 > `quality.dating_children` tallies the children the player has had (births and adoptions) for the harness metrics and `dating_first_child_age` is set by the `first_child` milestone hook.
 > `first_child` is reached by the child-role spawn, so no `reach_milestone` is written here.
 
+> Tweak (focused sim): `try-for-a-baby` is the `romantic` profile trying every other year until a child; the pregnancy share is one outcome per carrier (o1 when the player can carry, o2 when the partner does), so each is half of the 22..28% band.
+
 ## try-for-a-baby
 - trigger: action
 - menu: relationships
@@ -23,7 +25,7 @@
 - cooldown: 2
 - max_per_life: 6
 - text: You and {person.first_name} decide to start trying for a baby. Nothing is guaranteed.
-- opens: 1..3 per life
+- opens: 1..5 per life
 - needs: quality dating_pregnant: flag 0 or 1, default 0, scope person: 1 while the carrier has a pregnancy running (player via quality, partner via person.quality)
 - needs: generator baby-gen: child, age 0: the newborn; first and last names from the Pack pool, gender drawn from the generator weights
 
@@ -37,14 +39,14 @@
   - effect: quality.dating_pregnant = 1
   - effect: schedule(dating/pregnancy-end, after: 1-1 years)
   - effect: journal("You are pregnant.")
-  - rate: 22..28%
+  - rate: 9..16%
 - outcome: 25
   - when: not player.can_carry
   - text: A test shows two lines. {person.first_name} is pregnant.
   - effect: person.quality.dating_pregnant = 1
   - effect: schedule(dating/partner-pregnancy-end, after: 1-1 years, person)
   - effect: journal("{person.first_name} is pregnant.")
-  - rate: 22..28%
+  - rate: 9..16%
 
 ## unplanned-pregnancy
 - trigger: event

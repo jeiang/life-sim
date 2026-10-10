@@ -12,6 +12,8 @@
 > A non-spouse partner who ends things becomes `dating/ex` (chain 8 declares it), via `relationship(person).role = dating/ex`, the only closed role write (no unset). A spouse who is caught or walks away chains into `divorce-forced` (chain 8, chance 0%, reached only by next) so the cash split and prenup apply. Spouse and partner outcomes are gated on `count_role(core-loop/spouse, 0, 100) > 0`.
 > `opens` bands are design estimates for a typical life, to be measured on the focused sim.
 
+> Tweak (focused sim): the player-side rates below are those of the `unfaithful` profile, which cheats at every chance (age 30+, three per life at most); the probabilities per affair (20% caught at once, 25% found out later) are unchanged. A real player cheats far less often.
+
 ## affair-cheat
 - trigger: action
 - menu: relationships
@@ -24,7 +26,7 @@
 - cooldown: 3
 - max_per_life: 3
 - text: Someone new has caught your eye, and {person.first_name} is none the wiser.
-- opens: 0.2..0.8 per life
+- opens: 0.2..2.5 per life
 - needs: quality dating_affair: int 0..9, default 0: how many affairs the player has had this life
 
 ### outcomes
@@ -48,7 +50,7 @@
 - target: core-loop/partner, core-loop/spouse
 - tags: relationship
 - text: {person.first_name} has started asking where you were on certain nights.
-- opens: 0.1..0.4 per life
+- opens: 0.1..1.2 per life
 
 ### outcomes
 - outcome: 25
@@ -66,7 +68,7 @@
 - scope: person
 - tags: relationship
 - text: The fight goes on well past midnight, and {person.first_name} wants you gone.
-- opens: 0.05..0.25 per life
+- opens: 0.05..0.9 per life
 
 ### outcomes
 - outcome: 1
@@ -76,7 +78,6 @@
   - effect: relationship(person).closeness += -30
   - effect: stat.happiness -= 10
   - effect: journal("You were caught cheating, and the relationship ended.")
-  - rate: 100..100%
 - outcome: 1
   - when: count_role(core-loop/spouse, 0, 100) > 0
   - text: {person.first_name} is done with the marriage and calls the lawyers the next morning.
@@ -84,7 +85,6 @@
   - effect: stat.happiness -= 10
   - effect: journal("You were caught cheating on your spouse, and the divorce began.")
   - next: divorce-forced
-  - rate: 100..100%
 
 ## partner-cheats
 - trigger: event
@@ -133,7 +133,6 @@
   - effect: relationship(person).closeness += -30
   - effect: stat.happiness -= 8
   - effect: journal("Your partner cheated on you, and you broke up.")
-  - rate: 100..100%
 - outcome: 1
   - when: count_role(core-loop/spouse, 0, 100) > 0
   - text: You serve the papers that night. {person.first_name} does not argue, which somehow hurts more.
@@ -142,4 +141,3 @@
   - effect: stat.happiness -= 8
   - effect: journal("Your spouse cheated on you, and you filed for divorce.")
   - next: divorce-forced
-  - rate: 100..100%

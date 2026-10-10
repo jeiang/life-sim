@@ -43,8 +43,8 @@ stats:
     den: years
     of: mover
     label: years lived abroad (movers)
-  nw_movers: { kind: median, value: nw, of: mover, ages: [40, 65], label: "net worth, movers" }
-  nw_stayers: { kind: median, value: nw, of: stayer, ages: [40, 65], label: "net worth, stayers" }
+  nw_movers: { kind: median, value: nw, of: mover, by: profile, ages: [40, 65], label: "net worth, movers" }
+  nw_stayers: { kind: median, value: nw, of: stayer, by: profile, ages: [40, 65], label: "net worth, stayers" }
   kin_movers: { kind: median, value: kin, of: mover, by: profile, ages: [30, 50], label: "relatives' closeness, movers" }
   kin_stayers: { kind: median, value: kin, of: stayer, ages: [30, 50], label: "relatives' closeness, stayers" }
   happy_movers: { kind: median, value: happy, of: mover, ages: [25, 35, 45], label: "happiness, movers" }

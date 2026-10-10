@@ -6,22 +6,22 @@
   trigger: event
   scope: person
   target: [core-loop/parent, core-loop/sibling, core-loop/friend]
-  chance: 75%
-  when: "quality.reloc_abroad"
+  chance: 40%
+  when: "quality.reloc_abroad and person.closeness > 20"
   text: "Back home, {person.first_name} is getting on with life, and the news from you has dried up."
   outcomes:
     - weight: 50
       text: Another month goes by and the messages stop coming.
       effects:
-        - relationship(person).closeness += -6
+        - relationship(person).closeness += -4
     - weight: 30
       text: "{person.first_name} hears about your news from a cousin, and it stings."
       effects:
-        - relationship(person).closeness += -6
+        - relationship(person).closeness += -4
     - weight: 20
       text: "A birthday card arrives a week late, with a short note that says only \"Hope you're well.\""
       effects:
-        - relationship(person).closeness += -6
+        - relationship(person).closeness += -4
 
 - id: call-home
   icon: 📞

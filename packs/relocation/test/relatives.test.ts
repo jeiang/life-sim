@@ -39,20 +39,20 @@ function relative(w: World, role: string): { w: World; id: PersonId } {
 
 describe("drift", () => {
   const ID = R("relatives-drift");
-  test("a mover with relatives loses 6 closeness; the stayer loses nothing", () => {
+  test("a mover with relatives loses 4 closeness; the stayer loses nothing", () => {
     const { w, id } = relative(abroad(), "parent");
     const after = startStorylet(w, bundles, ID, id).world;
-    expect(closeness(after, id)).toBe(44);
+    expect(closeness(after, id)).toBe(46);
     const home = relative(life({ age: 35, seed: 11 }), "parent");
     const same = startStorylet(home.w, bundles, ID, home.id).world;
     expect(closeness(same, home.id)).toBe(50);
   });
 
-  test("it targets parents, siblings and friends only, with all three texts at -6", () => {
+  test("it targets parents, siblings and friends only, with all three texts at -4", () => {
     for (const o of story(ID).outcomes) {
       const { w, id } = relative(abroad(), "parent");
       forcePick(ID, o.text as string);
-      expect(closeness(startStorylet(w, bundles, ID, id).world, id)).toBe(44);
+      expect(closeness(startStorylet(w, bundles, ID, id).world, id)).toBe(46);
       unforce();
     }
   });

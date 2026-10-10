@@ -28,7 +28,7 @@ One of eight cities declared here with `weight: 0` (a destination, never a birth
 `reloc_home_city` (index of the core-loop city left, 1 dustwater to 6 goldcrest) and `reloc_home_country` (1, the US), recorded by the `remember_home` macro before every move abroad. `move-back-home` returns to that city for $1,500.
 
 **Relatives left behind**:
-While abroad, `relatives-drift` takes 6 closeness a year from each parent, sibling and friend (75% a year per person). `call-home` and `visit-home` (relationships menu) win it back; `relatives-reunion` adds 10 once, after the first age-up that follows moving home. There is no per-person location.
+While abroad, `relatives-drift` takes 4 closeness from each parent, sibling and friend (40% a year per person, and never below 20). `call-home` and `visit-home` (relationships menu) win it back; `relatives-reunion` adds 10 once, after the first age-up that follows moving home. There is no per-person location.
 
 **Language friction**:
 Abroad with under 20 skill in the destination language, the `hiring_blocked` slot is true (professional `apply-*` jobs refuse); under 40 the `abroad-language-barrier` event costs a happiness point a year. `abroad-language-growth` adds 3 skill a year in the destination language.

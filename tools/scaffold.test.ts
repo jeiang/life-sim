@@ -246,6 +246,43 @@ describe("scaffold", () => {
     );
   });
 
+  it("accepts kinship ids in a storylet target and still refuses unknown ones", () => {
+    const body = (target: string): string => `# Content sheet: Kin
+
+- pack: core-loop
+- packs: core-loop
+
+## kin-visit
+- trigger: event
+- scope: person
+- target: ${target}
+- weight: 5
+- text: A visit.
+
+### outcomes
+- outcome: 1
+  - text: Fine.
+`;
+    const args = (f: string): string[] => [
+      f,
+      "--pack",
+      "core-loop",
+      "--packs-dir",
+      packs,
+      "--stdout",
+    ];
+    const ok = capture(
+      args(sheetFile("kin-ok.md", body("child, step-child, grandchild"))),
+    );
+    expect(ok.status).toBe(0);
+    expect(ok.stdout).toContain("target: [child, step-child, grandchild]");
+    const bad = capture(
+      args(sheetFile("kin-bad.md", body("step-child, nonsense"))),
+    );
+    expect(bad.status).not.toBe(0);
+    expect(bad.stderr).toContain("unknown role 'nonsense' in target");
+  });
+
   it("accepts every effect form the core-loop storylets use", () => {
     const effects = [
       "stat.happiness += 3",

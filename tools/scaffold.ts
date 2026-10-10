@@ -8,6 +8,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
+import { KINSHIP_IDS } from "../packages/core/src/index.ts";
 import {
   compilePacks,
   formatDiagnostic,
@@ -203,7 +204,11 @@ export function checkSheet(
     const target = s.fields.target;
     if (target) {
       for (const r of splitList(target.value)) {
-        if (!roles.has(r) && !roles.has(`${sheet.pack}/${r}`)) {
+        if (
+          !roles.has(r) &&
+          !roles.has(`${sheet.pack}/${r}`) &&
+          !(KINSHIP_IDS as readonly string[]).includes(r)
+        ) {
           errors.push({
             line: target.line,
             message: `unknown role '${r}' in target`,

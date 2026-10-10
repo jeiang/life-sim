@@ -307,8 +307,38 @@ describe("tips: gating and cost", () => {
   });
 });
 
+/** The player holds a little of every kind, so sell tips are drawable. */
+function holdAll(w: World): World {
+  return KINDS.reduce(
+    (x, k) => tradeHolding(x, idx, x.playerId, I(k), 50_000)[0],
+    w,
+  );
+}
+
+describe("tips: sell advice needs a holding", () => {
+  const SOURCES = ["ask-for-tip", "read-the-news", "read-investing-book"];
+  test("no source draws a sell tip for a kind the player does not hold", () => {
+    const w = life(1_000_00);
+    const [p] = parents(w);
+    for (const src of SOURCES)
+      for (const k of KINDS)
+        expect(
+          weightTo(withForecast(w, k, -500), src, `tip-${k}-sell`, p),
+        ).toBe(0);
+  });
+  test("a held kind can be tipped to sell", () => {
+    const w = holdAll(life(10_000_00));
+    const [p] = parents(w);
+    for (const src of SOURCES)
+      for (const k of KINDS)
+        expect(
+          weightTo(withForecast(w, k, -500), src, `tip-${k}-sell`, p),
+        ).toBeGreaterThan(0);
+  });
+});
+
 describe("tips: direction and accuracy", () => {
-  const w0 = life(1_000_00);
+  const w0 = holdAll(life(10_000_00));
   test("the news is right with chance 70; the book 80; a relative 65 + smarts / 10", () => {
     for (const k of KINDS) {
       const up = withForecast(w0, k, 500);

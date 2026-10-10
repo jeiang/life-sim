@@ -1,9 +1,8 @@
 name: ci
 
-# Pull-request gate on GitHub-hosted runners. buildbot-nix only builds `main`
-# to push closures to the cache; it never builds PRs and is not required.
-# The required branch-protection contexts are `eval`, `package`, and one
-# `check (<name>)` leg per flake check.
+# Pull-request gate on GitHub-hosted runners (docs/spec/ci.md). The required
+# branch-protection contexts are `eval`, `package`, and one `check (<name>)`
+# leg per flake check (including `check (typecheck)`); `ids-lock` is not required.
 on:
   pull_request:
   push:

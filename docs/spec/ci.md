@@ -1,14 +1,14 @@
 # CI and checks
 
-Decided in [CI runner and check placement](https://github.com/jeiang/life-sim/issues/19). Tooling facts come from the [Nix flake research](https://github.com/jeiang/life-sim/blob/research/nix-flake/docs/research/nix-flake.md); buildbot facts come from `cornn-flaek/modules/buildbot/default.nix`.
+Decided in [CI runner and check placement](https://github.com/jeiang/life-sim/issues/19). Tooling facts come from the [Nix flake research](https://github.com/jeiang/life-sim/blob/research/nix-flake/docs/research/nix-flake.md).
 
 ## Runner
 
-- Pull requests are gated by GitHub Actions on GitHub-hosted `ubuntu-latest` runners (`.github/workflows/ci.yml`, workflow `ci`). Nix comes from `cachix/install-nix-action`; the Nix store is cached per leg with `nix-community/cache-nix-action` (GitHub's Actions cache, no secret). Actions are pinned by commit SHA and the workflow has `permissions: contents: read`.
-- Jobs: `eval` (`nix flake check --no-build`), `check (<name>)` (a matrix leg per flake check below, each `nix build .#checks.x86_64-linux.<name>`), and `package` (`nix build .#packages.x86_64-linux.default`). Runs are cancelled per ref when a newer push arrives.
-- `ids-lock` runs `pack-tools validate packs` on a full clone with tags, so the shipped-id check (against `ids.lock.json` at the last `v<N>` tag) runs; the hermetic `packs` check has no git history and skips it. Pull requests do not edit `ids.lock.json`.
-- buildbot-nix on `ricklent` (cluster CI) builds only `main` after a merge and pushes the outputs to garret (`cache.jeiang.dev`) within about 5 minutes so cluster deploys can download them. It never builds pull requests and is not a required check.
-- The separate `harness-10k` workflow (10,000 lives) is informational and not required.
+- Pull requests are gated by GitHub Actions on GitHub-hosted `ubuntu-latest` runners (`.github/workflows/ci.yml`, workflow `ci`; it also runs on pushes to `main`). Nix comes from `cachix/install-nix-action`; the Nix store is cached per leg with `nix-community/cache-nix-action` (GitHub's Actions cache, no secret). Actions are pinned by commit SHA and the workflow has `permissions: contents: read`.
+- Jobs: `eval` (`nix flake check --no-build`), `check (<name>)` (a matrix leg per flake check below, each `nix build .#checks.x86_64-linux.<name>`; `check (typecheck)` is the `tsc` leg), `ids-lock`, and `package` (`nix build .#packages.x86_64-linux.default`). Runs are cancelled per ref when a newer push arrives.
+- `ids-lock` runs `pack-tools validate packs` on a full clone with tags, so the shipped-id check (against `ids.lock.json` at the last `v<N>` tag) runs; the hermetic `packs` check has no git history and skips it. Pull requests do not edit `ids.lock.json`; only the [release workflow](#github-actions-release-vn) refreshes locks.
+- No CI system builds the flake for the cluster. Deploys build on the target host ([deployment](deploy.md#release-flow)).
+- The separate `harness-10k` workflow (10,000 lives) is informational and not required. It runs on pushes to `main`, on pull requests labeled `balance`, and on demand.
 
 ## Checks
 
@@ -30,13 +30,17 @@ All checks are hermetic `checks.<system>.*` flake outputs, so `nix flake check` 
 
 ## GitHub Actions: 10,000-life harness
 
-`.github/workflows/harness.yml` (job `harness-10k`) runs on every pull request, every push to `main`, and on demand. The repository is public, so the free `ubuntu-latest` runner is used. Actions are pinned by commit SHA, the token has `contents: read` and `pull-requests: write` (plus `actions: read` to fetch main's last report), and a new push to a pull request cancels its in-progress run.
+`.github/workflows/harness.yml` (job `harness-10k`) runs on every push to `main`, on pull requests carrying the `balance` label (when labeled and on each later push), and on demand. Unlabeled pull requests skip the job. The repository is public, so the free `ubuntu-latest` runner is used. Actions are pinned by commit SHA, the token has `contents: read` and `pull-requests: write` (plus `actions: read` to fetch main's last report), and a new push to the same ref cancels its in-progress run.
 
 - It installs Node 24 and pnpm 10 (pnpm store cached by `actions/setup-node`), runs `pnpm install --frozen-lockfile`, then `harness --lives 10000 --profile all --seed 20260101 --jobs $(nproc)` ([harness](harness.md)).
-- The full `report.md`, `report.json` and console output are uploaded as the `harness-report` artifact. On pull requests from this repository, one sticky comment (marker `<!-- harness-10k -->`) is created and then updated with headline balance numbers, any faults, and a column from main's last successful run. Every run also writes the same text to the job summary. The text comes from `.github/scripts/harness-summary.mjs`.
+- The full `report.md`, `report.json` and console output are uploaded as the `harness-report` artifact. On pull requests from this repository, one sticky comment (marker `<!-- harness-10k -->`) is created and then updated with headline balance numbers, any faults, and a column from main's last successful run. Every run also writes the same text to the job summary. The text comes from `.github/scripts/harness-summary.mjs`, which the [release workflow](#github-actions-release-vn) also uses for its summary.
 - The job fails on engine faults only (the CLI's exit status). There are no machine-checkable balance targets yet, so none are enforced.
-- `harness-10k` is not (yet) a required status check on `main`: pull requests opened before the workflow landed have no run until they next push, so requiring it would block them. `workflow_dispatch` runs on a branch (and comments on its open PR) only if the branch already contains the workflow file.
-- Agents tune locally with `--lives 2000 --jobs 4`; the final 10,000-life numbers in `BALANCE.md` come from the CI report on the pull request.
+- `harness-10k` is not a required status check on `main`. `workflow_dispatch` runs on a branch (and comments on its open PR) only if the branch already contains the workflow file.
+- Agents tune locally with `--lives 1000 --jobs 4`. Full-pack balance runs go to artemis only through `scripts/artemis-run.sh` ([artemis-run](tools/artemis-run.md)); for the balance context of a change use `pnpm tool balance-context` ([balance-context](tools/balance-context.md)).
+
+## Lock check against the last tag
+
+The shipped-id check compares the Packs' ids with `ids.lock.json` as committed at the highest `v<N>` tag (`git show v<N>:packs/<id>/ids.lock.json`). It runs in the `ids-lock` job (full clone with tags). The hermetic `packs` flake check has no git history and skips it. Locks change only through the release workflow below.
 
 ## GitHub Actions: release (`v<N>`)
 
@@ -53,7 +57,7 @@ All checks are hermetic `checks.<system>.*` flake outputs, so `nix flake check` 
 
 ## Open risk
 
-Resolved (issue #30): Playwright Chromium and WebKit both run in the x86_64-linux Nix sandbox on buildbot. `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` was not needed. The `e2e` check (defined on x86_64-linux, aarch64-linux, and aarch64-darwin, where nixpkgs ships the browsers) sets:
+Resolved (issue #30): Playwright Chromium and WebKit both run in the x86_64-linux Nix sandbox. `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` was not needed. The `e2e` check (defined on x86_64-linux, aarch64-linux, and aarch64-darwin, where nixpkgs ships the browsers) sets:
 
 - `PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}` and `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true`.
 - `HOME=$TMPDIR` and `XDG_RUNTIME_DIR=$TMPDIR/xdg` (mode 700), plus a `FONTCONFIG_FILE` with DejaVu fonts.
@@ -63,6 +67,6 @@ The e2e specs and a stub page live in `e2e/`; the app e2e suites extend this set
 
 ## Merge flow
 
-- `main` is protected. Changes land through pull requests only. Required status contexts: `eval`, `package`, and `check (biome)`, `check (vitest)`, `check (versions)`, `check (packs)`, `check (e2e)`, `check (harness)`. Not strict (an up-to-date branch is not required) and enforced for admins. Adding a flake check means adding it to the matrix and to the required contexts.
+- `main` is protected. Changes land through pull requests only. Required status contexts: `eval`, `package`, and `check (biome)`, `check (vitest)`, `check (typecheck)`, `check (versions)`, `check (packs)`, `check (e2e)`, `check (harness)`. Not strict (an up-to-date branch is not required) and enforced for admins. Adding a flake check means adding it to the matrix and to the required contexts. `ids-lock` and `harness-10k` are not required.
 - Build subagents work on branches, open pull requests, and merge them when the `ci` checks are green.
 - Running `nix flake check` locally on the Mac (aarch64-darwin) before pushing is optional.

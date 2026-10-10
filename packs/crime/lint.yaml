@@ -1,0 +1,4 @@
+allow:
+  - code: L006
+    subject: quality.crime_record
+    reason: Set by the conviction storylets, which land with the crime content wave; the readable already feeds hiring_blocked.

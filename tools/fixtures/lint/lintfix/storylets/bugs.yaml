@@ -1,0 +1,144 @@
+# yaml-language-server: $schema=../../../../../packages/pack-tools/schema/storylets.schema.json
+# One bug per lint rule.
+
+# L001: smarts never exceeds 100.
+- id: dead-range
+  trigger: event
+  chance: 10%
+  when: stat.smarts > 100
+  text: "Never."
+  outcomes:
+    - weight: 1
+
+# L001: no value of level is above 5 and below 3.
+- id: dead-contradiction
+  trigger: event
+  chance: 10%
+  when: quality.level > 5 and quality.level < 3
+  text: "Never."
+  outcomes:
+    - weight: 1
+
+# L002: nothing ever sets ghost.
+- id: ghost-gate
+  trigger: event
+  chance: 10%
+  when: quality.ghost
+  text: "Never."
+  outcomes:
+    - weight: 1
+
+# L005: the chance is 0 for every value the names take.
+- id: zero-chance
+  trigger: event
+  chance: 0 * quality.level
+  text: "Never."
+  outcomes:
+    - weight: 1
+
+# L005: the second outcome has weight 0.
+- id: zero-outcome
+  trigger: event
+  chance: 10%
+  text: "Sometimes."
+  outcomes:
+    - weight: 1
+    - weight: 0
+
+# L004 here: the next target cannot resolve (and L005 there).
+- id: chain-into-dead
+  trigger: event
+  chance: 5%
+  text: "A chain."
+  outcomes:
+    - weight: 1
+      next: chain-dead
+
+- id: chain-dead
+  trigger: event
+  chance: 0%
+  text: "Nothing resolves."
+  outcomes:
+    - weight: 0
+
+# L003: nothing chains to this and it has no chance of its own.
+- id: orphan-chain
+  trigger: event
+  chance: 0%
+  text: "Never opened."
+  outcomes:
+    - weight: 1
+
+# L009: both storylets chain onward only.
+- id: loop-a
+  trigger: event
+  chance: 1%
+  text: "Round."
+  outcomes:
+    - weight: 1
+      next: loop-b
+
+- id: loop-b
+  trigger: event
+  chance: 0%
+  text: "And round."
+  outcomes:
+    - weight: 1
+      next: loop-a
+
+# L006: orphan is read but never written.
+- id: reads-orphan
+  trigger: event
+  chance: 10%
+  text: "Reads."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.smarts += quality.orphan
+
+# L007 (error): a coin flip that pays 3 for 1.
+- id: money-printer
+  trigger: action
+  menu: activities/gamble
+  tags: [wager]
+  amount: { min: 100, max: 1000, step: 100 }
+  text: "Too good."
+  outcomes:
+    - weight: 1
+      effects:
+        - money += amount * 3
+    - weight: 1
+      effects:
+        - money -= amount
+
+# L007 (warning): returns 20%.
+- id: stingy-wager
+  trigger: action
+  menu: activities/gamble
+  tags: [wager]
+  amount: { min: 100, max: 1000, step: 100 }
+  text: "Too stingy."
+  outcomes:
+    - weight: 1
+      effects:
+        - money += amount
+    - weight: 9
+      effects:
+        - money -= amount
+
+# L008: level up to 10 times 2000 is 200%.
+- id: big-chance
+  trigger: event
+  chance: quality.level * 2000
+  text: "Clipped."
+  outcomes:
+    - weight: 1
+
+# Allowed by lint.yaml.
+- id: allowed-dead
+  trigger: event
+  chance: 10%
+  when: stat.smarts > 100
+  text: "Never, on purpose."
+  outcomes:
+    - weight: 1

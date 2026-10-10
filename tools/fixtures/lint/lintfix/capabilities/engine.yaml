@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../../../../packages/pack-tools/schema/capability.schema.json
+provides:
+  stats:
+    - happiness
+    - smarts
+  qualities:
+    - level
+    - ghost
+    - orphan
+  tags:
+    - wager
+  singletons:
+    - currency
+    - year

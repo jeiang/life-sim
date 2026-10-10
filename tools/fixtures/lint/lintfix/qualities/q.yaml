@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=../../../../../packages/pack-tools/schema/qualities.schema.json
+# Written by `level-up` (and so reachable).
+- { id: level, type: int, min: 0, max: 10, default: 0 }
+# Read by `ghost-gate`, written by nothing.
+- { id: ghost, type: flag, default: false }
+# Read in an effect, written by nothing.
+- { id: orphan, type: int, min: 0, max: 5, default: 0 }

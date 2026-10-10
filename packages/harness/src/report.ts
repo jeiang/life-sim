@@ -80,6 +80,13 @@ export interface Report {
       string,
       { atLeast1: number; atLeast2: number; atLeast3: number }
     >;
+    /**
+     * Player decisions: opens of event storylets with choices, chained steps (reached only
+     * through `next`) excluded, so what the decision slots and person decisions drew.
+     */
+    readonly total: number;
+    /** Storylet id -> opens and percent (two decimals) of `total`, largest first. */
+    readonly byStorylet: Record<string, { count: number; share: number }>;
   };
   /**
    * Repeatable actions (those used at least once): uses per year lived, and how the years
@@ -227,6 +234,9 @@ function sortedOutcomes(
       ]),
   );
 }
+
+/** No storylet should take more than this percent of all player decisions. */
+export const DECISION_SHARE_CAP = 3;
 
 /** Storylets reached only through `next` and never rolled themselves. */
 export function chainSteps(bundles: readonly PackBundle[]): Set<string> {
@@ -578,6 +588,18 @@ export class Aggregate {
       .map(([id, count]) => ({ id, count }))
       .sort((a, b) => b.count - a.count || (a.id < b.id ? -1 : 1));
     const never = all.filter((id) => !this.fires[id]);
+    const decisionIds = new Set(
+      this.bundles.flatMap((b) =>
+        b.storylets
+          .filter(
+            (s) =>
+              s.trigger === "event" && s.choices.length > 0 && !chain.has(s.id),
+          )
+          .map((s) => s.id),
+      ),
+    );
+    const decided = sorted.filter((e) => decisionIds.has(e.id));
+    const decisionTotal = decided.reduce((a, e) => a + e.count, 0);
     const ageHist: Record<string, number> = {};
     for (const a of this.deathAges) {
       const k = `${Math.floor(a / 10) * 10}s`;
@@ -675,6 +697,16 @@ export class Aggregate {
                 atLeast3: pct(v[2] as number, v[3] as number),
               },
             ]),
+        ),
+        total: decisionTotal,
+        byStorylet: Object.fromEntries(
+          decided.map((e) => [
+            e.id,
+            {
+              count: e.count,
+              share: Math.round((e.count / decisionTotal) * 10000) / 100,
+            },
+          ]),
         ),
       },
       repeats: {
@@ -954,6 +986,20 @@ export function renderMarkdown(
   );
   for (const [k, v] of Object.entries(r.decisions.byProfile))
     L.push(`| ${k} | ${v.atLeast1}% | ${v.atLeast2}% | ${v.atLeast3}% |`);
+  const byShare = Object.entries(r.decisions.byStorylet);
+  L.push(
+    "",
+    `Share of the ${r.decisions.total} player decisions, by storylet (rule: none over ${DECISION_SHARE_CAP}%).`,
+    "",
+  );
+  if (byShare.length === 0) L.push("No decision fired.");
+  else {
+    L.push("| storylet | decisions | share |", "|---|---|---|");
+    for (const [id, v] of byShare)
+      L.push(
+        `| ${id} | ${v.count} | ${v.share}%${v.share > DECISION_SHARE_CAP ? " (over)" : ""} |`,
+      );
+  }
   L.push("", "## Milestones and consequences", "");
   const reached = Object.entries(r.consequences.milestones);
   if (reached.length === 0) L.push("No milestone was reached.", "");

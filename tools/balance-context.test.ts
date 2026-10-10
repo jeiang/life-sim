@@ -54,6 +54,7 @@ describe("balance-context", () => {
         "net worth, median (major units): at 40 267707, at 65 1270634",
         "employment share (ages 25-64): 71.5%",
         "decision slots, years with >=1 / >=2 / >=3: 90.2% / 49.4% / 28.6% (target 90 / 50 / 30)",
+        "decision share by storylet, top 5 of 6 (2700 decisions; 6 over 3%): core-loop/everyday-stress-choice 25.93% OVER, core-loop/job-offer 22.22% OVER, core-loop/lend-money 18.52% OVER, core-loop/pick-a-fight 14.81% OVER, core-loop/study-group 11.11% OVER",
         "yearly cap hits: 12 chance hits dropped (0.1% of years)",
         "top storylet: core-loop/everyday-stress, 37.6% of 25618 fires",
         "storylets never fired: 0 of 270",
@@ -94,7 +95,7 @@ describe("balance-context", () => {
   it("adds the Pack's declared metrics and cap drops with --pack", () => {
     const lines = balanceContext(report, "gambling");
     expect(lines.length).toBeLessThan(40);
-    expect(lines.slice(8)).toMatchInlineSnapshot(`
+    expect(lines.slice(9)).toMatchInlineSnapshot(`
       [
         "pack gambling: 12 chance hits dropped by the yearly cap",
         "  gambled: 84.7%",

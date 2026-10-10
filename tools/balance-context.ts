@@ -5,7 +5,11 @@
  */
 import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
-import type { Report, StatResult } from "../packages/harness/src/index.ts";
+import {
+  DECISION_SHARE_CAP,
+  type Report,
+  type StatResult,
+} from "../packages/harness/src/index.ts";
 import type {
   StatRow,
   StatValue,
@@ -81,6 +85,19 @@ export function balanceContext(r: Report, pack?: string): string[] {
   L.push(`employment share (ages 25-64): ${r.rates.employment}%`);
   L.push(
     `decision slots, years with >=1 / >=2 / >=3: ${r.decisions.atLeast1}% / ${r.decisions.atLeast2}% / ${r.decisions.atLeast3}% (target 90 / 50 / 30)`,
+  );
+  const shares = Object.entries(r.decisions.byStorylet);
+  const over = shares.filter(([, v]) => v.share > DECISION_SHARE_CAP).length;
+  L.push(
+    shares.length === 0
+      ? "decision share by storylet: no decisions"
+      : `decision share by storylet, top 5 of ${shares.length} (${r.decisions.total} decisions; ${over} over ${DECISION_SHARE_CAP}%): ${shares
+          .slice(0, 5)
+          .map(
+            ([id, v]) =>
+              `${id} ${v.share}%${v.share > DECISION_SHARE_CAP ? " OVER" : ""}`,
+          )
+          .join(", ")}`,
   );
   const drops = Object.values(r.capDrops).reduce((a, b) => a + b, 0);
   L.push(

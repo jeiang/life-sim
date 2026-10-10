@@ -39,6 +39,7 @@ export {
 export {
   Aggregate,
   chainSteps,
+  DECISION_SHARE_CAP,
   type Dist,
   type Report,
   renderMarkdown,

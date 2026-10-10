@@ -136,6 +136,33 @@
         "atLeast2": 49.2,
         "atLeast3": 28.8
       }
+    },
+    "total": 2700,
+    "byStorylet": {
+      "core-loop/everyday-stress-choice": {
+        "count": 700,
+        "share": 25.93
+      },
+      "core-loop/job-offer": {
+        "count": 600,
+        "share": 22.22
+      },
+      "core-loop/lend-money": {
+        "count": 500,
+        "share": 18.52
+      },
+      "core-loop/pick-a-fight": {
+        "count": 400,
+        "share": 14.81
+      },
+      "core-loop/study-group": {
+        "count": 300,
+        "share": 11.11
+      },
+      "core-loop/new-hobby": {
+        "count": 200,
+        "share": 7.41
+      }
     }
   },
   "capDrops": {

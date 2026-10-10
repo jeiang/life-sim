@@ -111,6 +111,37 @@ describe("the core-loop Pack", () => {
     }
   }, 60_000);
 
+  test("decisions.byStorylet counts only choice events, with shares of the total, largest first, in the markdown", () => {
+    const { report } = runHarness({
+      bundles,
+      profileSpecs,
+      lives: 10,
+      profiles: ["random"],
+      seed: 7,
+    });
+    const choice = new Set(
+      bundles.flatMap((b) =>
+        b.storylets
+          .filter((s) => s.trigger === "event" && s.choices.length > 0)
+          .map((s) => s.id),
+      ),
+    );
+    const rows = Object.entries(report.decisions.byStorylet);
+    expect(rows.length).toBeGreaterThan(0);
+    let sum = 0;
+    for (const [id, v] of rows) {
+      expect(choice.has(id)).toBe(true);
+      expect(v.count).toBe(report.storylets.fired[id]);
+      expect(v.share).toBeCloseTo((v.count / report.decisions.total) * 100, 1);
+      sum += v.count;
+    }
+    expect(sum).toBe(report.decisions.total);
+    const counts = rows.map(([, v]) => v.count);
+    expect(counts).toEqual([...counts].sort((a, b) => b - a));
+    const md = renderMarkdown(report, { seed: 7, profiles: ["random"] });
+    expect(md).toContain(`| ${rows[0]?.[0]} | ${rows[0]?.[1].count} |`);
+  }, 60_000);
+
   test("--life-seed replays one life", () => {
     const { report } = runHarness({
       bundles,

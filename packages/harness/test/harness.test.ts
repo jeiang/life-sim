@@ -129,7 +129,17 @@ describe("parallel runs", () => {
   const bundles = bundlesOf(packsDir);
   const profileSpecs = profileSpecsOf(packsDir);
   const profiles: string[] = [];
-  const opts = { bundles, profileSpecs, lives: 70, profiles, seed: 11 };
+  // A few small batches: enough to spread over several workers and merge out of order, while
+  // each worker's pack compile (the dominant cost under CI load) is the only fixed overhead.
+  const LIVES = 12;
+  const opts = {
+    bundles,
+    profileSpecs,
+    lives: LIVES,
+    profiles,
+    seed: 11,
+    batchSize: 3,
+  };
   const files = (report: ReturnType<typeof runHarness>["report"]) =>
     JSON.stringify(report) + renderMarkdown(report, { seed: 11, profiles });
 
@@ -150,7 +160,7 @@ describe("parallel runs", () => {
       deadlineSeconds: 0,
     });
     expect(r.report.lives).toBeGreaterThanOrEqual(4);
-    expect(r.report.lives).toBeLessThan(70);
+    expect(r.report.lives).toBeLessThan(LIVES);
     expect(r.report.lives % 4).toBe(0);
     expect(files(r.report)).toBe(
       files(runHarness({ ...opts, lives: r.report.lives }).report),

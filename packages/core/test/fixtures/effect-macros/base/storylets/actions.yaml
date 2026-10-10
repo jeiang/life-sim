@@ -1,0 +1,24 @@
+- id: use_boost
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - base.boost(3, 100)
+
+- id: use_twice
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - base.boost_twice(2)
+
+- id: use_friend
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - base.befriend(2)
+        - base.befriend(3)
+        - spawn_person(neighbour, local) as n
+        - n.quality.grudge += 1
+        - stat.happiness += 1

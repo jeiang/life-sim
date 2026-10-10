@@ -1,0 +1,22 @@
+# `money` is cash in minor units; parameters are plain integer names.
+- id: boost
+  params: [gain, cash]
+  effects:
+    - stat.smarts += gain
+    - money += cash * 2
+
+# A macro may call another macro of its Pack.
+- id: boost_twice
+  params: [n]
+  effects:
+    - base.boost(n, n + 1)
+    - base.boost(1, 0)
+
+# `pal` is local to the macro: each call spawns and binds its own person.
+- id: befriend
+  params: [warmth]
+  effects:
+    - spawn_person(neighbour, local) as pal
+    - pal.quality.grudge += warmth
+    - relationship(pal).closeness += warmth
+    - journal("Made a friend.")

@@ -1,0 +1,5 @@
+# Calls a macro of a required Pack from a macro of this one.
+- id: combo
+  effects:
+    - base.boost(4, 10)
+    - stat.happiness += 1

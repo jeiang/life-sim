@@ -51,6 +51,8 @@ import {
   type ItemSrc,
   LoanSchema,
   type LoanSrc,
+  type Macro,
+  MacroSchema,
   type Manifest,
   ManifestSchema,
   type Migration,
@@ -147,6 +149,8 @@ interface LoadedPack {
   state: LoadedState[];
   /** Declared by `readables/*.yaml`, in file order. */
   readables: LoadedReadable[];
+  /** Declared by `effects/*.yaml`, in file order. */
+  macros: LoadedMacro[];
   items: LoadedItem[];
   capabilities: LoadedCapability[];
   migrations: LoadedMigration[];
@@ -179,6 +183,98 @@ interface LoadedReadable {
   decl: Readable;
   src: Source;
   index: number;
+}
+
+/** One effect macro and where it was written. */
+interface LoadedMacro {
+  decl: Macro;
+  src: Source;
+  index: number;
+}
+
+/**
+ * A compiled effect macro: its body is already resolved in the owning Pack and holds only
+ * closed primitives. `params` appear in the body as `["v", <param>]` and are substituted at
+ * each call; names bound by a body `spawn_person(...) as n` are renamed per expansion.
+ */
+interface CompiledMacro {
+  readonly params: readonly string[];
+  readonly body: readonly Effect[];
+  /** Nesting depth: 1 for a body of primitives, else 1 + the deepest macro it called. */
+  readonly depth: number;
+}
+
+/** Deepest macro-in-macro nesting a build accepts. */
+const MAX_MACRO_DEPTH = 8;
+
+/** The name a Pack's macros are called by: its id with hyphens as underscores (`core_loop.x(...)`). */
+const macroPrefix = (packId: string): string => packId.replaceAll("-", "_");
+
+/** A resolved effect that calls a macro: `["do", "<pack>.<macro>", ...args]`. */
+const isMacroCall = (e: Effect): boolean =>
+  e[0] === "do" && (e[1] as string).includes(".");
+
+/**
+ * The body of macro `m` for one call: `args` replace the parameters, and every person the
+ * body spawns gets a name unique to this expansion (`m<seq>_<name>`), so two calls, or a call
+ * and the caller's own spawns, never share a binding.
+ */
+function instantiate(
+  m: CompiledMacro,
+  args: readonly Expr[],
+  seq: number,
+): Effect[] {
+  const rename = new Map<string, string>();
+  for (const e of m.body)
+    if (e[0] === "spawn") rename.set(e[3], `m${seq}_${e[3]}`);
+  const rooted = (path: string): string => {
+    const dot = path.indexOf(".");
+    const root = dot < 0 ? path : path.slice(0, dot);
+    const to = rename.get(root);
+    return to === undefined ? path : to + path.slice(root.length);
+  };
+  const subst = (e: Expr): Expr => {
+    if (typeof e !== "object") return e;
+    const tag = e[0];
+    if (tag === "s" || tag === "id") return e;
+    if (tag === "v") {
+      const i = m.params.indexOf(e[1] as string);
+      return i >= 0 ? (args[i] as Expr) : ["v", rooted(e[1] as string)];
+    }
+    if (tag === "in")
+      return [
+        "in",
+        subst(e[1] as Expr),
+        (e[2] as readonly Expr[]).map(subst),
+      ] as unknown as Expr;
+    if (tag === "call")
+      return [
+        "call",
+        e[1],
+        ...(e.slice(2) as Expr[]).map(subst),
+      ] as unknown as Expr;
+    return [tag, ...(e.slice(1) as Expr[]).map(subst)] as unknown as Expr;
+  };
+  return m.body.map((e): Effect => {
+    switch (e[0]) {
+      case "set":
+      case "add":
+      case "sub": {
+        const t = e[1];
+        return [
+          e[0],
+          typeof t === "string"
+            ? rooted(t)
+            : ["relationship", rename.get(t[1]) ?? t[1], t[2]],
+          subst(e[2]),
+        ];
+      }
+      case "do":
+        return ["do", e[1], ...(e.slice(2) as Expr[]).map(subst)] as Effect;
+      default:
+        return ["spawn", subst(e[1]), subst(e[2]), rename.get(e[3]) as string];
+    }
+  });
 }
 
 /** A readable or slot declaration (not a contribution), narrowed. */
@@ -343,11 +439,14 @@ class Compiler {
     this.checkCrossPackDeclarations();
     this.checkNamespaces();
     this.checkSingletons();
+    this.checkMacroPrefixes();
     const order = this.order();
     const bundles: PackBundle[] = [];
     for (const id of order) {
       const pack = this.packs.get(id) as LoadedPack;
-      bundles.push(new PackCompiler(this, pack).compile());
+      const pc = new PackCompiler(this, pack);
+      this.compilers.set(id, pc);
+      bundles.push(pc.compile());
     }
     this.checkReadableCycle(bundles);
     let twemoji = 0;
@@ -368,6 +467,29 @@ class Compiler {
       credits: buildCredits(twemoji, authors),
       ids: this.ids,
     };
+  }
+
+  /** Pack compilers by id, filled in dependency order so a Pack finds the macros of those it requires. */
+  readonly compilers = new Map<string, PackCompiler>();
+  /** Counter that makes the person names a macro expansion binds unique. */
+  macroSeq = 0;
+
+  /** Two Pack ids that differ only in `-` versus `_` would share a macro call prefix. */
+  private checkMacroPrefixes(): void {
+    const seen = new Map<string, string>();
+    for (const id of [...this.packs.keys()].sort()) {
+      const pack = this.packs.get(id) as LoadedPack;
+      if (pack.macros.length === 0) continue;
+      const prefix = macroPrefix(id);
+      const first = seen.get(prefix);
+      if (first === undefined) seen.set(prefix, id);
+      else
+        this.diag(
+          pack.manifestSrc,
+          ["id"],
+          `Packs '${first}' and '${id}' both call their effect macros '${prefix}.<macro>'`,
+        );
+    }
   }
 
   /** A cycle among readables, across Packs, through slot contributions included. */
@@ -564,6 +686,7 @@ class Compiler {
     const qualities = this.loadQualities(d, dir);
     const state = this.loadState(d, dir);
     const readables = this.loadReadables(d, dir);
+    const macros = this.loadMacros(d, dir);
     const capabilities = this.loadCapabilities(d, dir);
     const migrations = this.loadMigrations(d, dir);
     // Stat and quality ids share the expression namespace `stat.<id>` / `quality.<id>`.
@@ -578,6 +701,7 @@ class Compiler {
       qualities,
       state,
       readables,
+      macros,
       items,
       capabilities,
       migrations,
@@ -755,6 +879,54 @@ class Compiler {
     return out;
   }
 
+  /** `effects/<topic>.yaml`: effect macros (docs/spec/pack-format/effects.md). */
+  private loadMacros(d: string, dir: string): LoadedMacro[] {
+    const out: LoadedMacro[] = [];
+    const seen = new Map<string, string>();
+    const eDir = join(dir, "effects");
+    for (const f of this.listYaml(eDir)) {
+      const file = this.rel(d, "effects", f);
+      const src = parseYaml(
+        file,
+        readFileSync(join(eDir, f), "utf8"),
+        this.diags,
+      );
+      if (!src || src.value === null || src.value === undefined) continue;
+      if (!Array.isArray(src.value)) {
+        this.diag(src, [], "an effects file must be a list of effect macros");
+        continue;
+      }
+      src.value.forEach((raw: unknown, i: number) => {
+        const id = (raw as { id?: unknown } | null)?.id;
+        const label = (p: Path): string =>
+          `${typeof id === "string" ? id : `[${i}]`}${p.length > 1 ? `.${formatPath(p.slice(1))}` : ""}`;
+        if (!validate(src, MacroSchema, raw, [i], this.diags, label)) return;
+        const m = raw as Macro;
+        const prev = seen.get(m.id);
+        if (prev) {
+          this.diag(
+            src,
+            [i, "id"],
+            `duplicate effect macro '${m.id}' (already defined in ${prev})`,
+            m.id,
+          );
+          return;
+        }
+        seen.set(m.id, file);
+        for (const [pi, p] of (m.params ?? []).entries())
+          if (READABLE_RESERVED.has(p))
+            this.diag(
+              src,
+              [i, "params", pi],
+              `'${p}' is a reserved name and cannot name a macro parameter`,
+              `${m.id}.params`,
+            );
+        out.push({ decl: m, src, index: i });
+      });
+    }
+    return out;
+  }
+
   private loadCapabilities(d: string, dir: string): LoadedCapability[] {
     const out: LoadedCapability[] = [];
     const capDir = join(dir, "capabilities");
@@ -882,6 +1054,7 @@ class Compiler {
       return pack.readables.some(
         (r) => declaresReadable(r) && r.decl.id === name,
       );
+    if (key === "effects") return pack.macros.some((m) => m.decl.id === name);
     if (key === "groups")
       return (pack.manifest.exclusivity ?? []).includes(name);
     if (key === "singletons")
@@ -1066,6 +1239,14 @@ class PackCompiler {
   readonly aggregates: Names = {};
   /** Slots visible to this Pack (its own and required ones) by id, with their type. */
   readonly slots = new Map<string, "int" | "bool">();
+  /** Macro call name (`<pack>.<macro>`) -> parameter count, for every macro this Pack may call. */
+  readonly macroArity: Record<string, number> = {};
+  private readonly macroTargets = new Map<
+    string,
+    { pc: PackCompiler; id: string }
+  >();
+  /** This Pack's compiled macros by id; null: it failed (already reported). */
+  private readonly macros = new Map<string, CompiledMacro | null>();
   owner = "";
 
   readonly c: Compiler;
@@ -1154,6 +1335,15 @@ class PackCompiler {
       const dp = cap && c.packs.get(cap.pack);
       if (cap && dp && dp !== pack) this.addDecls(dp, cap.provides);
     }
+
+    this.addMacros(pack);
+    for (const req of [...this.required].sort()) {
+      const cap = c.capabilities.get(req);
+      const dp = cap && c.packs.get(cap.pack);
+      if (cap && dp && dp !== pack)
+        this.addMacros(dp, cap.provides.effects ?? []);
+    }
+    for (const lm of pack.macros) this.compileMacro(lm.decl.id, []);
 
     const bundle = {
       storylets: [] as CompiledStorylet[],
@@ -1257,6 +1447,160 @@ class PackCompiler {
       migrations,
       ...bundle,
     };
+  }
+
+  // ---- effect macros ------------------------------------------------------
+
+  /** Make `pack`'s macros (all, or those in `only`) callable from this Pack. */
+  private addMacros(pack: LoadedPack, only?: readonly string[]): void {
+    const pc = this.c.compilers.get(pack.id);
+    if (!pc) return;
+    for (const { decl } of pack.macros) {
+      if (only !== undefined && !only.includes(decl.id)) continue;
+      const name = `${macroPrefix(pack.id)}.${decl.id}`;
+      this.macroArity[name] = (decl.params ?? []).length;
+      this.macroTargets.set(name, { pc, id: decl.id });
+    }
+  }
+
+  /**
+   * Compile one of this Pack's macros: check and resolve each body statement here, with its
+   * parameters as integer names, and inline the macros it calls. Diagnostics point at the
+   * macro's own file. `stack` holds the macros being compiled above this one.
+   */
+  private compileMacro(
+    id: string,
+    stack: readonly string[],
+  ): CompiledMacro | null {
+    const done = this.macros.get(id);
+    if (done !== undefined) return done;
+    const lm = this.pack.macros.find((m) => m.decl.id === id) as LoadedMacro;
+    const saved = [this.src, this.itemIndex, this.owner] as const;
+    this.src = lm.src;
+    this.itemIndex = lm.index;
+    this.owner = `${this.pack.id}/${id}`;
+    const params = lm.decl.params ?? [];
+    const paramNames: Names = {};
+    let failed = false;
+    for (const [pi, p] of params.entries()) {
+      if (Object.hasOwn(this.baseNames, p)) {
+        this.err(
+          ["params", pi],
+          `'${p}' is already a declared name and cannot name a parameter`,
+        );
+        failed = true;
+      }
+      paramNames[p] = "int";
+    }
+    const bound: Names = {};
+    const persons: string[] = [];
+    const body: Effect[] = [];
+    const nested = [...stack, id];
+    let depth = 1;
+    for (const [ei, src] of lm.decl.effects.entries()) {
+      const epath = ["effects", ei];
+      const r = compileExpr(
+        src,
+        {
+          names: { ...this.baseNames, ...paramNames, ...bound },
+          persons,
+          macros: this.macroArity,
+        },
+        "effect",
+      );
+      if (!r.ok) {
+        failed = true;
+        for (const e of r.errors)
+          this.err(epath, `${e.message} (in '${src}', column ${e.column})`);
+        continue;
+      }
+      const resolved = this.resolveEffect(r.ast, epath);
+      if (!resolved) {
+        failed = true;
+        continue;
+      }
+      if (isMacroCall(resolved)) {
+        const x = this.expandMacroCall(resolved, nested, epath);
+        if (!x) failed = true;
+        else {
+          body.push(...x.effects);
+          depth = Math.max(depth, x.depth + 1);
+        }
+        continue;
+      }
+      if (resolved[0] === "spawn") {
+        if (!this.bindSpawn(resolved[3], bound, persons, epath)) {
+          failed = true;
+          continue;
+        }
+      }
+      this.effectText(resolved, { ...this.baseNames, ...bound }, epath);
+      body.push(resolved);
+    }
+    if (depth > MAX_MACRO_DEPTH) {
+      this.err(
+        ["id"],
+        `macro '${id}' nests macros ${depth} deep; the limit is ${MAX_MACRO_DEPTH}`,
+      );
+      failed = true;
+    }
+    [this.src, this.itemIndex, this.owner] = saved;
+    const out = failed ? null : { params, body, depth };
+    this.macros.set(id, out);
+    return out;
+  }
+
+  /**
+   * Replace a resolved macro call `["do", "<pack>.<macro>", ...args]` with the macro's body,
+   * arguments substituted. Undefined when the macro or the call is invalid (already reported).
+   */
+  private expandMacroCall(
+    call: Effect,
+    stack: readonly string[],
+    path: Path,
+  ): { effects: Effect[]; depth: number } | undefined {
+    const t = this.macroTargets.get(call[1] as string) as {
+      pc: PackCompiler;
+      id: string;
+    };
+    let m: CompiledMacro | null | undefined;
+    if (t.pc === this) {
+      const at = stack.indexOf(t.id);
+      if (at >= 0) {
+        this.err(
+          path,
+          `effect macros form a cycle: ${[...stack.slice(at), t.id].join(" -> ")}`,
+        );
+        return undefined;
+      }
+      m = this.compileMacro(t.id, stack);
+    } else m = t.pc.macros.get(t.id);
+    if (!m) return undefined;
+    return {
+      effects: instantiate(m, call.slice(2) as Expr[], ++this.c.macroSeq),
+      depth: m.depth,
+    };
+  }
+
+  /** Declare the names of a person bound by `spawn_person(...) as <name>`. */
+  private bindSpawn(
+    name: string,
+    bound: Names,
+    persons: string[],
+    path: Path,
+  ): boolean {
+    if (TOP_RESERVED.has(name)) {
+      this.err(path, `'${name}' is reserved and cannot name a spawned person`);
+      return false;
+    }
+    bound[`${name}.first_name`] = "string";
+    bound[`${name}.last_name`] = "string";
+    Object.assign(bound, pronounNames(name));
+    bound[`${name}.age`] = "int";
+    bound[`${name}.closeness`] = "int";
+    Object.assign(bound, this.personStateNames(name));
+    persons.push(name);
+    return true;
   }
 
   // ---- readables ----------------------------------------------------------
@@ -1873,6 +2217,7 @@ class PackCompiler {
         {
           names: { ...this.baseNames, ...scopeNames, ...bound },
           persons,
+          macros: this.macroArity,
         },
         "effect",
       );
@@ -1887,23 +2232,17 @@ class PackCompiler {
         failed = true;
         continue;
       }
+      if (isMacroCall(resolved)) {
+        const x = this.expandMacroCall(resolved, [], epath);
+        if (x) effects.push(...x.effects);
+        else failed = true;
+        continue;
+      }
       if (resolved[0] === "spawn") {
-        const name = resolved[3];
-        if (TOP_RESERVED.has(name)) {
-          this.err(
-            epath,
-            `'${name}' is reserved and cannot name a spawned person`,
-          );
+        if (!this.bindSpawn(resolved[3], bound, persons, epath)) {
           failed = true;
           continue;
         }
-        bound[`${name}.first_name`] = "string";
-        bound[`${name}.last_name`] = "string";
-        Object.assign(bound, pronounNames(name));
-        bound[`${name}.age`] = "int";
-        bound[`${name}.closeness`] = "int";
-        Object.assign(bound, this.personStateNames(name));
-        persons.push(name);
       }
       this.effectText(
         resolved,

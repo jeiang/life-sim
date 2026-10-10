@@ -1,0 +1,14 @@
+provides:
+  stats:
+    - happiness
+    - smarts
+  qualities:
+    - grudge
+  roles:
+    - neighbour
+  generators:
+    - local
+  effects:
+    - boost
+    - boost_twice
+    - befriend

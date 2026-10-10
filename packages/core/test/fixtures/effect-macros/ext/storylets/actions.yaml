@@ -1,0 +1,7 @@
+- id: use_combo
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - ext.combo()
+        - base.boost(1, 5)

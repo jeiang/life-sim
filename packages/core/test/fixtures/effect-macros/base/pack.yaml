@@ -1,0 +1,7 @@
+id: base
+currency:
+  symbol: "$"
+  digits: 2
+stats:
+  - { id: happiness, label: Happiness, start: [50, 100] }
+  - { id: smarts, label: Smarts, start: [40, 80] }

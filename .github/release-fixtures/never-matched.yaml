@@ -1,0 +1,6 @@
+# Fault fixture for the release workflow's dry run (workflow_dispatch input `inject_fault`).
+# The step never matches an open event, so the forced run fails (docs/spec/harness.md#forced-outcomes).
+description: Fixture - a forced choice no event ever offers
+profile: random
+steps:
+  - choose: "zz-release-fixture-never-offered*"

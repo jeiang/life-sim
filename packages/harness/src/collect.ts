@@ -1,4 +1,4 @@
-import type { PackMetrics, Table } from "./metrics.ts";
+import type { MarketTake, PackMetrics, Table } from "./metrics.ts";
 import { evalExpr } from "./metrics.ts";
 import type { Move } from "./profiles.ts";
 
@@ -38,8 +38,55 @@ export interface LifeEnd {
   readonly death: { readonly cause: string } | null;
   /** Storylet id -> times opened. */
   readonly fires: Readonly<Record<string, number>>;
+  /** Storylet id -> outcome key (`o<i>`, `c<j>.o<i>`) -> times resolved. */
+  readonly outcomes: Readonly<Record<string, Readonly<Record<string, number>>>>;
 }
 
+/** Value of the player's market holdings, in total and per market kind. */
+export interface Holdings {
+  readonly total: number;
+  readonly byKind: Readonly<Record<string, number>>;
+}
+
+/** The part of a market series the collector reads (`Series` in core). */
+export interface MarketSeries {
+  /** World year of `prices[0]`. */
+  readonly from: number;
+  readonly prices: readonly number[];
+  /** Bonds after an issuer default: the share of principal still owed, basis points. */
+  readonly face?: number | undefined;
+}
+
+/** One market kind over a life, built from the yearly points the collector observes. */
+interface MarketTrack {
+  lastYear: number | undefined;
+  first: number | undefined;
+  prev: number | undefined;
+  min: number | undefined;
+  max: number | undefined;
+  /** Price steps observed after the first point. */
+  years: number;
+  delistings: number;
+  relistings: number;
+  defaults: number;
+  face: number | undefined;
+  /** Years with a price drop of at least this many basis points, per declared threshold. */
+  drops: Map<number, number>;
+}
+
+const newTrack = (): MarketTrack => ({
+  lastYear: undefined,
+  first: undefined,
+  prev: undefined,
+  min: undefined,
+  max: undefined,
+  years: 0,
+  delistings: 0,
+  relistings: 0,
+  defaults: 0,
+  face: undefined,
+  drops: new Map(),
+});
 interface Before {
   readonly money: number;
   readonly qualities: Record<string, number>;
@@ -62,6 +109,8 @@ export class MetricCollector {
     Record<string, Record<string, TableCell>>
   > = {};
   private readonly watched: ReadonlySet<string>;
+  /** Market kind id -> what its series did over the life so far. */
+  private readonly markets = new Map<string, MarketTrack>();
   private readonly packs: readonly PackMetrics[];
   private readonly storyletsTagged: (tag: string) => ReadonlySet<string>;
 
@@ -80,6 +129,14 @@ export class MetricCollector {
             watched.add(c.delta.quality);
       }
     this.watched = watched;
+    for (const p of packs)
+      for (const m of p.measures)
+        if (m.kind === "market") {
+          const st = this.markets.get(m.market) ?? newTrack();
+          this.markets.set(m.market, st);
+          if (typeof m.take === "object" && !st.drops.has(m.take.dropYears))
+            st.drops.set(m.take.dropYears, 0);
+        }
   }
 
   /** Note qualities that are positive now (after each voluntary move and each age-up). */
@@ -109,20 +166,87 @@ export class MetricCollector {
   }
 
   /** Take the snapshot measures declared for the player's current age. */
-  snapshot(me: Player, netWorth: number): void {
+  snapshot(me: Player, netWorth: number, holdings: Holdings): void {
     for (const p of this.packs)
       for (const m of p.measures) {
         if (m.kind !== "snapshot" || !m.ages.includes(me.age)) continue;
         const v =
           m.take === "net_worth"
             ? netWorth
-            : "stat" in m.take
-              ? (me.stats[m.take.stat] ?? 0)
-              : numeric(me.qualities[m.take.quality]);
+            : m.take === "holdings"
+              ? holdings.total
+              : "stat" in m.take
+                ? (me.stats[m.take.stat] ?? 0)
+                : "holding" in m.take
+                  ? (holdings.byKind[m.take.holding] ?? 0)
+                  : numeric(me.qualities[m.take.quality]);
         slot<Record<string, number>>(this.snapshots, p.pack, () => ({}))[
           `${m.id}@${me.age}`
         ] = v;
       }
+  }
+
+  /**
+   * Note the price of every market kind a measure reads, once per world year: call after the
+   * life begins and after each age-up. A series point already seen is skipped.
+   */
+  market(series: Readonly<Record<string, MarketSeries>>): void {
+    for (const [kind, st] of this.markets) {
+      const s = series[kind];
+      if (!s) continue;
+      const last = s.from + s.prices.length - 1;
+      if (st.lastYear === undefined) {
+        const p = s.prices[s.prices.length - 1] as number;
+        st.lastYear = last;
+        st.first = st.prev = st.min = st.max = p;
+        st.face = s.face;
+        continue;
+      }
+      for (let y = st.lastYear + 1; y <= last; y++) {
+        const p = s.prices[y - s.from];
+        if (p === undefined) continue;
+        const prev = st.prev as number;
+        if (prev > 0 && p === 0) st.delistings++;
+        if (prev === 0 && p > 0) st.relistings++;
+        for (const [bp, n] of st.drops)
+          if (prev > 0 && p < prev && ((prev - p) * 10000) / prev >= bp)
+            st.drops.set(bp, n + 1);
+        st.prev = p;
+        st.min = Math.min(st.min as number, p);
+        st.max = Math.max(st.max as number, p);
+        st.years++;
+      }
+      st.lastYear = last;
+      // A default lowers the remaining principal; a recovery of the face never happens.
+      if (s.face !== undefined && s.face < (st.face ?? 10000)) st.defaults++;
+      if (s.face !== undefined) st.face = s.face;
+    }
+  }
+
+  private marketValue(kind: string, take: MarketTake): number {
+    const st = this.markets.get(kind);
+    if (!st || st.first === undefined) return 0;
+    if (typeof take === "object") return st.drops.get(take.dropYears) ?? 0;
+    switch (take) {
+      case "annualized_return":
+        return st.years === 0 || st.first === 0
+          ? 0
+          : ((st.prev as number) / st.first) ** (1 / st.years) * 10000 - 10000;
+      case "start_price":
+        return st.first;
+      case "end_price":
+        return st.prev as number;
+      case "min_price":
+        return st.min as number;
+      case "max_price":
+        return st.max as number;
+      case "delistings":
+        return st.delistings;
+      case "relistings":
+        return st.relistings;
+      case "defaults":
+        return st.defaults;
+    }
   }
 
   private applies(p: PackMetrics, id: string): boolean {
@@ -242,6 +366,12 @@ export class MetricCollector {
             measures[m.id] = n;
             break;
           }
+          case "market":
+            measures[m.id] = this.marketValue(m.market, m.take);
+            break;
+          case "outcome":
+            measures[m.id] = end.outcomes[m.storylet]?.[m.key] ?? 0;
+            break;
           case "when":
             measures[m.id] = evalExpr(m.when, (id) => measures[id]);
             break;

@@ -1,0 +1,34 @@
+# Deterministic series (no volatility): every figure in market.test.ts is computable by hand.
+- id: steady
+  label: Steady fund
+  category: investments
+  market:
+    start: 10000
+    drift: 5%
+    vol: 0%
+- id: slump
+  label: Slumping fund
+  category: investments
+  market:
+    start: 10000
+    drift: -30%
+    vol: 0%
+# Delists at every roll from year 1, relists at `start` two years later: 0, 0, start, 0, 0, start, ...
+- id: doomed
+  label: Doomed stock
+  category: investments
+  market:
+    start: 10000
+    drift: 0%
+    vol: 0%
+    delist: 100%
+    relist_after: 2
+# Defaults every year and loses 40% of the remaining principal each time.
+- id: shaky
+  label: Shaky bond
+  category: investments
+  market:
+    start: 10000
+    drift: 0%
+    vol: 0%
+    bond: { term: 10, coupon: 5%, default: 100%, loss: 40% }

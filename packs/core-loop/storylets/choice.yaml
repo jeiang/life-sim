@@ -16,12 +16,12 @@
           text: The owner is grateful and sends a thank-you note.
           effects:
             - stat.happiness += 4
-            - quality.karma += 3
+            - quality.karma_score += 3
         - weight: 40
           text: A kind gesture, though nobody ever says thank you.
           effects:
             - stat.happiness += 2
-            - quality.karma += 3
+            - quality.karma_score += 3
     - label: Keep the cash
       outcomes:
         - weight: 85
@@ -29,13 +29,13 @@
           effects:
             - money += 8000
             - stat.happiness -= 1
-            - quality.karma += -4
-        - weight: 15 + (50 - quality.karma) / 5
+            - quality.karma_score += -4
+        - weight: 15 + (50 - karma_value) / 5
           text: A neighbour saw everything and the rumour spreads.
           effects:
             - money += 8000
             - stat.happiness -= 5
-            - quality.karma += -4
+            - quality.karma_score += -4
 
 - id: friend-loan-request
   icon: 🙏
@@ -173,7 +173,7 @@
           text: A top mark, and a guilty stomach.
           effects:
             - stat.happiness -= 1
-            - quality.karma += -2
+            - quality.karma_score += -2
         - weight: 30
           text: The teacher notices.
           effects:
@@ -357,7 +357,7 @@
         - weight: 1
           text: Hard work, good company, and a warm feeling afterwards.
           effects:
-            - quality.karma += 3
+            - quality.karma_score += 3
             - stat.happiness += 5
             - stat.health += 1
     - label: Stay home

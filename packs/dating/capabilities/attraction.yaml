@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+provides:
+  qualities:
+    - dating_attracted_men
+    - dating_attracted_women
+    - dating_attracted_nonbinary
+requires:
+  - core-loop/stats

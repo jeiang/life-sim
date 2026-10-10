@@ -1,0 +1,3 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/readables.schema.json
+# The karma score as an expression name, so a Pack can weight an outcome without reading the quality.
+- { kind: readable, id: karma_value, type: int, expr: quality.karma_score }

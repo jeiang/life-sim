@@ -21,6 +21,12 @@ const corePackDir = () => {
     join(dir, "core-loop"),
     { recursive: true },
   );
+  // core-loop requires the karma leaf Pack.
+  cpSync(
+    fileURLToPath(new URL("../../../packs/karma", import.meta.url)),
+    join(dir, "karma"),
+    { recursive: true },
+  );
   return dir;
 };
 

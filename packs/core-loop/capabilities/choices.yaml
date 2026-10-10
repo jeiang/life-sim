@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# The choice events write and read karma, so core-loop requires the karma leaf Pack.
+requires:
+  - karma/score

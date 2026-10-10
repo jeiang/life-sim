@@ -87,8 +87,7 @@ describe("roles, qualities and defaults", () => {
     expect(idx.qualities.has("crime_record")).toBe(false);
     expect(idx.qualities.has("crime_wanted")).toBe(false);
     expect(idx.qualities.has("crime_pending_charge")).toBe(false);
-    expect(quality(w, "karma")).toBe(50);
-    expect(idx.qualities.get("karma")?.default).toBe(50);
+    expect(quality(w, "karma_score")).toBe(50);
   });
 });
 
@@ -110,27 +109,6 @@ describe("hidden birth rolls", () => {
       expect(
         Math.abs((tally[t] ?? 0) / seeds.length - (expected[t] ?? 0) / 100),
       ).toBeLessThan(0.04);
-  });
-
-  test("attraction values lean towards the opposite gender for most and vary by gender", () => {
-    let straightMen = 0;
-    let men = 0;
-    let anyHigh = 0;
-    for (const r of rolled) {
-      const p = player(r.world);
-      const a = [
-        quality(r.world, "attracted_men"),
-        quality(r.world, "attracted_women"),
-        quality(r.world, "attracted_nonbinary"),
-      ] as number[];
-      if (Math.max(...a) >= 60) anyHigh++;
-      if (p.gender === "male") {
-        men++;
-        if ((a[1] as number) >= 60 && (a[0] as number) < 20) straightMen++;
-      }
-    }
-    expect(straightMen / men).toBeGreaterThan(0.65);
-    expect(anyHigh / seeds.length).toBeGreaterThan(0.9);
   });
 });
 

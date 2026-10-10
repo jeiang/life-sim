@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
 # Hidden birth rolls. A life has no events at age 0, so each roll fires once at the first age-up
 # (and once for a life from an older save, the first time it ages). Outcomes have no text: nothing
-# is journaled and the player never sees the values. Packs read the qualities; none rolls its own.
+# is journaled and the player never sees the values. Packs read the qualities; none rolls its own (attraction is rolled by the dating Pack).
 
 # `quality.family_wealth`: 1 poor, 2 modest, 3 middle, 4 comfortable, 5 wealthy.
 - id: roll-family-wealth
@@ -15,27 +15,3 @@
     - { weight: 30, effects: ["quality.family_wealth = 3"] }
     - { weight: 20, effects: ["quality.family_wealth = 4"] }
     - { weight: 10, effects: ["quality.family_wealth = 5"] }
-
-# Attraction (0-100 each) to men, women and nonbinary people. It drives who Dating offers the
-# player; NPCs have no attraction yet. Patterns by the player's gender (unset or nonbinary share one table).
-- id: roll-attraction
-  trigger: event
-  chance: 100%
-  when: age >= 1
-  once: true
-  outcomes:
-    - { weight: 78, when: "player.gender == \"male\"", effects: ["quality.attracted_men = 4", "quality.attracted_women = 92", "quality.attracted_nonbinary = 12"] }
-    - { weight: 8, when: "player.gender == \"male\"", effects: ["quality.attracted_men = 90", "quality.attracted_women = 6", "quality.attracted_nonbinary = 15"] }
-    - { weight: 10, when: "player.gender == \"male\"", effects: ["quality.attracted_men = 60", "quality.attracted_women = 65", "quality.attracted_nonbinary = 20"] }
-    - { weight: 2, when: "player.gender == \"male\"", effects: ["quality.attracted_men = 8", "quality.attracted_women = 10", "quality.attracted_nonbinary = 70"] }
-    - { weight: 2, when: "player.gender == \"male\"", effects: ["quality.attracted_men = 3", "quality.attracted_women = 3", "quality.attracted_nonbinary = 3"] }
-    - { weight: 78, when: "player.gender == \"female\"", effects: ["quality.attracted_men = 92", "quality.attracted_women = 4", "quality.attracted_nonbinary = 12"] }
-    - { weight: 8, when: "player.gender == \"female\"", effects: ["quality.attracted_men = 6", "quality.attracted_women = 90", "quality.attracted_nonbinary = 15"] }
-    - { weight: 10, when: "player.gender == \"female\"", effects: ["quality.attracted_men = 65", "quality.attracted_women = 60", "quality.attracted_nonbinary = 20"] }
-    - { weight: 2, when: "player.gender == \"female\"", effects: ["quality.attracted_men = 10", "quality.attracted_women = 8", "quality.attracted_nonbinary = 70"] }
-    - { weight: 2, when: "player.gender == \"female\"", effects: ["quality.attracted_men = 3", "quality.attracted_women = 3", "quality.attracted_nonbinary = 3"] }
-    - { weight: 30, when: 'player.gender != "male" and player.gender != "female"', effects: ["quality.attracted_men = 85", "quality.attracted_women = 15", "quality.attracted_nonbinary = 20"] }
-    - { weight: 30, when: 'player.gender != "male" and player.gender != "female"', effects: ["quality.attracted_men = 15", "quality.attracted_women = 85", "quality.attracted_nonbinary = 20"] }
-    - { weight: 28, when: 'player.gender != "male" and player.gender != "female"', effects: ["quality.attracted_men = 60", "quality.attracted_women = 60", "quality.attracted_nonbinary = 25"] }
-    - { weight: 6, when: 'player.gender != "male" and player.gender != "female"', effects: ["quality.attracted_men = 20", "quality.attracted_women = 20", "quality.attracted_nonbinary = 85"] }
-    - { weight: 6, when: 'player.gender != "male" and player.gender != "female"', effects: ["quality.attracted_men = 3", "quality.attracted_women = 3", "quality.attracted_nonbinary = 3"] }

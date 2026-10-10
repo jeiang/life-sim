@@ -430,18 +430,18 @@
   choices:
     - label: "Stop and help"
       outcomes:
-        - weight: 80 + (quality.karma - 50) / 5
+        - weight: 80 + (karma_value - 50) / 5
           text: "A thankful driver and a warm feeling."
           effects:
             - stat.happiness += 4
             - stat.health -= 1
-            - quality.karma += 3
+            - quality.karma_score += 3
         - weight: 20
           text: "A soggy hour for nothing much, though a thank-you card arrives."
           effects:
             - stat.happiness += 1
             - stat.health -= 2
-            - quality.karma += 3
+            - quality.karma_score += 3
     - label: "Call a tow truck for them"
       outcomes:
         - weight: 1

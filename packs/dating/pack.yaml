@@ -1,0 +1,3 @@
+# yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
+id: dating
+namespace: dating

@@ -3,7 +3,9 @@
   "additionalProperties": false,
   "title": "Pack manifest (pack.yaml)",
   "type": "object",
-  "required": ["id"],
+  "required": [
+    "id"
+  ],
   "properties": {
     "id": {
       "pattern": "^[a-z][a-z0-9-]*$",
@@ -17,7 +19,10 @@
     "currency": {
       "additionalProperties": false,
       "type": "object",
-      "required": ["symbol", "digits"],
+      "required": [
+        "symbol",
+        "digits"
+      ],
       "properties": {
         "symbol": {
           "minLength": 1,
@@ -35,7 +40,11 @@
       "items": {
         "additionalProperties": false,
         "type": "object",
-        "required": ["id", "label", "start"],
+        "required": [
+          "id",
+          "label",
+          "start"
+        ],
         "properties": {
           "id": {
             "pattern": "^[a-z][a-z0-9_]*$",
@@ -104,7 +113,10 @@
     "year": {
       "additionalProperties": false,
       "type": "object",
-      "required": ["slots", "cap"],
+      "required": [
+        "slots",
+        "cap"
+      ],
       "properties": {
         "slots": {
           "description": "Flavour slot count range [min, max]",
@@ -157,7 +169,10 @@
       "additionalProperties": false,
       "title": "Starting family",
       "type": "object",
-      "required": ["parent", "sibling"],
+      "required": [
+        "parent",
+        "sibling"
+      ],
       "properties": {
         "player": {
           "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
@@ -167,7 +182,11 @@
         "parent": {
           "additionalProperties": false,
           "type": "object",
-          "required": ["role", "generator", "count"],
+          "required": [
+            "role",
+            "generator",
+            "count"
+          ],
           "properties": {
             "role": {
               "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
@@ -188,7 +207,11 @@
         "sibling": {
           "additionalProperties": false,
           "type": "object",
-          "required": ["role", "generator", "count"],
+          "required": [
+            "role",
+            "generator",
+            "count"
+          ],
           "properties": {
             "role": {
               "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
@@ -291,7 +314,10 @@
           "items": {
             "additionalProperties": false,
             "type": "object",
-            "required": ["quality", "chance"],
+            "required": [
+              "quality",
+              "chance"
+            ],
             "properties": {
               "quality": {
                 "minLength": 1,
@@ -314,7 +340,11 @@
       "additionalProperties": false,
       "title": "Living costs",
       "type": "object",
-      "required": ["default", "housing_share", "home_category"],
+      "required": [
+        "default",
+        "housing_share",
+        "home_category"
+      ],
       "properties": {
         "default": {
           "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",
@@ -430,6 +460,60 @@
                 "type": "string"
               }
             }
+          }
+        }
+      }
+    },
+    "settlement": {
+      "minItems": 1,
+      "description": "Yearly income and cost lines, applied in order after the Core lines (docs/spec/pack-format/settlement.md)",
+      "type": "array",
+      "items": {
+        "additionalProperties": false,
+        "title": "Settlement line",
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "label",
+          "amount"
+        ],
+        "properties": {
+          "id": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "description": "Content id",
+            "type": "string"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "const": "income",
+                "type": "string"
+              },
+              {
+                "const": "cost",
+                "type": "string"
+              }
+            ]
+          },
+          "label": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "amount": {
+            "description": "Yearly amount in minor units (int expression, player scope); zero or less posts nothing",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "when": {
+            "description": "Condition (bool expression); absent: every year",
+            "type": "string"
           }
         }
       }

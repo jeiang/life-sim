@@ -2,13 +2,7 @@
   "lives": 300,
   "run": {
     "seed": 1,
-    "profiles": [
-      "random",
-      "studious",
-      "spender",
-      "idle",
-      "gambler"
-    ]
+    "profiles": ["random", "studious", "spender", "idle", "gambler"]
   },
   "faults": {
     "total": 0,

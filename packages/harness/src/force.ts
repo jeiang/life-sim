@@ -75,12 +75,22 @@ export interface ForceSet {
   readonly entries: readonly ForceEntry[];
 }
 
+/** Who inherits when several children survive. */
+export type HeirPolicy = "eldest" | "richest" | "random";
+export const HEIR_POLICIES: readonly HeirPolicy[] = [
+  "eldest",
+  "richest",
+  "random",
+];
+
 export interface ForceScript {
   /** `<pack>/<file stem>`. */
   readonly name: string;
   readonly pack: string;
   readonly description: string;
   readonly profile?: string;
+  /** Generations each life continues for (`generations`) and who inherits (`heir`); absent: one life. */
+  readonly lineage?: { readonly generations: number; readonly heir: HeirPolicy };
   readonly entries: readonly ForceEntry[];
 }
 
@@ -95,7 +105,19 @@ const describeRolls = (r: ScriptedRolls): string => {
 const at = (age: number | undefined): string =>
   age === undefined ? "any age" : `age ${age}`;
 
-const CORE_KEY_PREFIXES = ["birth/", "year/", "career/", "decision-slot/"];
+const CORE_KEY_PREFIXES = [
+  "birth/",
+  "year/",
+  "career/",
+  "decision-slot/",
+  "guardian/none/",
+];
+
+/** True when a roll site's purpose key is the entry's key, or starts with it when the entry's key ends in `*`. */
+export const keyMatches = (entryKey: string, key: string): boolean =>
+  entryKey.endsWith("*")
+    ? key.startsWith(entryKey.slice(0, -1))
+    : entryKey === key;
 
 /** `v` as rolls: `hit`/`miss`/true/false, a number (pick index), `int:N`, any other text (pick label), or a mapping. */
 export function parseRolls(v: unknown): ScriptedRolls | string {
@@ -214,7 +236,7 @@ export function compileScript(
   registry: readonly ProfileSpec[],
 ): { script: ForceScript | null; diagnostics: Diagnostic[] } {
   const l = new Loader(src);
-  const top = l.obj([], src.value, ["description", "profile", "steps"]);
+  const top = l.obj([], src.value, ["description", "profile", "generations", "heir", "steps"]);
   if (!top) return { script: null, diagnostics: l.diags };
   const description =
     top.description === undefined
@@ -228,6 +250,18 @@ export function compileScript(
       else l.err(["profile"], `unknown profile '${p}'`);
     }
   }
+  let lineage: ForceScript["lineage"];
+  if (top.generations !== undefined) {
+    const n = l.int(["generations"], top.generations, 2, 100);
+    let heir: HeirPolicy = "eldest";
+    if (top.heir !== undefined) {
+      if (HEIR_POLICIES.includes(top.heir as HeirPolicy))
+        heir = top.heir as HeirPolicy;
+      else l.err(["heir"], `expected one of ${HEIR_POLICIES.join(", ")}`);
+    }
+    if (n !== null) lineage = { generations: n, heir };
+  } else if (top.heir !== undefined)
+    l.err(["heir"], "`heir` needs `generations`");
   const entries: ForceEntry[] = [];
   const actions = new Set(
     bundles.flatMap((b) =>
@@ -333,6 +367,7 @@ export function compileScript(
       pack,
       description,
       ...(profile === undefined ? {} : { profile }),
+      ...(lineage ? { lineage } : {}),
       entries,
     },
     diagnostics: l.diags,
@@ -405,7 +440,7 @@ export function installRollOverride(
       Extract<ForceEntry, { kind: "roll" }>,
       number,
     ][])
-      if (e.key === key && (e.age === undefined || e.age === age)) {
+      if (keyMatches(e.key, key) && (e.age === undefined || e.age === age)) {
         fired[i] = (fired[i] ?? 0) + 1;
         return new ScriptedRng(e.rolls);
       }

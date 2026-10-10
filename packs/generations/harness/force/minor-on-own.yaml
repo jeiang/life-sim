@@ -1,0 +1,10 @@
+# Forced script (docs/spec/harness.md#forced-outcomes): a minor heir who is put out of the house gets no guardian, so `minor-on-own` fires. Every 16-17 year old with parents at home is put out, and every put-out minor with a living parent rolls "no guardian" and hits (`guardian/none/*` is any person's roll). Lives continue as heirs (forcing applies to every generation); the dynasty profile builds the family that leaves a minor heir.
+description: Minor heirs put out of the house get no guardian
+profile: dynasty
+generations: 4
+heir: random
+steps:
+  - roll: core-loop/parents-put-you-out
+    value: hit
+  - roll: guardian/none/*
+    value: hit

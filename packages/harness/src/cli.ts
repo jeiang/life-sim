@@ -306,10 +306,12 @@ if (generations < 1) fail("--generations must be at least 1");
 const heir = a.heir ?? "eldest";
 if (!HEIR_POLICIES.includes(heir as HeirPolicy))
   fail(`--heir must be one of ${HEIR_POLICIES.join(", ")}`);
-if (generations > 1 && force)
-  fail("--generations cannot be combined with --force or --script");
 const lineage: Lineage | undefined =
-  generations > 1 ? { generations, heir: heir as HeirPolicy } : undefined;
+  generations > 1
+    ? { generations, heir: heir as HeirPolicy }
+    : a.generations === undefined && a.heir === undefined
+      ? script?.lineage
+      : undefined;
 
 const run = {
   bundles: compiled.bundles,

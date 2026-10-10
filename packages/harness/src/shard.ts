@@ -168,7 +168,7 @@ export function mergeShards(
 /**
  * Combine the merged reports of several runs of one release (founder lives and lineage lives,
  * say) into the first run's report: content counts as never fired only when it fired in none
- * of the runs, and faults from every run are kept. Everything else is the first run's.
+ * of the runs, and faults from every run are kept. Everything else is the first run's; forced-script matching is the scripts job's to gate, so no `forced` result is kept.
  */
 export function unionRuns(runs: readonly Merged[]): Merged {
   const [first, ...rest] = runs;
@@ -181,7 +181,6 @@ export function unionRuns(runs: readonly Merged[]): Merged {
   for (const r of all)
     for (const [k, n] of Object.entries(r.faults.byKind))
       byKind[k] = (byKind[k] ?? 0) + n;
-  const forced = runs.map((m) => m.forced).find((f) => f !== undefined);
   return {
     run: first.run,
     report: {
@@ -197,7 +196,6 @@ export function unionRuns(runs: readonly Merged[]): Merged {
         chainStepsNeverFired: inEvery((r) => r.storylets.chainStepsNeverFired),
       },
     },
-    ...(forced ? { forced } : {}),
   };
 }
 

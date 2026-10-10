@@ -12,7 +12,7 @@ Inputs are `report.json` files from `pnpm harness` (or `harness merge`). Compare
 ## What is compared
 
 - **Fire rate**: `storylets.fired[id] / lives`, grouped by the Pack in the id (`pack/name`). A storylet that appears or disappears is listed (base or new `-`).
-- **Outcome shares**: the share of finished lives per cause of death (`death.causes / death.ended`, percent). The report keeps no per-outcome counts for storylets, so causes of death are the outcome shares.
+- **Outcome shares**: the share of finished lives per cause of death (`death.causes / death.ended`, percent). Per-storylet outcome counts (`storylets.outcomes`) are not diffed yet, so causes of death are the outcome shares.
 - **Pack metrics**: every number in `packMetrics.<pack>.stats.<id>.rows`, keyed `<stat id>[group/age/key]`; a distribution contributes `.mean` and `.p50`, a median its value.
 
 Only things that changed are listed; a Pack with no change has no section.

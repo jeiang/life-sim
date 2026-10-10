@@ -246,6 +246,7 @@ function runOutcome(
   amount?: number,
   carryBp = 10000,
   auto = false,
+  choice: number | null = null,
 ): World {
   const curve = curveOf(idx, s);
   const base = scopeFor(world, ref, s.id, amount);
@@ -265,6 +266,7 @@ function runOutcome(
   reportOutcome(
     s.id,
     getPerson(w, scope.subject).money - getPerson(w0, scope.subject).money,
+    { choice, index: outcomes.indexOf(outcome) },
   );
   if (!w.ended) {
     const note = curve ? wearNote(curve, base.uses ?? 0) : "";
@@ -340,6 +342,7 @@ export function open(
         ev.amount,
         carryBp,
         true,
+        s.choices.indexOf(c),
       );
     }
     return {
@@ -385,5 +388,16 @@ export function resolveChoice(
   if (s.text !== undefined)
     w = say(w, renderText(pickText(w, s.text, s.matureText), w, idx, scope));
   w = say(w, `You chose: ${pickText(w, choice.label, choice.matureLabel)}`);
-  return runOutcome(w, idx, s, choice.outcomes, ref, 0, amount, carryBp);
+  return runOutcome(
+    w,
+    idx,
+    s,
+    choice.outcomes,
+    ref,
+    0,
+    amount,
+    carryBp,
+    false,
+    choiceIndex,
+  );
 }

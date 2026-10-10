@@ -41,6 +41,15 @@ export interface ParallelOptions extends HarnessOptions {
   readonly only?: readonly string[];
   /** Worker threads; 0 or unset means the available cores. */
   readonly jobs?: number;
+  /**
+   * Stop handing out batches once this many seconds have passed since the run began and report
+   * the lives played so far. The lives played are always the first ones in life order, so the
+   * report equals an unlimited run's report over fewer lives; how many depends on the speed
+   * of the machine. Unset: play every life.
+   */
+  readonly deadlineSeconds?: number;
+  /** Lives per batch handed to a worker (default 32); small batches make `deadlineSeconds` stop sooner. */
+  readonly batchSize?: number;
 }
 
 /** Worker threads to use for `requested` (0 or undefined: the available cores). */
@@ -56,7 +65,8 @@ export function runHarnessParallel(
 ): Promise<HarnessResult> {
   const start = performance.now();
   const total = lifeCount(opts);
-  const batches = Math.ceil(total / BATCH);
+  const batch = opts.batchSize ?? BATCH;
+  const batches = Math.ceil(total / batch);
   const jobs = Math.max(1, Math.min(resolveJobs(opts.jobs), batches));
   const agg = new Aggregate(opts.bundles, opts.metrics);
   const tally = opts.force ? new ForcedTally(opts.force) : undefined;
@@ -82,9 +92,17 @@ export function runHarnessParallel(
       else resolve(finish());
     };
 
+    let stopped = false;
     const dispatch = (w: Worker): void => {
-      if (nextBatch >= batches) return;
-      const from = nextBatch++ * BATCH;
+      if (
+        !stopped &&
+        nextBatch > 0 &&
+        opts.deadlineSeconds !== undefined &&
+        (performance.now() - start) / 1000 >= opts.deadlineSeconds
+      )
+        stopped = true;
+      if (stopped || nextBatch >= batches) return;
+      const from = nextBatch++ * batch;
       const job: Job = {
         lives: opts.lives,
         profiles: opts.profiles,
@@ -93,7 +111,7 @@ export function runHarnessParallel(
         ...(opts.force ? { force: opts.force } : {}),
         ...(opts.shard ? { shard: opts.shard } : {}),
         from,
-        to: Math.min(from + BATCH, total),
+        to: Math.min(from + batch, total),
       };
       w.postMessage({ job } satisfies WorkerIn);
     };
@@ -121,11 +139,12 @@ export function runHarnessParallel(
               tally?.add(life);
               opts.onLife?.(life);
             }
-            nextToAdd += BATCH;
+            nextToAdd += batch;
           }
           if (nextToAdd >= total) return stop();
         }
         dispatch(w);
+        if (stopped && nextToAdd >= nextBatch * batch) stop();
       });
     }
   });

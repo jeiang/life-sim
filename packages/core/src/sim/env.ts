@@ -224,19 +224,32 @@ export function reportChanceDrops(ids: readonly string[]): void {
   chanceDropSink?.(ids);
 }
 
-let outcomeSink: ((storyletId: string, moneyDelta: number) => void) | null =
-  null;
+/** Which outcome resolved: the choice index (null for a storylet without choices) and the outcome's index in its list. */
+export interface OutcomeRef {
+  readonly choice: number | null;
+  readonly index: number;
+}
 
-/** Report the money change of every resolved outcome (storylet id, the subject's change); `null` stops. For the balance harness. */
+let outcomeSink:
+  | ((storyletId: string, moneyDelta: number, outcome: OutcomeRef) => void)
+  | null = null;
+
+/** Report every resolved outcome (storylet id, the subject's money change, which outcome); `null` stops. For the balance harness. */
 export function setOutcomeSink(
-  sink: ((storyletId: string, moneyDelta: number) => void) | null,
+  sink:
+    | ((storyletId: string, moneyDelta: number, outcome: OutcomeRef) => void)
+    | null,
 ): void {
   outcomeSink = sink;
 }
 
 /** @internal Used by outcome resolution. */
-export function reportOutcome(storyletId: string, moneyDelta: number): void {
-  outcomeSink?.(storyletId, moneyDelta);
+export function reportOutcome(
+  storyletId: string,
+  moneyDelta: number,
+  outcome: OutcomeRef,
+): void {
+  outcomeSink?.(storyletId, moneyDelta, outcome);
 }
 
 /** Expression environment (ADR 0004) over the world. Only the whitelisted names exist. */

@@ -32,7 +32,13 @@ export {
   type ProfileSpec,
   selectProfiles,
 } from "./profile-spec.ts";
-export { Aggregate, type Dist, type Report, renderMarkdown } from "./report.ts";
+export {
+  Aggregate,
+  chainSteps,
+  type Dist,
+  type Report,
+  renderMarkdown,
+} from "./report.ts";
 export {
   AGE_CAP,
   type Fault,

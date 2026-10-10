@@ -23,7 +23,9 @@ import {
 } from "../src/index.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const real = compilePacks(join(HERE, "..", "..", "..", "packs"));
+const real = compilePacks(join(HERE, "..", "..", "..", "packs"), {
+  only: ["core-loop"],
+});
 if (!real.ok)
   throw new Error(real.diagnostics.map((d) => d.message).join("\n"));
 const bundles = real.bundles;

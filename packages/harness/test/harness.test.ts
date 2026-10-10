@@ -1,3 +1,5 @@
+import { cpSync, mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { compilePacks } from "@life/pack-tools";
@@ -9,6 +11,18 @@ import { renderMarkdown } from "../src/report.ts";
 
 const fixture = (name: string) =>
   join(fileURLToPath(new URL("./fixtures", import.meta.url)), name);
+
+// The harness workers compile a whole directory, so the real Pack under test is copied into
+// a directory of its own: other packs' content cannot break these tests.
+const corePackDir = () => {
+  const dir = mkdtempSync(join(tmpdir(), "harness-core-loop-"));
+  cpSync(
+    fileURLToPath(new URL("../../../packs/core-loop", import.meta.url)),
+    join(dir, "core-loop"),
+    { recursive: true },
+  );
+  return dir;
+};
 
 function bundlesOf(dir: string) {
   const c = compilePacks(dir);
@@ -41,9 +55,7 @@ describe("engine fault detection", () => {
 });
 
 describe("the core-loop Pack", () => {
-  const bundles = bundlesOf(
-    fileURLToPath(new URL("../../../packs", import.meta.url)),
-  );
+  const bundles = bundlesOf(corePackDir());
 
   test("every profile plays lives to death without a fault, reproducibly", () => {
     const opts = { bundles, lives: 8, profiles: PROFILE_NAMES, seed: 7 };
@@ -67,7 +79,7 @@ describe("the core-loop Pack", () => {
 });
 
 describe("parallel runs", () => {
-  const packsDir = fileURLToPath(new URL("../../../packs", import.meta.url));
+  const packsDir = corePackDir();
   const bundles = bundlesOf(packsDir);
   const opts = { bundles, lives: 70, profiles: PROFILE_NAMES, seed: 11 };
   const files = (report: ReturnType<typeof runHarness>["report"]) =>

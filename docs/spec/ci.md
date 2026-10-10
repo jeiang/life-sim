@@ -11,12 +11,13 @@ Decided in [CI runner and check placement](https://github.com/jeiang/life-sim/is
 
 ## Checks
 
-All checks are hermetic `checks.<system>.*` flake outputs, so `nix flake check` runs the same set locally and in CI (the `typecheck` step runs inside `vitest`).
+All checks are hermetic `checks.<system>.*` flake outputs, so `nix flake check` runs the same set locally and in CI.
 
 | Check | What it does |
 |---|---|
 | `biome` | `biome ci .`, with GritQL plugins banning `Math.random`, `Date.now`, and transcendental `Math.*` in `packages/core` (ADR 0001) |
-| `vitest` | Unit tests for Core and Pack tooling. Playwright specs are excluded from Vitest collection |
+| `typecheck` | `tsc` for every workspace package (including Core's test project) and for `packs/*/test` (`packs/tsconfig.json`) |
+| `vitest` | Unit tests for Core and Pack tooling, plus each Pack's own `packs/<id>/test/`. Tests of a real Pack compile it with `compilePacks({ only })` (its required closure), so another Pack's content cannot break them. Playwright specs are excluded from Vitest collection |
 | `packs` | Compiles and validates all Packs (see [Pack format](pack-format/build-checks.md#build-checks)) |
 | `versions` | Fails when npm pins for `@playwright/test` (and `@biomejs/biome`, if kept) differ from the nixpkgs versions |
 | `e2e` | Playwright on Chromium and WebKit against the built app; axe-core on every screen kind in light and dark themes ([visual](visual.md#accessibility-wcag-22-aa)); and the in-run determinism comparison of 20 seeded lives across Node, Chromium, and WebKit ([harness](harness.md#determinism-check-in-e2e)) |

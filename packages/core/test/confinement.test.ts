@@ -107,7 +107,9 @@ describe("confinement", () => {
 });
 
 describe("confinement and housing", () => {
-  const real = compilePacks(join(HERE, "..", "..", "..", "packs"));
+  const real = compilePacks(join(HERE, "..", "..", "..", "packs"), {
+    only: ["core-loop"],
+  });
   if (!real.ok)
     throw new Error(real.diagnostics.map((d) => d.message).join("\n"));
 

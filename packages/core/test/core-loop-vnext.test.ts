@@ -84,9 +84,9 @@ describe("roles, qualities and defaults", () => {
 
   test("shared qualities start at their defaults", () => {
     const w = newLife(bundles, 1);
-    expect(quality(w, "criminal_record")).toBe(false);
-    expect(quality(w, "wanted")).toBe(false);
-    expect(quality(w, "pending_charge")).toBe(0);
+    expect(idx.qualities.has("criminal_record")).toBe(false);
+    expect(idx.qualities.has("wanted")).toBe(false);
+    expect(idx.qualities.has("pending_charge")).toBe(false);
     expect(quality(w, "karma")).toBe(50);
     expect(idx.qualities.get("karma")?.default).toBe(50);
     expect(idx.qualities.get("lang_english")?.default).toBe(100);
@@ -252,13 +252,10 @@ describe("job verbs use group checks", () => {
   const degree = (w: World) =>
     withQ(w, { has_degree_nursing: true, graduated_high_school: true });
 
-  test("professional apply needs no criminal record; entry jobs still hire", () => {
+  test("professional apply reads the hiring_blocked slot (default open)", () => {
     const w = degree(adultOf(2, 25));
     expect(locked(w, "activities/job-board", "apply-staff-nurse")).toBe(false);
-    const bad = withQ(w, { criminal_record: true });
-    expect(locked(bad, "activities/job-board", "apply-staff-nurse")).toBe(true);
-    expect(locked(bad, "activities/job-board", "apply-server")).toBe(false);
-    expect(locked(bad, "activities/job-board", "apply-apprentice")).toBe(false);
+    expect(idx.readables.get("hiring_blocked")?.terms).toHaveLength(0);
   });
 
   test("any full-time job (even another Pack's) blocks apply-*; work and raise follow the groups", () => {

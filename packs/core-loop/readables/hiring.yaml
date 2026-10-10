@@ -1,0 +1,3 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/readables.schema.json
+# Professional `apply-*` jobs refuse a candidate while this is true. Packs add terms (crime: a criminal record).
+- { kind: slot, id: hiring_blocked, type: bool, default: false }

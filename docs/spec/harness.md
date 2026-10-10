@@ -69,7 +69,13 @@ profiles:
     rules:                   # tried in order; the first with a candidate decides the move
       - when: { quitting: true }       # quitting | age_at_least
         ids: [gambling/gambling-support-meeting]
-        pick: first                    # first | random (default)
+        pick: first                    # first | random (default) | max | min
+      - pick: max                      # the candidate with the highest value of `by`
+        by: quality.tip_a - quality.tip_b        # one expression for every candidate, or
+      - pick: min
+        by:                            # an expression per action glob (first match wins)
+          investing/buy-a: quality.tip_a
+          investing/buy-b: quality.tip_b
       - when: { quitting: false }
         ids: [gambling/play-*, gambling/bet-*]
         except: ["*/skip-*"]
@@ -79,6 +85,20 @@ profiles:
 ```
 
 `ids` and `except` are globs on the full action id (`*` within one `/` segment, `**` across them); a glob that matches no action is an error. `quit` makes the profile `quitting` while the quality holds, except for a one-in-`relapse_one_in` relapse drawn on each move. A rule without `ids` takes every unlocked action; a profile whose rules find nothing makes no move. Profiles that exist for one Pack are described in that Pack's `BALANCE.md`.
+
+`pick: max` and `pick: min` rank the rule's candidates by an integer expression `by` (a bool counts 1 or 0), draw no randomness, and take the first candidate in menu order on a tie. The expression is the [pack expression language](pack-format/expressions.md#expressions) over the player (`age`, `money`, `stat.*`, `quality.*`, `world.*`, `table.*`, readables); in a `scope: person` action `person.*` reads the target, and a candidate that lacks a target is not ranked by an expression that reads `person.*`. `by` is either one expression string, which every candidate shares (only useful with `person.*`), or a mapping from action glob to expression: the first matching glob supplies the candidate's value and an action no glob matches is not a candidate. Content ids in the expression are written in full (`pack/id`). The expressions are checked when the file is read (an unknown name, a type error or a glob that matches no action is a diagnostic).
+
+### Adjusting another Pack's profile
+
+A Pack may re-weight the random pick of any registered profile, including one another Pack owns, with a top-level `adjust` list in its own `harness/profiles.yaml`; this lets a Pack such as crime keep its actions rare in the core-loop `random` profile without core-loop knowing about it.
+
+```yaml
+adjust:
+  - { profile: random, tags: [crime], weight: 0.05 }      # actions carrying any of these tags
+  - { profile: random, ids: ["crime/mug-*"], weight: 0.5 } # or whose id matches any of these globs
+```
+
+`profile` is a registry id (unknown: a diagnostic at the entry); `tags` and/or `ids` select the actions (a tag no action carries, or a glob that matches nothing, is an error; an entry with neither is an error; with both, an action matches either); `weight` is a multiplier above 0 and up to 100. A rule whose `pick` is `random` (the default) draws among its candidates with each one weighted by the product of the multipliers of every entry that selects it, so a candidate selected by two entries gets both. Entries are merged in Pack load order, then file order, which makes the result deterministic. Multipliers apply to the random pick of actions only: `first`, `max`, `min`, `shop` rules, event choices, the amount drawn and the number of moves are unchanged. Weights are scaled to parts per 10,000 (at least 1). When no candidate in a pick is selected, the profile draws exactly as without `adjust`, so a profile nobody adjusts plays the same lives as before, and adjusting a profile changes only that profile's lives. The test fixture `packages/harness/test/fixtures/adjust` is the worked example.
 
 | Profile | Pack | Behaviour |
 |---|---|---|

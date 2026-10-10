@@ -1,0 +1,6 @@
+profiles:
+  random:
+    description: Uniform random choices; one random eligible action a year
+    moves: 1
+    rules:
+      - {}

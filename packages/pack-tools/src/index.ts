@@ -3,6 +3,7 @@ export {
   type CompileOutput,
   compilePacks,
   type IconUse,
+  PLAYER_NAMES,
 } from "./compile.ts";
 export type { CreditEntry, CreditsManifest } from "./credits.ts";
 export { type Diagnostic, formatDiagnostic } from "./diagnostics.ts";

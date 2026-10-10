@@ -1,0 +1,31 @@
+# shady down-weights its own tagged actions in the core-loop random profile.
+adjust:
+  - { profile: random, tags: [crime], weight: 0.05 }
+profiles:
+  ranker:
+    description: Takes the action with the highest score each year
+    default: false
+    moves: 1
+    rules:
+      - pick: max
+        by:
+          base/rest: stat.happiness
+          base/tidy: "20"
+          shady/*: "10"
+  cheapest:
+    description: Takes the action with the lowest score each year
+    default: false
+    moves: 1
+    rules:
+      - pick: min
+        by:
+          base/rest: "5"
+          base/tidy: "1"
+          shady/*: "9"
+  tied:
+    description: Every action scores the same, so the first in menu order wins
+    default: false
+    moves: 1
+    rules:
+      - pick: max
+        by: age

@@ -1,0 +1,20 @@
+- id: mug
+  label: Mug someone
+  trigger: action
+  menu: activities/crime
+  repeatable: true
+  tags: [crime]
+  text: You mug someone.
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+- id: pickpocket
+  label: Pick a pocket
+  trigger: action
+  menu: activities/crime
+  repeatable: true
+  tags: [crime]
+  text: You pick a pocket.
+  outcomes:
+    - effects:
+        - stat.happiness += 1

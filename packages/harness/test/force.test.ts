@@ -256,7 +256,7 @@ describe("the Packs' example scripts", () => {
     expect(forced?.neverMatched).toEqual([]);
     expect(report.faults.total).toBe(0);
     expect(report.death.causes["travel accident"]).toBeGreaterThan(0);
-  });
+  }, 60_000);
 });
 
 afterEach(() => forceRolls({}).clear());

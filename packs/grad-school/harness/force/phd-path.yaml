@@ -1,0 +1,7 @@
+description: A scholar gets into a PhD program and a postdoc
+profile: scholar
+steps:
+  - roll: outcome/grad-school/apply-phd
+    value: 0
+  - roll: outcome/grad-school/postdoc-interview
+    value: 0

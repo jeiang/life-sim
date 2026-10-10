@@ -165,7 +165,7 @@ stats:
     by: profile
   missed:
     kind: mean
-    label: missed loan payments per grad life
+    label: missed-payment events per grad life (all loans)
     value: missed_payments
     of: any_enrolled
     by: profile

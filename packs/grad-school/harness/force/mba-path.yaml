@@ -1,0 +1,7 @@
+description: A scholar gets into the MBA program and is hired as a manager
+profile: scholar
+steps:
+  - roll: outcome/grad-school/apply-mba
+    value: 0
+  - roll: outcome/grad-school/business-manager-result
+    value: 0

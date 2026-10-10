@@ -16,4 +16,6 @@ profiles:
       - ids: ["grad-school/apply-medical-school", "grad-school/apply-law-school", "grad-school/apply-mba", "grad-school/apply-phd"]
       - ids: ["grad-school/ask-parents-tuition", "grad-school/study-grad"]
       - ids: ["*/enrol-*", "*/study-harder"]
-      - ids: ["*/apply-*"]
+# A studious player is not a grad student by default: 15-30% of studious lives enter grad school (#229).
+adjust:
+  - { profile: studious, ids: ["grad-school/apply-*"], weight: 0.05 }

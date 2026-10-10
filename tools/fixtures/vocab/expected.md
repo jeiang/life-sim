@@ -115,5 +115,6 @@ Effect calls. Assign targets (a bound person's name works like `person`): `stat 
 - `rename(target, id) -> bool`
 - `unschedule(id) -> bool`
 - `schedule(id, after: <a>-<b> years[, person][, lineage: true]) -> bool`
+- `spawn_person(id, id[, parent: <person>][, link: <birth|adopted|step>]) as <name> -> bool`
 - `relationship(<person>).closeness += <int>`
 - `relationship(<person>).role = <id>`

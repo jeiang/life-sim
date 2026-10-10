@@ -180,14 +180,19 @@ function applyEffect(
     case "spawn": {
       const role = str(e[1], w, idx, scope);
       const gen = str(e[2], w, idx, scope);
-      const [w2, pid] = spawnPerson(
-        w,
-        idx,
-        who,
-        role,
-        gen,
-        scope.purpose === undefined ? {} : { purpose: scope.purpose },
-      );
+      const parent =
+        e[4]?.parent === undefined
+          ? undefined
+          : e[4].parent === "person"
+            ? scope.person
+            : bound.get(e[4].parent);
+      if (e[4]?.parent !== undefined && parent === undefined)
+        throw new RangeError(`unknown person '${e[4].parent}'`);
+      const [w2, pid] = spawnPerson(w, idx, who, role, gen, {
+        ...(scope.purpose === undefined ? {} : { purpose: scope.purpose }),
+        ...(parent === undefined ? {} : { parent }),
+        ...(e[4]?.link === undefined ? {} : { kind: e[4].link }),
+      });
       bound.set(e[3], pid);
       if (who !== w2.playerId) return w2;
       const entered = enterRole(w2, idx, pid, role);

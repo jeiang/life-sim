@@ -432,6 +432,8 @@ export function buildVocab(
       ),
       // Own syntax, so not in EFFECTS (docs/spec/pack-format/storylets.md#scheduled-consequences).
       "schedule(id, after: <a>-<b> years[, person][, lineage: true]) -> bool",
+      // Own syntax too: optional named arguments on a child spawn (parseSpawn in pack-tools expr/parser.ts).
+      "spawn_person(id, id[, parent: <person>][, link: <birth|adopted|step>]) as <name> -> bool",
       // Own syntax too: a bound person's relationship (checkStmt `rel` in pack-tools expr/check.ts).
       "relationship(<person>).closeness += <int>",
       "relationship(<person>).role = <id>",

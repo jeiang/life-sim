@@ -13,6 +13,7 @@ import {
   KIND_CALL,
   KINSHIP_IDS,
   type Signature,
+  type SpawnLink,
   type Target,
   type Type,
   WILL_SET_MODES,
@@ -379,6 +380,9 @@ function constant(e: Expr): number | undefined {
   }) as number;
 }
 
+/** The kinds `spawn_person(..., link: <kind>)` takes; `birth` is the default. */
+const SPAWN_LINKS = ["birth", "adopted", "step"];
+
 export function checkStmt(c: Checker, env: CheckEnv, s: Stmt): Effect | null {
   if (s.k === "assign") {
     const path = s.target.path;
@@ -518,7 +522,33 @@ export function checkStmt(c: Checker, env: CheckEnv, s: Stmt): Effect | null {
     ) {
       return err(c, s.as, `name '${s.as.name}' is already declared`);
     }
-    return args && ["spawn", args[0] as Expr, args[1] as Expr, s.as.name];
+    const persons = env.persons ?? [];
+    if (s.parent && !persons.includes(s.parent.name))
+      return err(
+        c,
+        s.parent,
+        `unknown person '${s.parent.name}'${suggest(s.parent.name, persons)}`,
+      );
+    if (s.link && !SPAWN_LINKS.includes(s.link.name))
+      return err(
+        c,
+        s.link,
+        `unknown link kind '${s.link.name}'; kinds: ${SPAWN_LINKS.join(", ")}`,
+      );
+    const link =
+      s.link?.name === "adopted" || s.link?.name === "step"
+        ? s.link.name
+        : undefined;
+    const opts: SpawnLink = {
+      ...(s.parent ? { parent: s.parent.name } : {}),
+      ...(link ? { link } : {}),
+    };
+    return (
+      args &&
+      (Object.keys(opts).length > 0
+        ? ["spawn", args[0] as Expr, args[1] as Expr, s.as.name, opts]
+        : ["spawn", args[0] as Expr, args[1] as Expr, s.as.name])
+    );
   }
   if (s.as) return err(c, s.as, "'as' is only valid after spawn_person(...)");
   const args = c.args(s, s.name, sig, s.args);

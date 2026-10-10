@@ -33,7 +33,7 @@ person.quality.<id> += n | = v       person.table.<id>.<key> += n | -= n | = n  
 money += n | -= n                    take_loan(loan-kind, principal)
 grant_asset(item-kind) | remove_asset(item-kind)
 start_occupation(kind) | end_occupation(kind) | end_group(group)
-spawn_person(role, generator) as <name>
+spawn_person(role, generator[, parent: <person>][, link: birth|adopted|step]) as <name>
 relationship(<person>).closeness += n
 move_to(city)                        move_out()
 set_standard(standard)
@@ -58,6 +58,8 @@ A Pack may also name a sequence of these statements and call it as `<pack>.<macr
 `person.money += n | -= n` (only in `scope: person`) changes that person's money, not the player's; no other `person.*` name can be assigned.
 
 `move_to(city)` puts the player in a city (family and everyone else stay); `move_in()` and `merge_money()` (in `scope: person`, bound to a partner) move a partner in and merge their money; `move_out()` ends living with parents (under 18 a guardian takes over instead, unless a 16-17 year old with a living parent rolls the Pack's `no_guardian` chance and lives on their own) and picks the starting standard of living; `set_standard(standard)` chooses one (ignored with parents).
+
+`spawn_person` with a role whose last id segment is `child` takes two optional named arguments, after the role and generator and in this order. `parent: <person>` names the child's other birth parent (`person` or a name bound earlier by `spawn_person ... as`) and overrides the default; `link: adopted` or `link: step` sets the kind of every link the child gets, the player's own included (default `birth`). With no `parent:` the player and their living spouses are linked, or, when there is no living spouse, the player and their living partner (`.../partner` role; the lowest person id if several; exactly one). A non-child role with these arguments is a build error.
 
 `unlist(person)` unlists one named person (`person`, or a name bound by `spawn_person ... as <name>`; no person in scope does nothing): a rehomed or lost pet. They stay in the world, alive and in the save, but leave the player's relationship lists and `count_role`, and no storylet binds them again ([Animals](content-kinds.md#animals)).
 

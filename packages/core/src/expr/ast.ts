@@ -42,4 +42,14 @@ export type Target = string | readonly ["relationship", string, string];
 export type Effect =
   | readonly ["set" | "add" | "sub", Target, Expr] // `=`, `+=`, `-=`
   | readonly ["do", string, ...Expr[]] // effect call, e.g. take_loan(...)
-  | readonly ["spawn", Expr, Expr, string]; // spawn_person(role, generator) as name
+  | readonly ["spawn", Expr, Expr, string, SpawnLink?]; // spawn_person(role, generator[, parent: p][, link: k]) as name
+
+/**
+ * The optional family-tree arguments of a child `spawn_person`: `parent` names the other birth
+ * parent (a person in scope; the spouses are then not linked) and `link` the kind of the links
+ * (default birth).
+ */
+export interface SpawnLink {
+  readonly parent?: string;
+  readonly link?: "adopted" | "step";
+}

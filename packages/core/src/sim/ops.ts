@@ -2,6 +2,7 @@ import { type Expr, evaluate } from "../expr/index.ts";
 import type { CompiledGenerator } from "../pack.ts";
 import type { Rng } from "../rng.ts";
 import { clampDecl } from "../state/containers.ts";
+import type { ParentKind } from "../state/parents.ts";
 import { dropMortalSchedule } from "../state/schedule.ts";
 import {
   type Asset,
@@ -270,7 +271,15 @@ export function spawnPerson(
   from: PersonId,
   roleId: string,
   generatorId: string,
-  opts: { familyName?: string; closeness?: number; purpose?: string } = {},
+  opts: {
+    familyName?: string;
+    closeness?: number;
+    purpose?: string;
+    /** A child's other parent, linked instead of the spouses of `from`. */
+    parent?: PersonId;
+    /** The kind of a child's parent links (default birth). */
+    kind?: ParentKind;
+  } = {},
 ): [World, PersonId] {
   const gen = idx.generators.get(generatorId);
   if (!gen) throw new RangeError(`unknown generator '${generatorId}'`);
@@ -314,7 +323,10 @@ export function spawnPerson(
     role: roleId,
     closeness: opts.closeness ?? 50,
   });
-  const family = linkFamilyRole(linked, from, id, roleId);
+  const family = linkFamilyRole(linked, from, id, roleId, {
+    ...(opts.parent === undefined ? {} : { parent: opts.parent }),
+    ...(opts.kind === undefined ? {} : { kind: opts.kind }),
+  });
   return [
     idx.roles.get(roleId)?.animal
       ? family

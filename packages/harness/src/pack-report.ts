@@ -192,8 +192,8 @@ export class PackMetricsAggregate {
     if (this.lives === 0) return out;
     for (const p of this.packs) {
       if (
-        (p.visibleIfTable &&
-          (this.keys.get(`${p.pack}:${p.visibleIfTable}`)?.size ?? 0) === 0)
+        p.visibleIfTable &&
+        (this.keys.get(`${p.pack}:${p.visibleIfTable}`)?.size ?? 0) === 0
       )
         continue;
       const blocks = p.blocks.filter(

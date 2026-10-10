@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=../../../../../packages/pack-tools/schema/readables.schema.json
+# All favours owed, added up.
+- { kind: readable, id: kin_favour_total, type: int, expr: sum(table.kin_favours) }
+- { kind: contribute, slot: hiring_blocked, expr: world.kin_scandals > 2 }

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../../../../packages/pack-tools/schema/capability.schema.json
+provides:
+  qualities:
+    - kin_grudge
+  state:
+    - kin_scandals
+    - kin_favours
+  readables:
+    - kin_favour_total
+  kinds:
+    - kin_clans
+  effects:
+    - scandal
+  tags:
+    - scandal
+requires:
+  - core-loop/engine

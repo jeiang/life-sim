@@ -1,0 +1,5 @@
+# Lift the player's mood by a step, capped at the limit.
+- id: cheer
+  params: [step, limit]
+  effects:
+    - stat.happiness += min(step, limit)

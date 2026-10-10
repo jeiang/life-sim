@@ -1,0 +1,4 @@
+label: Clan
+fields:
+  size: { type: int }
+  rank: { type: expr, returns: int }

@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../../../../packages/pack-tools/schema/state.schema.json
+# Scandals this world has seen.
+- { id: kin_scandals, kind: counter, type: int, min: 0, max: 99, default: 0 }
+# Favours owed, per kind.
+- id: kin_favours
+  kind: table
+  keys: [food, help]
+  min: 0
+  max: 50
+  default: 0

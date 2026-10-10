@@ -4,9 +4,10 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit -p packs",
+    "typecheck": "tsc --noEmit -p packs && tsc --noEmit -p tools",
     "build": "pnpm --filter @life/web build",
-    "harness": "node --experimental-strip-types packages/harness/src/cli.ts"
+    "harness": "node --experimental-strip-types packages/harness/src/cli.ts",
+    "tool": "node --experimental-strip-types tools/run.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",

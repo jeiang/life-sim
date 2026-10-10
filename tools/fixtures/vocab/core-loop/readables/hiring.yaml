@@ -1,0 +1,2 @@
+# Jobs refuse a candidate while this is true. Packs add terms.
+- { kind: slot, id: hiring_blocked, type: bool, default: false }

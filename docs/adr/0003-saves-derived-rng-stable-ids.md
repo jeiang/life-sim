@@ -28,3 +28,8 @@ Age-up order becomes: age every person, the NPC career pass, settlement, events,
 
 - `setStreamOverride((age, purposeKey, counter) => Rng | undefined)` (`rng.ts`, exported from `@life/core`) is consulted in `nextStream` after the counter is read and advanced, so counters move exactly as without it and unforced rolls (and their world hashes) are unchanged. A returned `ScriptedRng({ chance?, int?, pick? })` forces `chanceBp` (hit or miss), `int` (value) and `weightedPick` (index, or a label: outcomes are matched by their `text`) for that roll site; purpose keys are the ones above, e.g. `gambling/play-slots` (chance storylets) and `outcome/gambling/play-slots`.
 - Forced rolls are not logged: a forced life is not replayable from its choice log. The seam is module-level state for vitest and the harness; `apps/web` never imports it and the e2e production-bundle guard (`e2e/check-prod-bundle.ts`) fails if `setStreamOverride` or `ScriptedRng` appears in `dist`.
+
+## Amendment 2026-10-10: lifecycle hooks (#189)
+
+- Age-up order becomes: age every person, reset roll counters, `on_age_up_pre` hooks, living with parents, the NPC career pass, settlement, `on_age_up_post` hooks, events, NPC yearly pass. `on_birth` runs at the end of `newLife`, `on_death` right after the obituary is written, `on_milestone` through `fireMilestone`. Packs run in bundle order (dependencies first, then id). Details: `docs/spec/pack-format/hooks.md`.
+- A hook's `spawn_person` statement `n` draws under `pack/<id>/<hook>/<n>` (`pack/<id>/on_milestone/<milestone>/<n>` for a milestone). Adding a hook subscriber adds keys of its own and moves no existing counter; adding a hook never changes an existing purpose key. Packs that declare no hooks replay exactly as before.

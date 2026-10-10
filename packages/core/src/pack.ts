@@ -449,6 +449,31 @@ export interface NpcCareersDecl {
   }[];
 }
 
+/** Lifecycle phases a Pack can subscribe to (docs/spec/pack-format/hooks.md). `on_milestone` is keyed by milestone id. */
+export const HOOK_PHASES = [
+  "on_birth",
+  "on_age_up_pre",
+  "on_age_up_post",
+  "on_death",
+] as const;
+export type HookPhase = (typeof HOOK_PHASES)[number];
+
+/**
+ * A Pack's lifecycle hooks, compiled. Each phase is a list of statements in source order; a
+ * statement is the closed effects it expanded to (a macro call is several). The statement's
+ * index is the `<n>` of its RNG purpose key `pack/<id>/<hook>/<n>`.
+ */
+export interface HooksDecl {
+  readonly on_birth?: readonly (readonly Effect[])[];
+  readonly on_age_up_pre?: readonly (readonly Effect[])[];
+  readonly on_age_up_post?: readonly (readonly Effect[])[];
+  readonly on_death?: readonly (readonly Effect[])[];
+  /** By milestone id. */
+  readonly on_milestone?: Readonly<
+    Record<string, readonly (readonly Effect[])[]>
+  >;
+}
+
 export interface PackBundle {
   readonly format: typeof PACK_BUNDLE_FORMAT;
   readonly id: string;
@@ -481,6 +506,8 @@ export interface PackBundle {
     /** Neutral lines for a year in which nothing else was journaled. */
     readonly quiet?: readonly string[];
   };
+  /** Lifecycle hooks (phase effects); run in bundle order. */
+  readonly hooks?: HooksDecl;
   /** Living costs; needs `standards`. */
   readonly living?: LivingDecl;
   /** Default diminishing-returns curve for repeatable actions. */

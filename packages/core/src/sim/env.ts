@@ -62,6 +62,8 @@ export interface Scope {
   readonly amount?: number;
   /** Persons bound by `spawn_person(...) as <name>` in the running outcome. */
   readonly bound?: ReadonlyMap<string, PersonId>;
+  /** RNG purpose key for a roll the running effect makes (`spawn_person`); set by lifecycle hooks. */
+  readonly purpose?: string;
 }
 
 export function qualityOf(p: Person, idx: PackIndex, id: string): QualityValue {

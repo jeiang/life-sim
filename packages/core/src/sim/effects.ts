@@ -19,6 +19,7 @@ import {
 } from "../state/world.ts";
 import { enterRole } from "./careers.ts";
 import { makeEnv, qualityOf, type Scope, tableRef } from "./env.ts";
+import { runHook } from "./hooks.ts";
 import { livesWithParents, startLivingOnOwn } from "./living.ts";
 import { grantUnit, removeHolding, tradeHolding } from "./market.ts";
 import {
@@ -153,7 +154,14 @@ function applyEffect(
     case "spawn": {
       const role = str(e[1], w, idx, scope);
       const gen = str(e[2], w, idx, scope);
-      const [w2, pid] = spawnPerson(w, idx, who, role, gen);
+      const [w2, pid] = spawnPerson(
+        w,
+        idx,
+        who,
+        role,
+        gen,
+        scope.purpose === undefined ? {} : { purpose: scope.purpose },
+      );
       bound.set(e[3], pid);
       return who === w2.playerId ? enterRole(w2, idx, pid, role) : w2;
     }
@@ -254,9 +262,9 @@ function applyEffect(
           );
         case "die": {
           const cause = renderText(str(args[0], w, idx, scope), w, idx, scope);
-          return scope.person !== undefined
-            ? killPerson(w, scope.person, cause)
-            : endLife(w, who, cause);
+          if (scope.person !== undefined)
+            return killPerson(w, scope.person, cause);
+          return runHook(endLife(w, who, cause), idx, "on_death");
         }
       }
       throw new RangeError(`unknown effect '${e[1]}'`);

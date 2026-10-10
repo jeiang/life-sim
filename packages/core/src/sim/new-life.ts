@@ -13,6 +13,7 @@ import {
   personsInIdOrder,
   updatePerson,
 } from "../state/world.ts";
+import { runHook } from "./hooks.ts";
 import { updateMarket } from "./market.ts";
 import {
   drawGender,
@@ -158,6 +159,7 @@ export function newLife(
     }));
   }
   w = updateMarket(w, idx)[0];
+  w = runHook(w, idx, "on_birth");
   const head: ChoiceEntry[] = [
     ...(opts.mature ? [{ t: "mature" } as const] : []),
     ...(custom ? [{ t: "start", ...custom } as const] : []),

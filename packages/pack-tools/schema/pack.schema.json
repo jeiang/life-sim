@@ -375,6 +375,64 @@
           }
         }
       }
+    },
+    "hooks": {
+      "additionalProperties": false,
+      "title": "Lifecycle hooks (docs/spec/pack-format/hooks.md)",
+      "type": "object",
+      "properties": {
+        "on_birth": {
+          "minItems": 1,
+          "description": "Effect statements run in order for a lifecycle phase; effect macro calls are allowed",
+          "type": "array",
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "on_age_up_pre": {
+          "minItems": 1,
+          "description": "Effect statements run in order for a lifecycle phase; effect macro calls are allowed",
+          "type": "array",
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "on_age_up_post": {
+          "minItems": 1,
+          "description": "Effect statements run in order for a lifecycle phase; effect macro calls are allowed",
+          "type": "array",
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "on_death": {
+          "minItems": 1,
+          "description": "Effect statements run in order for a lifecycle phase; effect macro calls are allowed",
+          "type": "array",
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "on_milestone": {
+          "description": "Effect statements by milestone id",
+          "type": "object",
+          "patternProperties": {
+            "^[a-z][a-z0-9_-]*$": {
+              "minItems": 1,
+              "description": "Effect statements run in order for a lifecycle phase; effect macro calls are allowed",
+              "type": "array",
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -1,0 +1,13 @@
+id: alpha
+hooks:
+  on_birth:
+    - quality.birth_trail = quality.birth_trail * 10 + 1
+  on_age_up_pre:
+    - quality.pre_trail = quality.pre_trail * 10 + 1
+  on_age_up_post:
+    - quality.post_trail = quality.post_trail * 10 + 1
+  on_death:
+    - quality.death_trail = quality.death_trail * 10 + 1
+  on_milestone:
+    wed:
+      - quality.wed_trail = quality.wed_trail * 10 + 1

@@ -1,0 +1,3 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
+# Written every age-up by the on_age_up_post hook; read by the harness metrics only.
+- { id: reloc_kin_closeness, type: int, min: 0, max: 100, default: 0 } # average closeness to living parents, siblings and friends

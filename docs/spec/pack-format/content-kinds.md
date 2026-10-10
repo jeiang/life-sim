@@ -53,7 +53,7 @@ Units are fixed point, 10,000 per whole unit. Names: `portfolio` (value of all t
   label: Harborview
   icon: ⚓
   cost_index: 85%     # cost of living relative to the baseline (compiled to basis points, must be above 0%)
-  weight: 18          # share of the birth-city draw (integer, 1 or more)
+  weight: 18          # share of the birth-city draw (integer, 0 or more; 0 never draws the city, so it is a destination only)
   wage_index: 90%     # optional pay multiplier for working here, default 100%
   country: us         # optional; a plain string for now, countries are not content yet
 ```

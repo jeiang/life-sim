@@ -1,0 +1,5 @@
+description: The mover applies the moment the fee is affordable and every application is denied; the retry comes the next year, and no life ever lands abroad
+profile: mover
+steps:
+  - roll: outcome/relocation/emigrate-decision
+    value: 1

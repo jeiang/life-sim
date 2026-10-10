@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# The childhood family move (domestic, or rarely abroad) and the friends it costs.
+provides:
+  qualities:
+    - reloc_child_move_age
+requires:
+  - core-loop/family
+  - core-loop/cities
+  - core-loop/stats

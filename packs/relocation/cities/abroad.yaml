@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/cities.schema.json
+# The eight cities abroad (destinations only: weight 0 keeps them out of the birth-city draw). Game-made numbers on the core-loop scale (100% = baseline cost and pay).
+# `wage_index` multiplies pay earned there; `cost_index` scales living costs. Index order is the `reloc_dest` order.
+- { id: toronto, label: Toronto, icon: 🍁, cost_index: 120%, wage_index: 110%, weight: 0 }
+- { id: montreal, label: Montreal, icon: ⚜️, cost_index: 100%, wage_index: 100%, weight: 0 }
+- { id: london, label: London, icon: 🇬🇧, cost_index: 170%, wage_index: 135%, weight: 0 }
+- { id: manchester, label: Manchester, icon: 🌧️, cost_index: 115%, wage_index: 105%, weight: 0 }
+- { id: tokyo, label: Tokyo, icon: 🗼, cost_index: 145%, wage_index: 125%, weight: 0 }
+- { id: osaka, label: Osaka, icon: 🏯, cost_index: 110%, wage_index: 105%, weight: 0 }
+- { id: mexico-city, label: Mexico City, icon: 🌮, cost_index: 70%, wage_index: 60%, weight: 0 }
+- { id: guadalajara, label: Guadalajara, icon: 🌵, cost_index: 55%, wage_index: 50%, weight: 0 }

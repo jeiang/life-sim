@@ -882,8 +882,9 @@ export const CitySchema = obj(
         "Cost of living relative to the baseline, as a percent literal, for example `130%`",
     }),
     weight: Type.Integer({
-      minimum: 1,
-      description: "Relative weight when a life picks its birth city",
+      minimum: 0,
+      description:
+        "Relative weight when a life picks its birth city (0: never drawn, a destination only)",
     }),
     wage_index: Type.Optional(
       Type.String({

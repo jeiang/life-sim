@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/kind.schema.json
+label: Country
+fields:
+  code: { type: int } # the reloc_home_country code (1 US ... 5 Mexico)
+  language: { type: string } # the language most spoken there

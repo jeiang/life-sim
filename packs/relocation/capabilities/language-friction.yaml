@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# Low skill in the destination language blocks professional applications and costs happiness.
+requires:
+  - core-loop/hiring
+  - core-loop/stats

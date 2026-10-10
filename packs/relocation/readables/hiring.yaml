@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/readables.schema.json
+# Abroad with under 20 skill in the destination language: professional apply-* jobs refuse the candidate (entry jobs stay open).
+# English cities (toronto, london, manchester) never contribute: English skill is 100 and never falls.
+- kind: contribute
+  slot: hiring_blocked
+  expr: >-
+    quality.reloc_abroad and (
+    ((city.id == relocation/tokyo or city.id == relocation/osaka) and quality.reloc_lang_japanese < 20)
+    or ((city.id == relocation/mexico-city or city.id == relocation/guadalajara) and quality.reloc_lang_spanish < 20)
+    or (city.id == relocation/montreal and quality.reloc_lang_french < 20))

@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 import {
   choose,
+  describePending,
   getPerson,
   indexBundles,
   listActions,
@@ -42,17 +43,44 @@ test("language qualities: English 100, the rest 0", () => {
 });
 
 describe("study a language", () => {
-  test("skill grows and the gain shrinks at 11 and 21 uses in a year", () => {
+  test("seven languages, no English: it starts at 100 and never falls", () => {
+    expect(idx.storylets.get(ID)?.choices.map((c) => c.label)).toEqual([
+      "Spanish",
+      "French",
+      "German",
+      "Italian",
+      "Japanese",
+      "Mandarin",
+      "Korean",
+    ]);
+  });
+
+  test("skill grows, tapering with skill, and the gain follows 3 / 8 uses a year", () => {
     let w = adultOf(9, 20);
     const gains: number[] = [];
-    for (let i = 0; i < 22; i++) {
+    for (let i = 0; i < 10; i++) {
       const before = quality(w, "reloc_lang_spanish") as number;
-      w = choose(runAction(w, bundles, ID).world, bundles, 1).world;
+      w = choose(runAction(w, bundles, ID).world, bundles, 0).world;
       gains.push((quality(w, "reloc_lang_spanish") as number) - before);
     }
-    expect(gains.slice(0, 10).every((g) => g === 6 || g === 3)).toBe(true);
-    expect(gains.slice(10, 20).every((g) => g === 2 || g === 1)).toBe(true);
-    expect(gains.slice(20).every((g) => g === 0)).toBe(true);
+    // Uses 1-3: (100 - skill) / 12 (half that on a slow session), at least 1.
+    expect(gains[0]).toBeGreaterThanOrEqual(4);
+    expect(gains[0]).toBeLessThanOrEqual(8);
+    // Uses 4-8: one point a use at most for a low skill (the floor), none from 9.
+    for (const g of gains.slice(3, 8)) expect(g).toBe(1);
+    expect(gains.slice(8).every((g) => g === 0)).toBe(true);
+  });
+
+  test("a language at 100 is not offered; productive study adds smarts", () => {
+    const w = adultOf(9, 20);
+    const full = updatePerson(w, w.playerId, (p) => ({
+      ...p,
+      qualities: { ...p.qualities, reloc_lang_korean: 100 },
+    }));
+    const open = runAction(full, bundles, ID).world;
+    const choices = describePending(open, bundles)?.choices ?? [];
+    expect(choices.find((c) => c.label === "Korean")?.enabled).toBe(false);
+    expect(choices.find((c) => c.label === "Spanish")?.enabled).toBe(true);
   });
 
   test("offered from age 6, not under", () => {

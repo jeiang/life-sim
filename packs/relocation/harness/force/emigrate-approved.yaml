@@ -1,0 +1,5 @@
+description: Every application of the mover is approved, whatever the odds, and the job fork and arrival follow in the same turn
+profile: mover
+steps:
+  - roll: outcome/relocation/emigrate-decision
+    value: 0

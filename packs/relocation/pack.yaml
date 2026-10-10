@@ -1,3 +1,7 @@
 # yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
 id: relocation
 namespace: reloc
+hooks:
+  on_age_up_post:
+    # Average closeness over the relatives who are still alive (parents, siblings, friends; an absent role counts for nothing): the harness reads it to compare drifters and callers.
+    - "quality.reloc_kin_closeness = (role_closeness(core-loop/parent) + role_closeness(core-loop/sibling) + role_closeness(core-loop/friend)) / max(1, (role_closeness(core-loop/parent) > 0 ? 1 : 0) + (role_closeness(core-loop/sibling) > 0 ? 1 : 0) + (role_closeness(core-loop/friend) > 0 ? 1 : 0))"

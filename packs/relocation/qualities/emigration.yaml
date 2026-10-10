@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
+# Abroad index (reloc_dest, reloc_pending_dest): 0 Toronto, 1 Montreal, 2 London, 3 Manchester, 4 Tokyo, 5 Osaka, 6 Mexico City, 7 Guadalajara.
+# Home city index (reloc_home_city): 1 dustwater, 2 harborview, 3 maple-falls, 4 riverton, 5 lakeshore, 6 goldcrest (core-loop order), 0 unknown.
+# Country code (reloc_home_country): 1 US, 2 Canada, 3 UK, 4 Japan, 5 Mexico, 0 none; the codes of the reloc_country entries.
+- { id: reloc_abroad, type: flag, default: false } # the player lives in a city abroad; set by arrival and by the abroad childhood move, cleared by moving home
+- { id: reloc_dest, type: int, min: 0, max: 7, default: 0 } # abroad index of the city lived in; read while reloc_abroad
+- { id: reloc_pending, type: flag, default: false } # an approved application awaits arrival (set by emigrate-apply, cleared by arrival or denial)
+- { id: reloc_pending_dest, type: int, min: 0, max: 7, default: 0 } # approved abroad index; read while reloc_pending
+- { id: reloc_job_fork, type: flag, default: false } # a move is underway; emigrate-job-fork reads it and every outcome clears it (set by move-back-home and move-city-abroad)
+- { id: reloc_home_country, type: int, min: 0, max: 5, default: 0 } # country the player left from (1 US); 0 none
+- { id: reloc_home_city, type: int, min: 0, max: 6, default: 0 } # domestic city left from; move-back-home returns there
+- { id: reloc_applications, type: int, min: 0, default: 0 } # emigration applications filed
+- { id: reloc_denials, type: int, min: 0, default: 0 } # emigration applications denied
+- { id: reloc_emigrations, type: int, min: 0, default: 0 } # completed emigrations
+- { id: reloc_returns, type: int, min: 0, max: 100, default: 0 } # times the player moved back home
+- { id: reloc_return_age, type: int, min: 0, max: 120, default: 0 } # age at the last move back home, 0 never
+- { id: reloc_child_move_age, type: int, min: 0, max: 100, default: 0 } # age at the last childhood family move, 0 none

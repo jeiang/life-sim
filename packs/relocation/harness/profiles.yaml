@@ -1,0 +1,35 @@
+# Simulated player profiles of the Relocation Pack; the schema is docs/spec/harness.md#simulated-player-profiles.
+profiles:
+  mover:
+    description: Applies to emigrate as soon as the fee is affordable, studies the destination language, moves home at 55 or later, and otherwise lives like the random profile
+    moves: 3
+    choice:
+      avoid: ["never mind"]
+    rules:
+      - ids: [relocation/emigrate-apply]
+      - when: { age_at_least: 55 }
+        ids: [relocation/move-back-home]
+      - ids: [relocation/study-a-language]
+      - {}
+  caller:
+    description: "A mover who keeps in touch: calls and visits relatives from abroad before anything else"
+    default: false
+    moves: 3
+    choice:
+      avoid: ["never mind"]
+    rules:
+      - ids: [relocation/emigrate-apply]
+      - ids: [relocation/call-home, relocation/visit-home]
+      - when: { age_at_least: 55 }
+        ids: [relocation/move-back-home]
+      - {}
+  stayer:
+    description: Never touches an emigration action, so it is the net-worth baseline for the movers
+    moves: 3
+    rules:
+      - ids: ["**"]
+        except: ["relocation/emigrate-apply", "relocation/move-*"]
+# Emigration is a rare life event, not a pastime: keep the random profile's draws on it small.
+adjust:
+  - { profile: random, ids: [relocation/emigrate-apply], weight: 0.05 }
+  - { profile: random, ids: [relocation/move-city-abroad, relocation/move-back-home], weight: 0.2 }

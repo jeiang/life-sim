@@ -1,0 +1,15 @@
+# One row per city: the country it is in. Entry ids differ from the city ids (ids are unique within a Pack).
+- { id: dustwater-in, city: core-loop/dustwater, country: us }
+- { id: harborview-in, city: core-loop/harborview, country: us }
+- { id: maple-falls-in, city: core-loop/maple-falls, country: us }
+- { id: riverton-in, city: core-loop/riverton, country: us }
+- { id: lakeshore-in, city: core-loop/lakeshore, country: us }
+- { id: goldcrest-in, city: core-loop/goldcrest, country: us }
+- { id: toronto-in, city: toronto, country: canada }
+- { id: montreal-in, city: montreal, country: canada }
+- { id: london-in, city: london, country: uk }
+- { id: manchester-in, city: manchester, country: uk }
+- { id: tokyo-in, city: tokyo, country: japan }
+- { id: osaka-in, city: osaka, country: japan }
+- { id: mexico-city-in, city: mexico-city, country: mexico }
+- { id: guadalajara-in, city: guadalajara, country: mexico }

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# The eight cities abroad and the country kinds (countries, and the country of every city).
+provides:
+  cities:
+    - toronto
+    - montreal
+    - london
+    - manchester
+    - tokyo
+    - osaka
+    - mexico-city
+    - guadalajara
+  kinds:
+    - reloc_country
+    - reloc_city_country
+requires:
+  - core-loop/cities

@@ -51,6 +51,10 @@ measures:
   managers: { outcome: { storylet: grad-school/business-manager-result, key: o0 } }
   postdocs: { outcome: { storylet: grad-school/postdoc-interview, key: o0 } }
   tenure_granted: { outcome: { storylet: grad-school/tenure-review, key: o0 } }
+  stepped_down: { when: "step_full_to_part_a > 0 or step_full_to_part_b > 0 or step_part_to_none > 0" }
+  dropped_out: { when: "dropouts > 0" }
+  top_rung: { when: "chief_of_medicine > 0 or judge_made > 0 or ceo_offers > 0 or tenure_granted > 0" }
+  career_started: { when: "residents > 0 or associates > 0 or managers > 0 or postdocs > 0" }
 stats:
   lives:
     kind: count
@@ -144,6 +148,13 @@ stats:
     of: any_enrolled
     by: profile
     decimals: 3
+  step_down_full_late:
+    kind: mean
+    label: full to partial step-downs per life (failing grades)
+    value: step_full_to_part_b
+    of: any_enrolled
+    by: profile
+    decimals: 3
   step_down_none:
     kind: mean
     label: partial to none step-downs per life
@@ -151,6 +162,30 @@ stats:
     of: any_enrolled
     by: profile
     decimals: 3
+  step_holders:
+    kind: share
+    label: scholarship holders who stepped down at least once
+    when: stepped_down
+    of: scholarship_held > 0
+    by: profile
+  dropped_out:
+    kind: share
+    label: entrants who dropped out
+    when: dropped_out
+    of: any_enrolled
+    by: profile
+  top_rung:
+    kind: share
+    label: degree holders who reached a top rung
+    when: top_rung
+    of: any_degree
+    by: profile
+  career_starters:
+    kind: share
+    label: degree holders who started a grad career
+    when: career_started
+    of: any_degree
+    by: profile
   parents_paid:
     kind: share
     label: parents paid all or part
@@ -270,12 +305,29 @@ stats:
     by: profile
     ages: [40, 65]
     format: money
+  nw_career:
+    kind: median
+    label: grad degree and a grad career
+    value: net_worth
+    of: any_degree and career_started
+    by: profile
+    ages: [40, 65]
+    format: money
+  nw_nocareer:
+    kind: median
+    label: grad degree, no grad career
+    value: net_worth
+    of: any_degree and not career_started
+    by: profile
+    ages: [40, 65]
+    format: money
 blocks:
   - stats:
       - lives
       - entry
       - degree
       - dropouts
+      - dropped_out
   - stats:
       - enrol_medical
       - enrol_law
@@ -289,7 +341,9 @@ blocks:
       - sch_any
       - sch_full
       - step_down_full
+      - step_down_full_late
       - step_down_none
+      - step_holders
       - parents_paid
       - loan_used
       - missed
@@ -304,11 +358,15 @@ blocks:
       - associates
       - managers
       - postdocs
+      - career_starters
       - chief
       - judge
       - ceo
       - full_prof
+      - top_rung
   - text: "Median net worth (major units) at 40 and 65 of lives with a grad degree and of lives without one:"
   - stats:
       - nw_grad
       - nw_bachelor
+      - nw_career
+      - nw_nocareer

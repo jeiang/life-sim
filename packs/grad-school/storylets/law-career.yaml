@@ -7,7 +7,7 @@
   menu: activities/job-board
   label: Apply as an associate lawyer
   tags: [job, apply]
-  when: "quality.grad_degree_law and quality.grad_licensed_law and not in_group(school) and not in_group(\"full-time\") and not hiring_blocked"
+  when: "quality.grad_degree_law and quality.grad_licensed_law and not in_group(school) and not hiring_blocked and not has_occupation(grad-school/associate-lawyer) and not has_occupation(grad-school/partner-lawyer) and not has_occupation(grad-school/judge)"
   cooldown: 1
   text: A mid-sized law firm is taking applications for associates.
   outcomes:
@@ -41,7 +41,7 @@
   icon: ⚖️
   trigger: event
   tags: [job, promotion]
-  chance: 0.4%
+  chance: 0.2%
   when: "has_occupation(grad-school/partner-lawyer) and years_in(grad-school/partner-lawyer) >= 2 and not quality.grad_judge_offered"
   text: "A state judicial nominating committee wants a word with {player.first_name}."
   outcomes:

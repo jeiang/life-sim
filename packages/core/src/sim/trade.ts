@@ -5,7 +5,13 @@ import { addJournalLine, getPerson } from "../state/world.ts";
 import { makeEnv } from "./env.ts";
 import { appendChoice, type SimResult } from "./flow.ts";
 import { confinementOf } from "./living.ts";
-import { changeBp, holdingValue, priceNow, tradeHolding } from "./market.ts";
+import {
+  changeBp,
+  holdingValue,
+  priceNow,
+  seriesPrice,
+  tradeHolding,
+} from "./market.ts";
 import { clockAge, evalBool } from "./ops.ts";
 import { indexBundles, type PackIndex } from "./pack-index.ts";
 import { explainFalse } from "./reason.ts";
@@ -57,7 +63,7 @@ function buyReason(
   );
 }
 
-/** Every market kind of the loaded Packs for the player, sorted by id. */
+/** Every market kind of the loaded Packs for the player, sorted by id; delisted kinds nobody holds are left out. */
 export function listMarket(
   world: World,
   bundles: readonly PackBundle[],
@@ -66,6 +72,11 @@ export function listMarket(
   const player = getPerson(world, world.playerId);
   return [...idx.markets.values()]
     .sort((a, b) => cmp(a.id, b.id))
+    .filter(
+      (k) =>
+        seriesPrice(world, k.id) !== 0 ||
+        player.holdings.some((h) => h.kindId === k.id),
+    )
     .map((k) => {
       const held = player.holdings.find((h) => h.kindId === k.id);
       const reason = buyReason(world, idx, k.id);

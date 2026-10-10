@@ -693,7 +693,16 @@ const MarketSchema = obj(
     delist: Type.Optional(
       Type.String({
         pattern: "^\\d+(\\.\\d{1,2})?%$",
-        description: "Yearly chance the price falls to 0 for good",
+        description:
+          "Yearly chance the price falls to 0 (delisted); a price that reaches the floor delists too",
+      }),
+    ),
+    relist_after: Type.Optional(
+      Type.Integer({
+        minimum: 1,
+        maximum: 99,
+        description:
+          "Years after delisting the kind relists at `start` (needs `delist`); without it a delisted kind stays gone",
       }),
     ),
     bond: Type.Optional(

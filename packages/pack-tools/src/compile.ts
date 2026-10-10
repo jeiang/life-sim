@@ -2563,6 +2563,11 @@ class PackCompiler {
         multiple: src.jump.multiple,
       };
     if (src.delist !== undefined) out.delistBp = percentBp(src.delist);
+    if (src.relist_after !== undefined) {
+      if (src.delist === undefined)
+        this.err(["market", "relist_after"], "'relist_after' needs 'delist'");
+      else out.relistAfterYears = src.relist_after;
+    }
     if (src.bond) {
       const lossBp = percentBp(src.bond.loss ?? "100%");
       if (lossBp > 10000 || percentBp(src.bond.default) > 10000)

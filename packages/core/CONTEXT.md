@@ -103,7 +103,7 @@ The span of one person's existence from birth to death, as played or simulated.
 _Avoid_: Run, playthrough
 
 **Occupation**:
-A role a person holds, such as student at a school or employee in a job, with a ladder, yearly pay or tuition, and performance. A person can hold several at once, limited by the exclusivity groups their kinds declare (for example one school, one full-time job). Past occupations remain on record as history. Packs test group membership with `in_group(g)` (currently holding one in the group) and `years_in_group(g)` (years across every occupation in the group, held or past); there is no effect that ends a whole group, so packs end occupations one by one with `end_occupation`.
+A role a person holds, such as student at a school or employee in a job, with a ladder, yearly pay or tuition, and performance. A person can hold several at once, limited by the exclusivity groups their kinds declare (for example one school, one full-time job). Past occupations remain on record as history. Packs test group membership with `in_group(g)` (currently holding one in the group) and `years_in_group(g)` (years across every occupation in the group, held or past); `end_group(g)` ends every held occupation in a group (in held order, to history, like `end_occupation`), so a Pack need not list job ids it does not own.
 _Avoid_: Job, enrollment, career (as a model term)
 
 **NPC career**:

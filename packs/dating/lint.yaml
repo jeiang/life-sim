@@ -1,0 +1,22 @@
+allow:
+  - code: L003
+    subject: dating/roll-attraction
+    reason: "Queued by the `on_birth` hook (`schedule(dating/roll-attraction, after: 1-1 years)`); lint follows `next` only."
+  - code: L003
+    subject: dating/affair-found-out
+    reason: "Opened by `schedule(dating/affair-found-out, ..., person)` from a got-away affair in affair-cheat."
+  - code: L003
+    subject: dating/family-child-support-year
+    reason: "Opened by `schedule(dating/family-child-support-year, ...)` from the divorce custody choice, and re-queues itself yearly."
+  - code: L003
+    subject: dating/pregnancy-end
+    reason: "Opened by `schedule(dating/pregnancy-end, ...)` from try-for-a-baby and unplanned-pregnancy; it chains to pregnancy-outcome."
+  - code: L003
+    subject: dating/partner-pregnancy-end
+    reason: "Opened by `schedule(dating/partner-pregnancy-end, ..., person)` from try-for-a-baby and unplanned-pregnancy; it chains to partner-pregnancy-outcome."
+  - code: L003
+    subject: dating/pregnancy-outcome
+    reason: "Reached by `next` from pregnancy-end, which is itself opened by `schedule`."
+  - code: L003
+    subject: dating/partner-pregnancy-outcome
+    reason: "Reached by `next` from partner-pregnancy-end, which is itself opened by `schedule`."

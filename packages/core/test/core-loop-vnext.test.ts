@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 import { compilePacks } from "../../pack-tools/src/index.ts";
 import {
+  addParentLink,
   ageUp,
   choose,
   evaluate,
@@ -113,37 +114,30 @@ describe("hidden birth rolls", () => {
 });
 
 describe("guards", () => {
-  test("dating and heartbreak events do not fire for people with a partner or spouse", () => {
-    let w = adultOf(5, 30);
-    expect(eligible(w, "dating-app")).toBe(true);
-    [w] = withPerson(w, "partner", "coworker-gen", 30);
-    expect(eligible(w, "dating-app")).toBe(false);
-    let v = adultOf(5, 20);
-    expect(eligible(v, "heartbreak")).toBe(true);
-    [v] = withPerson(v, "spouse", "coworker-gen", 30);
-    expect(eligible(v, "heartbreak")).toBe(false);
+  test("dating-app and heartbreak live in the dating Pack, not core-loop", () => {
+    expect(idx.storylets.has(`${CL}/dating-app`)).toBe(false);
+    expect(idx.storylets.has(`${CL}/heartbreak`)).toBe(false);
   });
 
-  test("grandchild events wait until a child could have grown up", () => {
-    let w = adultOf(5, 58);
-    expect(eligible(w, "grandchild-babysit")).toBe(true);
-    [w] = withPerson(w, "child", "sibling-gen", 5);
-    expect(eligible(w, "grandchild-babysit")).toBe(false);
-    expect(
-      eligible(
-        updatePerson(w, w.playerId, (p) => ({ ...p, age: 66 })),
-        "grandchild-babysit",
-      ),
-    ).toBe(true);
-    let v = adultOf(5, 72);
-    [v] = withPerson(v, "child", "sibling-gen", 5);
-    expect(eligible(v, "tell-old-stories")).toBe(false);
-    expect(
-      eligible(
-        updatePerson(v, v.playerId, (p) => ({ ...p, age: 76 })),
-        "tell-old-stories",
-      ),
-    ).toBe(true);
+  test("grandchild events need a grandchild", () => {
+    const withGrandchild = (age: number): World => {
+      const [w2, child] = withPerson(
+        adultOf(5, age),
+        "child",
+        "sibling-gen",
+        30,
+      );
+      const [w3, grandchild] = withPerson(w2, "friend", "sibling-gen", 3);
+      return addParentLink(w3, grandchild, child);
+    };
+    const bare = adultOf(5, 72);
+    expect(eligible(bare, "grandchild-babysit")).toBe(false);
+    expect(eligible(bare, "tell-old-stories")).toBe(false);
+    const [withChild] = withPerson(bare, "child", "sibling-gen", 5);
+    expect(eligible(withChild, "grandchild-babysit")).toBe(false);
+    expect(eligible(withChild, "tell-old-stories")).toBe(false);
+    expect(eligible(withGrandchild(72), "grandchild-babysit")).toBe(true);
+    expect(eligible(withGrandchild(72), "tell-old-stories")).toBe(true);
   });
 
   test("the dating age guard compares the player's and the person's side of 18", () => {

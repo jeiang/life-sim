@@ -27,7 +27,7 @@
   icon: 👶
   trigger: event
   weight: 11
-  when: age >= 55 and age <= 85 and (count_role(core-loop/child, 0, 100) == 0 or age >= 65)
+  when: age >= 55 and age <= 85 and count_kin(grandchild, 0, 120) > 0
   cooldown: 6
   text: "A relative asks {player.first_name} to look after their toddler for the weekend."
   choices:
@@ -404,7 +404,7 @@
   icon: 🔥
   trigger: event
   weight: 9
-  when: age >= 70 and age <= 100 and (count_role(core-loop/child, 0, 100) == 0 or age >= 75)
+  when: age >= 70 and age <= 100 and count_kin(grandchild, 0, 120) > 0
   cooldown: 8
   text: "The grandchildren gather around, wanting to hear how things used to be."
   choices:

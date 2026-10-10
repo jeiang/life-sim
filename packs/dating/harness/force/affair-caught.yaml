@@ -1,0 +1,10 @@
+# Forced script: asks always succeed and proposals are accepted; every affair is caught on the spot, which ends a partnership or opens the forced divorce of a marriage.
+description: Every affair is caught at once, ending a partnership or forcing a divorce
+profile: unfaithful
+steps:
+  - roll: outcome/dating/ask-out
+    value: 0
+  - roll: outcome/dating/propose
+    value: 0
+  - roll: outcome/dating/affair-cheat
+    value: 1

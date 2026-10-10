@@ -1,0 +1,33 @@
+# Simulated player profiles of the Dating Pack; the schema is docs/spec/harness.md#simulated-player-profiles.
+profiles:
+  romantic:
+    description: Looks for love and settles down. Asks out, proposes, moves in, plans a wedding, tries for a baby, looks for work, spends time with the family; never breaks up, cheats or divorces; never adopts (adoption is measured in the random profile)
+    moves: 4
+    once_per_year: true
+    choice:
+      prefer: ["ask them out", "propose", "keep the baby", "give it a go", "forgive*"]
+    rules:
+      - ids: [dating/plan-wedding, dating/move-in-together, dating/try-for-a-baby]
+      # A wedding and a family need money: look for work before the date nights.
+      - ids: ["*/apply-*"]
+      - ids: [dating/date-night, dating/spend-time-with-child]
+  unfaithful:
+    description: Builds a relationship (date nights, a wedding, a baby), then from 30 cheats and divorces, from 60 breaks up; the affair and divorce chains are reached through it
+    default: false
+    moves: 5
+    once_per_year: true
+    choice:
+      prefer: ["ask them out", "propose", "skip the prenup", "keep the baby", "your ex keeps the kids", "walk away"]
+    rules:
+      - ids: [dating/plan-wedding, dating/move-in-together, dating/try-for-a-baby]
+      - ids: ["*/apply-*"]
+      - ids: [dating/date-night]
+      - when: { age_at_least: 30 }
+        ids: [dating/affair-cheat, dating/divorce]
+      - when: { age_at_least: 60 }
+        ids: [dating/break-up]
+# Destructive relationship actions stay rare in the uniform `random` profile: a uniform picker would break up, cheat and divorce far more often than anyone chooses to.
+adjust:
+  - { profile: random, ids: [dating/break-up, dating/divorce, dating/affair-cheat], weight: 0.05 }
+  # Adoption is a once-in-a-life choice with a fee; a uniform picker with $5,000 would take it far more often than anyone does.
+  - { profile: random, ids: [dating/adopt-a-child], weight: 0.2 }

@@ -1,0 +1,204 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Break up and divorce".
+
+- id: heartbreak
+  icon: 💔
+  trigger: event
+  tags: [relationship]
+  weight: 9
+  when: "age >= 14 and age <= 24 and count_role(core-loop/partner, 0, 100) == 0 and count_role(core-loop/spouse, 0, 100) == 0"
+  cooldown: 6
+  text: Your first romance ends badly, and you feel miserable.
+  choices:
+    - label: Talk to a friend
+      outcomes:
+        - weight: 75
+          text: A long talk over hot chocolate, and the clouds clear.
+          effects:
+            - stat.happiness += 2
+        - weight: 25
+          text: The friend is busy, and it takes longer to heal.
+          effects:
+            - stat.happiness -= 2
+    - label: Throw yourself into hobbies
+      outcomes:
+        - weight: 1
+          text: Busy hands mend a heavy heart, little by little.
+          effects:
+            - stat.smarts += 1
+            - stat.happiness += 1
+    - label: Wallow
+      outcomes:
+        - weight: 1
+          text: A month of sad songs.
+          effects:
+            - stat.happiness -= 5
+
+- id: break-up
+  icon: 🚪
+  trigger: action
+  menu: relationships
+  label: Break up
+  tags: [relationship]
+  scope: person
+  target: [core-loop/partner]
+  max_per_life: 2
+  text: "You work up the nerve to end things with {person.first_name}."
+  outcomes:
+    - weight: 60
+      text: You both agree it is for the best. You part on civil terms, maybe friends one day.
+      effects:
+        - relationship(person).closeness += -15
+        - relationship(person).role = dating/ex
+        - stat.happiness -= 2
+    - weight: 40
+      text: It gets ugly. Voices rise, and the last thing you hear is a slammed door.
+      effects:
+        - relationship(person).closeness += -35
+        - relationship(person).role = dating/ex
+        - stat.happiness -= 5
+
+- id: divorce
+  icon: 📄
+  trigger: action
+  menu: relationships
+  label: Divorce
+  tags: [relationship]
+  scope: person
+  target: [core-loop/spouse]
+  max_per_life: 1
+  text: "You ask {person.first_name} for a divorce."
+  choices:
+    - label: You keep the kids
+      when: "count_kin(child, 0, 17) > 0"
+      outcomes:
+        - weight: 1
+          when: "quality.dating_prenup"
+          text: You keep the kids, and the prenup does its job. Most of what you built stays yours, minus a hefty lawyer's bill.
+          effects:
+            - money -= max(0, money) / 10
+            - relationship(person).closeness += -40
+            - relationship(person).role = dating/ex
+            - stat.happiness -= 8
+        - weight: 1
+          when: "not quality.dating_prenup"
+          text: You keep the kids. With no prenup, the settlement splits your savings straight down the middle.
+          effects:
+            - money -= max(0, money) / 2
+            - relationship(person).closeness += -40
+            - relationship(person).role = dating/ex
+            - stat.happiness -= 10
+    - label: Your ex keeps the kids
+      when: "count_kin(child, 0, 17) > 0"
+      outcomes:
+        - weight: 1
+          when: "quality.dating_prenup"
+          text: "{person.first_name} takes the kids, and the prenup does its job. You will pay support until they grow up."
+          effects:
+            - money -= max(0, money) / 10
+            - relationship(person).closeness += -40
+            - relationship(person).role = dating/ex
+            - stat.happiness -= 8
+            - "quality.dating_pays_support = true"
+            - "schedule(dating/family-child-support-year, after: 1-1 years)"
+        - weight: 1
+          when: "not quality.dating_prenup"
+          text: "{person.first_name} takes the kids. With no prenup, the settlement splits your savings, and you will pay support until they grow up."
+          effects:
+            - money -= max(0, money) / 2
+            - relationship(person).closeness += -40
+            - relationship(person).role = dating/ex
+            - stat.happiness -= 10
+            - "quality.dating_pays_support = true"
+            - "schedule(dating/family-child-support-year, after: 1-1 years)"
+    - label: Sign the papers
+      when: "count_kin(child, 0, 17) == 0"
+      outcomes:
+        - weight: 1
+          when: "quality.dating_prenup"
+          text: The prenup does its job. Most of what you built stays yours, minus a hefty lawyer's bill.
+          effects:
+            - money -= max(0, money) / 10
+            - relationship(person).closeness += -40
+            - relationship(person).role = dating/ex
+            - stat.happiness -= 8
+        - weight: 1
+          when: "not quality.dating_prenup"
+          text: With no prenup, the settlement splits your savings straight down the middle.
+          effects:
+            - money -= max(0, money) / 2
+            - relationship(person).closeness += -40
+            - relationship(person).role = dating/ex
+            - stat.happiness -= 10
+
+- id: divorce-forced
+  icon: 📄
+  trigger: event
+  tags: [relationship]
+  scope: person
+  target: [core-loop/spouse]
+  chance: 0%
+  max_per_life: 1
+  text: "The marriage cannot survive what just came out, and {person.first_name} files for divorce."
+  choices:
+    - label: You keep the kids
+      when: "count_kin(child, 0, 17) > 0"
+      outcomes:
+        - weight: 1
+          when: "quality.dating_prenup"
+          text: You keep the kids, and the prenup does its job. Most of what you built stays yours, minus a hefty lawyer's bill.
+          effects:
+            - money -= max(0, money) / 10
+            - relationship(person).closeness += -40
+            - relationship(person).role = dating/ex
+            - stat.happiness -= 8
+        - weight: 1
+          when: "not quality.dating_prenup"
+          text: You keep the kids. With no prenup, the settlement splits your savings straight down the middle.
+          effects:
+            - money -= max(0, money) / 2
+            - relationship(person).closeness += -40
+            - relationship(person).role = dating/ex
+            - stat.happiness -= 10
+    - label: Your ex keeps the kids
+      when: "count_kin(child, 0, 17) > 0"
+      outcomes:
+        - weight: 1
+          when: "quality.dating_prenup"
+          text: "{person.first_name} takes the kids, and the prenup does its job. You will pay support until they grow up."
+          effects:
+            - money -= max(0, money) / 10
+            - relationship(person).closeness += -40
+            - relationship(person).role = dating/ex
+            - stat.happiness -= 8
+            - "quality.dating_pays_support = true"
+            - "schedule(dating/family-child-support-year, after: 1-1 years)"
+        - weight: 1
+          when: "not quality.dating_prenup"
+          text: "{person.first_name} takes the kids. With no prenup, the settlement splits your savings, and you will pay support until they grow up."
+          effects:
+            - money -= max(0, money) / 2
+            - relationship(person).closeness += -40
+            - relationship(person).role = dating/ex
+            - stat.happiness -= 10
+            - "quality.dating_pays_support = true"
+            - "schedule(dating/family-child-support-year, after: 1-1 years)"
+    - label: Sign the papers
+      when: "count_kin(child, 0, 17) == 0"
+      outcomes:
+        - weight: 1
+          when: "quality.dating_prenup"
+          text: The prenup does its job. Most of what you built stays yours, minus a hefty lawyer's bill.
+          effects:
+            - money -= max(0, money) / 10
+            - relationship(person).closeness += -40
+            - relationship(person).role = dating/ex
+            - stat.happiness -= 8
+        - weight: 1
+          when: "not quality.dating_prenup"
+          text: With no prenup, the settlement splits your savings straight down the middle.
+          effects:
+            - money -= max(0, money) / 2
+            - relationship(person).closeness += -40
+            - relationship(person).role = dating/ex
+            - stat.happiness -= 10

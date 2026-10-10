@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# Moving in, the wedding and prenup, divorce and the cash split, child support.
+provides:
+  qualities:
+    - dating_prenup
+    - dating_pays_support
+    - dating_married_age
+requires:
+  - dating/romance
+  - core-loop/family
+  - core-loop/singletons

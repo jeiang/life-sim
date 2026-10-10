@@ -1,0 +1,121 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Affairs (both ways)".
+
+- id: affair-cheat
+  icon: 😏
+  trigger: action
+  menu: relationships
+  label: Start a secret affair
+  tags: [relationship]
+  scope: person
+  target: [core-loop/partner, core-loop/spouse]
+  when: "(age < 18) == (person.age < 18)"
+  cooldown: 3
+  max_per_life: 3
+  text: "Someone new has caught your eye, and {person.first_name} is none the wiser."
+  outcomes:
+    - weight: 80
+      text: Your secret stays hidden for now. Every late text is a small risk.
+      effects:
+        - stat.happiness += 4
+        - "quality.dating_affair += 1"
+        - "schedule(dating/affair-found-out, after: 1-4 years, person)"
+    - weight: 20
+      text: A text lights up the wrong screen, and the whole thing blows up right there.
+      effects:
+        - "quality.dating_affair += 1"
+      next: affair-caught
+
+- id: affair-found-out
+  icon: 📱
+  trigger: event
+  tags: [relationship]
+  scope: person
+  target: [core-loop/partner, core-loop/spouse]
+  chance: 0%
+  text: "{person.first_name} has started asking where you were on certain nights."
+  outcomes:
+    - weight: 25
+      text: "You are found out. {person.first_name} is hurt and not ready to hear your side."
+      next: affair-caught
+    - weight: 75
+      text: "Whatever {person.first_name} suspected fades, and nothing more comes of it."
+
+- id: affair-caught
+  icon: 💔
+  trigger: event
+  tags: [relationship]
+  scope: person
+  chance: 0%
+  text: "The fight goes on well past midnight, and {person.first_name} wants you gone."
+  outcomes:
+    - weight: 1
+      when: "count_role(core-loop/spouse, 0, 100) == 0"
+      text: "It is over. You are no longer a couple, and {person.first_name} makes sure you know it."
+      effects:
+        - relationship(person).role = dating/ex
+        - relationship(person).closeness += -30
+        - stat.happiness -= 10
+        - "journal(\"You were caught cheating, and the relationship ended.\")"
+    - weight: 1
+      when: "count_role(core-loop/spouse, 0, 100) > 0"
+      text: "{person.first_name} is done with the marriage and calls the lawyers the next morning."
+      effects:
+        - relationship(person).closeness += -30
+        - stat.happiness -= 10
+        - "journal(\"You were caught cheating on your spouse, and the divorce began.\")"
+      next: divorce-forced
+
+- id: partner-cheats
+  icon: 🌙
+  trigger: event
+  tags: [relationship]
+  scope: person
+  target: [core-loop/partner, core-loop/spouse]
+  chance: 2%
+  when: "(age < 18) == (person.age < 18) and not person.quality.dating_cheated"
+  text: "{person.first_name} has been out late a lot and keeps the phone face down."
+  outcomes:
+    - weight: 1
+      text: Nothing else changes, for now.
+      effects:
+        - "person.quality.dating_cheated = true"
+
+- id: partner-cheat-found
+  icon: 🔍
+  trigger: event
+  tags: [relationship]
+  scope: person
+  target: [core-loop/partner, core-loop/spouse]
+  chance: 6%
+  when: "person.quality.dating_cheated"
+  text: "You find a message from someone else on {person.first_name}'s phone."
+  choices:
+    - label: Forgive them
+      outcomes:
+        - weight: 1
+          text: You decide to try again. It will take a long time to feel normal.
+          effects:
+            - "person.quality.dating_cheated = false"
+            - stat.happiness -= 5
+            - relationship(person).closeness += -10
+    - label: Walk away
+      outcomes:
+        - weight: 1
+          when: "count_role(core-loop/spouse, 0, 100) == 0"
+          text: "You end it that night. {person.first_name} does not argue, which somehow hurts more."
+          effects:
+            - "person.quality.dating_cheated = false"
+            - relationship(person).role = dating/ex
+            - relationship(person).closeness += -30
+            - stat.happiness -= 8
+            - "journal(\"Your partner cheated on you, and you broke up.\")"
+        - weight: 1
+          when: "count_role(core-loop/spouse, 0, 100) > 0"
+          text: "You serve the papers that night. {person.first_name} does not argue, which somehow hurts more."
+          effects:
+            - "person.quality.dating_cheated = false"
+            - relationship(person).closeness += -30
+            - stat.happiness -= 8
+            - "journal(\"Your spouse cheated on you, and you filed for divorce.\")"
+          next: divorce-forced

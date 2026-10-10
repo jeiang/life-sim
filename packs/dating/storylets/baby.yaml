@@ -1,0 +1,153 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Try for a baby and pregnancy".
+
+- id: try-for-a-baby
+  icon: 👶
+  trigger: action
+  menu: relationships
+  label: Try for a baby
+  scope: person
+  target: [core-loop/partner, core-loop/spouse]
+  when: "age >= 18 and person.age >= 18 and (player.can_carry or person.can_carry) and quality.dating_pregnant == 0 and person.quality.dating_pregnant == 0"
+  cooldown: 2
+  max_per_life: 6
+  text: "You and {person.first_name} decide to start trying for a baby. Nothing is guaranteed."
+  outcomes:
+    - weight: 75
+      text: Months pass with no news. You keep trying.
+    - weight: 25
+      when: "player.can_carry"
+      text: A test shows two lines. You are pregnant.
+      effects:
+        - "quality.dating_pregnant = 1"
+        - "schedule(dating/pregnancy-end, after: 1-1 years)"
+        - "journal(\"You are pregnant.\")"
+    - weight: 25
+      when: "not player.can_carry"
+      text: "A test shows two lines. {person.first_name} is pregnant."
+      effects:
+        - "person.quality.dating_pregnant = 1"
+        - "schedule(dating/partner-pregnancy-end, after: 1-1 years, person)"
+        - "journal(\"{person.first_name} is pregnant.\")"
+
+- id: unplanned-pregnancy
+  icon: 😳
+  trigger: event
+  scope: person
+  target: [core-loop/partner, core-loop/spouse]
+  chance: 0.25%
+  when: "age >= 18 and person.age >= 18 and (player.can_carry or person.can_carry) and quality.dating_pregnant == 0 and person.quality.dating_pregnant == 0"
+  text: A late period and a mix-up with the pill leave you with a surprise. There is a pregnancy, and it was not the plan.
+  outcomes:
+    - weight: 1
+      when: "player.can_carry"
+      text: The test is positive. You are pregnant, and the next decision is yours.
+      effects:
+        - "quality.dating_pregnant = 1"
+        - "schedule(dating/pregnancy-end, after: 1-1 years)"
+        - "journal(\"An unplanned pregnancy.\")"
+    - weight: 1
+      when: "not player.can_carry"
+      text: "The test is positive. {person.first_name} is pregnant, and the next decision is yours."
+      effects:
+        - "person.quality.dating_pregnant = 1"
+        - "schedule(dating/partner-pregnancy-end, after: 1-1 years, person)"
+        - "journal(\"An unplanned pregnancy.\")"
+
+- id: pregnancy-end
+  icon: 🤰
+  trigger: event
+  chance: 0%
+  when: "quality.dating_pregnant == 1"
+  text: The due date is here. The months have gone by fast, and the next step is yours.
+  outcomes:
+    - weight: 5
+      text: Something goes wrong and the pregnancy ends early. It is a quiet, sad loss, and you grieve in your own way.
+      effects:
+        - "quality.dating_pregnant = 0"
+        - stat.happiness -= 8
+        - stat.health -= 2
+        - "journal(\"You had a miscarriage.\")"
+    - weight: 95
+      text: The pregnancy holds. The baby is close, and you have to decide what comes next.
+      next: pregnancy-outcome
+
+- id: pregnancy-outcome
+  icon: 🍼
+  trigger: event
+  chance: 0%
+  text: The baby is due. You have three options, and the choice is yours.
+  choices:
+    - label: Keep the baby
+      outcomes:
+        - weight: 1
+          text: You bring your baby home. Life is about to get a lot busier.
+          effects:
+            - "quality.dating_pregnant = 0"
+            - "spawn_person(core-loop/child, dating/baby-gen) as baby"
+            - "quality.dating_children += 1"
+            - "journal(\"Your baby is born.\")"
+    - label: Place the baby for adoption
+      outcomes:
+        - weight: 1
+          text: You place your baby with an adoptive family. It is a hard choice, and you make it.
+          effects:
+            - "quality.dating_pregnant = 0"
+            - "journal(\"You placed your baby for adoption.\")"
+    - label: End the pregnancy
+      outcomes:
+        - weight: 1
+          text: You book a clinic appointment and end the pregnancy. You get on with your life.
+          effects:
+            - "quality.dating_pregnant = 0"
+            - "journal(\"You ended the pregnancy.\")"
+
+- id: partner-pregnancy-end
+  icon: 🤰
+  trigger: event
+  scope: person
+  chance: 0%
+  when: "person.quality.dating_pregnant == 1"
+  text: "The due date is here. {person.first_name} is ready, and the next step is yours."
+  outcomes:
+    - weight: 5
+      text: Something goes wrong and the pregnancy ends early. It is a quiet, sad loss, and you grieve in your own way.
+      effects:
+        - "person.quality.dating_pregnant = 0"
+        - stat.happiness -= 8
+        - stat.health -= 2
+        - "journal(\"{person.first_name} had a miscarriage.\")"
+    - weight: 95
+      text: The pregnancy holds. The baby is close, and you have to decide what comes next.
+      next: partner-pregnancy-outcome
+
+- id: partner-pregnancy-outcome
+  icon: 🍼
+  trigger: event
+  scope: person
+  chance: 0%
+  text: The baby is due. You have three options, and the choice is yours.
+  choices:
+    - label: Keep the baby
+      outcomes:
+        - weight: 1
+          text: You bring your baby home. Life is about to get a lot busier.
+          effects:
+            - "person.quality.dating_pregnant = 0"
+            - "spawn_person(core-loop/child, dating/baby-gen, parent: person) as baby"
+            - "quality.dating_children += 1"
+            - "journal(\"Your baby is born.\")"
+    - label: Place the baby for adoption
+      outcomes:
+        - weight: 1
+          text: You place your baby with an adoptive family. It is a hard choice, and you make it.
+          effects:
+            - "person.quality.dating_pregnant = 0"
+            - "journal(\"You placed your baby for adoption.\")"
+    - label: End the pregnancy
+      outcomes:
+        - weight: 1
+          text: You book a clinic appointment and end the pregnancy. You get on with your life.
+          effects:
+            - "person.quality.dating_pregnant = 0"
+            - "journal(\"You ended the pregnancy.\")"

@@ -1,0 +1,148 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Finding love".
+
+- id: find-a-date-teen
+  icon: 💘
+  trigger: event
+  weight: 16
+  when: "age >= 14 and age <= 17 and count_role(core-loop/partner, 0, 100) == 0"
+  cooldown: 1
+  text: You notice someone in your year looking your way at school.
+  outcomes:
+    - weight: "quality.dating_attracted_women + 1"
+      text: A girl from your year smiles back when you look up, and the conversation keeps going at lunch.
+      effects:
+        - "spawn_person(core-loop/classmate, dating/date-teen-gen-female) as date"
+        - relationship(date).closeness += 10
+        - stat.happiness += 4
+    - weight: "quality.dating_attracted_men + 1"
+      text: A boy from your year asks to borrow your notes, and somehow it turns into a walk home together.
+      effects:
+        - "spawn_person(core-loop/classmate, dating/date-teen-gen-male) as date"
+        - relationship(date).closeness += 10
+        - stat.happiness += 4
+    - weight: "quality.dating_attracted_nonbinary + 1"
+      text: Someone new in your class sits next to you in every lesson, and you start to look forward to it.
+      effects:
+        - "spawn_person(core-loop/classmate, dating/date-teen-gen-nonbinary) as date"
+        - relationship(date).closeness += 10
+        - stat.happiness += 4
+    - weight: 60
+      text: A chat in the library goes nowhere in particular, but it was nice while it lasted.
+      effects:
+        - stat.happiness += 1
+
+- id: find-a-date
+  icon: 💘
+  trigger: event
+  weight: 18
+  when: "age >= 18 and age <= 30 and count_role(core-loop/partner, 0, 100) == 0 and count_role(core-loop/spouse, 0, 100) == 0"
+  cooldown: 1
+  text: A chance to meet someone new comes up, and you are free this weekend.
+  outcomes:
+    - weight: "quality.dating_attracted_women + 1"
+      text: A friend of a friend introduces you to a woman who laughs at all your jokes, and you swap numbers before the night ends.
+      effects:
+        - "spawn_person(core-loop/friend, dating/date-gen-female) as date"
+        - relationship(date).closeness += 10
+        - stat.happiness += 4
+    - weight: "quality.dating_attracted_men + 1"
+      text: A man you met at the gym asks if you want to grab a coffee, and it turns into a three hour chat.
+      effects:
+        - "spawn_person(core-loop/friend, dating/date-gen-male) as date"
+        - relationship(date).closeness += 10
+        - stat.happiness += 4
+    - weight: "quality.dating_attracted_nonbinary + 1"
+      text: A coworker from the other team keeps finding reasons to talk to you, and you are glad they do.
+      effects:
+        - "spawn_person(core-loop/friend, dating/date-gen-nonbinary) as date"
+        - relationship(date).closeness += 10
+        - stat.happiness += 4
+    - weight: 60
+      text: The night out is fine, but there is no spark, and you both head home early.
+      effects:
+        - stat.happiness -= 1
+
+- id: ask-out
+  icon: 🌹
+  trigger: event
+  scope: person
+  target: [core-loop/friend, core-loop/classmate, core-loop/coworker]
+  weight: 8
+  when: "age >= 14 and person.age >= 14 and (age < 18) == (person.age < 18) and person.age - age <= 15 and age - person.age <= 15 and person.closeness >= 30 and count_role(core-loop/partner, 0, 100) == 0 and count_role(core-loop/spouse, 0, 100) == 0"
+  text: "You think {person.first_name} might say yes if you ask."
+  choices:
+    - label: Ask them out
+      outcomes:
+        - weight: "(player.gender == \"male\" ? person.quality.dating_attracted_men : (player.gender == \"female\" ? person.quality.dating_attracted_women : person.quality.dating_attracted_nonbinary)) + 1"
+          text: "{person.first_name} lights up and says yes before you finish the sentence."
+          effects:
+            - relationship(person).role = core-loop/partner
+            - stat.happiness += 6
+        - weight: "100 - (player.gender == \"male\" ? person.quality.dating_attracted_men : (player.gender == \"female\" ? person.quality.dating_attracted_women : person.quality.dating_attracted_nonbinary))"
+          text: "{person.first_name} lets you down gently, and the next few days are a little awkward."
+          effects:
+            - relationship(person).closeness += -15
+            - stat.happiness -= 3
+    - label: Keep it friendly
+      outcomes:
+        - weight: 1
+          text: You stick to small talk for now, and that is fine.
+          effects:
+            - stat.happiness += 1
+
+- id: propose
+  icon: 💍
+  trigger: event
+  scope: person
+  target: [core-loop/partner]
+  weight: 6
+  when: "age >= 18 and person.age >= 18 and person.closeness >= 60 and not person.quality.dating_proposed"
+  text: "Things with {person.first_name} feel serious. Maybe it is time to ask."
+  choices:
+    - label: Propose
+      outcomes:
+        - weight: person.closeness
+          text: "{person.first_name} says yes and hugs you before you have even finished asking."
+          effects:
+            - stat.happiness += 6
+            - "person.quality.dating_engaged = true"
+            - "person.quality.dating_proposed = true"
+        - weight: 100 - person.closeness
+          text: "{person.first_name} needs a little time, and the moment passes awkwardly."
+          effects:
+            - relationship(person).role = core-loop/friend
+            - "person.quality.dating_proposed = true"
+            - stat.happiness -= 4
+    - label: Wait a little longer
+      outcomes:
+        - weight: 1
+          text: You decide to wait. The ring can keep for another year.
+          effects:
+            - stat.happiness += 1
+
+- id: dating-app
+  icon: 📱
+  trigger: event
+  weight: 2
+  when: "age >= 18 and count_role(core-loop/partner, 0, 100) == 0 and count_role(core-loop/spouse, 0, 100) == 0"
+  cooldown: 6
+  text: A friend nudges you to try a dating app.
+  choices:
+    - label: Give it a go
+      outcomes:
+        - weight: 40
+          text: A lovely first date and a promising spark.
+          effects:
+            - stat.happiness += 5
+            - stat.looks += 1
+        - weight: 60
+          text: A string of awkward chats and a ghost.
+          effects:
+            - stat.happiness -= 2
+    - label: Meet people the old-fashioned way
+      outcomes:
+        - weight: 1
+          text: A nice evening with friends instead.
+          effects:
+            - stat.happiness += 2

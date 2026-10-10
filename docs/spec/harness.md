@@ -97,6 +97,7 @@ profiles:
         menu: some/menu                # only this menu
         repeatable: true               # only `repeatable` actions
       - shop: true                     # buy something (a loan when offered)
+        ids: [core-loop/house]         # optional: only items matching these globs (full item ids)
 ```
 
 `ids` and `except` are globs on the full action id (`*` within one `/` segment, `**` across them); a glob that matches no action is an error. `quit` makes the profile `quitting` while the quality holds, except for a one-in-`relapse_one_in` relapse drawn on each move. A rule without `ids` takes every unlocked action; a profile whose rules find nothing makes no move. Profiles that exist for one Pack are described in that Pack's `BALANCE.md`.

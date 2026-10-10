@@ -42,7 +42,7 @@ export interface RuleSpec {
   readonly menu: string | null;
   /** ... and declared `repeatable`. */
   readonly repeatable: boolean;
-  /** Buy something from the shop instead (cash, or a loan when one is offered). */
+  /** Buy something from the shop instead (cash, or a loan when one is offered); `ids` then limits it to items matching those globs. */
   readonly shop: boolean;
   /**
    * `random`: uniform among the candidates (weighted by the profile's `adjust` entries);
@@ -161,7 +161,7 @@ function globList(
     const s = l.str([...path, i], g, "a pattern string");
     if (s === null) return;
     const re = globToRegExp(s, anyChar, flags);
-    if (known && !known(re)) l.err([...path, i], `'${s}' matches no action`);
+    if (known && !known(re)) l.err([...path, i], `'${s}' matches no action or item`);
     out.push(re);
   });
   return out;
@@ -200,6 +200,7 @@ function compileRule(
   v: unknown,
   hasQuit: boolean,
   actionIds: readonly string[],
+  itemIds: readonly string[],
   menus: ReadonlySet<string>,
   expr: ExprCompiler,
 ): RuleSpec | null {
@@ -231,10 +232,18 @@ function compileRule(
     }
   }
   const matchesAction = (re: RegExp) => actionIds.some((id) => re.test(id));
+  const matchesItem = (re: RegExp) => itemIds.some((id) => re.test(id));
   const ids =
     r.ids === undefined
       ? null
-      : globList(l, [...path, "ids"], r.ids, false, "", matchesAction);
+      : globList(
+          l,
+          [...path, "ids"],
+          r.ids,
+          false,
+          "",
+          r.shop === true ? matchesItem : matchesAction,
+        );
   const except =
     r.except === undefined
       ? []
@@ -256,8 +265,8 @@ function compileRule(
   };
   const repeatable = bool("repeatable");
   const shop = bool("shop");
-  if (shop && (ids || except.length > 0 || menu || repeatable))
-    l.err(path, "a `shop` rule takes only `when`");
+  if (shop && (except.length > 0 || menu || repeatable))
+    l.err(path, "a `shop` rule takes only `when` and `ids` (item globs)");
   let pick: RuleSpec["pick"] = "random";
   if (r.pick !== undefined) {
     if (
@@ -325,6 +334,7 @@ export function compileProfiles(
   const actionIds = bundles.flatMap((b) =>
     b.storylets.filter((s) => s.trigger === "action").map((s) => s.id),
   );
+  const itemIds = bundles.flatMap((b) => b.items.map((i) => i.id));
   const menus = new Set(
     bundles.flatMap((b) =>
       b.storylets.flatMap((s) =>
@@ -561,6 +571,7 @@ export function compileProfiles(
           r,
           quit !== null,
           actionIds,
+          itemIds,
           menus,
           expr,
         );

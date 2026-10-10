@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/effects.schema.json
+# Move fame by `points` (negative to lose it) from its decayed value, clamped to 0..100, and restart the decay clock.
+- id: add_fame
+  params: [points]
+  effects:
+    - quality.fame = min(100, max(0, fame_value + points))
+    - quality.fame_age = age

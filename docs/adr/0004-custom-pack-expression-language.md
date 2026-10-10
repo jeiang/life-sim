@@ -10,3 +10,6 @@ Pack conditions, weights, chances, and effect statements use a small custom infi
 ## Note (2026-10-10): pack-declared readables (#187)
 
 Packs name expressions and read each other's state through them, without the language gaining a user-defined function or a loop. A readable is a build-time-checked expression with a declared `int` or `bool` type, evaluated on every read for the player and never stored; a slot is a readable whose value is a default combined (summed, maxed or any-true) with terms that dependent Packs contribute, so a gate in one Pack can follow state of a Pack it does not require. The only additions to the language are bare names for readables and four aggregators, `sum`, `count`, `max` and `min` of a container path; they compile to calls of `agg_<op>` with the path as a string argument, so the AST node set and the interpreter's `Env` interface do not change, and the aggregation itself is Core code. The checker rejects cycles across Packs, and there is still no randomness. Spec: [Readables](../spec/pack-format/readables.md).
+
+
+Amendment (#223): the lazy-decay pattern, a stored value plus the age it was stored at, read through a readable (`fame_value`), needs no new language feature: `age` and integer arithmetic suffice, so decay costs no yearly write and no hook.

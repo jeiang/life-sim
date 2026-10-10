@@ -27,6 +27,8 @@ A Pack gives a name to a value the Core computes from the world, and other Packs
 
 A readable or slot is a bare name in any expression (`when`, `weight`, `chance`, readable and contribution expressions, text placeholders): `when: not hiring_blocked`, `pay_bonus >= 8`. It evaluates for the player, whatever scope the reader is in (a readable never sees `person.*`, `loan.*`, `asset.*`, `amount` or bound names), reads the world as it is now, and is never stored: it adds nothing to saves, the world hash or replay. There is no randomness inside it (ADR 0004).
 
+Worked example, lazy decay: core-loop's `fame_value` is `max(0, quality.fame - (age - quality.fame_age) * 5)`. The stored pair (`fame`, `fame_age`) is only ever written by the `add_fame` macro, which restarts from the decayed value; every reader applies the same decay with no per-year write (see [Effect macros](effects.md)).
+
 ## Aggregators
 
 Four closed aggregators range over declared containers. `sum`, `count`, `max` and `min` take one argument, a container path the Pack can see:

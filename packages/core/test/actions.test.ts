@@ -29,7 +29,9 @@ if (!compiled.ok)
   throw new Error(compiled.diagnostics.map((d) => d.message).join("\n"));
 const bundles = compiled.bundles;
 
-const real = compilePacks(join(HERE, "..", "..", "..", "packs"));
+const real = compilePacks(join(HERE, "..", "..", "..", "packs"), {
+  only: ["core-loop"],
+});
 if (!real.ok)
   throw new Error(real.diagnostics.map((d) => d.message).join("\n"));
 

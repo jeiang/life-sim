@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
+    "typecheck": "tsc --noEmit -p packs",
     "build": "pnpm --filter @life/web build",
     "harness": "node --experimental-strip-types packages/harness/src/cli.ts"
   },

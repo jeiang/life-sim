@@ -1,7 +1,6 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
-import { compilePacks } from "../../pack-tools/src/index.ts";
 import {
   ageUp,
   choose,
@@ -18,10 +17,13 @@ import {
   updatePerson,
   type World,
   worldHash,
-} from "../src/index.ts";
+} from "../../../packages/core/src/index.ts";
+import { compilePacks } from "../../../packages/pack-tools/src/index.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const real = compilePacks(join(HERE, "..", "..", "..", "packs"));
+const real = compilePacks(join(HERE, "..", ".."), {
+  only: ["vacations"],
+});
 if (!real.ok)
   throw new Error(real.diagnostics.map((d) => d.message).join("\n"));
 const bundles = real.bundles;

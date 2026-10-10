@@ -99,7 +99,7 @@
             '';
             installPhase = "touch $out";
           };
-          # Every workspace package's typecheck script, including core's test project.
+          # Every workspace package's typecheck script, including core's test project and packs/*/test.
           typecheck = pkgs.stdenvNoCC.mkDerivation {
             name = "life-sim-check-typecheck";
             inherit src pnpmDeps;
@@ -108,6 +108,7 @@
             doCheck = true;
             checkPhase = ''
               pnpm -r typecheck
+              pnpm run typecheck
             '';
             installPhase = "touch $out";
           };

@@ -38,7 +38,7 @@ writeFileSync(
 - { id: t-merge, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "Merge.", outcomes: [{ weight: 1, effects: [merge_money()] }] }
 `,
 );
-const real = compilePacks(tmp);
+const real = compilePacks(tmp, { only: ["core-loop"] });
 if (!real.ok)
   throw new Error(real.diagnostics.map((d) => d.message).join("\n"));
 const bundles = real.bundles;

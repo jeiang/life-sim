@@ -12,7 +12,9 @@ import {
 } from "../src/index.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const compiled = compilePacks(join(HERE, "..", "..", "..", "packs"));
+const compiled = compilePacks(join(HERE, "..", "..", "..", "packs"), {
+  only: ["core-loop"],
+});
 if (!compiled.ok)
   throw new Error(compiled.diagnostics.map((d) => d.message).join("\n"));
 const bundles = compiled.bundles;

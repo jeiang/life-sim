@@ -1,7 +1,6 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
-import { compilePacks } from "../../pack-tools/src/index.ts";
 import {
   getPerson,
   indexBundles,
@@ -11,14 +10,17 @@ import {
   setQuality,
   updatePerson,
   type World,
-} from "../src/index.ts";
-import type { CompiledOutcome } from "../src/pack.ts";
-import { applyEffects } from "../src/sim/effects.ts";
-import { evalBool, evalInt } from "../src/sim/ops.ts";
-import { scopeFor } from "../src/sim/storylets.ts";
+} from "../../../packages/core/src/index.ts";
+import type { CompiledOutcome } from "../../../packages/core/src/pack.ts";
+import { applyEffects } from "../../../packages/core/src/sim/effects.ts";
+import { evalBool, evalInt } from "../../../packages/core/src/sim/ops.ts";
+import { scopeFor } from "../../../packages/core/src/sim/storylets.ts";
+import { compilePacks } from "../../../packages/pack-tools/src/index.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const real = compilePacks(join(HERE, "..", "..", "..", "packs"));
+const real = compilePacks(join(HERE, "..", ".."), {
+  only: ["gambling"],
+});
 if (!real.ok)
   throw new Error(real.diagnostics.map((d) => d.message).join("\n"));
 const bundles = real.bundles;

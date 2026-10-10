@@ -1,3 +1,6 @@
 # yaml-language-server: $schema=../../../../../schema/capability.schema.json
 requires:
   - base/people
+provides:
+  singletons:
+    - year

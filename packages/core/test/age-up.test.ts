@@ -26,8 +26,19 @@ if (!compiled.ok)
   throw new Error(compiled.diagnostics.map((d) => d.message).join("\n"));
 const bundles = compiled.bundles;
 
+/** `b` with the given year block, or none; only one Pack may declare it. */
+function withoutYear(
+  b: PackBundle,
+  year: PackBundle["year"] | false,
+): PackBundle {
+  const { year: _y, ...rest } = b;
+  return year ? { ...rest, year } : rest;
+}
+
 function withYear(slots: [number, number], cap: number): readonly PackBundle[] {
-  return bundles.map((b) => ({ ...b, year: { slots, cap } }));
+  return bundles.map((b) =>
+    withoutYear(b, b.id === "core-loop" && { slots, cap }),
+  );
 }
 
 function life(flags: string[] = [], seed = 7): World {
@@ -351,10 +362,12 @@ describe("year draw", () => {
         owner(first, "a-chance"),
         owner(second, "b-chance"),
         shell,
-      ].map((b) => ({
-        ...b,
-        year: { slots: [0, 0] as [number, number], cap: 1 },
-      }));
+      ].map((b) =>
+        withoutYear(
+          b,
+          b === shell && { slots: [0, 0] as [number, number], cap: 1 },
+        ),
+      );
     }
     const survivors = (
       bs: readonly PackBundle[],

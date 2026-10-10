@@ -124,6 +124,43 @@
             "pattern": "^[a-z][a-z0-9_-]*$",
             "type": "string"
           }
+        },
+        "singletons": {
+          "uniqueItems": true,
+          "description": "Singleton manifest blocks this Pack owns (block list); exactly one Pack declares and provides each",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "const": "year",
+                "type": "string"
+              },
+              {
+                "const": "family",
+                "type": "string"
+              },
+              {
+                "const": "npc_careers",
+                "type": "string"
+              },
+              {
+                "const": "living",
+                "type": "string"
+              },
+              {
+                "const": "repeat",
+                "type": "string"
+              },
+              {
+                "const": "currency",
+                "type": "string"
+              },
+              {
+                "const": "exclusivity",
+                "type": "string"
+              }
+            ]
+          }
         }
       }
     },

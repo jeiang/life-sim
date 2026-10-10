@@ -769,6 +769,8 @@ describe("build checks fail", () => {
   test("manifest family resolves to full ids; dangling or inverted ranges fail", () => {
     const withFamily = (f: string) => ({
       "core-loop/pack.yaml": (t: string) => `${t}${f}`,
+      "core-loop/capabilities/engine.yaml": (t: string) =>
+        `${t.replace("    - year\n", "    - year\n    - family\n")}`,
     });
     const r = compilePacks(fixture(withFamily(FAMILY)));
     expect(r.ok).toBe(true);
@@ -797,21 +799,93 @@ describe("build checks fail", () => {
     );
   });
 
-  test("only core-loop may declare year or family", () => {
+  test("a singleton block needs an owning capability and one declarer", () => {
+    const year = "year:\n  slots: [1, 1]\n  cap: 2\n";
+    // Declared twice: the second Pack is named, owner or not.
     expectError(
-      {
-        "extra/pack.yaml": (t: string) =>
-          `${t}year:\n  slots: [1, 1]\n  cap: 2\n`,
-      },
-      "only Pack 'core-loop' may declare 'year'",
+      { "extra/pack.yaml": (t: string) => `${t}${year}` },
+      "singleton 'year' is declared by both Pack 'core-loop' and Pack 'extra'",
+      "Pack 'extra' declares singleton 'year' but no capability of it provides it",
     );
     expectError(
       {
         "extra/pack.yaml": (t: string) =>
           `${t}${FAMILY.replaceAll("base/", "extra/")}`,
       },
-      "only Pack 'core-loop' may declare 'family'",
+      "Pack 'extra' declares singleton 'family' but no capability of it provides it",
     );
+    // The owner is whoever provides it, not a hard-coded Pack.
+    const moved = {
+      "core-loop/pack.yaml": "id: core-loop\n",
+      "core-loop/capabilities/engine.yaml": "requires:\n  - base/people\n",
+      "extra/pack.yaml": (t: string) => `${t}${year}`,
+      "extra/capabilities/bonus.yaml": (t: string) =>
+        `${t}provides:\n  singletons:\n    - year\n`,
+    };
+    const r = compilePacks(fixture(moved));
+    expect(r.diagnostics.map(formatDiagnostic)).toEqual([]);
+    expect(r.bundles.find((b) => b.id === "extra")?.year).toBeDefined();
+    // Providing a block the Pack does not declare.
+    expectError(
+      {
+        "extra/capabilities/bonus.yaml":
+          "provides:\n  singletons:\n    - living\n",
+      },
+      "'extra/bonus' provides singletons 'living', but Pack 'extra' declares none",
+    );
+  });
+
+  test("a namespace prefixes stats and qualities and is unique", () => {
+    const ns = (t: string) => `${t}namespace: ex\n`;
+    expectError(
+      {
+        "extra/pack.yaml": ns,
+        "extra/qualities/q.yaml":
+          "- { id: ex_ok, type: flag, default: false }\n- { id: stray, type: flag, default: false }\n",
+      },
+      "quality 'stray' of Pack 'extra' must start with its namespace 'ex_'",
+    );
+    expectError(
+      {
+        "extra/pack.yaml": (t: string) =>
+          `${t}namespace: ex\nstats:\n  - { id: grit, label: Grit, start: [0, 100] }\n`,
+      },
+      "stat 'grit' of Pack 'extra' must start with its namespace 'ex_'",
+    );
+    expectError(
+      { "base/pack.yaml": ns, "extra/pack.yaml": ns },
+      "namespace 'ex' is used by both Pack 'base' and Pack 'extra'",
+    );
+    const ok = compilePacks(
+      fixture({
+        "extra/pack.yaml": ns,
+        "extra/qualities/q.yaml":
+          "- { id: ex_ok, type: flag, default: false }\n",
+      }),
+    );
+    expect(ok.diagnostics.map(formatDiagnostic)).toEqual([]);
+  });
+
+  test("a quality of another Pack is readable only through a required capability", () => {
+    const useIt = {
+      "extra/qualities/q.yaml":
+        "- { id: ex_seen, type: flag, default: false }\n",
+      "extra/storylets/peek.yaml": `- id: peek
+  trigger: event
+  weight: 1
+  when: quality.years_worked > 0
+  text: Peek.
+  outcomes:
+    - effects:
+        - stat.smarts += 1
+`,
+    };
+    expectError(
+      { ...useIt, "extra/capabilities/bonus.yaml": "provides: {}\n" },
+      "unknown name 'quality.years_worked'",
+    );
+    const r = compilePacks(fixture(useIt));
+    expect(r.diagnostics.map(formatDiagnostic)).toEqual([]);
   });
 
   test("a storylet label is kept on actions and rejected on events", () => {

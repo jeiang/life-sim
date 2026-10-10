@@ -97,6 +97,16 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
   const standards: CompiledStandard[] = [];
   const owners = new Map<string, string>();
   let repeat: RepeatCurve | undefined;
+  /** A singleton block may come from one bundle only; a second is an error, never a silent first-wins. */
+  const single = (name: string, present: boolean, bundle: string): void => {
+    if (!present) return;
+    const first = owners.get(`singleton.${name}`);
+    if (first !== undefined)
+      throw new Error(
+        `singleton '${name}' is declared by both Pack '${first}' and Pack '${bundle}'`,
+      );
+    owners.set(`singleton.${name}`, bundle);
+  };
   for (const b of bundles) {
     const put = <T>(map: Map<string, T>, kind: string, id: string, v: T) =>
       declare(map, owners, kind, id, v, b.id);
@@ -106,7 +116,8 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     for (const l of b.loans) put(loans, "loan", l.id, l);
     for (const c of b.cities) put(cities, "city", c.id, c);
     standards.push(...b.standards);
-    if (!living && b.living) living = b.living;
+    single("living", b.living !== undefined, b.id);
+    if (b.living) living = b.living;
     for (const p of b.people) {
       if (p.type === "role") put(roles, "role", p.id, p);
       else put(generators, "generator", p.id, p);
@@ -121,11 +132,17 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
       owners.set(`stat.${s.id}`, b.id);
       stats.push(s);
     }
+    single("currency", b.currency !== undefined, b.id);
+    single("year", b.year !== undefined, b.id);
+    single("family", b.family !== undefined, b.id);
+    single("npc_careers", b.npcCareers !== undefined, b.id);
+    single("repeat", b.repeat !== undefined, b.id);
+    single("exclusivity", b.exclusivity.length > 0, b.id);
     if (b.currency) currency = b.currency;
-    if (!year && b.year) year = b.year;
-    if (!family && b.family) family = b.family;
-    if (!npcCareers && b.npcCareers) npcCareers = b.npcCareers;
-    if (!repeat && b.repeat) repeat = b.repeat;
+    if (b.year) year = b.year;
+    if (b.family) family = b.family;
+    if (b.npcCareers) npcCareers = b.npcCareers;
+    if (b.repeat) repeat = b.repeat;
   }
   const events = [...storylets.values()]
     .filter((s) => s.trigger === "event")

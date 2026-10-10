@@ -339,17 +339,17 @@ describe("tips: sell advice needs a holding", () => {
 
 describe("tips: direction and accuracy", () => {
   const w0 = holdAll(life(10_000_00));
-  test("the news is right with chance 70; the book 80; a relative 65 + smarts / 10", () => {
+  test("the news is right with chance 53; the book 55; a relative 52 + smarts / 30", () => {
     for (const k of KINDS) {
       const up = withForecast(w0, k, 500);
       const down = withForecast(w0, k, -500);
       const nu = (w: World) => weightTo(w, "read-the-news", `tip-${k}`);
-      expect(nu(up)).toBe(70);
-      expect(nu(down)).toBe(30);
-      expect(weightTo(up, "read-the-news", `tip-${k}-sell`)).toBe(30);
-      expect(weightTo(down, "read-the-news", `tip-${k}-sell`)).toBe(70);
-      expect(weightTo(up, "read-investing-book", `tip-${k}`)).toBe(80);
-      expect(weightTo(down, "read-investing-book", `tip-${k}-sell`)).toBe(80);
+      expect(nu(up)).toBe(53);
+      expect(nu(down)).toBe(47);
+      expect(weightTo(up, "read-the-news", `tip-${k}-sell`)).toBe(47);
+      expect(weightTo(down, "read-the-news", `tip-${k}-sell`)).toBe(53);
+      expect(weightTo(up, "read-investing-book", `tip-${k}`)).toBe(55);
+      expect(weightTo(down, "read-investing-book", `tip-${k}-sell`)).toBe(55);
     }
   });
 
@@ -364,7 +364,7 @@ describe("tips: direction and accuracy", () => {
       );
       const up = weightTo(w, "ask-for-tip", "tip-acme-robotics", p);
       const down = weightTo(w, "ask-for-tip", "tip-acme-robotics-sell", p);
-      expect(up).toBe(65 + Math.trunc(smarts / 10));
+      expect(up).toBe(52 + Math.trunc(smarts / 30));
       expect(up + down).toBe(100);
     }
   });
@@ -519,9 +519,9 @@ describe("scams", () => {
         scopeFor(w, undefined, s.id),
       );
     };
-    expect(wt(0, 0)).toBe(2 + Math.trunc(100 / 15));
-    expect(wt(100, 0)).toBe(2);
-    expect(wt(0, 3)).toBe(Math.max(1, 2 + Math.trunc(100 / 15) - 3));
+    expect(wt(0, 0)).toBe(1 + Math.trunc(100 / 25));
+    expect(wt(100, 0)).toBe(1);
+    expect(wt(0, 3)).toBe(Math.max(1, 1 + Math.trunc(100 / 25) - 3));
     expect(wt(100, 9)).toBe(1);
   });
 

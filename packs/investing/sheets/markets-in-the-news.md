@@ -12,7 +12,7 @@
 > Units: `change(id)` is in basis points (10000 = 100%). All thresholds are integers, and falls are written as `change(id) + N <= 0`, so the expressions need no percent literals or negative literals.
 > Headline rule. The index qualifies at +30% (`>= 3000`) or -25% (`+ 2500 <= 0`). Quark Coin qualifies at +50% (`>= 5000`) or -40% (`+ 4000 <= 0`). If only one side qualifies, it is reported. If both do, the larger move wins, compared by square so a rise and a fall are comparable; a tie goes to the index. Otherwise the year is quiet. The gates are exclusive and exhaustive, so each year resolves to exactly one outcome. Outcomes are gated, not weighted, so they carry no `rate` lines and weight 1.
 > Scope limit: the headline reads the broad index and Quark Coin only. Stocks follow the index (beta 60 to 110%) and bonds do not make the news. The 10x penny-stock jump and the delisting headlines belong to chain C5 and are left out here.
-> Opens bands are an estimate [INFERENCE], 30..80 per life for each storylet, under `profile: all`. Archive v1 recorded 74,732 holding-years in the 1000-life investor-profile run (about 75 per investor life), with 82.8% of random players investing. The investor profile sits near the top of the band and the random profile lower; `all` averages them. Both storylets are weight events now, so the flavour draw can cut the count below the holder-years. Measure in #233 and #234 and tighten.
+> Opens bands (#234): 5..15 per life for each storylet under `profile: all`, from a 10k-life run (8.8 per life each). The earlier 30..80 assumed most lives hold something all their life; only about 37% of lives hold anything at an age-up, and the profiles that do not invest (random, studious and the rest) never qualify, so `all` averages a few investor lives at 30..60 with many at 0. Both storylets are weight events, so the flavour draw also cuts the count below the holder-years.
 > `portfolio` is a readable (`readables/portfolio.yaml`, DATA): the sum of `holding_value(k)` over all 12 kinds, in minor units. It is declared under `needs` on the headline storylet and used by both storylets. The statement's text uses `{portfolio}` and assumes the engine renders an int readable as money, the way `{money}` does; if not, the implementer adds a formatter and this sheet does not change.
 
 ## market-headline
@@ -22,7 +22,7 @@
 - when: age >= 18 and portfolio > 0
 - tags: investing, money
 - text: The evening news leads with the markets, and for once the story is about your money.
-- opens: 30..80 per life
+- opens: 5..15 per life
 
 ### outcomes
 - outcome: 1
@@ -53,7 +53,7 @@
 - when: age >= 18 and portfolio > 0
 - tags: investing, money
 - text: Your annual statement arrives. You open it on the stairs, which is where the important letters get opened.
-- opens: 30..80 per life
+- opens: 5..15 per life
 
 ### outcomes
 - outcome: 1

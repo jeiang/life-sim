@@ -80,7 +80,7 @@
 ## ceo-offer
 - trigger: event
 - icon: 🏢
-- chance: 1.00%
+- chance: 0.3%
 - once: true
 - tags: job, promotion
 - when: has_occupation(grad-school/business-manager) and years_in(grad-school/business-manager) >= 5

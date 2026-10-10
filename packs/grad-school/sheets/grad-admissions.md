@@ -18,43 +18,49 @@
 - label: Apply to medical school
 - icon: 🩺
 - tags: education, apply
-- when: age >= 22 and (quality.has_degree_nursing or quality.has_degree_engineering) and not in_group(school) and quality.grad_program == 0 and not quality.grad_degree_medical
+- when: age >= 22 and quality.grad_rejections < 2 and (quality.has_degree_nursing or quality.has_degree_engineering) and not in_group(school) and quality.grad_program == 0 and not quality.grad_degree_medical
 - cooldown: 1
 - text: Medical school wants transcripts, a personal statement and three references. Send an application?
-- opens: 0.12..0.35 per life
+- opens: 0.1..0.5 per life
 
 ### outcomes
-- outcome: 5
+- outcome: 1
   - text: A surprise envelope. The committee took a long shot on you.
   - when: stat.smarts < 40
   - next: admit-medical-school
-- outcome: 95
+- outcome: 99
   - text: A short letter arrives. Not this year. You can apply again next year.
   - when: stat.smarts < 40
   - effect: stat.happiness -= 2
-- outcome: 25
+  - effect: quality.grad_rejections += 1
+
+- outcome: 5
   - text: A thick envelope with a crest on the front. You are in.
   - when: stat.smarts >= 40 and stat.smarts < 70
   - next: admit-medical-school
-- outcome: 75
+- outcome: 95
   - text: Waitlisted, then rejected. You can apply again next year.
   - when: stat.smarts >= 40 and stat.smarts < 70
   - effect: stat.happiness -= 3
-- outcome: 50
+  - effect: quality.grad_rejections += 1
+
+- outcome: 11
   - text: Your interview goes brilliantly and the offer follows that week.
   - when: stat.smarts >= 70
   - next: admit-medical-school
-- outcome: 50
+- outcome: 89
   - text: The committee has too many strong candidates. You are not one of them this year.
   - when: stat.smarts >= 70
   - effect: stat.happiness -= 3
+  - effect: quality.grad_rejections += 1
+
 
 ## admit-medical-school
 - trigger: event
 - icon: 🩺
 - chance: 0%
 - text: Medical school starts this autumn, along with the twelve-hour shifts you were warned about.
-- opens: 0.04..0.07 per life
+- opens: 0.005..0.07 per life
 
 ### outcomes
 - outcome: 1
@@ -65,7 +71,7 @@
   - effect: quality.grad_parents = 0
   - effect: quality.grad_scholarship = 0
   - effect: quality.grad_debt = 0
-  - effect: quality.grad_gpa = 50 + stat.smarts / 4
+  - effect: quality.grad_gpa = 40 + stat.smarts / 3
   - effect: schedule(grad-school/grad-year-review, after: 1-1 years)
   - effect: schedule(grad-school/graduate-medical-school, after: 4-4 years)
   - effect: start_occupation(grad-school/grad-medical-school)
@@ -79,43 +85,49 @@
 - label: Apply to law school
 - icon: 📜
 - tags: education, apply
-- when: age >= 22 and (quality.has_degree_business or quality.has_degree_arts) and not in_group(school) and quality.grad_program == 0 and not quality.grad_degree_law
+- when: age >= 22 and quality.grad_rejections < 2 and (quality.has_degree_business or quality.has_degree_arts) and not in_group(school) and quality.grad_program == 0 and not quality.grad_degree_law
 - cooldown: 1
 - text: Law school wants a personal statement, an admissions test score and a letter from a professor. Send an application?
-- opens: 0.10..0.28 per life
+- opens: 0.1..0.5 per life
 
 ### outcomes
-- outcome: 10
+- outcome: 2
   - text: The admissions panel has a soft spot for long shots, and so do you.
   - when: stat.smarts < 40
   - next: admit-law-school
-- outcome: 90
+- outcome: 98
   - text: A form letter arrives with one kind line at the bottom. You can apply again next year.
   - when: stat.smarts < 40
   - effect: stat.happiness -= 2
-- outcome: 30
+  - effect: quality.grad_rejections += 1
+
+- outcome: 6
   - text: A letter with a law school crest. You are in.
   - when: stat.smarts >= 40 and stat.smarts < 70
   - next: admit-law-school
-- outcome: 70
+- outcome: 94
   - text: Your application is rejected. The panel wants more legal experience than you have. You can apply again next year.
   - when: stat.smarts >= 40 and stat.smarts < 70
   - effect: stat.happiness -= 3
-- outcome: 55
+  - effect: quality.grad_rejections += 1
+
+- outcome: 13
   - text: The panel loves your essay. An offer comes back by return post.
   - when: stat.smarts >= 70
   - next: admit-law-school
-- outcome: 45
+- outcome: 87
   - text: Rejected, despite a good file. The competition was ferocious. Try again next year.
   - when: stat.smarts >= 70
   - effect: stat.happiness -= 3
+  - effect: quality.grad_rejections += 1
+
 
 ## admit-law-school
 - trigger: event
 - icon: 📜
 - chance: 0%
 - text: Law school starts, with reading lists longer than your arm.
-- opens: 0.04..0.07 per life
+- opens: 0.005..0.07 per life
 
 ### outcomes
 - outcome: 1
@@ -126,7 +138,7 @@
   - effect: quality.grad_parents = 0
   - effect: quality.grad_scholarship = 0
   - effect: quality.grad_debt = 0
-  - effect: quality.grad_gpa = 50 + stat.smarts / 4
+  - effect: quality.grad_gpa = 40 + stat.smarts / 3
   - effect: schedule(grad-school/grad-year-review, after: 1-1 years)
   - effect: schedule(grad-school/graduate-law-school, after: 3-3 years)
   - effect: start_occupation(grad-school/grad-law-school)
@@ -140,43 +152,49 @@
 - label: Apply to business school (MBA)
 - icon: 💼
 - tags: education, apply
-- when: age >= 22 and (quality.has_degree_business or quality.has_degree_engineering) and not in_group(school) and quality.grad_program == 0 and not quality.grad_degree_mba
+- when: age >= 22 and quality.grad_rejections < 2 and (quality.has_degree_business or quality.has_degree_engineering) and not in_group(school) and quality.grad_program == 0 and not quality.grad_degree_mba
 - cooldown: 1
 - text: The MBA program wants test scores, an essay and two references. Send an application?
-- opens: 0.12..0.32 per life
+- opens: 0.1..0.5 per life
 
 ### outcomes
-- outcome: 10
+- outcome: 2
   - text: An offer, and a note that they like your ambition more than your spreadsheet.
   - when: stat.smarts < 40
   - next: admit-mba
-- outcome: 90
+- outcome: 98
   - text: Rejected. Your test scores were not quite enough. You can apply again next year.
   - when: stat.smarts < 40
   - effect: stat.happiness -= 2
-- outcome: 35
+  - effect: quality.grad_rejections += 1
+
+- outcome: 7
   - text: An acceptance email lands in your inbox at midnight. You are in.
   - when: stat.smarts >= 40 and stat.smarts < 70
   - next: admit-mba
-- outcome: 65
+- outcome: 93
   - text: Rejected after a long wait. Round two is next year.
   - when: stat.smarts >= 40 and stat.smarts < 70
   - effect: stat.happiness -= 3
-- outcome: 60
+  - effect: quality.grad_rejections += 1
+
+- outcome: 14
   - text: The committee loved your case study. Admitted.
   - when: stat.smarts >= 70
   - next: admit-mba
-- outcome: 40
+- outcome: 86
   - text: Rejected despite a strong interview. Reapply next year.
   - when: stat.smarts >= 70
   - effect: stat.happiness -= 3
+  - effect: quality.grad_rejections += 1
+
 
 ## admit-mba
 - trigger: event
 - icon: 💼
 - chance: 0%
 - text: The MBA program starts with a case study before breakfast.
-- opens: 0.05..0.09 per life
+- opens: 0.02..0.09 per life
 
 ### outcomes
 - outcome: 1
@@ -187,7 +205,7 @@
   - effect: quality.grad_parents = 0
   - effect: quality.grad_scholarship = 0
   - effect: quality.grad_debt = 0
-  - effect: quality.grad_gpa = 50 + stat.smarts / 4
+  - effect: quality.grad_gpa = 40 + stat.smarts / 3
   - effect: schedule(grad-school/grad-year-review, after: 1-1 years)
   - effect: schedule(grad-school/graduate-mba-program, after: 2-2 years)
   - effect: start_occupation(grad-school/grad-mba-program)
@@ -201,43 +219,49 @@
 - label: Apply to a PhD program
 - icon: 🔬
 - tags: education, apply
-- when: age >= 22 and (quality.has_degree_business or quality.has_degree_engineering or quality.has_degree_nursing or quality.has_degree_arts) and not in_group(school) and quality.grad_program == 0 and not quality.grad_degree_phd
+- when: age >= 22 and quality.grad_rejections < 2 and (quality.has_degree_business or quality.has_degree_engineering or quality.has_degree_nursing or quality.has_degree_arts) and not in_group(school) and quality.grad_program == 0 and not quality.grad_degree_phd
 - cooldown: 1
 - text: A PhD program wants a research statement, a writing sample and a professor willing to vouch for you. Send an application?
-- opens: 0.08..0.22 per life
+- opens: 0.1..1.0 per life
 
 ### outcomes
-- outcome: 8
+- outcome: 2
   - text: A lab with an empty desk and a bigger budget than you expected says yes.
   - when: stat.smarts < 40
   - next: admit-phd
-- outcome: 92
+- outcome: 98
   - text: The rejection says your research statement needed more research. You can apply again next year.
   - when: stat.smarts < 40
   - effect: stat.happiness -= 2
-- outcome: 30
+  - effect: quality.grad_rejections += 1
+
+- outcome: 6
   - text: The department admits you to the PhD program. The stipend is small, but it is a stipend.
   - when: stat.smarts >= 40 and stat.smarts < 70
   - next: admit-phd
-- outcome: 70
+- outcome: 94
   - text: Rejected. The department wants a clearer research question.
   - when: stat.smarts >= 40 and stat.smarts < 70
   - effect: stat.happiness -= 3
-- outcome: 55
+  - effect: quality.grad_rejections += 1
+
+- outcome: 13
   - text: Your writing sample gets passed around the department. Admitted, with a stipend.
   - when: stat.smarts >= 70
   - next: admit-phd
-- outcome: 45
+- outcome: 87
   - text: Rejected by the one department you wanted. Try again next year.
   - when: stat.smarts >= 70
   - effect: stat.happiness -= 3
+  - effect: quality.grad_rejections += 1
+
 
 ## admit-phd
 - trigger: event
 - icon: 🔬
 - chance: 0%
 - text: A PhD is five years of reading, failing and reading more.
-- opens: 0.03..0.06 per life
+- opens: 0.01..0.12 per life
 
 ### outcomes
 - outcome: 1
@@ -248,7 +272,7 @@
   - effect: quality.grad_parents = 0
   - effect: quality.grad_scholarship = 0
   - effect: quality.grad_debt = 0
-  - effect: quality.grad_gpa = 50 + stat.smarts / 4
+  - effect: quality.grad_gpa = 40 + stat.smarts / 3
   - effect: schedule(grad-school/grad-year-review, after: 1-1 years)
   - effect: schedule(grad-school/graduate-phd-program, after: 5-5 years)
   - effect: start_occupation(grad-school/grad-phd-program)

@@ -49,7 +49,7 @@
   icon: 👑
   trigger: event
   tags: [job, promotion]
-  chance: 1.5%
+  chance: 0.3%
   when: "has_occupation(grad-school/attending-doctor) and years_in(grad-school/attending-doctor) >= 6"
   once: true
   text: The hospital board wants a new face at the top, and your name keeps coming up in the meetings.

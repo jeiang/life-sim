@@ -1,6 +1,7 @@
 # Harness profiles of the Grad School Pack; the schema is docs/spec/harness.md#simulated-player-profiles.
 profiles:
   scholar:
+    default: false
     description: Applies to every grad school it qualifies for, studies, sits and prepares for its licensing exams, asks the parents for tuition help, and takes the career offers; never cheats
     moves: 3
     once_per_year: true

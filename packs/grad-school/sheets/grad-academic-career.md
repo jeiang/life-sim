@@ -95,7 +95,7 @@
 - trigger: event
 - icon: 📚
 - tags: job, promotion
-- chance: 3%
+- chance: 1%
 - when: has_occupation(grad-school/associate-professor) and years_in(grad-school/associate-professor) >= 5
 - text: The tenure committee meets again this spring, and your file is on the agenda.
 - opens: 0.005..0.02 per life

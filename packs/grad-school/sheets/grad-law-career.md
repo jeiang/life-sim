@@ -58,7 +58,7 @@
 - trigger: event
 - icon: ⚖️
 - tags: job, promotion
-- chance: 5%
+- chance: 0.4%
 - when: has_occupation(grad-school/partner-lawyer) and years_in(grad-school/partner-lawyer) >= 2 and not quality.grad_judge_offered
 - text: A state judicial nominating committee wants a word with {player.first_name}.
 - opens: 0.01..0.02 per life

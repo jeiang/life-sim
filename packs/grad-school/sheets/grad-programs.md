@@ -30,7 +30,7 @@
   - effect: schedule(grad-school/grad-year-review, after: 1-1 years)
 - outcome: 60 - stat.smarts / 2
   - text: Your transcript reads like a cry for help. Your grades slide badly.
-  - effect: quality.grad_gpa += 0 - 4
+  - effect: quality.grad_gpa += 0 - 6
   - effect: schedule(grad-school/grad-year-review, after: 1-1 years)
 
 ## graduate-medical-school

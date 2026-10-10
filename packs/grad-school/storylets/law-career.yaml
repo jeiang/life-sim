@@ -41,7 +41,7 @@
   icon: ⚖️
   trigger: event
   tags: [job, promotion]
-  chance: 5%
+  chance: 0.4%
   when: "has_occupation(grad-school/partner-lawyer) and years_in(grad-school/partner-lawyer) >= 2 and not quality.grad_judge_offered"
   text: "A state judicial nominating committee wants a word with {player.first_name}."
   outcomes:

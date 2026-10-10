@@ -21,7 +21,7 @@
     - weight: 60 - stat.smarts / 2
       text: Your transcript reads like a cry for help. Your grades slide badly.
       effects:
-        - "quality.grad_gpa += 0 - 4"
+        - "quality.grad_gpa += 0 - 6"
         - "schedule(grad-school/grad-year-review, after: 1-1 years)"
 
 - id: graduate-medical-school

@@ -26,3 +26,5 @@
 - { id: grad_licensed_law, type: flag, default: false }
 # The judge offer is made at most once per life.
 - { id: grad_judge_offered, type: flag, default: false }
+# Rejected applications (any school); the schools stop looking at a player after two.
+- { id: grad_rejections, type: int, min: 0, max: 9, default: 0 }

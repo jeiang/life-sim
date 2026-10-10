@@ -61,7 +61,7 @@
 ## promote-chief
 - trigger: event
 - icon: 👑
-- chance: 1.5%
+- chance: 0.3%
 - once: true
 - tags: job, promotion
 - when: has_occupation(grad-school/attending-doctor) and years_in(grad-school/attending-doctor) >= 6

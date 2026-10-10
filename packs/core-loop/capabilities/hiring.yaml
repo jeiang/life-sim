@@ -1,6 +1,4 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
 provides:
-  qualities:
-    - criminal_record
-    - wanted
-    - pending_charge
+  readables:
+    - hiring_blocked

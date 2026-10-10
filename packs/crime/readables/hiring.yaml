@@ -1,0 +1,2 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/readables.schema.json
+- { kind: contribute, slot: hiring_blocked, expr: quality.criminal_record }

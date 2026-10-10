@@ -16,7 +16,7 @@ A Pack gives a name to a value the Core computes from the world, and other Packs
 - { kind: slot, id: pay_bonus, type: int, combine: sum, default: 0 }
 
 # kind: contribute — one term, added by a Pack that requires the slot's capability
-- { kind: contribute, slot: hiring_blocked, expr: quality.criminal_record > 0 }
+- { kind: contribute, slot: hiring_blocked, expr: quality.criminal_record }
 ```
 
 - **`readable`**: `id`, `type` (`int` or `bool`), `expr`. The expression is checked against the names this Pack can see (below) and must have the declared `type`; a mismatch is a build error. The declared type is what lets a dependent Pack type-check a use without compiling the owner's expression.

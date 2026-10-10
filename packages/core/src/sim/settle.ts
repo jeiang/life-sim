@@ -12,6 +12,7 @@ import {
 import { inCareerRole, isJointSpouse } from "./careers.ts";
 import { settleLiving } from "./living.ts";
 import { settleMarket } from "./market.ts";
+import { reachMilestone } from "./milestones.ts";
 import { dropAsset, endOccupation, evalBool, evalInt } from "./ops.ts";
 import type { PackIndex } from "./pack-index.ts";
 import { formatMoney } from "./text.ts";
@@ -103,6 +104,9 @@ function settleOccupations(w: World, idx: PackIndex, id: PersonId): World {
     if (kind.durationYears !== undefined && years >= kind.durationYears) {
       w = endOccupation(w, id, occ.id);
       w = addJournalLine(w, age, `You finished ${kind.label}.`);
+      // The end of schooling (no further stage to promote to) is graduating.
+      if (id === w.playerId && kind.group === "school" && !kind.promotesTo)
+        w = reachMilestone(w, idx, "graduated");
     }
   }
   return w;

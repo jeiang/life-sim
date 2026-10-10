@@ -34,6 +34,7 @@ import type {
   StateDecl,
 } from "@life/core";
 import {
+  CORE_MILESTONES,
   DEFAULT_GENDER_WEIGHTS,
   DEFAULT_REPEAT,
   GENDERS,
@@ -451,6 +452,9 @@ const CALL_KINDS: Record<string, Kind[][] | undefined> = {
   schedule: [["storylet"]],
   unschedule: [["storylet"]],
 };
+
+/** Functions and effects whose one argument is a milestone id, not a content id. */
+const MILESTONE_FUNCTIONS = new Set(["milestone_reached", "reach_milestone"]);
 
 /** Functions whose one argument names an exclusivity group, not a content id. */
 const GROUP_FUNCTIONS = new Set(["in_group", "years_in_group"]);
@@ -1297,6 +1301,7 @@ class Compiler {
   }
 
   private checkCapabilities(): void {
+    const milestoneOwners = new Map<string, string>();
     for (const id of [...this.packs.keys()].sort()) {
       const pack = this.packs.get(id) as LoadedPack;
       const exported = new Map<string, string>();
@@ -1323,7 +1328,17 @@ class Compiler {
                 `${key} '${name}' is provided by both '${first}' and '${cap.id}'`,
               );
             exported.set(slot, cap.id);
-            if (key === "tags" || key === "milestones") continue;
+            if (key === "milestones") {
+              const other = milestoneOwners.get(name);
+              if (other !== undefined && other !== id)
+                at(
+                  ["provides", key, i],
+                  `milestone '${name}' is provided by both Pack '${other}' and Pack '${id}'`,
+                );
+              else milestoneOwners.set(name, id);
+              continue;
+            }
+            if (key === "tags") continue;
             if (!this.provided(pack, key, name))
               at(
                 ["provides", key, i],
@@ -2243,6 +2258,51 @@ class PackCompiler {
     return full;
   }
 
+  /**
+   * Check a milestone id: one the Core emits, or one a capability of this Pack or of a required
+   * capability provides (`provides: milestones`). `fire` is for the `reach_milestone` effect,
+   * which cannot name a Core milestone (the Core fires those itself).
+   */
+  milestoneId(raw: string, path: Path, fire = false): string | undefined {
+    if ((CORE_MILESTONES as readonly string[]).includes(raw)) {
+      if (!fire) return raw;
+      this.err(
+        path,
+        `milestone '${raw}' is emitted by the Core; reach_milestone only fires Pack-declared milestones`,
+      );
+      return undefined;
+    }
+    const owners: string[] = [];
+    for (const cap of this.c.capabilities.values())
+      if ((cap.provides.milestones ?? []).includes(raw)) owners.push(cap.id);
+    if (owners.length === 0) {
+      const known = [
+        ...CORE_MILESTONES,
+        ...[...this.c.capabilities.values()].flatMap(
+          (c) => c.provides.milestones ?? [],
+        ),
+      ];
+      this.err(
+        path,
+        `undeclared milestone '${raw}'; declared: ${[...new Set(known)].sort().join(", ")}`,
+      );
+      return undefined;
+    }
+    const visible = owners.some(
+      (o) =>
+        (this.c.capabilities.get(o) as LoadedCapability).pack ===
+          this.pack.id || this.required.has(o),
+    );
+    if (!visible) {
+      this.err(
+        path,
+        `milestone '${raw}' is not exported by any capability that Pack '${this.pack.id}' requires; require ${owners.map((o) => `'${o}'`).join(" or ")}`,
+      );
+      return undefined;
+    }
+    return raw;
+  }
+
   /** Does a capability this Pack requires export content item `full` of kind `kind`? */
   private exported(packId: string, full: string, kind: Kind): boolean {
     const bare = full.slice(packId.length + 1);
@@ -2341,6 +2401,10 @@ class PackCompiler {
       return id === undefined
         ? undefined
         : (["call", KIND_CALL, e[2], id, e[4]] as unknown as Expr);
+    }
+    if (tag === "call" && MILESTONE_FUNCTIONS.has(e[1] as string)) {
+      const m = (e[2] as unknown as readonly string[])[1] as string;
+      return this.milestoneId(m, path) === undefined ? undefined : e;
     }
     if (tag === "call" && GROUP_FUNCTIONS.has(e[1] as string)) {
       const g = (e[2] as unknown as readonly string[])[1] as string;
@@ -2497,12 +2561,27 @@ class PackCompiler {
       else out.label = s.label;
     }
     if (s.scope) out.scope = s.scope;
+    if (s.trigger !== "milestone" && s.milestone !== undefined)
+      this.err(
+        ["milestone"],
+        "'milestone' is only valid on milestone storylets",
+      );
     if (s.trigger === "event") {
       if (s.menu !== undefined)
         this.err(["menu"], "'menu' is only valid on action storylets");
       const both = s.chance !== undefined && s.weight !== undefined;
       if (both || (s.chance === undefined && s.weight === undefined))
         this.err([], "an event must have exactly one of 'chance' or 'weight'");
+    } else if (s.trigger === "milestone") {
+      if (s.milestone === undefined)
+        this.err([], "a milestone storylet needs a 'milestone'");
+      else {
+        const m = this.milestoneId(s.milestone, ["milestone"]);
+        if (m !== undefined) out.milestone = m;
+      }
+      for (const k of ["menu", "chance", "weight", "scope", "target"] as const)
+        if (s[k] !== undefined)
+          this.err([k], `'${k}' is not valid on milestone storylets`);
     } else {
       if (s.menu === undefined)
         this.err([], "an action storylet needs a 'menu'");
@@ -2764,12 +2843,14 @@ class PackCompiler {
     }
     if (h.on_milestone) {
       const byId: Record<string, readonly (readonly Effect[])[]> = {};
-      for (const id of Object.keys(h.on_milestone).sort())
+      for (const id of Object.keys(h.on_milestone).sort()) {
+        this.milestoneId(id, ["hooks", "on_milestone", id]);
         byId[id] = run(
           h.on_milestone[id] as string[],
           ["hooks", "on_milestone", id],
           "on_milestone",
         );
+      }
       out.on_milestone = byId;
     }
     return out;
@@ -2824,6 +2905,10 @@ class PackCompiler {
         return v === undefined ? undefined : ([e[0], e[1], v] as Effect);
       }
       case "do": {
+        if (e[1] === "reach_milestone") {
+          const m = (e[2] as unknown as readonly string[])[1] as string;
+          return this.milestoneId(m, path, true) === undefined ? undefined : e;
+        }
         const args = (e.slice(2) as Expr[]).map((a, i) =>
           this.resolveExpr(a, CALL_KINDS[e[1]]?.[i], path),
         );

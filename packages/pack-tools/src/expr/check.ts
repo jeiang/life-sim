@@ -52,6 +52,7 @@ const TYPE_NAME: Record<Type, string> = {
   string: "a string",
   id: "a content id",
   group: "an exclusivity group name",
+  milestone: "a milestone id",
 };
 
 const MAX_SUGGEST = 2;
@@ -120,6 +121,12 @@ export class Checker {
       if (n.k === "name" && !n.v.includes(".") && !(n.v in this.env.names))
         return ["group", ["id", n.v]];
       return this.err(n, "expected an exclusivity group name, such as school");
+    }
+    if (want === "milestone") {
+      if (n.k === "str") return ["milestone", ["id", n.v]];
+      if (n.k === "name" && !n.v.includes(".") && !(n.v in this.env.names))
+        return ["milestone", ["id", n.v]];
+      return this.err(n, "expected a milestone id, such as graduated");
     }
     if (
       want === "id" &&

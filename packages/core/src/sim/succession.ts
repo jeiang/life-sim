@@ -1,3 +1,4 @@
+import { clearMilestones } from "../state/milestones.ts";
 import { dropMortalSchedule } from "../state/schedule.ts";
 import type { PersonId, World } from "../state/types.ts";
 import { getPerson } from "../state/world.ts";
@@ -6,8 +7,8 @@ import { appendChoice } from "./flow.ts";
 /**
  * Succession (ADR 0003, generations): move the player pointer to a living heir. The
  * generation index rises by one, so the heir's RNG streams differ from every earlier
- * generation's; `worldYear` is untouched. Per-life state resets: `storyletLog` and the
- * roll-site counters. Clearing `ended` and the graveyard/obituary hand-off belong to the
+ * generation's; `worldYear` is untouched. Per-life state resets: `storyletLog`, the
+ * roll-site counters and the reached milestones (each fires once per life). Clearing `ended` and the graveyard/obituary hand-off belong to the
  * caller (the dynasty flow). Logged, so replay reproduces it.
  */
 export function succeed(world: World, heir: PersonId): World {
@@ -17,7 +18,7 @@ export function succeed(world: World, heir: PersonId): World {
     throw new RangeError(`heir ${heir} is not alive`);
   return appendChoice(
     {
-      ...dropMortalSchedule(world),
+      ...clearMilestones(dropMortalSchedule(world)),
       playerId: heir,
       generation: world.generation + 1,
       storyletLog: {},

@@ -3,8 +3,11 @@
  * evaluator agree. Adding one is a Core release (ADR 0002, ADR 0004).
  */
 
-/** `group` is an exclusivity group declared in a manifest (a bare word or a string literal). */
-export type Type = "int" | "bool" | "string" | "id" | "group";
+/**
+ * `group` is an exclusivity group declared in a manifest (a bare word or a string literal);
+ * `milestone` is a milestone id, Core or `provides: milestones` (a bare word or a string literal).
+ */
+export type Type = "int" | "bool" | "string" | "id" | "group" | "milestone";
 
 export interface Signature {
   readonly params: readonly Type[];
@@ -28,6 +31,8 @@ export const FUNCTIONS = {
   has_remote_job: { params: [], returns: "bool" },
   in_group: { params: ["group"], returns: "bool" },
   years_in_group: { params: ["group"], returns: "int" },
+  /** True once the player's life has reached the milestone (it fires once per life). */
+  milestone_reached: { params: ["milestone"], returns: "bool" },
   count_role: { params: ["id", "int", "int"], returns: "int" },
   /** Market kinds. Price of one whole unit now, minor units. */
   price: { params: ["id"], returns: "int" },
@@ -81,6 +86,8 @@ export const EFFECTS = {
   set_standard: { params: ["id"], returns: "bool" },
   /** Buy (positive) or sell (negative) that much cash worth of a market kind. */
   trade: { params: ["id", "int"], returns: "bool" },
+  /** Reach a Pack-declared milestone now, once per life: runs its `on_milestone` hooks and opens its milestone storylets. */
+  reach_milestone: { params: ["milestone"], returns: "bool" },
   /** Cancel every queued `schedule(...)` of a storylet, for any person. `schedule` has its own syntax. */
   unschedule: { params: ["id"], returns: "bool" },
 } as const satisfies Record<string, Signature>;

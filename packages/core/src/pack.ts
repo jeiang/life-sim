@@ -196,9 +196,11 @@ export interface CompiledStorylet {
   readonly label?: string;
   readonly icon?: IconRef;
   readonly tags: readonly string[];
-  readonly trigger: "event" | "action";
+  readonly trigger: "event" | "action" | "milestone";
   /** Actions only: `<top>` or `<top>/<submenu>`. */
   readonly menu?: string;
+  /** Milestones only: the milestone id that opens it (docs/spec/pack-format/hooks.md#milestones). */
+  readonly milestone?: string;
   readonly scope?: "loan" | "person";
   /** `scope: person` only: role ids the bound person must hold toward the player. Empty/absent: any. */
   readonly target?: readonly string[];

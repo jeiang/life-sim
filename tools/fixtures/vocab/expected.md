@@ -76,6 +76,7 @@ Expression functions.
 - `has_remote_job() -> bool`
 - `in_group(group) -> bool`
 - `years_in_group(group) -> int`
+- `milestone_reached(milestone) -> bool`
 - `count_role(id, int, int) -> int`
 - `price(id) -> int`
 - `change(id) -> int`
@@ -101,5 +102,6 @@ Effect calls. Assign roots: `stat += -= =`, `quality += =`, `money += -=`, `pers
 - `merge_money() -> bool`
 - `set_standard(id) -> bool`
 - `trade(id, int) -> bool`
+- `reach_milestone(milestone) -> bool`
 - `unschedule(id) -> bool`
 - `schedule(id, after: <a>-<b> years[, person][, lineage: true]) -> bool`

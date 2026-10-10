@@ -1,0 +1,37 @@
+- id: congratulations
+  trigger: milestone
+  milestone: graduated
+  text: You graduated.
+  outcomes:
+    - effects:
+        - quality.celebrated += 1
+# Its `when` is false at the next age-up, so it is dropped and never offered again.
+- id: blocked
+  trigger: milestone
+  milestone: graduated
+  when: quality.gate
+  text: Only with the gate open.
+  outcomes:
+    - effects:
+        - quality.blocked_fired += 1
+# A decision tree: the milestone opens a choice whose outcome sets up a second event.
+- id: first-pay
+  trigger: milestone
+  milestone: first_job
+  text: Your first pay check.
+  choices:
+    - label: Save it
+      outcomes:
+        - effects:
+            - quality.celebrated += 1
+    - label: Spend it
+      outcomes:
+        - effects:
+            - quality.celebrated += 2
+- id: pet-welcome
+  trigger: milestone
+  milestone: pet_adopted
+  text: The pet settles in.
+  outcomes:
+    - effects:
+        - quality.celebrated += 10

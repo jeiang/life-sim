@@ -32,7 +32,6 @@ export {
   startStorylet,
 } from "./flow.ts";
 export { godSetMoney, godSetStat, isGodLife } from "./god.ts";
-export { fireMilestone } from "./hooks.ts";
 export { KIND_CALL, type KindIndexEntry } from "./kinds.ts";
 export {
   assetCityId,
@@ -65,6 +64,7 @@ export {
   unitsFor,
   unitsValue,
 } from "./market.ts";
+export { fireMilestone } from "./milestones.ts";
 export { type NetWorthPoint, recordNetWorth } from "./networth.ts";
 export {
   DEFAULT_FAMILY,

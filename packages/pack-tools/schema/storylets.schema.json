@@ -37,8 +37,17 @@
           {
             "const": "action",
             "type": "string"
+          },
+          {
+            "const": "milestone",
+            "type": "string"
           }
         ]
+      },
+      "milestone": {
+        "pattern": "^[a-z][a-z0-9_-]*$",
+        "description": "Milestones only: the milestone id (Core or `provides: milestones`) that opens it at the next age-up",
+        "type": "string"
       },
       "menu": {
         "pattern": "^(occupation|assets|relationships|activities)(/[a-z][a-z0-9_-]*)?$",

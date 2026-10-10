@@ -40,12 +40,15 @@ set_standard(standard)
 relationship(<person>).role = role   (replaces all the player's role rows toward them; keeps the highest closeness)
 move_in()                            merge_money()
 schedule(storylet, after: a-b years[, person][, lineage: true])   unschedule(storylet)
+reach_milestone(milestone)
 journal("text")                      die("cause")
 ```
 
 A `kind: generator` item in `people/` sets `first_names` (a list used for every gender, or `{ male: [...], female: [...] }` pools where non-binary people draw from both), `last_names`, `age`, optional `stats`, and an optional `gender`: a fixed value (`gender: female`) or integer weights (`gender: { male: 1, female: 3 }`; omitted genders weigh 0; default male 1, female 1). A spawned person's gender is drawn from these weights and their first name from that gender's pool, so a Pack can spawn a person of a chosen gender.
 
 A Pack may also name a sequence of these statements and call it as `<pack>.<macro>(args)`; see [Effect macros](effects.md). A macro call is expanded at build time into the closed effects above.
+
+`reach_milestone(id)` fires a Pack-declared [milestone](hooks.md#milestones) now, once per life; `milestone_reached(id)` is the boolean the life has reached it (usable in any `when`). Both take a bare milestone id (or a string), checked at build time against Core and `provides: milestones` ids.
 
 `schedule(...)` queues a consequence and `unschedule(storylet)` cancels it; see [Scheduled consequences](storylets.md#scheduled-consequences). Because of the colon, a `schedule(...)` statement is quoted in YAML (`- "schedule(later, after: 2-4 years)"`). Both work inside effect macros and lifecycle hooks (a hook has no person in scope, so it can only schedule a storylet that has no `scope`).
 

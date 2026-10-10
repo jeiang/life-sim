@@ -1,0 +1,11 @@
+- { id: hooks_graduated, type: int, min: 0, max: 99, default: 0 }
+- { id: hooks_first_job, type: int, min: 0, max: 99, default: 0 }
+- { id: hooks_married, type: int, min: 0, max: 99, default: 0 }
+- { id: hooks_first_child, type: int, min: 0, max: 99, default: 0 }
+- { id: hooks_retired, type: int, min: 0, max: 99, default: 0 }
+- { id: hooks_pet, type: int, min: 0, max: 99, default: 0 }
+- { id: hooks_chain, type: int, min: 0, max: 99, default: 0 }
+- { id: celebrated, type: int, min: 0, max: 99, default: 0 }
+- { id: blocked_fired, type: int, min: 0, max: 99, default: 0 }
+- { id: pet_story, type: int, min: 0, max: 99, default: 0 }
+- { id: gate, type: flag, default: false }

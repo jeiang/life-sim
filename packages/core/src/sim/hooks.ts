@@ -1,8 +1,8 @@
 import type { Effect } from "../expr/index.ts";
-import type { HookPhase, PackBundle } from "../pack.ts";
+import type { HookPhase } from "../pack.ts";
 import type { World } from "../state/types.ts";
 import { applyEffects } from "./effects.ts";
-import { indexBundles, type PackIndex } from "./pack-index.ts";
+import type { PackIndex } from "./pack-index.ts";
 
 /**
  * Run every Pack's statements for a lifecycle phase (docs/spec/pack-format/hooks.md), Packs in
@@ -56,16 +56,4 @@ function runStatements(
     );
   }
   return dead ? { ...w, ended } : w;
-}
-
-/**
- * Fire the `on_milestone` hooks of `milestoneId` once, in Pack order. The caller decides when a
- * milestone is reached (Core milestones arrive with #216); the hook only runs what Packs declared.
- */
-export function fireMilestone(
-  world: World,
-  bundles: readonly PackBundle[],
-  milestoneId: string,
-): World {
-  return runHook(world, indexBundles(bundles), "on_milestone", milestoneId);
 }

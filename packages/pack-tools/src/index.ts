@@ -17,3 +17,4 @@ export {
 } from "./output.ts";
 export * from "./schema.ts";
 export { jsonSchemas, writeSchemas } from "./schema-export.ts";
+export { formatPath, parseYaml, type Source } from "./yaml.ts";

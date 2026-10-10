@@ -50,7 +50,7 @@ export function runHarnessParallel(
   const total = lifeCount(opts);
   const batches = Math.ceil(total / BATCH);
   const jobs = Math.max(1, Math.min(resolveJobs(opts.jobs), batches));
-  const agg = new Aggregate(opts.bundles);
+  const agg = new Aggregate(opts.bundles, opts.metrics);
   const finish = (): HarnessResult => ({
     report: agg.report(),
     seconds: (performance.now() - start) / 1000,

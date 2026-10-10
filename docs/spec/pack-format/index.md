@@ -14,6 +14,7 @@ packs/<pack-id>/
   readables/<topic>.yaml     # readables, slots and slot contributions (see readables.md)
   CONTEXT.md                 # glossary of the terms this Pack owns
   BALANCE.md                 # balance targets, harness profiles and report notes
+  harness/metrics.yaml       # optional: metrics the harness reports for this Pack (harness.md#pack-metrics)
   test/*.test.ts             # the Pack's own vitest tests
   storylets/<topic>.yaml     # list of storylets
   occupations/<topic>.yaml   # occupation kinds

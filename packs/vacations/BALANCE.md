@@ -32,4 +32,4 @@ Tuned with the [harness](../../docs/spec/harness.md): `pnpm harness --jobs 4 --l
 
 ## Harness
 
-- Report section (only when this Pack is loaded): trips per life by price tier, trip spending as a share of gross earnings, travel deaths per 10,000 trips, and median net worth of travellers against non-travellers within each profile.
+- Report section **Vacations**, declared in `harness/metrics.yaml` (shown when a trip was taken): per profile, travellers, trips per life (and by price tier, per trip action), spend per life and as a share of gross earnings, travel deaths and deaths per 10,000 trips, and median net worth at 40 and 65 of travellers against non-travellers. A trip is an action of this Pack taken with an amount; its tier is the amount's grid slot.

@@ -1,3 +1,4 @@
+export { type LifeMetrics, MetricCollector } from "./collect.ts";
 export {
   type HarnessOptions,
   type HarnessResult,
@@ -5,6 +6,8 @@ export {
   runHarness,
   runLives,
 } from "./harness.ts";
+export { compileMetrics, loadMetrics, type PackMetrics } from "./metrics.ts";
+export type { PackSection, StatResult } from "./pack-report.ts";
 export {
   type ParallelOptions,
   resolveJobs,

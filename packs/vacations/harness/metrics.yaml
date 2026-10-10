@@ -1,0 +1,126 @@
+# Harness metrics for the Vacations Pack; the schema is docs/spec/harness.md#pack-metrics.
+title: Vacations
+intro: Trips per life by price tier (tier 1 is the cheapest step of the amount picker), spending against gross earnings, and travel deaths. Only the `random` profile takes trips; the others never open the travel menu.
+visible_if_table: trips
+measures:
+  trips: { table: trips, column: trips }
+  spent: { table: trips, column: spent }
+  earnings: { life: earnings }
+  traveller: { when: "trips > 0" }
+  travel_death: { death: travel accident }
+  net_worth: { snapshot: net_worth, ages: [40, 65] }
+tables:
+  # A trip is an action of this Pack taken with an amount; the price tier is the amount's grid slot.
+  trips:
+    with_amount: true
+    columns:
+      trips: count
+      spent: amount
+stats:
+  lives:
+    kind: count
+    by: profile
+  travellers:
+    kind: share
+    when: traveller
+    by: profile
+  trips_per_life:
+    kind: mean
+    value: trips
+    by: profile
+    decimals: 3
+    label: trips per life
+  tier_1:
+    kind: mean
+    value: trips.@1
+    by: profile
+    decimals: 3
+    label: tier 1
+  tier_2:
+    kind: mean
+    value: trips.@2
+    by: profile
+    decimals: 3
+    label: tier 2
+  tier_3:
+    kind: mean
+    value: trips.@3
+    by: profile
+    decimals: 3
+    label: tier 3
+  tier_4:
+    kind: mean
+    value: trips.@4
+    by: profile
+    decimals: 3
+    label: tier 4
+  tier_5:
+    kind: mean
+    value: trips.@5
+    by: profile
+    decimals: 3
+    label: tier 5
+  spend_per_life:
+    kind: mean
+    value: spent
+    by: profile
+    decimals: 0
+    format: money
+    label: spend per life (major units)
+  spend_share:
+    kind: ratio
+    num: spent
+    den: earnings
+    by: profile
+    decimals: 2
+    label: spend share of earnings
+  travel_deaths:
+    kind: sum
+    value: travel_death
+    by: profile
+    format: number
+    label: travel deaths
+  deaths_per_10k_trips:
+    kind: ratio
+    num: travel_death
+    den: trips
+    scale: 10000
+    by: profile
+    format: number
+    label: deaths per 10,000 trips
+  nw_travellers:
+    kind: median
+    value: net_worth
+    of: traveller
+    by: profile
+    ages: [40, 65]
+    format: money
+    label: travellers (n)
+  nw_non_travellers:
+    kind: median
+    value: net_worth
+    of: not traveller
+    by: profile
+    ages: [40, 65]
+    format: money
+    label: non-travellers (n)
+blocks:
+  - stats:
+      - lives
+      - travellers
+      - trips_per_life
+      - tier_1
+      - tier_2
+      - tier_3
+      - tier_4
+      - tier_5
+    key: action
+  - stats:
+      - spend_per_life
+      - spend_share
+      - travel_deaths
+      - deaths_per_10k_trips
+  - text: "Median net worth (major units) of travellers and non-travellers within a profile:"
+  - stats:
+      - nw_travellers
+      - nw_non_travellers

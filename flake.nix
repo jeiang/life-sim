@@ -121,6 +121,7 @@
             doCheck = true;
             checkPhase = ''
               node --experimental-strip-types packages/pack-tools/src/cli.ts validate packs
+              node --experimental-strip-types packages/harness/src/cli.ts --check-packs
               node --experimental-strip-types packages/pack-tools/src/cli.ts build packages/pack-tools/test/fixtures/valid $TMPDIR/packs-out
             '';
             installPhase = "touch $out";

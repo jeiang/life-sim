@@ -1,0 +1,103 @@
+# Harness metrics for the Gambling Pack; the schema is docs/spec/harness.md#pack-metrics.
+title: Gambling
+visible_if_table: games
+measures:
+  wagered: { quality: gambling_wagered, at: end }
+  gambler: { when: "wagered > 0" }
+  addicted_ever: { quality: gambling_addicted, at: ever }
+  addicted_end: { quality: gambling_addicted, at: end }
+  recovered: { when: "addicted_ever and not addicted_end" }
+  banned_ever: { quality: gambling_banned_until, at: ever }
+  vip: { quality: gambling_vip, at: end }
+  addicted_years: { quality: gambling_addicted, at: years }
+  years: { life: years }
+tables:
+  # Every action of this Pack that raised the lifetime stakes is one bet.
+  games:
+    raises: gambling_wagered
+    money_floor: 0
+    columns:
+      bets: count
+      staked: { delta: gambling_wagered }
+      net: { delta: money }
+stats:
+  gambled:
+    kind: share
+    when: gambler
+    by: profile
+    label: staked anything
+  addicted:
+    kind: share
+    when: addicted_ever
+    by: profile
+    label: ever addicted
+  addicted_of_gamblers:
+    kind: share
+    when: addicted_ever
+    of: gambler
+    label: gamblers ever addicted
+  recovered_of_addicted:
+    kind: share
+    when: recovered
+    of: addicted_ever
+    label: addicted who recovered
+  addicted_year_share:
+    kind: ratio
+    num: addicted_years
+    den: years
+    of: gambler
+    label: years lived addicted (gamblers)
+  banned:
+    kind: share
+    when: banned_ever
+    label: banned for suspected cheating
+  vip_room:
+    kind: share
+    when: vip
+    label: VIP room open
+  stakes_per_gambler:
+    kind: dist
+    value: wagered
+    of: gambler
+    label: lifetime stakes per gambler (minor units)
+  bets:
+    kind: sum
+    value: games.bets
+    format: number
+    label: bets
+  staked:
+    kind: sum
+    value: games.staked
+    format: money
+    label: staked (major units)
+  net:
+    kind: sum
+    value: games.net
+    format: money
+    label: net (major units)
+  return:
+    kind: ratio
+    num:
+      - games.staked
+      - games.net
+    den: games.staked
+    label: realised return
+blocks:
+  - text: Gamblers are the lives that staked anything. A ban is for suspected cheating.
+  - stats:
+      - gambled
+      - addicted
+  - stats:
+      - addicted_of_gamblers
+      - recovered_of_addicted
+      - addicted_year_share
+      - banned
+      - vip_room
+  - stats:
+      - stakes_per_gambler
+  - stats:
+      - bets
+      - staked
+      - net
+      - return
+    key: game

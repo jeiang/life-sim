@@ -11,6 +11,7 @@ profiles:
       - ids: [crime/assault, crime/murder]
       - ids: [crime/shoplift, crime/pickpocket, crime/steal-a-car, crime/burglary, crime/fraud, crime/armed-robbery]
       - ids: ["*/apply-*"]
-# Crime stays rare in the uniform `random` profile: its actions are down-weighted twentyfold.
+# Crime stays rare in the uniform `random` profile: its actions are down-weighted by orders of magnitude (the confirm step alone does not stop a uniform picker).
 adjust:
-  - { profile: random, tags: [crime], weight: 0.05 }
+  - { profile: random, tags: [crime], weight: 0.004 }
+  - { profile: random, ids: [crime/murder, crime/assault], weight: 0.1 }

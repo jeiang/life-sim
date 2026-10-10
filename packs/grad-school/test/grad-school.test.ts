@@ -80,14 +80,19 @@ function only(
 }
 
 /** Open an event storylet now and answer any open choice with `pick`. */
-function fire(w: World, id: string, b: PackBundle[] = bundles, pick = 0) {
+function fire(
+  w: World,
+  id: string,
+  b: readonly PackBundle[] = bundles,
+  pick = 0,
+) {
   let r = startStorylet(w, b, id).world;
   while (r.pending) r = choose(r, b, pick).world;
   return r;
 }
 
 /** Age up one year, answering any open choice with the first option. */
-function year(w: World, b: PackBundle[] = bundles): World {
+function year(w: World, b: readonly PackBundle[] = bundles): World {
   let r = ageUp(w, b).world;
   while (r.pending) r = choose(r, b, 0).world;
   return r;
@@ -446,8 +451,6 @@ describe("scholarship", () => {
     const r = startStorylet(w0, bundles, G("grad-scholarship-review"));
     expect(r.world.pending?.storyletId).toBe(G("grad-funding-gap"));
     // the tuition due went from 0 to half of 2,000,000
-    const readable = (w: World) => startStorylet && me(w);
-    expect(readable(r.world)).toBeTruthy();
     // borrow the extra
     const names =
       idx.storylets.get(G("grad-funding-gap"))?.choices.map((c) => c.label) ??
@@ -832,7 +835,7 @@ describe("careers", () => {
         fire(
           start("associate-professor", phd),
           G("tenure-review"),
-          bundles.length ? only(G("tenure-review"), null, 0) : bundles,
+          only(G("tenure-review"), null, 0),
         ),
         G("full-professor"),
       ),

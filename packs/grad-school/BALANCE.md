@@ -18,6 +18,17 @@ Tuned with the [harness](../../docs/spec/harness.md): `pnpm harness --jobs 4 --l
 - Top rungs (chief, judge, CEO, full professor) each under 5% of graduates.
 - Break-even net worth against a bachelor-only life around 40-45.
 
-## Focused-sim and harness findings
+## Local harness findings (1500 lives, `--packs core-loop,grad-school`, seed 2; not the final numbers)
 
-See the numbers section below; open flags are listed for the artemis balance issue (#231).
+- `studious`: 25.4% enter grad school, 25.3% finish with a degree (target 15-30%). Completion about 99% (the profile never drops out; `random` drops out about 3% of lives that enrol).
+- Scholarship: 41% of enrolled `studious` lives hold one; full 0.10 per enrolled life; full-to-partial step-downs 0.018 per enrolled life, partial-to-none about 0 (grades rarely fall under 50). Open flag for #231: step-downs are rarer than the outline's 25% of holders.
+- Exams: honest pass rate 70-75% per sitting (medical 74.8%, bar 69.4% in the `scholar` profile).
+- Top rungs (scholar, per degree, before the final odds were cut): chief 16%, judge 25%, CEO 19%, full professor 12%. The yearly odds were then lowered (chief 0.3%, CEO 0.3%, judge 0.4%, tenure 1%); #231 must re-measure that each stays under 5% of graduates.
+- Grad careers need a free `full-time` slot (Core's `apply-*` gate), so `random` and `studious` lives that already hold a Core job rarely start one (residents 0.005 per life in `random`). Only `scholar` (which skips Core job applications) reaches the ladders. Flag for #231: decide whether a degree-holder should be able to leave the Core job through the grad application.
+- Net worth (`studious`, median, grad path against bachelor-only path): 489,517 against 532,360 at 40 and 2,303,954 against 2,376,526 at 65. The grad path does not pay back yet; ladder pay and tuition are the #231 levers (break-even target 40-45).
+- Missed-payment events per grad life are about 14 for `studious` because the Core event counts every loan (student and grad) and Core exposes no loan kind to expressions; a per-kind count needs an engine change.
+- `drop-out-grad` is voluntary, so the 25% drop-out target is a `random` behaviour only.
+
+## Open flags for the artemis balance issue (#231)
+
+1. Scholarship step-down rate (above). 2. Pay ratio of the top rungs to Core's senior engineer (chief 220,000 and CEO 250,000 against 115,000) and break-even age. 3. Top-rung shares under 5% of graduates. 4. Career entry for lives that already hold a Core job. 5. Per-kind loan-miss reporting.

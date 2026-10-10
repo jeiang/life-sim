@@ -91,7 +91,8 @@
           vitest = pkgs.stdenvNoCC.mkDerivation {
             name = "life-sim-check-vitest";
             inherit src pnpmDeps;
-            nativeBuildInputs = [ pkgs.nodejs_24 pkgs.pnpm_10 pkgs.pnpmConfigHook ];
+            # git: the ids-lock tests build throwaway repos with a release tag.
+            nativeBuildInputs = [ pkgs.nodejs_24 pkgs.pnpm_10 pkgs.pnpmConfigHook pkgs.git ];
             dontBuild = true;
             doCheck = true;
             checkPhase = ''

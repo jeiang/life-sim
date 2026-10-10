@@ -638,30 +638,6 @@ describe("build checks fail", () => {
     );
   });
 
-  test("removing a shipped id without a migration entry fails, with the id named", () => {
-    expectError(
-      {
-        "base/ids.lock.json": sub(
-          '"base/cashier"',
-          '"base/cashier",\n    "base/lost-job"',
-        ),
-      },
-      "id 'base/lost-job' shipped in the last release but is gone",
-    );
-  });
-
-  test("a rename without its migration entry fails", () => {
-    expectError(
-      {
-        "base/ids.lock.json": sub(
-          '"base/cashier"',
-          '"base/cashier",\n    "base/waiter"',
-        ),
-      },
-      "id 'base/waiter'",
-    );
-  });
-
   test("migrations must point at things that exist, and not at ids still present", () => {
     expectError(
       {

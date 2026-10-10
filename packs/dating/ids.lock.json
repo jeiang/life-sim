@@ -1,9 +1,0 @@
-{
-  "pack": "dating",
-  "ids": [
-    "dating/roll-attraction",
-    "quality.dating_attracted_men",
-    "quality.dating_attracted_nonbinary",
-    "quality.dating_attracted_women"
-  ]
-}

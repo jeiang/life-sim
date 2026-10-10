@@ -1,9 +1,0 @@
-{
-  "pack": "base",
-  "ids": [
-    "base/cashier",
-    "base/old-job-offer",
-    "base/retired-event",
-    "stat.happiness"
-  ]
-}

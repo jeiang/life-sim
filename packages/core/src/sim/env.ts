@@ -20,6 +20,7 @@ import {
 import { getPerson } from "../state/world.ts";
 import { incomeTier } from "./careers.ts";
 import { KIND_CALL, kindValue } from "./kinds.ts";
+import { countKin, kinshipOf } from "./kinship.ts";
 import {
   confinementOf,
   costIndexOf,
@@ -257,6 +258,12 @@ export function reportOutcome(
 export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
   const subject = getPerson(world, scope.subject);
   const sink = assertSink;
+  /** The person a `person` argument names: `person`, or a name bound by `spawn_person`. */
+  const personRef = (name: string): PersonId => {
+    const pid = name === "person" ? scope.person : scope.bound?.get(name);
+    if (pid === undefined) throw new RangeError(`unknown person '${name}'`);
+    return pid;
+  };
   return {
     ...(sink ? { onAssert: sink } : {}),
     get(path: string): Value {
@@ -386,6 +393,21 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
           return subject.occupations.some((o) => o.group === id);
         case "years_in_group":
           return yearsInGroup(subject, id);
+        case "kin":
+          return kinshipOf(world, scope.subject, personRef(id)) ?? "";
+        case "is_kin":
+          return (
+            kinshipOf(world, scope.subject, personRef(id)) ===
+            (args[1] as string)
+          );
+        case "count_kin":
+          return countKin(
+            world,
+            scope.subject,
+            id,
+            args[1] as number,
+            args[2] as number,
+          );
         case "count_role":
           return countRole(world, id, args[1] as number, args[2] as number);
         case "price":

@@ -78,6 +78,9 @@ Expression functions.
 - `years_in_group(group) -> int`
 - `milestone_reached(milestone) -> bool`
 - `count_role(id, int, int) -> int`
+- `kin(person) -> id`
+- `is_kin(person, kinship) -> bool`
+- `count_kin(kinship, int, int) -> int`
 - `price(id) -> int`
 - `change(id) -> int`
 - `units(id) -> int`

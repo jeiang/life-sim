@@ -1,0 +1,5 @@
+provides:
+  qualities:
+    - kin_hits
+requires:
+  - core-loop/family

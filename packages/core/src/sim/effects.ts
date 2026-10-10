@@ -20,6 +20,7 @@ import {
 import { enterRole } from "./careers.ts";
 import { makeEnv, qualityOf, type Scope, tableRef } from "./env.ts";
 import { runHook } from "./hooks.ts";
+import { linkFamilyRole } from "./kinship.ts";
 import { livesWithParents, startLivingOnOwn } from "./living.ts";
 import { grantUnit, removeHolding, tradeHolding } from "./market.ts";
 import { occupationStarted, reachMilestone } from "./milestones.ts";
@@ -83,9 +84,17 @@ function setRole(
   const household = rows.some((r) => r.household === "merged")
     ? "merged"
     : rows.find((r) => r.household)?.household;
-  const next = putRelationship(
-    { ...w, relationships: w.relationships.filter((r) => !rows.includes(r)) },
-    { from, to, role, closeness, ...(household ? { household } : {}) },
+  const next = linkFamilyRole(
+    putRelationship(
+      {
+        ...w,
+        relationships: w.relationships.filter((r) => !rows.includes(r)),
+      },
+      { from, to, role, closeness, ...(household ? { household } : {}) },
+    ),
+    from,
+    to,
+    role,
   );
   if (from !== w.playerId) return next;
   const entered = enterRole(next, idx, to, role);

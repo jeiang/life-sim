@@ -37,6 +37,10 @@ The closed effect list gains `schedule(storylet, after: a-b years[, person][, li
 
 The closed effect list is unchanged, but a Pack can now name a sequence of closed effects and call it (`<pack>.<macro>(args)`), so a cross-Pack behaviour no longer needs a Core release. A macro (`effects/*.yaml`) has integer parameters and a body of closed effects and other macros, is exported through a capability (`provides: effects`) and is expanded when the Pack is built: the compiled bundle contains only the closed effects, so the Core, saves, the world hash, the choice log and replay do not change and a macro life is identical to its inlined equivalent. Macros are checked in the owner's scope, may not form a cycle, nest at most 8 deep, and keep persons they spawn local to the expansion. A new kind of change, such as currency exchange, is still a new Core primitive and still a Core release. See [Effect macros](../spec/pack-format/effects.md).
 
+## Note (2026-10-10): kinship (#217)
+
+The closed function list gains `kin(person)`, `is_kin(person, id)` and `count_kin(id, min_age, max_age)`, one Core release (ADR 0004); the `person` and `kinship` parameter types are checked at build time. Parent links are the Core-owned person state container `_parents`. Details: [ADR 0006](0006-parent-links-derived-kinship.md).
+
 ## Note (2026-10-10): milestones (#216)
 
 The closed effect and function lists gain `reach_milestone(id)` (fires a Pack-declared milestone once per life) and `milestone_reached(id)` (the readable flag), one Core release (ADR 0004), and storylets gain `trigger: milestone`. The Core emits `graduated`, `first_job`, `married`, `first_child` and `retired` from its own primitives (`start_occupation`, settlement, `merge_money`, `spawn_person` and role changes) and runs the Packs' `on_milestone` hooks; the once-per-life record is the Core-owned state container `_milestones`. Details: `docs/spec/pack-format/hooks.md#milestones`.

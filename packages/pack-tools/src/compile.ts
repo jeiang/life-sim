@@ -2361,7 +2361,7 @@ class PackCompiler {
     kind: "bool" | "int",
     path: Path,
     extra: Names = {},
-    persons: readonly string[] = [],
+    persons: readonly string[] = extra["person.age"] ? ["person"] : [],
   ): Expr | undefined {
     const text = String(srcValue);
     const names = { ...this.baseNames, ...extra };

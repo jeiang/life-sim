@@ -5,9 +5,19 @@
 
 /**
  * `group` is an exclusivity group declared in a manifest (a bare word or a string literal);
- * `milestone` is a milestone id, Core or `provides: milestones` (a bare word or a string literal).
+ * `milestone` is a milestone id, Core or `provides: milestones` (a bare word or a string literal);
+ * `person` is a person name in scope (`person`, or one bound by `spawn_person ... as`);
+ * `kinship` is a Core kinship id (a bare word or a string literal).
  */
-export type Type = "int" | "bool" | "string" | "id" | "group" | "milestone";
+export type Type =
+  | "int"
+  | "bool"
+  | "string"
+  | "id"
+  | "group"
+  | "milestone"
+  | "person"
+  | "kinship";
 
 export interface Signature {
   readonly params: readonly Type[];
@@ -34,6 +44,12 @@ export const FUNCTIONS = {
   /** True once the player's life has reached the milestone (it fires once per life). */
   milestone_reached: { params: ["milestone"], returns: "bool" },
   count_role: { params: ["id", "int", "int"], returns: "int" },
+  /** The kinship id of a person to the subject (`grandparent`, `cousin`, ...); "" for no kin. */
+  kin: { params: ["person"], returns: "id" },
+  /** True when the person is that kinship id to the subject. */
+  is_kin: { params: ["person", "kinship"], returns: "bool" },
+  /** Living people of this kinship id with age in `[min, max]`, inclusive. */
+  count_kin: { params: ["kinship", "int", "int"], returns: "int" },
   /** Market kinds. Price of one whole unit now, minor units. */
   price: { params: ["id"], returns: "int" },
   /** One-year price change, basis points. */

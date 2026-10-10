@@ -1,6 +1,15 @@
 import { emojiFiles } from "virtual:packs";
-import { formatMoney } from "@life/core";
+import { formatMoney, kinshipLabel, kinshipOf, type World } from "@life/core";
 import { packIndex } from "./store.ts";
+
+/** What `id` is to the player ("Mother", "Half-brother"), or undefined when they are no kin. */
+export function kinLabelOf(w: World, id: number): string | undefined {
+  const kin = kinshipOf(w, w.playerId, id);
+  const p = w.persons.get(id);
+  if (kin === undefined || !p) return undefined;
+  const label = kinshipLabel(kin, p.gender);
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
 
 export const money = (minor: number): string =>
   formatMoney(minor, packIndex.currency);

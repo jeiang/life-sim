@@ -39,6 +39,7 @@ import {
   DEFAULT_REPEAT,
   GENDERS,
   HOOK_PHASES,
+  isKinshipId,
   KIND_CALL,
   PACK_BUNDLE_FORMAT,
   PRONOUN_FIELDS,
@@ -1954,6 +1955,7 @@ class PackCompiler {
     Object.assign(bound, pronounNames(name));
     bound[`${name}.age`] = "int";
     bound[`${name}.closeness`] = "int";
+    bound[`${name}.kin`] = "string";
     Object.assign(bound, this.personStateNames(name));
     persons.push(name);
     return true;
@@ -2478,6 +2480,7 @@ class PackCompiler {
         "person.last_name": "string",
         ...pronounNames("person"),
         "person.role": "id",
+        "person.kin": "string",
         "person.alive": "bool",
         "person.closeness": "int",
         "person.money": "int",
@@ -2597,6 +2600,15 @@ class PackCompiler {
         this.err(["target"], "'target' needs 'scope: person'");
       const roles: string[] = [];
       for (const [i, r] of s.target.entries()) {
+        // A bare kinship id is a kinship target unless this Pack declares an item with that id
+        // (a role named `parent` keeps meaning the role). Compiled roles always hold a `/`.
+        if (
+          isKinshipId(r) &&
+          !this.c.index.get(this.pack.id)?.has(`${this.pack.id}/${r}`)
+        ) {
+          roles.push(r);
+          continue;
+        }
         const full = this.ref(r, ["role"], ["target", i]);
         if (full) roles.push(full);
       }

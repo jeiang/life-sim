@@ -68,7 +68,7 @@
       },
       "target": {
         "minItems": 1,
-        "description": "`scope: person` only: role ids the bound person must have toward the player",
+        "description": "`scope: person` only: role ids the bound person must have toward the player, or bare kinship ids (`sibling`, `grandparent`, ...) they must be to the player",
         "type": "array",
         "items": {
           "pattern": "^([a-z][a-z0-9-]*/)?[a-z][a-z0-9_-]*$",

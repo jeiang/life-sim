@@ -22,3 +22,15 @@
     - effects:
         - spawn_person(core-loop/parent, core-loop/parent-gen) as p
         - "quality.kin_hits += is_kin(p, parent) ? 5 : 0"
+
+- id: half-only
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [half-sibling, cousin]
+  text: "{person.first_name} is your {person.kin}."
+  choices:
+    - label: Wave
+      outcomes:
+        - effects:
+            - quality.kin_hits += 1

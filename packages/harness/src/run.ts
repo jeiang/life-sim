@@ -4,8 +4,10 @@ import {
   choose,
   costIndexOf,
   describePending,
+  familyRoleOf,
   getPerson,
   indexBundles,
+  kinshipOf,
   type Loan,
   livesWithParents,
   livingBreakdown,
@@ -59,7 +61,8 @@ export type FaultKind =
   | "assertion"
   | "stuck"
   | "save-mismatch"
-  | "minor-living-cost";
+  | "minor-living-cost"
+  | "unresolved-family";
 
 export interface Fault {
   readonly kind: FaultKind;
@@ -496,6 +499,17 @@ export function runLife(
         )
           fault("minor-living-cost", `living cost charged at age ${me.age}`);
       }
+      // Invariant: everyone the player holds a family role toward has a kinship id.
+      for (const r of w.relationships)
+        if (
+          r.from === w.playerId &&
+          familyRoleOf(r.role) !== undefined &&
+          kinshipOf(w, w.playerId, r.to) === undefined
+        )
+          fault(
+            "unresolved-family",
+            `person ${r.to} holds '${r.role}' but has no kinship id at age ${me.age}`,
+          );
       const lived = standardOf(me, index);
       const hh = index.living?.household;
       const bill =

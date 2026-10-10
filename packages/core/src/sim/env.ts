@@ -20,7 +20,7 @@ import {
 import { getPerson } from "../state/world.ts";
 import { incomeTier } from "./careers.ts";
 import { KIND_CALL, kindValue } from "./kinds.ts";
-import { countKin, kinshipOf } from "./kinship.ts";
+import { countKin, kinshipLabel, kinshipOf } from "./kinship.ts";
 import {
   confinementOf,
   costIndexOf,
@@ -145,6 +145,10 @@ function personField(
   if (field === "age") return p.age;
   if (field === "alive") return p.alive;
   if (field === "role") return roleOf(world, id) ?? "";
+  if (field === "kin") {
+    const kin = kinshipOf(world, world.playerId, id);
+    return kin === undefined ? "" : kinshipLabel(kin, p.gender);
+  }
   if (field === "closeness") return closenessOf(world, id);
   if (field === "money") return p.money;
   if (field === "income_tier") return incomeTier(world, idx, id);

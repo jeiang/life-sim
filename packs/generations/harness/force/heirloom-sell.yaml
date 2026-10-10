@@ -1,6 +1,6 @@
-# Forced script (docs/spec/harness.md#forced-outcomes): every attic find turns up the watch, and the heirloom-seller profile sells whatever the family holds, so `heirloom-sell` fires in the founder's life.
+# Forced script (docs/spec/harness.md#forced-outcomes): every attic find turns up the watch, and the heirloom_seller profile sells whatever the family holds, so `heirloom-sell` fires in the founder's life.
 description: An attic find is sold at once
-profile: heirloom-seller
+profile: heirloom_seller
 steps:
   - roll: outcome/generations/heirloom-attic-find
     value: 0

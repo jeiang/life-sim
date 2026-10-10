@@ -13,10 +13,13 @@ provides:
     - crime_cellmate
     - crime_escape_used
     - crime_escaped
+    - crime_escapes
   occupations:
     - prison
     - juvenile_detention
     - prison_work
+  milestones:
+    - released
   roles:
     - inmate
   generators:

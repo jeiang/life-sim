@@ -1,0 +1,353 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Prison life".
+
+- id: prison-work-out
+  icon: 💪
+  trigger: action
+  menu: occupation/prison
+  label: Work out in the yard
+  tags: [custody-ok, fitness, health]
+  when: confined
+  repeatable: true
+  text: The yard has one bench, two dumbbells, and a line of men waiting their turn. You take your turn.
+  outcomes:
+    - weight: 75
+      text: A full set leaves you sore and sharper than you were.
+      effects:
+        - stat.health += 3
+        - stat.happiness += 2
+    - weight: 25
+      text: A guard tells you to share the bench, and you do, with less grace than you would like.
+      effects:
+        - stat.happiness -= 1
+
+- id: prison-library
+  icon: 📚
+  trigger: action
+  menu: occupation/prison
+  label: Visit the prison library
+  tags: [custody-ok, learning, mind]
+  when: confined
+  repeatable: true
+  text: The library is one room with a broken radiator and a shelf of paperbacks with the endings torn out.
+  outcomes:
+    - weight: 60
+      text: You get through a whole book and pick up a few things along the way.
+      effects:
+        - stat.smarts += 2
+        - stat.happiness += 1
+    - weight: 40
+      text: You spend the hour reading the same page while two men argue about the sports section.
+      effects:
+        - stat.happiness -= 1
+
+- id: prison-take-job
+  icon: 🧹
+  trigger: action
+  menu: occupation/prison
+  label: Take a prison job
+  tags: [custody-ok, money]
+  when: "has_occupation(prison) and not has_occupation(prison_work)"
+  cooldown: 1
+  text: The work sheet goes up on the wall every Monday. Laundry, kitchen, or the paint crew, all paid in pennies.
+  outcomes:
+    - weight: 75
+      text: The sergeant has a clipboard and a short memory, and your name goes on the laundry list.
+      effects:
+        - "start_occupation(prison_work)"
+        - stat.happiness += 2
+    - weight: 25
+      text: The list is full until next year, and the sergeant seems pleased about it.
+
+- id: prison-fight
+  icon: 👊
+  trigger: action
+  menu: occupation/prison
+  label: Pick a fight
+  tags: [custody-ok, health]
+  when: confined
+  cooldown: 1
+  text: Someone in the mess hall has been staring at your tray for a week. You decide that ends today.
+  outcomes:
+    - weight: 40
+      text: You land the first punch, and the yard decides you are not someone to test.
+      effects:
+        - stat.health -= 4
+        - "quality.crime_respect += 10"
+        - "quality.crime_behaviour += -8"
+    - weight: 35
+      text: You come out of it with a split lip and a reputation for picking fights you cannot win.
+      effects:
+        - stat.health -= 8
+        - stat.happiness -= 3
+        - "quality.crime_behaviour += -3"
+    - weight: 25
+      text: A guard breaks it up before anybody lands a real blow. You spend a week in the hole.
+      effects:
+        - stat.happiness -= 6
+        - "quality.crime_behaviour += -10"
+
+- id: prison-join-gang
+  icon: 🏴
+  trigger: action
+  menu: occupation/prison
+  label: Join a gang
+  tags: [custody-ok, relationship]
+  when: "has_occupation(prison) and not quality.crime_gang and years_in(prison) >= 1"
+  cooldown: 1
+  text: After a year inside you know who runs the yard, and they know who you are.
+  outcomes:
+    - weight: 70
+      text: They take you in after a look that lasts too long. You are one of them now.
+      effects:
+        - "quality.crime_gang = true"
+        - "quality.crime_respect += 12"
+        - "quality.crime_behaviour += -10"
+        - "journal(\"Joined a prison gang at age {age}.\")"
+    - weight: 30
+      text: They want nothing to do with you, and the yard remembers who got turned away.
+      effects:
+        - "quality.crime_respect += -4"
+
+- id: prison-leave-gang
+  icon: 🚪
+  trigger: action
+  menu: occupation/prison
+  label: Leave the gang
+  tags: [custody-ok, relationship]
+  when: "has_occupation(prison) and quality.crime_gang"
+  cooldown: 1
+  text: You tell the older guys you are done. Leaving is easier to say than to do.
+  outcomes:
+    - weight: 60
+      text: They shrug, and the look you get back says they heard you and will not forget.
+      effects:
+        - "quality.crime_gang = false"
+        - "quality.crime_respect += -10"
+        - "quality.crime_behaviour += 10"
+    - weight: 40
+      text: They let you walk, but a loyal member makes sure you feel the message for a week.
+      effects:
+        - "quality.crime_gang = false"
+        - "quality.crime_respect += -6"
+        - "quality.crime_behaviour += 6"
+        - stat.health -= 10
+        - stat.happiness -= 4
+
+- id: prison-study-ged
+  icon: 📝
+  trigger: action
+  menu: occupation/prison
+  label: Study for your GED
+  tags: [custody-ok, education, learning]
+  when: "has_occupation(prison) and not quality.graduated_high_school"
+  cooldown: 1
+  text: The prep class meets in the chapel on Tuesdays, between the bingo and the sermon.
+  outcomes:
+    - weight: 40
+      text: You pass with a few points to spare, and a diploma comes in the mail.
+      effects:
+        - "quality.graduated_high_school = true"
+        - stat.smarts += 3
+        - stat.happiness += 4
+        - "journal(\"Earned a GED in prison at age {age}.\")"
+    - weight: 60
+      text: You almost pass. The teacher circles one number and tells you to come back next year.
+      effects:
+        - stat.smarts += 2
+
+- id: prison-talk-cellmate
+  icon: 💬
+  trigger: action
+  menu: relationships
+  label: Talk to your cellmate
+  tags: [custody-ok, relationship, conversation]
+  scope: person
+  target: [crime/inmate]
+  when: confined
+  repeatable: true
+  text: "{person.first_name} is on the bunk above yours and has opinions about the food. You ask about them."
+  outcomes:
+    - weight: 55
+      text: "{person.first_name} has been inside longer than you and knows how the place works."
+      effects:
+        - stat.happiness += 2
+        - relationship(person).closeness += 4
+    - weight: 30
+      text: Small talk, mostly about the food, which you both agree is bad.
+      effects:
+        - stat.happiness += 1
+        - relationship(person).closeness += 2
+    - weight: 15
+      text: "{person.first_name} does not want to talk, and the silence lasts the whole shift."
+      effects:
+        - stat.happiness -= 2
+        - relationship(person).closeness += -2
+
+- id: prison-write-family
+  icon: 📮
+  trigger: action
+  menu: relationships
+  label: Write to family
+  tags: [custody-ok, relationship, family]
+  scope: person
+  target: [core-loop/parent, core-loop/sibling, core-loop/child, core-loop/spouse]
+  when: confined
+  cooldown: 1
+  text: "You write {person.first_name} a letter, carefully, and then rewrite the parts the censor would not like."
+  outcomes:
+    - weight: 60
+      text: The reply comes back with a photo and a line that makes you go quiet for an hour.
+      effects:
+        - stat.happiness += 3
+        - relationship(person).closeness += 5
+        - "journal(\"Heard back from {person.first_name} while inside, at age {age}.\")"
+    - weight: 30
+      text: The reply is short and polite, which somehow stings more than angry.
+      effects:
+        - stat.happiness -= 1
+        - relationship(person).closeness += 1
+    - weight: 10
+      text: The letter is never answered.
+      effects:
+        - stat.happiness -= 3
+        - relationship(person).closeness += -2
+
+- id: prison-cellmate-small-talk
+  trigger: event
+  tags: [custody-ok, npc]
+  scope: person
+  target: [crime/inmate]
+  chance: 70%
+  when: confined and person.role == crime/inmate
+  text: "Your cellmate, {person.first_name} {person.last_name}, asks what you did to end up in here."
+  outcomes:
+    - weight: 60
+      text: "You trade a few stories, and {person.first_name} turns out to be decent company."
+      effects:
+        - stat.happiness += 2
+        - relationship(person).closeness += 4
+    - weight: 40
+      text: The talk runs dry fast, and the quiet afterward is loud.
+      effects:
+        - stat.happiness -= 1
+        - relationship(person).closeness += 1
+
+- id: prison-cellmate-trouble
+  icon: 🧾
+  trigger: event
+  tags: [custody-ok, npc]
+  scope: person
+  target: [crime/inmate]
+  chance: 40%
+  when: confined and person.role == crime/inmate
+  text: "{person.first_name} says you owe for a commissary favor you do not remember asking for."
+  choices:
+    - label: Pay up
+      when: money >= 1500
+      outcomes:
+        - weight: 1
+          text: You hand over the money, and the matter is closed, for now.
+          effects:
+            - money -= 1500
+            - relationship(person).closeness += 2
+            - stat.happiness -= 1
+    - label: Refuse
+      outcomes:
+        - weight: 60
+          text: Words get exchanged. Nothing is settled, but nothing breaks either.
+          effects:
+            - stat.happiness -= 2
+            - relationship(person).closeness += -3
+        - weight: 40
+          text: Your bunk gets tipped in the night, and the morning fight costs you a few days of pain.
+          effects:
+            - stat.health -= 5
+            - stat.happiness -= 4
+            - relationship(person).closeness += -5
+
+- id: prison-cellmate-killed
+  trigger: event
+  tags: [custody-ok, npc, mortality]
+  scope: person
+  target: [crime/inmate]
+  chance: 1%
+  when: confined and person.role == crime/inmate
+  text: "The yard goes quiet, then loud. {person.first_name} does not make it back to the cell."
+  outcomes:
+    - weight: 1
+      text: "{person.first_name} {person.last_name} dies in a fight that nobody in the yard saw start."
+      effects:
+        - stat.happiness -= 4
+        - "journal(\"{person.first_name} {person.last_name} was killed in a prison fight at age {age}.\")"
+        - "die(\"killed in a prison fight\")"
+
+- id: prison-riot
+  icon: 🔥
+  trigger: event
+  tags: [custody-ok]
+  chance: 10%
+  when: "has_occupation(prison) and quality.crime_respect < 40"
+  text: A food fight in the mess hall turns into a yard fight, and the guards lose the south block.
+  choices:
+    - label: Hide in your cell
+      outcomes:
+        - weight: 70
+          text: You lie low behind the bunk until the sirens stop.
+          effects:
+            - stat.happiness -= 2
+        - weight: 30
+          text: A stray chair catches you on the way back to the cell.
+          effects:
+            - stat.health -= 6
+            - stat.happiness -= 3
+    - label: Join the fight
+      outcomes:
+        - weight: 55
+          text: You throw a few punches and come out with a name in the yard.
+          effects:
+            - "quality.crime_respect += 10"
+            - "quality.crime_behaviour += -8"
+            - stat.health -= 4
+        - weight: 45
+          text: You take a hit you never saw coming, and a guard writes your name down.
+          effects:
+            - stat.health -= 10
+            - "quality.crime_behaviour += -10"
+            - stat.happiness -= 4
+    - label: Help the guards
+      outcomes:
+        - weight: 60
+          text: A guard hands you a cigarette and a nod, which is more than you expected.
+          effects:
+            - "quality.crime_behaviour += 10"
+            - stat.happiness += 1
+        - weight: 40
+          text: The yard sees who stood where, and it does not forget.
+          effects:
+            - "quality.crime_respect += -12"
+            - "quality.crime_behaviour += 4"
+
+- id: prison-riot-calm
+  icon: ⚠
+  trigger: event
+  tags: [custody-ok]
+  chance: 5%
+  when: "has_occupation(prison) and quality.crime_respect >= 40"
+  text: Nobody knows who started it, but the whole block is on its feet and banging the bars.
+  outcomes:
+    - weight: 50
+      text: You are in the middle of it, and you walk out bruised with a bit more standing in the yard.
+      effects:
+        - "quality.crime_respect += 4"
+        - stat.health -= 4
+    - weight: 30
+      text: You keep your head down, and the block quietly notices that you did.
+      effects:
+        - "quality.crime_respect += 2"
+        - stat.happiness += 1
+    - weight: 20
+      text: A guard's baton finds your ribs before you find the exit.
+      effects:
+        - stat.health -= 8
+        - "quality.crime_behaviour += -5"

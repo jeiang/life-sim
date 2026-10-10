@@ -148,7 +148,6 @@
 - chance: 0%
 - when: has_occupation(juvenile_detention)
 - needs: quality crime_release_age: integer 0..18, default 0: the age the juvenile sentence ends, min of sentence end and 18; set at intake
-- needs: milestone released: reached on release from custody; once per life, so a later adult release finds it already reached
 - text: A caseworker opens your file for the yearly review.
 - opens: 0.012..0.03 per life
 

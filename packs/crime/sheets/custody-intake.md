@@ -37,6 +37,7 @@
   - effect: start_occupation(prison)
   - effect: quality.crime_cellmate = true
   - effect: spawn_person(crime/inmate, crime/inmate-gen) as cellmate
+  - effect: schedule(crime/parole-review, after: 1-1 years)
   - effect: journal("Sent to prison at age {age}.")
 - outcome: 1
   - text: Back through the gate. Nobody asks how you got out, and the bunk is still yours.
@@ -46,6 +47,7 @@
   - effect: end_group("school")
   - effect: end_occupation(core-loop/retired)
   - effect: start_occupation(prison)
+  - effect: schedule(crime/parole-review, after: 1-1 years)
   - effect: journal("Returned to prison at age {age}.")
 - outcome: 1
   - text: Juvenile detention is cinder block, a curfew, and the kid in the bunk above yours.
@@ -55,6 +57,7 @@
   - effect: start_occupation(juvenile_detention)
   - effect: quality.crime_cellmate = true
   - effect: spawn_person(crime/inmate, crime/inmate-gen-juvenile) as cellmate
+  - effect: schedule(crime/juvie-release, after: 1-1 years)
   - effect: journal("Sent to juvenile detention at age {age}.")
 - outcome: 1
   - text: Back to juvenile detention. The counsellor sighs and checks the bed you already know.
@@ -62,6 +65,7 @@
   - effect: end_group("part-time")
   - effect: end_group("full-time")
   - effect: start_occupation(juvenile_detention)
+  - effect: schedule(crime/juvie-release, after: 1-1 years)
   - effect: journal("Returned to juvenile detention at age {age}.")
 
 ## crime-recaptured

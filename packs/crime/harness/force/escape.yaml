@@ -1,0 +1,21 @@
+# Forced script: an armed robber is caught, takes eight years, breaks out, is found by the manhunt and goes back in.
+description: A robbery ends in prison, the break-out works, the manhunt recaptures
+steps:
+  - age: 20
+    do: crime/armed-robbery
+  - roll: outcome/crime/armed-robbery
+    value: The clerk hits a silent alarm, and police cars box you in.
+  - choose: Cooperate
+  - choose: Take the public defender
+  - choose: Plead guilty
+  - roll: outcome/crime/court-plea
+    value: 1
+  - roll: outcome/crime/court-sentencing
+    value: Eight years. The gate closes with a sound you will remember.
+  - age: 23
+    do: crime/escape-attempt
+  - choose: Make a break for it
+  - roll: outcome/crime/escape-attempt
+    value: You are over the fence and into the scrub before the tower light finds the gap. You are free, and you are wanted.
+  - roll: crime/arrest-manhunt
+    value: hit

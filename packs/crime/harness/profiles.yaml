@@ -5,12 +5,21 @@ profiles:
     default: false
     moves: 3
     choice:
-      prefer: ["hire*", "plead not guilty", "run", "go through with it", "attack", "file*", "pay for a lawyer*"]
+      prefer: ["hire*", "plead not guilty", "run", "go through with it", "attack", "file*", "pay for a lawyer*", "make a break*", "report on time", "join the fight"]
     rules:
+      - ids: [crime/escape-attempt, crime/parole-visit, "crime/prison-*", "crime/juvie-*"]
       - ids: [crime/record-appeal, crime/record-expunge]
       - ids: [crime/assault, crime/murder]
       - ids: [crime/shoplift, crime/pickpocket, crime/steal-a-car, crime/burglary, crime/fraud, crime/armed-robbery]
       - ids: ["*/apply-*"]
+  killer:
+    description: Murders someone as soon as the confirm step offers it; exists for the death-penalty forced script
+    default: false
+    moves: 1
+    choice:
+      prefer: ["go through with it", "plead not guilty", "cooperate"]
+    rules:
+      - ids: [crime/murder]
 # Crime stays rare in the uniform `random` profile: its actions are down-weighted by orders of magnitude (the confirm step alone does not stop a uniform picker).
 adjust:
   - { profile: random, tags: [crime], weight: 0.004 }

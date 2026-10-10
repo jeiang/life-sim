@@ -1,0 +1,13 @@
+# Forced script: a murder is witnessed, tried as murder, and sentenced to death; the execution is scheduled.
+description: Murder, a death sentence and the execution
+profile: killer
+steps:
+  - roll: outcome/crime/murder
+    value: "{person.first_name} is dead, and the police are at your door within hours."
+  - choose: Cooperate
+  - choose: Take the public defender
+  - choose: Plead not guilty
+  - roll: outcome/crime/court-verdict
+    value: 1
+  - roll: outcome/crime/court-sentencing
+    value: The death sentence. Your appeals will take years, and then the date gets set.

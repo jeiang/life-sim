@@ -26,9 +26,9 @@ hooks:
 | `on_age_up_pre` | Once per age-up, after everyone has aged a year and the per-age roll counters are reset, before the NPC careers, living-with-parents and settlement run. |
 | `on_age_up_post` | Once per age-up, after settlement, before the year's events are drawn. A storylet that stops the year for a choice does not move it: the hook has already run. |
 | `on_death` | Once, when the player dies (the `die` effect with no person in scope), right after the obituary is written. |
-| `on_milestone: <id>` | Once per `fireMilestone` call for that id (see Milestones). Keyed by milestone id. |
+| `on_milestone: <id>` | Once per life, when the life reaches milestone `<id>` (see [Milestones](#milestones)). Keyed by milestone id. |
 
-Each phase is optional and non-empty. `on_succession` is added by its own issue (#219). Yearly income and cost lines are in [Settlement line items](settlement.md).
+Each phase is optional and non-empty. Milestone hooks are keyed by id under `on_milestone`. `on_succession` is added by its own issue (#219). Yearly income and cost lines are in [Settlement line items](settlement.md).
 
 ## Meaning
 
@@ -36,7 +36,29 @@ Each phase is optional and non-empty. `on_succession` is added by its own issue 
 - **Order.** Packs run in bundle order: dependency order (a Pack after every Pack whose capabilities it requires), then Pack id. Inside a Pack, statements run top to bottom. The order across Packs is therefore the same as the order the Packs are listed in the bundle array.
 - **Death.** If a statement of a phase kills the player (a macro or a `die`), the rest of that phase and of the age-up is skipped, and `on_death` runs as for any death. In `on_death` the player is already dead: effects still apply (the obituary, as written, is not changed) and `die` is a build error there.
 - **Build time.** Statements are checked and macros expanded like storylet effects: the compiled hook holds only closed primitives (`PackBundle.hooks`, `HooksDecl`: per phase a list of statements, each the list of effects it expanded to). Nothing is added to saves, the choice log or the world hash; a life with hooks replays and round-trips like one without.
-- **Milestones.** The milestone ids a Pack may declare in `on_milestone` are opaque labels (`provides: milestones`); the compiler checks only the id pattern. The Core emits milestones with #216; until then `fireMilestone(world, bundles, id)` (`@life/core`) is the entry point and runs the hooks for `id` in Pack order, once per call. A caller that must fire a milestone once keeps its own record.
+- **Milestones.** See [Milestones](#milestones): each fires once per life and records itself generically.
+
+## Milestones
+
+A milestone is a moment of a life, named by an opaque id (`^[a-z][a-z0-9_-]*$`). It **fires once per life**: reaching it a second time does nothing, whoever asks. Reaching one
+
+1. records it in the Core-owned world state container `_milestones` (`{ <id>: true }`, see [State containers](state.md#the-milestone-record)); the record is the readable flag `milestone_reached(<id>)` (a boolean usable in any `when`, any scope);
+2. runs the `on_milestone: <id>` statements of every Pack, in Pack order (a hook may reach further milestones; the record stops a loop);
+3. queues the milestone's `trigger: milestone` storylets (see [Milestone storylets](storylets.md#milestone-storylets)), in id order, to open at the next age-up.
+
+The Core emits five milestones itself, with no declaration needed. A milestone whose trigger the Packs never use (no household roles, no retirement kind) simply never fires:
+
+| id | Reached when |
+|---|---|
+| `graduated` | The player finishes an occupation of the `school` group by its `duration_years` and that kind has no `promotes_to` (the end of the last school stage). |
+| `first_job` | The player starts an occupation that pays (pay above 0 when it starts), is not in the `school` group, does not `confines`, and is not the retirement kind. Any start of it counts: `start_occupation(...)` in a storylet or a hook. |
+| `married` | The `merge_money()` effect merges a partner's money into the player's (`living.household.partner_role`). |
+| `first_child` | A person joins the player in the `living.household.dependent_role` role: `spawn_person(<role>, ...)` or `relationship(p).role = <role>`. |
+| `retired` | The player starts the occupation kind `npc_careers.retired`. |
+
+A Pack declares its own milestone with `provides: milestones` in a capability file (the owner Pack; another Pack needs to require that capability to name it, like any content id; two Packs cannot provide one id) and fires it with the effect `reach_milestone(<id>)` from a storylet, macro or hook. `reach_milestone` cannot fire a Core milestone, and listing a Core id in `provides: milestones` only makes that Pack its owner for `vocab`. The build rejects an id nobody declares in `on_milestone`, `milestone_reached`, `reach_milestone` and `trigger: milestone`.
+
+Succession starts the heir's record empty, so the heir reaches each milestone again. The record is in saves and the world hash like any state; a world that never reaches one has no `_milestones` entry. `fireMilestone(world, bundles, id)` (`@life/core`) is the same operation as `reach_milestone` for a caller outside a logged action (a test or tool); it is not logged.
 
 ## Randomness
 

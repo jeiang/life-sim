@@ -16,9 +16,11 @@ import {
   parseSave,
   purchase,
   REPOSSESSION_MISSES,
+  reachedMilestones,
   runAction,
   SAVE_SCHEMA_VERSION,
   type SaveFile,
+  scheduledEntries,
   sell,
   serializeSave,
   serializeWorld,
@@ -117,6 +119,16 @@ export interface LifeResult {
   readonly yearUses: readonly Readonly<Record<string, number>>[];
   /** Chance hits the yearly cap dropped, by Pack id (the storylet id's prefix). */
   readonly capDrops: Readonly<Record<string, number>>;
+  /**
+   * Milestones and scheduled consequences (docs/spec/pack-format/hooks.md#milestones): the
+   * milestones the final life reached, the milestone storylets it opened, and the consequences
+   * still queued when it ended (or was cut off).
+   */
+  readonly consequences: {
+    readonly milestones: readonly string[];
+    readonly fired: number;
+    readonly pending: number;
+  };
   readonly samples: readonly YearSample[];
   /**
    * Money change of every resolved choice of a storylet tagged `wager`, by storylet id: how
@@ -158,6 +170,15 @@ function totalFires(w: World): number {
   let n = 0;
   for (const r of Object.values(w.storyletLog)) n += r.count;
   return n;
+}
+
+/** Ids of the `trigger: milestone` storylets. */
+function milestoneStorylets(bundles: readonly PackBundle[]): Set<string> {
+  return new Set(
+    bundles.flatMap((b) =>
+      b.storylets.filter((s) => s.trigger === "milestone").map((s) => s.id),
+    ),
+  );
 }
 
 /** Opens of storylets whose ids are in `ids`. */
@@ -547,6 +568,13 @@ export function runLife(
     yearDecisions,
     yearUses,
     capDrops,
+    consequences: final
+      ? {
+          milestones: reachedMilestones(final),
+          fired: firesIn(final, milestoneStorylets(bundles)),
+          pending: scheduledEntries(final).length,
+        }
+      : { milestones: [], fired: 0, pending: 0 },
     samples,
     wagers,
     persons: final ? final.persons.size : null,

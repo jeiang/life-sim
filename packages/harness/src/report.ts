@@ -116,6 +116,15 @@ export interface Report {
   >;
   /** Chance hits dropped by the yearly cap, by Pack id (Packs with none are omitted). */
   readonly capDrops: Record<string, number>;
+  /**
+   * Milestones and consequences per life: the share of lives that reached each milestone, the
+   * milestone storylets opened per life, and the consequences still queued at the end of a life.
+   */
+  readonly consequences: {
+    readonly milestones: Record<string, { lives: number; pct: number }>;
+    readonly fired: Dist | null;
+    readonly pending: Dist | null;
+  };
   readonly death: {
     readonly ended: number;
     readonly unfinished: number;
@@ -261,6 +270,9 @@ export class Aggregate {
   private decEmpty = 0;
   private decEmptyYears = 0;
   private readonly capDrops = new Map<string, number>();
+  private readonly milestoneLives = new Map<string, number>();
+  private readonly consequencesFired: number[] = [];
+  private readonly consequencesPending: number[] = [];
   private readonly profileDec = new Map<string, number[]>();
   private choiceEvents5 = 0;
   private years5 = 0;
@@ -390,6 +402,10 @@ export class Aggregate {
       this.profileChoice.set(r.profile, list);
       list.push(all);
     }
+    for (const m of r.consequences.milestones)
+      this.milestoneLives.set(m, (this.milestoneLives.get(m) ?? 0) + 1);
+    this.consequencesFired.push(r.consequences.fired);
+    this.consequencesPending.push(r.consequences.pending);
     for (const [pack, n] of Object.entries(r.capDrops))
       this.capDrops.set(pack, (this.capDrops.get(pack) ?? 0) + n);
     for (const y of r.yearDecisions) {
@@ -691,6 +707,15 @@ export class Aggregate {
       capDrops: Object.fromEntries(
         [...this.capDrops].sort((a, b) => (a[0] < b[0] ? -1 : 1)),
       ),
+      consequences: {
+        milestones: Object.fromEntries(
+          [...this.milestoneLives]
+            .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+            .map(([id, lives]) => [id, { lives, pct: pct(lives, this.lives) }]),
+        ),
+        fired: dist(this.consequencesFired),
+        pending: dist(this.consequencesPending),
+      },
       death: {
         ended: this.deathAges.length,
         unfinished: this.unfinished,
@@ -911,6 +936,19 @@ export function renderMarkdown(
   );
   for (const [k, v] of Object.entries(r.decisions.byProfile))
     L.push(`| ${k} | ${v.atLeast1}% | ${v.atLeast2}% | ${v.atLeast3}% |`);
+  L.push("", "## Milestones and consequences", "");
+  const reached = Object.entries(r.consequences.milestones);
+  if (reached.length === 0) L.push("No milestone was reached.", "");
+  else {
+    L.push("| milestone | lives | share |", "|---|---|---|");
+    for (const [k, v] of reached) L.push(`| ${k} | ${v.lives} | ${v.pct}% |`);
+    L.push("");
+  }
+  L.push(
+    DHEAD,
+    dRow("milestone storylets opened per life", r.consequences.fired),
+    dRow("consequences still pending at the end", r.consequences.pending),
+  );
   L.push("", "## Chance events dropped by the yearly cap", "");
   const drops = Object.entries(r.capDrops);
   if (drops.length === 0) L.push("None.");

@@ -22,6 +22,7 @@ import { makeEnv, qualityOf, type Scope, tableRef } from "./env.ts";
 import { runHook } from "./hooks.ts";
 import { livesWithParents, startLivingOnOwn } from "./living.ts";
 import { grantUnit, removeHolding, tradeHolding } from "./market.ts";
+import { occupationStarted, reachMilestone } from "./milestones.ts";
 import {
   dropAsset,
   endLife,
@@ -86,7 +87,11 @@ function setRole(
     { ...w, relationships: w.relationships.filter((r) => !rows.includes(r)) },
     { from, to, role, closeness, ...(household ? { household } : {}) },
   );
-  return from === w.playerId ? enterRole(next, idx, to, role) : next;
+  if (from !== w.playerId) return next;
+  const entered = enterRole(next, idx, to, role);
+  return role === idx.living?.household?.dependentRole
+    ? reachMilestone(entered, idx, "first_child")
+    : entered;
 }
 
 function applyEffect(
@@ -164,7 +169,11 @@ function applyEffect(
         scope.purpose === undefined ? {} : { purpose: scope.purpose },
       );
       bound.set(e[3], pid);
-      return who === w2.playerId ? enterRole(w2, idx, pid, role) : w2;
+      if (who !== w2.playerId) return w2;
+      const entered = enterRole(w2, idx, pid, role);
+      return role === idx.living?.household?.dependentRole
+        ? reachMilestone(entered, idx, "first_child")
+        : entered;
     }
     case "do": {
       const args = e.slice(2) as Expr[];
@@ -201,8 +210,16 @@ function applyEffect(
           const a = getPerson(w, who).assets.find((x) => x.kindId === kind);
           return a ? dropAsset(w, who, a.id) : w;
         }
-        case "start_occupation":
-          return startOccupation(w, idx, who, str(args[0], w, idx, scope));
+        case "start_occupation": {
+          const kind = str(args[0], w, idx, scope);
+          return occupationStarted(
+            w,
+            startOccupation(w, idx, who, kind),
+            idx,
+            who,
+            kind,
+          );
+        }
         case "end_occupation": {
           const kind = str(args[0], w, idx, scope);
           const o = getPerson(w, who).occupations.find(
@@ -231,7 +248,7 @@ function applyEffect(
               : putRelationship(w, { ...rel, household: "together" });
           const partner = getPerson(w, rel.to);
           const moved = Math.max(0, partner.money);
-          return putRelationship(
+          const merged = putRelationship(
             updatePerson(
               updatePerson(w, rel.to, (x) => ({
                 ...x,
@@ -242,6 +259,7 @@ function applyEffect(
             ),
             { ...rel, household: "merged" },
           );
+          return reachMilestone(merged, idx, "married");
         }
         case "set_standard": {
           const id = str(args[0], w, idx, scope);
@@ -267,6 +285,8 @@ function applyEffect(
             args[3] as Expr | boolean,
             args[4] as boolean,
           );
+        case "reach_milestone":
+          return reachMilestone(w, idx, str(args[0], w, idx, scope));
         case "unschedule":
           return unschedule(w, str(args[0], w, idx, scope));
         case "journal":

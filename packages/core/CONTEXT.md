@@ -176,6 +176,10 @@ _Avoid_: Prompt slot, choice slot
 A follow-up queued by the `schedule` effect: an event storylet that fires once in a window of years, with a rising chance, if its conditions hold when it is due; cancelled by `unschedule`; carried to the heir only with `lineage: true`. It fires on top of the decision slots. The queue is the Core-owned world state container `_schedule`.
 _Avoid_: Timer, delayed event
 
+**Milestone**:
+A moment of a life, named by an id: the Core emits `graduated`, `first_job`, `married`, `first_child` and `retired`, and a Pack declares others (`provides: milestones`) and fires them with `reach_milestone`. It fires once per life: it sets the readable flag `milestone_reached(id)`, runs the Packs' `on_milestone` hooks and opens its `trigger: milestone` storylets at the next age-up. The record is the Core-owned world state container `_milestones`.
+_Avoid_: Achievement, trigger, unlock
+
 **Repeatable action**:
 An action that can be done many times a year with diminishing returns: uses up to the manifest curve's `full` give the whole effect, uses up to `reduced` give a share (default a quarter) of every gain, later uses give none. Only gains shrink (positive stats and closeness); money, costs and harms never do. Counted per action (and per target person) per year, reset at age-up, held in life state as the **uses** counters.
 _Avoid_: Grind, spam, cooldown (the opposite rule)

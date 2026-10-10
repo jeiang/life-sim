@@ -1,0 +1,20 @@
+provides:
+  qualities:
+    - hooks_graduated
+    - hooks_first_job
+    - hooks_married
+    - hooks_first_child
+    - hooks_retired
+    - hooks_pet
+    - hooks_chain
+    - celebrated
+    - blocked_fired
+    - pet_story
+    - gate
+  milestones:
+    - pet_adopted
+    - chain_end
+requires:
+  - core-loop/careers
+  - core-loop/education
+  - core-loop/family

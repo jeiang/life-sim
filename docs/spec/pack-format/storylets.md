@@ -8,7 +8,7 @@ Storylets, repeatable actions and the yearly event draw. Part of the [Pack forma
 # packs/core-loop/storylets/work.yaml
 - id: first-job-offer
   icon: 💼
-  trigger: event              # event | action
+  trigger: event              # event | action | milestone
   chance: 4%                  # life event: absolute yearly roll
   when: age >= 16 and not has_occupation(job) and stat.smarts >= 30
   once: true
@@ -30,7 +30,8 @@ Storylets, repeatable actions and the yearly event draw. Part of the [Pack forma
 | Field | Meaning |
 |---|---|
 | `id`, `icon`, `tags` | Identity; optional icon (see Icons); free tags for grouping. `custody-ok` is a Core-owned tag: see [Confinement](content-kinds.md#confinement). `wager` marks a storylet in which the player risks money; the balance harness reports its realised return. |
-| `trigger` | `event` (drawn at age-up) or `action` (offered in a menu). |
+| `trigger` | `event` (drawn at age-up), `action` (offered in a menu) or `milestone` (opened when the life reaches a milestone, see [Milestone storylets](#milestone-storylets)). |
+| `milestone` | `trigger: milestone` only, required: the milestone id (Core, or `provides: milestones`). |
 | `menu` | For actions: the menu path, `<top>` or `<top>/<submenu>`, where the top is one of `occupation`, `assets`, `relationships`, `activities` (see [screens](screens.md#menu-ids)). |
 | `scope` | Optional binding, evaluated once per bound item. `loan` (events only): once per loan the player holds, with `loan` bound (for example a missed-payment event). `person`: once per non-player person during the NPC yearly pass, with `person` bound (NPC storylets); an event with `choices` is instead a decision the player faces (see [Person decisions](#person-decisions)); on an action, the UI offers it for a chosen person. `die(...)` kills the bound person, and `relationship(person).closeness += n` changes the tie to them. Without `scope`, only the player and storylet-local names are in scope. |
 | `target` | With `scope: person`: role ids the person must hold toward the player (for example `[core-loop/parent]`). `person.role`, `person.alive` and `person.age` are readable. |
@@ -102,6 +103,51 @@ At each age-up, after settlement (ADR 0003), first the [scheduled consequences](
 - **Lineage.** The queue is dropped when the player dies (and at succession), except entries marked `lineage: true`. The dynasty hand-off of those entries to the heir is #219.
 - **Order.** Consequences that came due open first in the year's event queue, outside the decision slots, the flavour slots and the cap, then the chance events, decisions and flavour events. Purpose key `schedule/<storylet>[#<person id>]`, one roll per eligible entry per age-up, drawn after `on_age_up_post` and before the year draw.
 - **Storage.** The queue is a Core-owned world state container under the reserved id `_schedule` (see [State containers](state.md#the-schedule-queue)), so saves, hash and replay need nothing more.
+
+### Milestone storylets
+
+A storylet with `trigger: milestone` and `milestone: <id>` opens when the life reaches that milestone ([Milestones](hooks.md#milestones): the Core emits `graduated`, `first_job`, `married`, `first_child` and `retired`; a Pack declares others and fires them with `reach_milestone(<id>)`). It has no `chance`, `weight`, `menu`, `scope` or `target`; `when`, `once`, `cooldown`, `max_per_life`, `text`, `choices`, `outcomes` and `next` work as for events. The milestone fires once per life, so the storylet is offered at most once per life too.
+
+- **When.** Reaching the milestone queues it as a scheduled consequence with a one-age-up window: it opens in the next age-up's event queue (the same age-up when the milestone is reached by settlement, as `graduated` is), on top of the decision slots and outside the cap, in id order with the other due consequences. Its `when` is checked then: if it fails, the storylet is dropped and never offered later. `unschedule(<storylet>)` cancels it.
+- **Choices.** A milestone storylet with `choices` is a decision the player answers; the year stops for it like any other.
+- **Rolls.** The age-up spends one roll under the purpose key `schedule/<storylet>` per queued milestone storylet (chance 100%).
+
+A decision tree needs no new primitive: a milestone storylet opens the first node, each outcome's `next` opens the next, and `schedule(...)` queues a later branch.
+
+```yaml
+# The player's first pay check opens a choice; the choice leads to a second storylet or a later one.
+- id: first-pay
+  trigger: milestone
+  milestone: first_job
+  text: Your first pay check lands.
+  choices:
+    - label: Save it
+      outcomes:
+        - text: You put it away.
+          effects:
+            - "schedule(life/rainy-day, after: 2-5 years)"
+    - label: Spend it
+      outcomes:
+        - text: A night out.
+          effects:
+            - stat.happiness += 5
+          next: life/hangover
+- id: hangover
+  trigger: event
+  chance: 0                       # opened only by `next:`
+  text: A rough morning.
+  outcomes:
+    - effects:
+        - stat.health -= 2
+- id: rainy-day
+  trigger: event
+  chance: 0                       # opened only by `schedule`
+  when: milestone_reached(first_job)
+  text: The savings come in handy.
+  outcomes:
+    - effects:
+        - money += 50000
+```
 
 ### Decision slots
 

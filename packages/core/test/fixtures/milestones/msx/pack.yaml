@@ -1,0 +1,18 @@
+id: msx
+hooks:
+  on_milestone:
+    graduated:
+      - quality.hooks_graduated += 1
+    first_job:
+      - quality.hooks_first_job += 1
+    married:
+      - quality.hooks_married += 1
+    first_child:
+      - quality.hooks_first_child += 1
+    retired:
+      - quality.hooks_retired += 1
+    pet_adopted:
+      - quality.hooks_pet += 1
+      - "reach_milestone(chain_end)"
+    chain_end:
+      - quality.hooks_chain += 1

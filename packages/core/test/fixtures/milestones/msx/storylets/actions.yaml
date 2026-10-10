@@ -1,0 +1,57 @@
+- id: enrol
+  trigger: action
+  menu: activities
+  outcomes:
+    - effects:
+        - start_occupation(core-loop/high-school)
+- id: take-job
+  trigger: action
+  menu: occupation
+  outcomes:
+    - effects:
+        - start_occupation(core-loop/cashier)
+- id: retire
+  trigger: action
+  menu: occupation
+  outcomes:
+    - effects:
+        - start_occupation(core-loop/retired)
+- id: meet-partner
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - spawn_person(core-loop/partner, core-loop/coworker-gen) as p
+- id: wed
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [core-loop/partner]
+  outcomes:
+    - effects:
+        - merge_money()
+- id: baby
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - spawn_person(core-loop/child, core-loop/sibling-gen) as c
+- id: adopt-pet
+  trigger: action
+  menu: activities
+  outcomes:
+    - effects:
+        - reach_milestone(pet_adopted)
+- id: open-gate
+  trigger: action
+  menu: activities
+  outcomes:
+    - effects:
+        - quality.gate = true
+- id: check-reached
+  trigger: action
+  menu: activities
+  when: milestone_reached(pet_adopted) and not milestone_reached(graduated)
+  outcomes:
+    - effects:
+        - quality.pet_story += 1

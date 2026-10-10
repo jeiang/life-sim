@@ -44,3 +44,9 @@ Age-up order becomes: age every person, the NPC career pass, settlement, events,
 
 - Age-up order gains a step: after `on_age_up_post` and before the year draw, scheduled consequences are processed. Each entry whose window is open and whose storylet is eligible rolls once under the new purpose key `schedule/<storylet>` (`schedule/<storylet>#<person id>` for a person-bound entry), chance `floor(10000 / left)` basis points; an entry that is not eligible, still waiting, or whose person died draws nothing. Entries are visited in the order they were queued. Fired ones open first in the year's event queue, outside the decision slots, flavour slots and cap.
 - The queue is saved and hashed as the reserved world state container `_schedule`. It is absent until the first `schedule` and removed when empty, so a world that never schedules replays exactly as before and no other counter moves. The save schema stays 6.
+
+## Amendment 2026-10-10: milestones (#216)
+
+- Reaching a milestone is recorded once per life in the reserved world state container `_milestones` (`{ <id>: true }`), absent until the first, dropped at succession. It is saved and hashed as state; the save schema stays 6.
+- A milestone runs the `on_milestone/<id>` hooks (purpose keys `pack/<id>/on_milestone/<milestone>/<n>`, unchanged) at the moment it is reached, inside whatever step reached it (a storylet effect, settlement, a hook), then queues its `trigger: milestone` storylets in the `_schedule` queue with a one-age-up window. They open at the next age-up's scheduled step, each with one roll under the existing purpose key `schedule/<storylet>` (chance 100%). No new purpose key and no change to the age-up order.
+- A world that never reaches a milestone replays as before: no record, no queue entry, no roll.

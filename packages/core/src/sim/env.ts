@@ -8,6 +8,7 @@ import {
 } from "../expr/index.ts";
 import type { TableDecl } from "../pack.ts";
 import { cellValue, counterValue } from "../state/containers.ts";
+import { milestoneReached } from "../state/milestones.ts";
 import {
   type Loan,
   type Person,
@@ -379,6 +380,8 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
               )
             : 0;
         }
+        case "milestone_reached":
+          return milestoneReached(world, id);
         case "in_group":
           return subject.occupations.some((o) => o.group === id);
         case "years_in_group":

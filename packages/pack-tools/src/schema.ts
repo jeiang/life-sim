@@ -588,7 +588,18 @@ export const StoryletSchema = obj(
     ),
     icon: Type.Optional(Icon),
     tags: Type.Optional(Type.Array(Type.String())),
-    trigger: Type.Union([Type.Literal("event"), Type.Literal("action")]),
+    trigger: Type.Union([
+      Type.Literal("event"),
+      Type.Literal("action"),
+      Type.Literal("milestone"),
+    ]),
+    milestone: Type.Optional(
+      Type.String({
+        pattern: "^[a-z][a-z0-9_-]*$",
+        description:
+          "Milestones only: the milestone id (Core or `provides: milestones`) that opens it at the next age-up",
+      }),
+    ),
     menu: Type.Optional(
       Type.String({
         pattern:

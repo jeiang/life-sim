@@ -648,32 +648,14 @@
   trigger: action
   menu: occupation
   tags: [job]
-  when: has_occupation(core-loop/cashier) or has_occupation(core-loop/barista) or has_occupation(core-loop/server) or has_occupation(core-loop/shift-lead) or has_occupation(core-loop/restaurant-manager) or has_occupation(core-loop/apprentice) or has_occupation(core-loop/electrician) or has_occupation(core-loop/master-electrician) or has_occupation(core-loop/junior-analyst) or has_occupation(core-loop/analyst) or has_occupation(core-loop/senior-analyst) or has_occupation(core-loop/junior-engineer) or has_occupation(core-loop/engineer) or has_occupation(core-loop/senior-engineer) or has_occupation(core-loop/staff-nurse) or has_occupation(core-loop/charge-nurse) or has_occupation(core-loop/nurse-manager) or has_occupation(core-loop/studio-assistant) or has_occupation(core-loop/designer) or has_occupation(core-loop/art-director)
+  when: (in_group("full-time") and not has_occupation(core-loop/retired)) or in_group("part-time")
   text: "You hand in your notice."
   outcomes:
     - weight: 1
       text: "You walk out with a box of your things."
       effects:
-        - end_occupation(core-loop/cashier)
-        - end_occupation(core-loop/barista)
-        - end_occupation(core-loop/server)
-        - end_occupation(core-loop/shift-lead)
-        - end_occupation(core-loop/restaurant-manager)
-        - end_occupation(core-loop/apprentice)
-        - end_occupation(core-loop/electrician)
-        - end_occupation(core-loop/master-electrician)
-        - end_occupation(core-loop/junior-analyst)
-        - end_occupation(core-loop/analyst)
-        - end_occupation(core-loop/senior-analyst)
-        - end_occupation(core-loop/junior-engineer)
-        - end_occupation(core-loop/engineer)
-        - end_occupation(core-loop/senior-engineer)
-        - end_occupation(core-loop/staff-nurse)
-        - end_occupation(core-loop/charge-nurse)
-        - end_occupation(core-loop/nurse-manager)
-        - end_occupation(core-loop/studio-assistant)
-        - end_occupation(core-loop/designer)
-        - end_occupation(core-loop/art-director)
+        - end_group("full-time")
+        - end_group("part-time")
         - quality.raise_bonus = 0
         - quality.work_effort = 0
         - stat.happiness -= 1
@@ -692,8 +674,7 @@
       text: "You retire and start collecting a pension."
       effects:
         - quality.years_worked = years_in_group("full-time") + years_in_group("part-time")
-        - end_occupation(core-loop/cashier)
-        - end_occupation(core-loop/barista)
+        - end_group("part-time")
         - start_occupation(core-loop/retired)
         - quality.raise_bonus = 0
         - quality.work_effort = 0

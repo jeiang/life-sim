@@ -77,7 +77,7 @@
 ## ask-out
 - trigger: event
 - icon: 🌹
-- weight: 8
+- weight: 10
 - scope: person
 - target: core-loop/friend, core-loop/classmate, core-loop/coworker
 - when: age >= 14 and person.age >= 14 and (age < 18) == (person.age < 18) and person.age - age <= 15 and age - person.age <= 15 and person.closeness >= 30 and count_role(core-loop/partner, 0, 100) == 0 and count_role(core-loop/spouse, 0, 100) == 0
@@ -89,7 +89,7 @@
   - text: {person.first_name} lights up and says yes before you finish the sentence.
   - effect: relationship(person).role = core-loop/partner
   - effect: stat.happiness += 6
-- outcome: 100 - (player.gender == "male" ? person.quality.dating_attracted_men : (player.gender == "female" ? person.quality.dating_attracted_women : person.quality.dating_attracted_nonbinary))
+- outcome: (100 - (player.gender == "male" ? person.quality.dating_attracted_men : (player.gender == "female" ? person.quality.dating_attracted_women : person.quality.dating_attracted_nonbinary))) / 3
   - text: {person.first_name} lets you down gently, and the next few days are a little awkward.
   - effect: relationship(person).closeness += -15
   - effect: stat.happiness -= 3
@@ -103,7 +103,7 @@
 ## propose
 - trigger: event
 - icon: 💍
-- weight: 6
+- weight: 100
 - scope: person
 - target: core-loop/partner
 - needs: quality dating_proposed: flag, default false: whether the player has already proposed to this partner

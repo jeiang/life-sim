@@ -26,8 +26,12 @@ profiles:
         ids: [dating/affair-cheat, dating/divorce]
       - when: { age_at_least: 60 }
         ids: [dating/break-up]
-# Destructive relationship actions stay rare in the uniform `random` profile: a uniform picker would break up, cheat and divorce far more often than anyone chooses to.
+# Destructive relationship actions stay rare in the uniform `random` profile: a uniform picker would break up and cheat far more often than anyone chooses to. Divorce is a smaller cut because the ex-keeps-the-kids path needs it.
 adjust:
-  - { profile: random, ids: [dating/break-up, dating/divorce, dating/affair-cheat], weight: 0.05 }
+  - { profile: random, ids: [dating/break-up, dating/affair-cheat], weight: 0.05 }
+  - { profile: random, ids: [dating/divorce], weight: 1 }
   # Adoption is a once-in-a-life choice with a fee; a uniform picker with $5,000 would take it far more often than anyone does.
   - { profile: random, ids: [dating/adopt-a-child], weight: 0.2 }
+  # A uniform picker finds a wedding, a move-in or a baby only by luck among the dozens of actions on the menu; people who are engaged or partnered pick these far more often.
+  - { profile: random, ids: [dating/plan-wedding], weight: 100 }
+  - { profile: random, ids: [dating/move-in-together, dating/try-for-a-baby], weight: 8 }

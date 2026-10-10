@@ -1,0 +1,46 @@
+# Simulated player profiles of the Relocation Pack; the schema is docs/spec/harness.md#simulated-player-profiles.
+# `quit` marks the profile as done applying once it has emigrated (a relapse of one in 1000 per move is the schema's floor).
+profiles:
+  mover:
+    default: false
+    description: Applies to emigrate once the fee is affordable (retries after a denial, never again after arriving), studies languages, moves home from 55, and otherwise lives like the random profile
+    moves: { below: 4 }
+    once_per_year: true
+    quit: { quality: reloc_emigrations, relapse_one_in: 1000 }
+    choice:
+      avoid: ["never mind"]
+    rules:
+      - when: { quitting: false }
+        ids: [relocation/emigrate-apply]
+      - when: { age_at_least: 55 }
+        ids: [relocation/move-back-home]
+      - ids: ["*/apply-*"]
+      - ids: [relocation/study-a-language]
+      - {}
+  caller:
+    description: "A mover who keeps in touch: calls and visits relatives from abroad before anything else"
+    default: false
+    moves: { below: 4 }
+    once_per_year: true
+    quit: { quality: reloc_emigrations, relapse_one_in: 1000 }
+    choice:
+      avoid: ["never mind"]
+    rules:
+      - when: { quitting: false }
+        ids: [relocation/emigrate-apply]
+      - ids: [relocation/call-home, relocation/visit-home]
+      - when: { age_at_least: 55 }
+        ids: [relocation/move-back-home]
+      - ids: ["*/apply-*"]
+      - {}
+  stayer:
+    description: Never touches an emigration action, so it is the net-worth baseline for the movers
+    moves: { below: 4 }
+    once_per_year: true
+    rules:
+      - ids: ["**"]
+        except: ["relocation/emigrate-apply", "relocation/move-*"]
+# Emigration is a rare life event, not a pastime: halve the random profile's draws on it (mover and caller are opt-in focused profiles).
+adjust:
+  - { profile: random, ids: [relocation/emigrate-apply], weight: 0.5 }
+  - { profile: random, ids: [relocation/move-city-abroad, relocation/move-back-home], weight: 0.5 }

@@ -1,0 +1,266 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Emigration".
+
+- id: emigrate-apply
+  icon: 📝
+  trigger: action
+  menu: assets/housing
+  label: Apply to emigrate
+  tags: [apply, travel]
+  when: "age >= 18 and not in_group(school) and not confined and not quality.reloc_abroad and not quality.reloc_pending and not quality.reloc_job_fork and money >= 300000"
+  cooldown: 1
+  text: "Abroad is on the table. The application fee is $3,000 and it does not come back. Pick a country and see what the immigration office thinks."
+  choices:
+    - label: Toronto, Canada
+      outcomes:
+        - weight: 1
+          text: "The forms go out. Your $3,000 is gone, and the waiting starts."
+          effects:
+            - money -= 300000
+            - "quality.reloc_applications += 1"
+            - "quality.reloc_pending = true"
+            - "quality.reloc_pending_dest = 0"
+          next: emigrate-decision
+    - label: Montreal, Canada
+      outcomes:
+        - weight: 1
+          text: "The forms go out. Your $3,000 is gone, and the waiting starts."
+          effects:
+            - money -= 300000
+            - "quality.reloc_applications += 1"
+            - "quality.reloc_pending = true"
+            - "quality.reloc_pending_dest = 1"
+          next: emigrate-decision
+    - label: London, UK
+      outcomes:
+        - weight: 1
+          text: "The forms go out. Your $3,000 is gone, and the waiting starts."
+          effects:
+            - money -= 300000
+            - "quality.reloc_applications += 1"
+            - "quality.reloc_pending = true"
+            - "quality.reloc_pending_dest = 2"
+          next: emigrate-decision
+    - label: Manchester, UK
+      outcomes:
+        - weight: 1
+          text: "The forms go out. Your $3,000 is gone, and the waiting starts."
+          effects:
+            - money -= 300000
+            - "quality.reloc_applications += 1"
+            - "quality.reloc_pending = true"
+            - "quality.reloc_pending_dest = 3"
+          next: emigrate-decision
+    - label: Tokyo, Japan
+      outcomes:
+        - weight: 1
+          text: "The forms go out. Your $3,000 is gone, and the waiting starts."
+          effects:
+            - money -= 300000
+            - "quality.reloc_applications += 1"
+            - "quality.reloc_pending = true"
+            - "quality.reloc_pending_dest = 4"
+          next: emigrate-decision
+    - label: Osaka, Japan
+      outcomes:
+        - weight: 1
+          text: "The forms go out. Your $3,000 is gone, and the waiting starts."
+          effects:
+            - money -= 300000
+            - "quality.reloc_applications += 1"
+            - "quality.reloc_pending = true"
+            - "quality.reloc_pending_dest = 5"
+          next: emigrate-decision
+    - label: Mexico City, Mexico
+      outcomes:
+        - weight: 1
+          text: "The forms go out. Your $3,000 is gone, and the waiting starts."
+          effects:
+            - money -= 300000
+            - "quality.reloc_applications += 1"
+            - "quality.reloc_pending = true"
+            - "quality.reloc_pending_dest = 6"
+          next: emigrate-decision
+    - label: Guadalajara, Mexico
+      outcomes:
+        - weight: 1
+          text: "The forms go out. Your $3,000 is gone, and the waiting starts."
+          effects:
+            - money -= 300000
+            - "quality.reloc_applications += 1"
+            - "quality.reloc_pending = true"
+            - "quality.reloc_pending_dest = 7"
+          next: emigrate-decision
+    - label: Never mind
+      outcomes:
+        - weight: 1
+          text: You close the folder and keep your money.
+
+- id: emigrate-decision
+  icon: 📋
+  trigger: event
+  tags: [apply]
+  chance: 0%
+  text: Your file lands on a desk in a grey office. A stranger reads it and decides where your next decade happens.
+  outcomes:
+    - weight: "clamp(40 + stat.smarts / 5 + ((quality.has_degree_business or quality.has_degree_engineering or quality.has_degree_nursing or quality.has_degree_arts) ? 10 : 0) + min(15, quality.years_worked) + min(10, money / 1000000) - 5 * min(quality.reloc_denials, 3), 5, 95)"
+      text: The letter says approved. Start packing, and find out where the plane goes.
+      effects:
+        - "relocation.remember_home()"
+        - "journal(\"Your emigration application is approved.\")"
+      next: emigrate-job-fork
+    - weight: "100 - clamp(40 + stat.smarts / 5 + ((quality.has_degree_business or quality.has_degree_engineering or quality.has_degree_nursing or quality.has_degree_arts) ? 10 : 0) + min(15, quality.years_worked) + min(10, money / 1000000) - 5 * min(quality.reloc_denials, 3), 5, 95)"
+      text: The letter says denied. The fee is gone, and you can try again next year.
+      effects:
+        - "quality.reloc_denials += 1"
+        - "quality.reloc_pending = false"
+        - "quality.reloc_pending_dest = 0"
+        - stat.happiness -= 4
+        - "journal(\"Your emigration application is denied. You can try again next year.\")"
+
+- id: emigrate-job-fork
+  icon: 💼
+  trigger: event
+  tags: [job]
+  chance: 0%
+  text: You are approved. Before you pack, there is the matter of your job.
+  outcomes:
+    - weight: 1
+      when: "not in_group(\"full-time\") and not in_group(\"part-time\")"
+      text: You have no job to leave behind. Pack the sweaters.
+      effects:
+        - "quality.reloc_job_fork = false"
+      next: relocation-arrive
+    - weight: 1
+      when: "has_occupation(core-loop/retired)"
+      text: Retirement follows you overseas. The pension keeps coming.
+      effects:
+        - "quality.reloc_job_fork = false"
+      next: relocation-arrive
+    - weight: "clamp(40 + stat.smarts / 5 + quality.work_effort * 6 + min(15, quality.years_worked), 5, 95)"
+      when: "has_remote_job() and not has_occupation(core-loop/retired)"
+      text: Your boss agrees you can keep working remotely from wherever you land.
+      effects:
+        - "quality.reloc_job_fork = false"
+      next: relocation-arrive
+    - weight: "100 - clamp(40 + stat.smarts / 5 + quality.work_effort * 6 + min(15, quality.years_worked), 5, 95)"
+      when: "has_remote_job() and not has_occupation(core-loop/retired)"
+      text: Your boss wants you in the office, so the job goes with the move.
+      effects:
+        - "quality.reloc_job_fork = false"
+        - "end_group(\"full-time\")"
+        - "end_group(\"part-time\")"
+      next: relocation-arrive
+    - weight: 1
+      when: "(in_group(\"full-time\") or in_group(\"part-time\")) and not has_remote_job() and not has_occupation(core-loop/retired)"
+      text: You hand in your notice. The team throws a small party and forgets to get you a card.
+      effects:
+        - "quality.reloc_job_fork = false"
+        - "end_group(\"full-time\")"
+        - "end_group(\"part-time\")"
+      next: relocation-arrive
+
+- id: relocation-arrive
+  icon: ✈️
+  trigger: event
+  tags: [travel]
+  chance: 0%
+  when: "quality.reloc_pending"
+  text: The plane lands, and the rest of your life starts in a new country.
+  outcomes:
+    - weight: 1
+      when: "quality.reloc_pending and quality.reloc_pending_dest == 0"
+      text: Toronto. Cold mornings, polite lineups, and a surprising number of opinions about hockey. Your new life starts on Monday.
+      effects:
+        - "move_to(relocation/toronto)"
+        - "quality.reloc_abroad = true"
+        - "quality.reloc_dest = 0"
+        - "quality.reloc_pending = false"
+        - "quality.reloc_pending_dest = 0"
+        - "quality.reloc_emigrations += 1"
+        - "quality.reloc_lang_english = max(quality.reloc_lang_english, 20)"
+        - "journal(\"You land in Toronto with two suitcases and a plan.\")"
+    - weight: 1
+      when: "quality.reloc_pending and quality.reloc_pending_dest == 1"
+      text: Montreal. The bagels are excellent, the French moves faster than your textbook, and the winters are a personality test.
+      effects:
+        - "move_to(relocation/montreal)"
+        - "quality.reloc_abroad = true"
+        - "quality.reloc_dest = 1"
+        - "quality.reloc_pending = false"
+        - "quality.reloc_pending_dest = 0"
+        - "quality.reloc_emigrations += 1"
+        - "quality.reloc_lang_french = max(quality.reloc_lang_french, 20)"
+        - "journal(\"You land in Montreal and start learning French.\")"
+    - weight: 1
+      when: "quality.reloc_pending and quality.reloc_pending_dest == 2"
+      text: London. The rent is outrageous, the rain never quite stops, and the tea is worth every penny.
+      effects:
+        - "move_to(relocation/london)"
+        - "quality.reloc_abroad = true"
+        - "quality.reloc_dest = 2"
+        - "quality.reloc_pending = false"
+        - "quality.reloc_pending_dest = 0"
+        - "quality.reloc_emigrations += 1"
+        - "quality.reloc_lang_english = max(quality.reloc_lang_english, 20)"
+        - "journal(\"You land in London and find out what rent really costs.\")"
+    - weight: 1
+      when: "quality.reloc_pending and quality.reloc_pending_dest == 3"
+      text: Manchester. Cheaper than London, louder than most places, and the music never stops.
+      effects:
+        - "move_to(relocation/manchester)"
+        - "quality.reloc_abroad = true"
+        - "quality.reloc_dest = 3"
+        - "quality.reloc_pending = false"
+        - "quality.reloc_pending_dest = 0"
+        - "quality.reloc_emigrations += 1"
+        - "quality.reloc_lang_english = max(quality.reloc_lang_english, 20)"
+        - "journal(\"You land in Manchester and the city feels like it has been waiting for you.\")"
+    - weight: 1
+      when: "quality.reloc_pending and quality.reloc_pending_dest == 4"
+      text: Tokyo. The trains run on time, the lights never sleep, and you have to learn the subway map fast.
+      effects:
+        - "move_to(relocation/tokyo)"
+        - "quality.reloc_abroad = true"
+        - "quality.reloc_dest = 4"
+        - "quality.reloc_pending = false"
+        - "quality.reloc_pending_dest = 0"
+        - "quality.reloc_emigrations += 1"
+        - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 20)"
+        - "journal(\"You land in Tokyo and the trains are somehow more punctual than you hoped.\")"
+    - weight: 1
+      when: "quality.reloc_pending and quality.reloc_pending_dest == 5"
+      text: Osaka. Street food on every corner, and a city that will happily tell you how to eat it.
+      effects:
+        - "move_to(relocation/osaka)"
+        - "quality.reloc_abroad = true"
+        - "quality.reloc_dest = 5"
+        - "quality.reloc_pending = false"
+        - "quality.reloc_pending_dest = 0"
+        - "quality.reloc_emigrations += 1"
+        - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 20)"
+        - "journal(\"You land in Osaka and go straight for the street food.\")"
+    - weight: 1
+      when: "quality.reloc_pending and quality.reloc_pending_dest == 6"
+      text: Mexico City. Traffic, tacos, and a wall of noise that somehow becomes home fast.
+      effects:
+        - "move_to(relocation/mexico-city)"
+        - "quality.reloc_abroad = true"
+        - "quality.reloc_dest = 6"
+        - "quality.reloc_pending = false"
+        - "quality.reloc_pending_dest = 0"
+        - "quality.reloc_emigrations += 1"
+        - "quality.reloc_lang_spanish = max(quality.reloc_lang_spanish, 20)"
+        - "journal(\"You land in Mexico City and the noise starts to feel like home.\")"
+    - weight: 1
+      when: "quality.reloc_pending and quality.reloc_pending_dest == 7"
+      text: Guadalajara. Mariachi on the corner, a warm sun, and a dry sense of humor you will never quite match.
+      effects:
+        - "move_to(relocation/guadalajara)"
+        - "quality.reloc_abroad = true"
+        - "quality.reloc_dest = 7"
+        - "quality.reloc_pending = false"
+        - "quality.reloc_pending_dest = 0"
+        - "quality.reloc_emigrations += 1"
+        - "quality.reloc_lang_spanish = max(quality.reloc_lang_spanish, 20)"
+        - "journal(\"You land in Guadalajara and the sun is out for the first time in weeks.\")"

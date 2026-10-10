@@ -1,0 +1,85 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Relatives left behind".
+
+- id: relatives-drift
+  icon: 📭
+  trigger: event
+  scope: person
+  target: [core-loop/parent, core-loop/sibling, core-loop/friend]
+  chance: 75%
+  when: "quality.reloc_abroad"
+  text: "Back home, {person.first_name} is getting on with life, and the news from you has dried up."
+  outcomes:
+    - weight: 50
+      text: Another month goes by and the messages stop coming.
+      effects:
+        - relationship(person).closeness += -6
+    - weight: 30
+      text: "{person.first_name} hears about your news from a cousin, and it stings."
+      effects:
+        - relationship(person).closeness += -6
+    - weight: 20
+      text: "A birthday card arrives a week late, with a short note that says only \"Hope you're well.\""
+      effects:
+        - relationship(person).closeness += -6
+
+- id: call-home
+  icon: 📞
+  trigger: action
+  menu: relationships
+  label: Call from abroad
+  scope: person
+  target: [core-loop/parent, core-loop/sibling, core-loop/friend]
+  when: "quality.reloc_abroad and age >= 18"
+  repeatable: true
+  text: "You dial {person.first_name}'s number and wait through the long international ring."
+  outcomes:
+    - weight: 80
+      text: You talk for an hour and catch up on everything you have missed.
+      effects:
+        - relationship(person).closeness += 4
+        - stat.happiness += 2
+    - weight: 20
+      text: The time difference is against you, and you hang up after ten minutes.
+      effects:
+        - relationship(person).closeness += 1
+        - stat.happiness += 1
+
+- id: visit-home
+  icon: 🧳
+  trigger: action
+  menu: relationships
+  label: Fly back to visit
+  scope: person
+  target: [core-loop/parent, core-loop/sibling, core-loop/friend]
+  when: "quality.reloc_abroad and money >= 120000"
+  cooldown: 2
+  text: The flight and the hotel cost a fair bit, but you book it anyway.
+  outcomes:
+    - weight: 80
+      text: "You spend a long weekend together and it feels like old times with {person.first_name}."
+      effects:
+        - money -= 120000
+        - relationship(person).closeness += 8
+        - stat.happiness += 2
+    - weight: 20
+      text: The visit is polite but stilted, and you both leave a little relieved.
+      effects:
+        - money -= 120000
+        - relationship(person).closeness += 3
+
+- id: relatives-reunion
+  icon: 🎉
+  trigger: event
+  scope: person
+  target: [core-loop/parent, core-loop/sibling, core-loop/friend]
+  chance: 100%
+  when: "quality.reloc_returns > 0 and quality.reloc_return_age > 0 and not quality.reloc_abroad and age > quality.reloc_return_age"
+  once: true
+  text: "You are home again, and {person.first_name} is the first person you want to see."
+  outcomes:
+    - weight: 1
+      text: The reunion is loud, emotional and a little overdue.
+      effects:
+        - relationship(person).closeness += 10
+        - stat.happiness += 3

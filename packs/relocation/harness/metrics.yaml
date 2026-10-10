@@ -1,0 +1,72 @@
+# Harness metrics for the Relocation Pack; the schema is docs/spec/harness.md#pack-metrics.
+title: Relocation
+intro: Movers are the lives that emigrated at least once, stayers those that never did. Net worth is in minor units. Relatives' closeness is the average over the living parents, siblings and friends, read at the first age-up of each listed age.
+measures:
+  applications: { quality: reloc_applications, at: end }
+  denials: { quality: reloc_denials, at: end }
+  emigrations: { quality: reloc_emigrations, at: end }
+  returns: { quality: reloc_returns, at: end }
+  abroad_end: { quality: reloc_abroad, at: end }
+  abroad_years: { quality: reloc_abroad, at: years }
+  years: { life: years }
+  applied: { when: "applications > 0" }
+  mover: { when: "emigrations > 0" }
+  stayer: { when: "emigrations == 0" }
+  returned: { when: "returns > 0" }
+  nw: { snapshot: net_worth, ages: [40, 65] }
+  kin: { snapshot: { quality: reloc_kin_closeness }, ages: [30, 50] }
+  happy: { snapshot: { stat: happiness }, ages: [25, 35, 45] }
+  japanese: { snapshot: { quality: reloc_lang_japanese }, ages: [30] }
+  spanish: { snapshot: { quality: reloc_lang_spanish }, ages: [30] }
+  french: { snapshot: { quality: reloc_lang_french }, ages: [30] }
+  child_domestic: { fires: { storylet: relocation/child-move-domestic } }
+  child_abroad: { fires: { storylet: relocation/child-move-abroad } }
+  studied: { fires: { storylet: relocation/study-a-language } }
+  calls: { fires: { storylet: relocation/call-home } }
+  visits: { fires: { storylet: relocation/visit-home } }
+  drifts: { fires: { storylet: relocation/relatives-drift } }
+  moves_abroad: { fires: { storylet: relocation/move-city-abroad } }
+stats:
+  applied_share: { kind: share, when: applied, by: profile, label: applied to emigrate }
+  mover_share: { kind: share, when: mover, by: profile, label: emigrated }
+  returned_share: { kind: share, when: returned, of: mover, label: movers who moved back home }
+  abroad_at_death: { kind: share, when: abroad_end, label: died abroad }
+  denial_rate:
+    kind: ratio
+    num: denials
+    den: applications
+    label: applications denied
+  applications_per_life: { kind: mean, value: applications, label: applications per life }
+  abroad_years_share:
+    kind: ratio
+    num: abroad_years
+    den: years
+    of: mover
+    label: years lived abroad (movers)
+  nw_movers: { kind: median, value: nw, of: mover, ages: [40, 65], label: "net worth, movers" }
+  nw_stayers: { kind: median, value: nw, of: stayer, ages: [40, 65], label: "net worth, stayers" }
+  kin_movers: { kind: median, value: kin, of: mover, by: profile, ages: [30, 50], label: "relatives' closeness, movers" }
+  kin_stayers: { kind: median, value: kin, of: stayer, ages: [30, 50], label: "relatives' closeness, stayers" }
+  happy_movers: { kind: median, value: happy, of: mover, ages: [25, 35, 45], label: "happiness, movers" }
+  happy_stayers: { kind: median, value: happy, of: stayer, ages: [25, 35, 45], label: "happiness, stayers" }
+  japanese_movers: { kind: median, value: japanese, of: mover, ages: [30], label: "Japanese at 30, movers" }
+  spanish_movers: { kind: median, value: spanish, of: mover, ages: [30], label: "Spanish at 30, movers" }
+  french_movers: { kind: median, value: french, of: mover, ages: [30], label: "French at 30, movers" }
+  japanese_stayers: { kind: median, value: japanese, of: stayer, ages: [30], label: "Japanese at 30, stayers" }
+  child_domestic_per_life: { kind: mean, value: child_domestic, decimals: 3, label: childhood moves at home per life }
+  child_abroad_per_life: { kind: mean, value: child_abroad, decimals: 3, label: childhood moves abroad per life }
+  studied_per_life: { kind: mean, value: studied, decimals: 2, label: language study sessions per life }
+  calls_per_mover: { kind: mean, value: calls, of: mover, by: profile, decimals: 2, label: calls home per mover }
+  visits_per_mover: { kind: mean, value: visits, of: mover, by: profile, decimals: 2, label: visits home per mover }
+  drifts_per_mover: { kind: mean, value: drifts, of: mover, decimals: 2, label: drift events per mover }
+blocks:
+  - text: Emigration is rare in the random profile and the focus of the mover and caller profiles.
+  - stats: [applied_share, mover_share, returned_share, abroad_at_death, denial_rate, applications_per_life, abroad_years_share]
+  - text: Movers against stayers. Net worth at 40 and 65 should sit in a band; relatives drift while abroad unless the caller profile keeps in touch.
+  - stats: [nw_movers, nw_stayers]
+  - stats: [kin_movers, kin_stayers]
+  - stats: [happy_movers, happy_stayers]
+  - stats: [calls_per_mover, visits_per_mover, drifts_per_mover]
+  - text: Language skill at 30 and the childhood moves.
+  - stats: [japanese_movers, spanish_movers, french_movers, japanese_stayers]
+  - stats: [child_domestic_per_life, child_abroad_per_life, studied_per_life]

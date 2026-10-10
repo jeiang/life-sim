@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/effects.schema.json
+# Remember where the player lives now as home, before a move abroad: the domestic city by index
+# (1 dustwater, 2 harborview, 3 maple-falls, 4 riverton, 5 lakeshore, 6 goldcrest; 0 when elsewhere) and the US (code 1) as the home country.
+- id: remember_home
+  effects:
+    - "quality.reloc_home_city = (city.id == core-loop/dustwater ? 1 : (city.id == core-loop/harborview ? 2 : (city.id == core-loop/maple-falls ? 3 : (city.id == core-loop/riverton ? 4 : (city.id == core-loop/lakeshore ? 5 : (city.id == core-loop/goldcrest ? 6 : 0))))))"
+    - quality.reloc_home_country = 1

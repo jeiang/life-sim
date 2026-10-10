@@ -1,0 +1,209 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Relocation moves (chains 4 and 5)".
+
+- id: move-back-home
+  trigger: action
+  menu: assets/housing
+  label: Move back home
+  tags: [relocation]
+  when: "age >= 18 and not confined and not in_group(school) and quality.reloc_abroad and quality.reloc_home_city > 0 and money >= 150000"
+  text: "Going home costs $1,500 and needs no approval. Your job comes with you only if it can be done remotely and your boss agrees."
+  choices:
+    - label: Dustwater
+      when: "quality.reloc_home_city == 1"
+      outcomes:
+        - weight: 1
+          text: You book a one-way ticket to Dustwater and pack the car.
+          effects:
+            - money -= 150000
+            - "move_to(core-loop/dustwater)"
+            - "quality.reloc_abroad = false"
+            - "quality.reloc_returns += 1"
+            - "quality.reloc_return_age = age"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved back to Dustwater at age {age}.\")"
+          next: emigrate-job-fork
+    - label: Harborview
+      when: "quality.reloc_home_city == 2"
+      outcomes:
+        - weight: 1
+          text: You move home to Harborview, where the ferry still runs late.
+          effects:
+            - money -= 150000
+            - "move_to(core-loop/harborview)"
+            - "quality.reloc_abroad = false"
+            - "quality.reloc_returns += 1"
+            - "quality.reloc_return_age = age"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved back to Harborview at age {age}.\")"
+          next: emigrate-job-fork
+    - label: Maple Falls
+      when: "quality.reloc_home_city == 3"
+      outcomes:
+        - weight: 1
+          text: You move back to Maple Falls. The maples are still showing off.
+          effects:
+            - money -= 150000
+            - "move_to(core-loop/maple-falls)"
+            - "quality.reloc_abroad = false"
+            - "quality.reloc_returns += 1"
+            - "quality.reloc_return_age = age"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved back to Maple Falls at age {age}.\")"
+          next: emigrate-job-fork
+    - label: Riverton
+      when: "quality.reloc_home_city == 4"
+      outcomes:
+        - weight: 1
+          text: You move back to Riverton. Your old room has become storage.
+          effects:
+            - money -= 150000
+            - "move_to(core-loop/riverton)"
+            - "quality.reloc_abroad = false"
+            - "quality.reloc_returns += 1"
+            - "quality.reloc_return_age = age"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved back to Riverton at age {age}.\")"
+          next: emigrate-job-fork
+    - label: Lakeshore
+      when: "quality.reloc_home_city == 5"
+      outcomes:
+        - weight: 1
+          text: You move back to Lakeshore. The water is cold and the neighbors are nosy.
+          effects:
+            - money -= 150000
+            - "move_to(core-loop/lakeshore)"
+            - "quality.reloc_abroad = false"
+            - "quality.reloc_returns += 1"
+            - "quality.reloc_return_age = age"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved back to Lakeshore at age {age}.\")"
+          next: emigrate-job-fork
+    - label: Goldcrest
+      when: "quality.reloc_home_city == 6"
+      outcomes:
+        - weight: 1
+          text: You move back to Goldcrest. The rent hurts, but the lights are wonderful.
+          effects:
+            - money -= 150000
+            - "move_to(core-loop/goldcrest)"
+            - "quality.reloc_abroad = false"
+            - "quality.reloc_returns += 1"
+            - "quality.reloc_return_age = age"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved back to Goldcrest at age {age}.\")"
+          next: emigrate-job-fork
+
+- id: move-city-abroad
+  trigger: action
+  menu: assets/housing
+  label: Move to another city abroad
+  tags: [relocation]
+  when: "age >= 18 and not confined and not living.with_parents and quality.reloc_abroad and money >= 250000"
+  cooldown: 1
+  text: "Moving between cities abroad costs $2,500. Your job ends unless it can be done remotely and your boss agrees."
+  choices:
+    - label: Toronto
+      when: city.id != relocation/toronto
+      outcomes:
+        - weight: 1
+          text: You settle into Toronto. Strangers apologize to you for things you did not do.
+          effects:
+            - money -= 250000
+            - "move_to(relocation/toronto)"
+            - "quality.reloc_dest = 0"
+            - "quality.reloc_lang_english = max(quality.reloc_lang_english, 20)"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved to Toronto at age {age}.\")"
+          next: emigrate-job-fork
+    - label: Montreal
+      when: city.id != relocation/montreal
+      outcomes:
+        - weight: 1
+          text: You settle into Montreal. Your French is embarrassing but improving.
+          effects:
+            - money -= 250000
+            - "move_to(relocation/montreal)"
+            - "quality.reloc_dest = 1"
+            - "quality.reloc_lang_french = max(quality.reloc_lang_french, 20)"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved to Montreal at age {age}.\")"
+          next: emigrate-job-fork
+    - label: London
+      when: city.id != relocation/london
+      outcomes:
+        - weight: 1
+          text: You settle into London. The rent is a crime, but the tea is good.
+          effects:
+            - money -= 250000
+            - "move_to(relocation/london)"
+            - "quality.reloc_dest = 2"
+            - "quality.reloc_lang_english = max(quality.reloc_lang_english, 20)"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved to London at age {age}.\")"
+          next: emigrate-job-fork
+    - label: Manchester
+      when: city.id != relocation/manchester
+      outcomes:
+        - weight: 1
+          text: You settle into Manchester. It rains, and nobody seems to mind.
+          effects:
+            - money -= 250000
+            - "move_to(relocation/manchester)"
+            - "quality.reloc_dest = 3"
+            - "quality.reloc_lang_english = max(quality.reloc_lang_english, 20)"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved to Manchester at age {age}.\")"
+          next: emigrate-job-fork
+    - label: Tokyo
+      when: city.id != relocation/tokyo
+      outcomes:
+        - weight: 1
+          text: You settle into Tokyo. The trains are perfect, and so is everyone's timing.
+          effects:
+            - money -= 250000
+            - "move_to(relocation/tokyo)"
+            - "quality.reloc_dest = 4"
+            - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 20)"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved to Tokyo at age {age}.\")"
+          next: emigrate-job-fork
+    - label: Osaka
+      when: city.id != relocation/osaka
+      outcomes:
+        - weight: 1
+          text: You settle into Osaka. People here tell you exactly what they think.
+          effects:
+            - money -= 250000
+            - "move_to(relocation/osaka)"
+            - "quality.reloc_dest = 5"
+            - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 20)"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved to Osaka at age {age}.\")"
+          next: emigrate-job-fork
+    - label: Mexico City
+      when: city.id != relocation/mexico-city
+      outcomes:
+        - weight: 1
+          text: You settle into Mexico City. The street food is excellent and the traffic is a sport.
+          effects:
+            - money -= 250000
+            - "move_to(relocation/mexico-city)"
+            - "quality.reloc_dest = 6"
+            - "quality.reloc_lang_spanish = max(quality.reloc_lang_spanish, 20)"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved to Mexico City at age {age}.\")"
+          next: emigrate-job-fork
+    - label: Guadalajara
+      when: city.id != relocation/guadalajara
+      outcomes:
+        - weight: 1
+          text: You settle into Guadalajara. The sun is warm and the pace is slow.
+          effects:
+            - money -= 250000
+            - "move_to(relocation/guadalajara)"
+            - "quality.reloc_dest = 7"
+            - "quality.reloc_lang_spanish = max(quality.reloc_lang_spanish, 20)"
+            - "quality.reloc_job_fork = true"
+            - "journal(\"Moved to Guadalajara at age {age}.\")"
+          next: emigrate-job-fork

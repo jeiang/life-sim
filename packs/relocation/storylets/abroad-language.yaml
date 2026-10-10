@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Abroad language growth".
+
+- id: abroad-language-growth
+  icon: 📖
+  trigger: event
+  tags: [language]
+  chance: 100%
+  when: "quality.reloc_abroad and (((city.id == relocation/tokyo or city.id == relocation/osaka) and quality.reloc_lang_japanese < 100) or ((city.id == relocation/mexico-city or city.id == relocation/guadalajara) and quality.reloc_lang_spanish < 100) or (city.id == relocation/montreal and quality.reloc_lang_french < 100))"
+  text: You spend another year abroad, and the local language slowly gets easier to follow.
+  outcomes:
+    - weight: 1
+      when: city.id == relocation/tokyo or city.id == relocation/osaka
+      text: You order dinner in Japanese without the menu, and the waiter only looks mildly surprised.
+      effects:
+        - "quality.reloc_lang_japanese += 3"
+    - weight: 1
+      when: city.id == relocation/tokyo or city.id == relocation/osaka
+      text: A neighbour corrects your pronunciation again, and this time you laugh along.
+      effects:
+        - "quality.reloc_lang_japanese += 3"
+    - weight: 1
+      when: city.id == relocation/mexico-city or city.id == relocation/guadalajara
+      text: Telenovelas and a patient friend make your Spanish a little less awkward.
+      effects:
+        - "quality.reloc_lang_spanish += 3"
+    - weight: 1
+      when: city.id == relocation/mexico-city or city.id == relocation/guadalajara
+      text: You order lunch in Spanish without a single hand gesture. The cook is impressed.
+      effects:
+        - "quality.reloc_lang_spanish += 3"
+    - weight: 1
+      when: city.id == relocation/montreal
+      text: Your French gets a little less squeaky, and the baker stops switching to English.
+      effects:
+        - "quality.reloc_lang_french += 3"
+    - weight: 1
+      when: city.id == relocation/montreal
+      text: You follow a whole dinner-table conversation in French. Mostly. The wine helps.
+      effects:
+        - "quality.reloc_lang_french += 3"
+
+- id: abroad-language-barrier
+  icon: 😕
+  trigger: event
+  tags: [language]
+  chance: 100%
+  when: "quality.reloc_abroad and (((city.id == relocation/tokyo or city.id == relocation/osaka) and quality.reloc_lang_japanese < 40) or ((city.id == relocation/mexico-city or city.id == relocation/guadalajara) and quality.reloc_lang_spanish < 40) or (city.id == relocation/montreal and quality.reloc_lang_french < 40))"
+  text: You find every conversation here takes more effort than it should, and it is starting to wear on you.
+  outcomes:
+    - weight: 1
+      text: Ordering coffee feels like an exam you keep failing.
+      effects:
+        - stat.happiness -= 1
+    - weight: 1
+      text: You nod along in a meeting and pray nobody asks you a question.
+      effects:
+        - stat.happiness -= 1

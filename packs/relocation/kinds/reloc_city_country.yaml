@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/kind.schema.json
+label: City country
+fields:
+  city: { type: ref, to: city } # a city of core-loop or of this Pack
+  country: { type: ref, to: reloc_country } # the country it belongs to

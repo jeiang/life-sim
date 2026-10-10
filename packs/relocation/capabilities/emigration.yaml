@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# Apply to emigrate, the approval roll, the job fork, arrival, moves back home and between cities abroad.
+provides:
+  qualities:
+    - reloc_abroad
+    - reloc_dest
+    - reloc_pending
+    - reloc_pending_dest
+    - reloc_job_fork
+    - reloc_home_country
+    - reloc_home_city
+    - reloc_applications
+    - reloc_denials
+    - reloc_emigrations
+    - reloc_returns
+    - reloc_return_age
+  effects:
+    - remember_home
+requires:
+  - core-loop/cities
+  - core-loop/careers
+  - core-loop/housing
+  - core-loop/education
+  - core-loop/choices
+  - core-loop/stats

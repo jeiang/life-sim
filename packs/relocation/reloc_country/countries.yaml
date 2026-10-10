@@ -1,0 +1,5 @@
+- { id: us, label: United States, code: 1, language: English }
+- { id: canada, label: Canada, code: 2, language: English and French }
+- { id: uk, label: United Kingdom, code: 3, language: English }
+- { id: japan, label: Japan, code: 4, language: Japanese }
+- { id: mexico, label: Mexico, code: 5, language: Spanish }

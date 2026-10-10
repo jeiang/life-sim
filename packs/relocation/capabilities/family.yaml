@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# Relatives left behind: drift, calls, visits and the reunion after moving home.
+requires:
+  - core-loop/family
+  - core-loop/stats

@@ -1,0 +1,249 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Childhood family move".
+
+- id: child-move-domestic
+  trigger: event
+  tags: [relocation, childhood]
+  chance: 0.8%
+  when: "age >= 5 and age < 18 and living.with_parents and not confined and quality.reloc_child_move_age != age"
+  max_per_life: 1
+  text: Your parents sit you down at the kitchen table. The family is moving, and the boxes are already in the hall.
+  outcomes:
+    - weight: 1
+      when: city.id != core-loop/dustwater and (city.id == core-loop/harborview or city.id == core-loop/maple-falls or city.id == core-loop/riverton or city.id == core-loop/lakeshore or city.id == core-loop/goldcrest)
+      text: The moving truck smells of diesel. Welcome to Dustwater, where the sky is always a little brown.
+      effects:
+        - "move_to(core-loop/dustwater)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "journal(\"The family moved when you were {age}.\")"
+    - weight: 1
+      when: city.id != core-loop/harborview and (city.id == core-loop/dustwater or city.id == core-loop/maple-falls or city.id == core-loop/riverton or city.id == core-loop/lakeshore or city.id == core-loop/goldcrest)
+      text: Harborview has a ferry, three cousins and a school with a mascot you have to pretend to like.
+      effects:
+        - "move_to(core-loop/harborview)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "journal(\"The family moved when you were {age}.\")"
+    - weight: 1
+      when: city.id != core-loop/maple-falls and (city.id == core-loop/dustwater or city.id == core-loop/harborview or city.id == core-loop/riverton or city.id == core-loop/lakeshore or city.id == core-loop/goldcrest)
+      text: Maple Falls has one stoplight and a principal who already knows your name.
+      effects:
+        - "move_to(core-loop/maple-falls)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "journal(\"The family moved when you were {age}.\")"
+    - weight: 1
+      when: city.id != core-loop/riverton and (city.id == core-loop/dustwater or city.id == core-loop/harborview or city.id == core-loop/maple-falls or city.id == core-loop/lakeshore or city.id == core-loop/goldcrest)
+      text: Riverton promises a fresh start. Your new classmates have already heard about you.
+      effects:
+        - "move_to(core-loop/riverton)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "journal(\"The family moved when you were {age}.\")"
+    - weight: 1
+      when: city.id != core-loop/lakeshore and (city.id == core-loop/dustwater or city.id == core-loop/harborview or city.id == core-loop/maple-falls or city.id == core-loop/riverton or city.id == core-loop/goldcrest)
+      text: Lakeshore has cold water, cold mornings and a school bus that comes when it feels like it.
+      effects:
+        - "move_to(core-loop/lakeshore)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "journal(\"The family moved when you were {age}.\")"
+    - weight: 1
+      when: city.id != core-loop/goldcrest and (city.id == core-loop/dustwater or city.id == core-loop/harborview or city.id == core-loop/maple-falls or city.id == core-loop/riverton or city.id == core-loop/lakeshore)
+      text: Goldcrest has nicer houses, meaner kids and a lot of rules about where you can skateboard.
+      effects:
+        - "move_to(core-loop/goldcrest)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "journal(\"The family moved when you were {age}.\")"
+    - weight: 1
+      when: city.id == relocation/montreal
+      text: Toronto is a bigger school with a lot of rules. You learn the subway map before you learn the teachers.
+      effects:
+        - "move_to(relocation/toronto)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "journal(\"The family moved when you were {age}.\")"
+    - weight: 1
+      when: city.id == relocation/toronto
+      text: Montreal. Every sign is in French, and so is the principal. Your parents say you will pick it up fast.
+      effects:
+        - "move_to(relocation/montreal)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "quality.reloc_lang_french = max(quality.reloc_lang_french, 40)"
+        - "journal(\"The family moved when you were {age}.\")"
+    - weight: 1
+      when: city.id == relocation/manchester
+      text: London means a uniform, a lot of rain and a teacher who calls you by your surname.
+      effects:
+        - "move_to(relocation/london)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "journal(\"The family moved when you were {age}.\")"
+    - weight: 1
+      when: city.id == relocation/london
+      text: Manchester has the same rain with louder music and a school that will not let you sit still.
+      effects:
+        - "move_to(relocation/manchester)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "journal(\"The family moved when you were {age}.\")"
+    - weight: 1
+      when: city.id == relocation/osaka
+      text: Tokyo means a train to school at six, a lot of bowing and a teacher who writes everything on the board.
+      effects:
+        - "move_to(relocation/tokyo)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 40)"
+        - "journal(\"The family moved when you were {age}.\")"
+    - weight: 1
+      when: city.id == relocation/tokyo
+      text: Osaka is louder, cheaper and more fun, and the kids keep asking you to make them laugh.
+      effects:
+        - "move_to(relocation/osaka)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 40)"
+        - "journal(\"The family moved when you were {age}.\")"
+    - weight: 1
+      when: city.id == relocation/guadalajara
+      text: Mexico City means smog, a huge school and a new word for everything.
+      effects:
+        - "move_to(relocation/mexico-city)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "quality.reloc_lang_spanish = max(quality.reloc_lang_spanish, 40)"
+        - "journal(\"The family moved when you were {age}.\")"
+    - weight: 1
+      when: city.id == relocation/mexico-city
+      text: Guadalajara means jacaranda trees, a new soccer team and a school that makes you learn the anthem.
+      effects:
+        - "move_to(relocation/guadalajara)"
+        - stat.happiness -= 3
+        - stat.smarts -= 1
+        - "quality.reloc_child_move_age = age"
+        - "quality.reloc_lang_spanish = max(quality.reloc_lang_spanish, 40)"
+        - "journal(\"The family moved when you were {age}.\")"
+
+- id: child-move-abroad
+  trigger: event
+  tags: [relocation, childhood]
+  chance: 0.25%
+  when: "age >= 5 and age < 18 and living.with_parents and not confined and not quality.reloc_abroad and quality.reloc_child_move_age != age"
+  max_per_life: 1
+  text: Your parents come home with a job offer and a look you know too well. The passport office is next.
+  outcomes:
+    - weight: 1
+      text: Your parents take a job in Toronto. Maple syrup is not a joke here.
+      effects:
+        - "relocation.remember_home()"
+        - "move_to(relocation/toronto)"
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "quality.reloc_child_move_age = age"
+        - "quality.reloc_abroad = true"
+        - "journal(\"The family moved abroad when you were {age}.\")"
+    - weight: 1
+      text: Your parents take a job in Montreal. Every sign is in French, and so is the principal.
+      effects:
+        - "relocation.remember_home()"
+        - "move_to(relocation/montreal)"
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "quality.reloc_child_move_age = age"
+        - "quality.reloc_abroad = true"
+        - "quality.reloc_lang_french = max(quality.reloc_lang_french, 40)"
+        - "journal(\"The family moved abroad when you were {age}.\")"
+    - weight: 1
+      text: Your parents take a job in London. You learn the difference between a lift and an elevator the hard way.
+      effects:
+        - "relocation.remember_home()"
+        - "move_to(relocation/london)"
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "quality.reloc_child_move_age = age"
+        - "quality.reloc_abroad = true"
+        - "journal(\"The family moved abroad when you were {age}.\")"
+    - weight: 1
+      text: Your parents take a job in Manchester. The rain has a reputation, and it earned it.
+      effects:
+        - "relocation.remember_home()"
+        - "move_to(relocation/manchester)"
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "quality.reloc_child_move_age = age"
+        - "quality.reloc_abroad = true"
+        - "journal(\"The family moved abroad when you were {age}.\")"
+    - weight: 1
+      text: Your parents take a job in Tokyo. You learn to bow before you learn where the bathroom is.
+      effects:
+        - "relocation.remember_home()"
+        - "move_to(relocation/tokyo)"
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "quality.reloc_child_move_age = age"
+        - "quality.reloc_abroad = true"
+        - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 40)"
+        - "journal(\"The family moved abroad when you were {age}.\")"
+    - weight: 1
+      text: Your parents take a job in Osaka. The food is better than anything you have eaten, and so is the teasing.
+      effects:
+        - "relocation.remember_home()"
+        - "move_to(relocation/osaka)"
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "quality.reloc_child_move_age = age"
+        - "quality.reloc_abroad = true"
+        - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 40)"
+        - "journal(\"The family moved abroad when you were {age}.\")"
+    - weight: 1
+      text: Your parents take a job in Mexico City. It is huge, the taco stand is close, and the school is a mystery.
+      effects:
+        - "relocation.remember_home()"
+        - "move_to(relocation/mexico-city)"
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "quality.reloc_child_move_age = age"
+        - "quality.reloc_abroad = true"
+        - "quality.reloc_lang_spanish = max(quality.reloc_lang_spanish, 40)"
+        - "journal(\"The family moved abroad when you were {age}.\")"
+    - weight: 1
+      text: Your parents take a job in Guadalajara. The jacarandas are purple, the Spanish is fast, and you are the new kid.
+      effects:
+        - "relocation.remember_home()"
+        - "move_to(relocation/guadalajara)"
+        - stat.happiness -= 5
+        - stat.smarts -= 2
+        - "quality.reloc_child_move_age = age"
+        - "quality.reloc_abroad = true"
+        - "quality.reloc_lang_spanish = max(quality.reloc_lang_spanish, 40)"
+        - "journal(\"The family moved abroad when you were {age}.\")"
+
+- id: childhood-friends-lose-touch
+  trigger: event
+  scope: person
+  target: [core-loop/friend]
+  chance: 50%
+  when: "quality.reloc_child_move_age == age and person.alive and person.age < 18"
+  text: "{person.first_name} is now a name in a group chat that nobody reads anymore."
+  outcomes:
+    - weight: 1
+      text: The calls get shorter, then they stop. The move did the rest.
+      effects:
+        - relationship(person).closeness += -3

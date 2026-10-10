@@ -1,0 +1,8 @@
+description: At 10 the family takes a job in Tokyo (the Japanese floor of 40 applies)
+steps:
+  - age: 10
+    roll: relocation/child-move-abroad
+    value: hit
+  - age: 10
+    roll: outcome/relocation/child-move-abroad
+    value: 4

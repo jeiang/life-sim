@@ -60,9 +60,9 @@ test("every non-person action is reachable from its declared menu", async ({
         `${a.id} in ${menu}`,
       ).toBeVisible();
     }
-    await page.getByRole("button", { name: "Back" }).click();
+    await page.getByRole("button", { name: "Back", exact: true }).click();
     if (menu.includes("/"))
-      await page.getByRole("button", { name: "Back" }).click();
+      await page.getByRole("button", { name: "Back", exact: true }).click();
   }
 });
 

@@ -27,8 +27,8 @@
         "type": "string"
       },
       "weight": {
-        "minimum": 1,
-        "description": "Relative weight when a life picks its birth city",
+        "minimum": 0,
+        "description": "Relative weight when a life picks its birth city (0: never drawn, a destination only)",
         "type": "integer"
       },
       "wage_index": {

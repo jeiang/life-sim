@@ -1,0 +1,7 @@
+# A trail is the digits the Packs' hooks appended, in the order they ran.
+- { id: birth_trail, type: int, min: 0, max: 1000000000, default: 0 }
+- { id: pre_trail, type: int, min: 0, max: 1000000000, default: 0 }
+- { id: post_trail, type: int, min: 0, max: 1000000000, default: 0 }
+- { id: death_trail, type: int, min: 0, max: 1000000000, default: 0 }
+- { id: wed_trail, type: int, min: 0, max: 1000000000, default: 0 }
+- { id: lucky, type: int, min: 0, max: 100, default: 0 }

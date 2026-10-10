@@ -1,0 +1,21 @@
+# Unrelated to every hook: its outcome roll must not move when a hook subscriber is added.
+- id: gamble
+  trigger: action
+  menu: relationships
+  outcomes:
+    - weight: 1
+      effects:
+        - quality.lucky = 10
+    - weight: 1
+      effects:
+        - quality.lucky = 20
+    - weight: 1
+      effects:
+        - quality.lucky = 30
+
+- id: doom
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - die("fate")

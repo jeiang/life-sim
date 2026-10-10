@@ -32,6 +32,7 @@ export {
   startStorylet,
 } from "./flow.ts";
 export { godSetMoney, godSetStat, isGodLife } from "./god.ts";
+export { fireMilestone } from "./hooks.ts";
 export {
   assetCityId,
   chosenStandardOf,

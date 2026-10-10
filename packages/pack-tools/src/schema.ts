@@ -28,6 +28,12 @@ const Src = Type.Union([Type.String(), Type.Integer(), Type.Boolean()], {
 const Range = Type.Tuple([Type.Integer(), Type.Integer()], {
   description: "Inclusive [min, max]",
 });
+/** Effect statements a lifecycle hook runs, in order (macro calls allowed). */
+const HookEffects = Type.Array(Type.String({ minLength: 1 }), {
+  minItems: 1,
+  description:
+    "Effect statements run in order for a lifecycle phase; effect macro calls are allowed",
+});
 const Label = Type.String({ minLength: 1 });
 
 const obj = <T extends Record<string, TSchema>>(p: T, title?: string) =>
@@ -431,6 +437,22 @@ export const ManifestSchema = obj(
           ),
         },
         "Living costs",
+      ),
+    ),
+    hooks: Type.Optional(
+      obj(
+        {
+          on_birth: Type.Optional(HookEffects),
+          on_age_up_pre: Type.Optional(HookEffects),
+          on_age_up_post: Type.Optional(HookEffects),
+          on_death: Type.Optional(HookEffects),
+          on_milestone: Type.Optional(
+            Type.Record(Type.String({ pattern: ID_PATTERN }), HookEffects, {
+              description: "Effect statements by milestone id",
+            }),
+          ),
+        },
+        "Lifecycle hooks (docs/spec/pack-format/hooks.md)",
       ),
     ),
   },

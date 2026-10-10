@@ -18,6 +18,7 @@ import type {
   Type as ExprType,
   FamilyDecl,
   Gender,
+  HooksDecl,
   LivingDecl,
   NpcCareersDecl,
   PackBundle,
@@ -32,6 +33,7 @@ import {
   DEFAULT_GENDER_WEIGHTS,
   DEFAULT_REPEAT,
   GENDERS,
+  HOOK_PHASES,
   PACK_BUNDLE_FORMAT,
   PRONOUN_FIELDS,
   readableCycle,
@@ -1444,6 +1446,7 @@ class PackCompiler {
       ...(m.family ? { family: this.family(m.family) } : {}),
       ...(m.living ? { living: this.living(m.living) } : {}),
       ...(m.npc_careers ? { npcCareers: this.npcCareers(m.npc_careers) } : {}),
+      ...(m.hooks ? { hooks: this.hooks(m.hooks) } : {}),
       migrations,
       ...bundle,
     };
@@ -2208,50 +2211,14 @@ class PackCompiler {
     // Effects run in order; `spawn_person(...) as n` binds `n` for later effects and this outcome's text.
     const bound: Names = {};
     const persons: string[] = scopeNames["person.age"] ? ["person"] : [];
-    let failed = false;
-    const effects: Effect[] = [];
-    for (const [ei, src] of (o.effects ?? []).entries()) {
-      const epath = [...path, "effects", ei];
-      const r = compileExpr(
-        src,
-        {
-          names: { ...this.baseNames, ...scopeNames, ...bound },
-          persons,
-          macros: this.macroArity,
-        },
-        "effect",
-      );
-      if (!r.ok) {
-        failed = true;
-        for (const e of r.errors)
-          this.err(epath, `${e.message} (in '${src}', column ${e.column})`);
-        continue;
-      }
-      const resolved = this.resolveEffect(r.ast, epath);
-      if (!resolved) {
-        failed = true;
-        continue;
-      }
-      if (isMacroCall(resolved)) {
-        const x = this.expandMacroCall(resolved, [], epath);
-        if (x) effects.push(...x.effects);
-        else failed = true;
-        continue;
-      }
-      if (resolved[0] === "spawn") {
-        if (!this.bindSpawn(resolved[3], bound, persons, epath)) {
-          failed = true;
-          continue;
-        }
-      }
-      this.effectText(
-        resolved,
-        { ...this.baseNames, ...scopeNames, ...bound },
-        epath,
-      );
-      effects.push(resolved);
-    }
-    out.effects = effects;
+    const { groups, failed } = this.effectStatements(
+      o.effects ?? [],
+      [...path, "effects"],
+      scopeNames,
+      persons,
+      bound,
+    );
+    out.effects = groups.flat();
     if (o.text !== undefined) {
       out.text = o.text;
       if (!failed)
@@ -2277,6 +2244,97 @@ class PackCompiler {
           `'${o.next}' needs an amount, and 'next' does not carry one`,
         );
       else if (full) out.next = full;
+    }
+    return out;
+  }
+
+  /**
+   * Compile effect statements in order: one group of closed effects per source statement (a
+   * macro call expands to several). `spawn_person(...) as n` binds `n` in `bound` for the
+   * later statements. A statement that fails is reported and leaves an empty group.
+   */
+  private effectStatements(
+    sources: readonly string[],
+    path: Path,
+    scopeNames: Names,
+    persons: string[],
+    bound: Names,
+  ): { groups: Effect[][]; failed: boolean } {
+    const groups: Effect[][] = [];
+    let failed = false;
+    for (const [ei, src] of sources.entries()) {
+      const epath = [...path, ei];
+      const group: Effect[] = [];
+      groups.push(group);
+      const r = compileExpr(
+        src,
+        {
+          names: { ...this.baseNames, ...scopeNames, ...bound },
+          persons,
+          macros: this.macroArity,
+        },
+        "effect",
+      );
+      if (!r.ok) {
+        failed = true;
+        for (const e of r.errors)
+          this.err(epath, `${e.message} (in '${src}', column ${e.column})`);
+        continue;
+      }
+      const resolved = this.resolveEffect(r.ast, epath);
+      if (!resolved) {
+        failed = true;
+        continue;
+      }
+      if (isMacroCall(resolved)) {
+        const x = this.expandMacroCall(resolved, [], epath);
+        if (x) group.push(...x.effects);
+        else failed = true;
+        continue;
+      }
+      if (resolved[0] === "spawn") {
+        if (!this.bindSpawn(resolved[3], bound, persons, epath)) {
+          failed = true;
+          continue;
+        }
+      }
+      this.effectText(
+        resolved,
+        { ...this.baseNames, ...scopeNames, ...bound },
+        epath,
+      );
+      group.push(resolved);
+    }
+    return { groups, failed };
+  }
+
+  /** Lifecycle hooks of the manifest (docs/spec/pack-format/hooks.md): player-scope effect statements per phase. */
+  private hooks(h: NonNullable<Manifest["hooks"]>): HooksDecl {
+    const run = (sources: readonly string[], path: Path, phase: string) => {
+      const { groups } = this.effectStatements(sources, path, {}, [], {});
+      if (phase === "on_death")
+        for (const [i, g] of groups.entries())
+          if (g.some((e) => e[0] === "do" && e[1] === "die"))
+            this.err(
+              [...path, i],
+              "'die' is not allowed in on_death: the player has already died",
+            );
+      return groups;
+    };
+    const out: { -readonly [K in keyof HooksDecl]: HooksDecl[K] } = {};
+    for (const phase of HOOK_PHASES) {
+      const src = h[phase];
+      if (src) out[phase] = run(src, ["hooks", phase], phase);
+    }
+    if (h.on_milestone) {
+      const byId: Record<string, readonly (readonly Effect[])[]> = {};
+      for (const id of Object.keys(h.on_milestone).sort())
+        byId[id] = run(
+          h.on_milestone[id] as string[],
+          ["hooks", "on_milestone", id],
+          "on_milestone",
+        );
+      out.on_milestone = byId;
     }
     return out;
   }

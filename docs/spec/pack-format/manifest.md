@@ -14,6 +14,7 @@ The `pack.yaml` manifest, how Packs compose, and capability files. Part of the [
 | `exclusivity` | Occupation exclusivity groups (for example `school`, `full-time`). Singleton block. |
 | `repeat` | Default curve for repeatable actions: `{ full: 10, reduced: 20, factor: 25% }` (see Repeatable actions). Any field left out takes the value shown. Singleton block. |
 | `year` | Singleton block. Event draw settings: flavour slot count range and the yearly event cap, `decisions` / `decisions_min_age` (decision slots per year, see Year draw), plus optional `quiet` lines the Core journals for a year in which nothing else happened (every age gets a journal group). |
+| `hooks` | Lifecycle hooks: effect statements per phase (`on_birth`, `on_age_up_pre`, `on_age_up_post`, `on_death`, `on_milestone: <id>`). See [Lifecycle hooks](hooks.md). Any number of Packs may declare it. |
 | `npc_careers` | Singleton block. Who gets a simulated career and how it runs: `roles`, `start_age`, `retire_age`, `group` (exclusivity group of NPC jobs), `retired` (pension kind), yearly percents `hire`, `promotion`, `job_loss`, ascending `tiers` (yearly-income thresholds in minor units), `education` (flag qualities rolled once at career start, each with `chance` and optional `needs`). See [NPC careers](content-kinds.md#npc-careers). |
 
 ## Composition

@@ -1,0 +1,4 @@
+- id: stamp
+  params: [gain]
+  effects:
+    - quality.lucky += gain

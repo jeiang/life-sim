@@ -15,6 +15,7 @@ import {
 } from "../state/world.ts";
 import { npcCareerYear } from "./careers.ts";
 import { reportChanceDrops, reportDecisions } from "./env.ts";
+import { runHook } from "./hooks.ts";
 import {
   ADULT_AGE,
   guardianOf,
@@ -419,9 +420,11 @@ function pruneCounters(world: World): World {
 }
 
 /**
- * Advance the world one year (ADR 0003): age everyone; settlement; the player's events
- * (chance, then flavour, under the cap); the NPC pass. A storylet with choices stops the year
- * as `world.pending`; `choose` resumes it. Throws if the life ended or a storylet is pending.
+ * Advance the world one year (ADR 0003): age everyone; `on_age_up_pre` hooks; the NPC career
+ * pass; settlement; `on_age_up_post` hooks; the player's events (chance, then flavour, under
+ * the cap); the NPC pass. A hook that kills the player ends the year there. A storylet with
+ * choices stops the year as `world.pending`; `choose` resumes it. Throws if the life ended or
+ * a storylet is pending.
  */
 export function ageUp(world: World, bundles: readonly PackBundle[]): SimResult {
   if (world.ended) throw new Error("the life has ended");
@@ -435,9 +438,13 @@ export function ageUp(world: World, bundles: readonly PackBundle[]): SimResult {
     if (p.alive) w = updatePerson(w, p.id, (x) => ({ ...x, age: x.age + 1 }));
   }
   w = pruneCounters({ ...w, uses: {} });
+  w = runHook(w, idx, "on_age_up_pre");
+  if (w.ended) return result(world, ensureYearEntry(w, idx));
   w = endLivingWithParents(w, idx);
   w = npcCareerYear(w, idx);
   w = settle(w, idx);
+  w = runHook(w, idx, "on_age_up_post");
+  if (w.ended) return result(world, ensureYearEntry(w, idx));
   const [w2, events] = drawEvents(w, idx);
   return result(world, ensureYearEntry(advance(w2, idx, events, true), idx));
 }

@@ -265,12 +265,16 @@ export function spawnPerson(
   from: PersonId,
   roleId: string,
   generatorId: string,
-  opts: { familyName?: string; closeness?: number } = {},
+  opts: { familyName?: string; closeness?: number; purpose?: string } = {},
 ): [World, PersonId] {
   const gen = idx.generators.get(generatorId);
   if (!gen) throw new RangeError(`unknown generator '${generatorId}'`);
   const age = clockAge(world);
-  const [w0, rng] = nextStream(world, age, `spawn/${generatorId}`);
+  const [w0, rng] = nextStream(
+    world,
+    age,
+    opts.purpose ?? `spawn/${generatorId}`,
+  );
   // The first-name roll sits where the name draw always was; the gender drawn last picks the pool.
   const nameRoll = rng.int(NAME_ROLL_RANGE);
   const lastNames = gen.lastNames;

@@ -1,0 +1,18 @@
+provides:
+  stats:
+    - happiness
+  qualities:
+    - birth_trail
+    - pre_trail
+    - post_trail
+    - death_trail
+    - wed_trail
+    - lucky
+  roles:
+    - neighbour
+  generators:
+    - local
+  milestones:
+    - wed
+  effects:
+    - stamp

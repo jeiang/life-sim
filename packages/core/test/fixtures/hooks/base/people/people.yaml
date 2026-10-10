@@ -1,0 +1,6 @@
+- { kind: role, id: neighbour, label: Neighbour }
+- kind: generator
+  id: local
+  first_names: [Nia, Max, Ola, Bo]
+  last_names: [Cho, Ng, Ito]
+  age: [20, 60]

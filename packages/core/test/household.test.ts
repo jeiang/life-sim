@@ -15,6 +15,7 @@ import {
   listShop,
   livingBreakdown,
   livingCost,
+  milestoneReached,
   newLife,
   riskBpOf,
   serializeWorld,
@@ -39,6 +40,8 @@ writeFileSync(
 - { id: t-divorce, trigger: action, scope: person, target: [core-loop/spouse], menu: assets/housing, text: "Divorce.", outcomes: [{ weight: 1, effects: [relationship(person).role = friend] }] }
 - { id: t-move-in, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "In.", outcomes: [{ weight: 1, effects: [move_in()] }] }
 - { id: t-merge, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "Merge.", outcomes: [{ weight: 1, effects: [merge_money()] }] }
+- { id: t-wed, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "Wed.", outcomes: [{ weight: 1, effects: [relationship(person).role = core-loop/spouse] }] }
+- { id: t-wed-merge, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "Wed.", outcomes: [{ weight: 1, effects: [relationship(person).role = core-loop/spouse, merge_money()] }] }
 `,
 );
 const real = compilePacks(tmp, { only: ["core-loop"] });
@@ -142,6 +145,32 @@ describe("partner cost sharing", () => {
     expect(cost(w)).toBe(base - 1000);
     const after = settleLiving(w, idx);
     expect(getPerson(after, pid).money).toBe(0);
+  });
+
+  test("a spouse who moved in but kept money separate still pays the household share; marriage fires `married` once", () => {
+    let [w, pid] = partnerWorld(9e9);
+    w = startStorylet(w, bundles, "core-loop/t-move-in", pid).world;
+    const share = Math.trunc((base * H.partnerShareBp) / 10000);
+    expect(milestoneReached(w, "married")).toBe(false);
+    w = startStorylet(w, bundles, "core-loop/t-wed", pid).world;
+    expect(milestoneReached(w, "married")).toBe(true);
+    expect(w.relationships.some((r) => r.household === "merged")).toBe(false);
+    expect(cost(w)).toBe(base - share);
+    expect(getPerson(settleLiving(w, idx), pid).money).toBe(9e9 - share);
+  });
+
+  test("marrying and merging money in one action fires `married` and charges no share", () => {
+    let [w, pid] = partnerWorld(5e8);
+    w = startStorylet(w, bundles, "core-loop/t-wed-merge", pid).world;
+    expect(milestoneReached(w, "married")).toBe(true);
+    expect(me(w).money).toBe(9e9 + 5e8);
+    expect(cost(w)).toBe(base);
+  });
+
+  test("merge_money alone does not fire `married`", () => {
+    let [w, pid] = partnerWorld(5e8);
+    w = startStorylet(w, bundles, "core-loop/t-merge", pid).world;
+    expect(milestoneReached(w, "married")).toBe(false);
   });
 
   test("marriage without a prenup merges the money and charges no separate share", () => {

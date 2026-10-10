@@ -53,7 +53,7 @@ The Core emits five milestones itself, with no declaration needed. A milestone w
 |---|---|
 | `graduated` | The player finishes an occupation of the `school` group by its `duration_years` and that kind has no `promotes_to` (the end of the last school stage). |
 | `first_job` | The player starts an occupation that pays (pay above 0 when it starts), is not in the `school` group, does not `confines`, and is not the retirement kind. Any start of it counts: `start_occupation(...)` in a storylet or a hook. |
-| `married` | The `merge_money()` effect merges a partner's money into the player's (`living.household.partner_role`). |
+| `married` | The player gains a spouse role (a role id `spouse` or ending in `/spouse`): `spawn_person(<spouse role>, ...)` or `relationship(p).role = <spouse role>`. Independent of `merge_money()`, so a marriage with a prenup fires it too. |
 | `first_child` | A person joins the player in the `living.household.dependent_role` role: `spawn_person(<role>, ...)` or `relationship(p).role = <role>`. |
 | `retired` | The player starts the occupation kind `npc_careers.retired`. |
 

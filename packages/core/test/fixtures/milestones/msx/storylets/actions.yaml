@@ -29,7 +29,16 @@
   target: [core-loop/partner]
   outcomes:
     - effects:
+        - relationship(person).role = core-loop/spouse
         - merge_money()
+- id: wed-prenup
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [core-loop/partner]
+  outcomes:
+    - effects:
+        - relationship(person).role = core-loop/spouse
 - id: baby
   trigger: action
   menu: relationships

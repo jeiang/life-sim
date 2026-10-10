@@ -1,0 +1,41 @@
+{
+  "lives": 100,
+  "storylets": {
+    "fired": {
+      "jobs/promotion": 50,
+      "jobs/layoff": 10,
+      "gambling/play-slots": 200,
+      "core-loop/birthday": 100
+    }
+  },
+  "death": { "ended": 100, "causes": { "old-age": 80, "accident": 20 } },
+  "packMetrics": {
+    "gambling": {
+      "stats": {
+        "bust-rate": {
+          "rows": [
+            { "group": "all", "value": 40 },
+            { "group": "gambler", "value": 60 }
+          ]
+        },
+        "net": {
+          "rows": [
+            {
+              "group": "all",
+              "value": {
+                "n": 100,
+                "mean": -10,
+                "min": -50,
+                "p10": -30,
+                "p50": -8,
+                "p90": 0,
+                "p99": 5,
+                "max": 9
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

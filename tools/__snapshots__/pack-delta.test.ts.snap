@@ -1,0 +1,41 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`pack-delta > renders the fixture diff as markdown 1`] = `
+"# Pack delta
+
+Lives: base 100, new 100. Flagged: 7 (fire rate >= 10% and >= 0.001 per life; outcome share >= 2 points; metric >= 10%).
+
+## gambling
+
+### Fire rate per life
+
+| key | base | new | delta | % | |
+|---|---|---|---|---|---|
+| gambling/play-dice | - | 0.3 | +0.3 | new/zero base | **FLAG** |
+| gambling/play-slots | 2 | 1.5 | -0.5 | -25% | **FLAG** |
+
+### Pack metrics
+
+| key | base | new | delta | % | |
+|---|---|---|---|---|---|
+| bust-rate[all] | 40 | 41 | +1 | +2.5% |  |
+| bust-rate[gambler] | 60 | 75 | +15 | +25% | **FLAG** |
+| net.mean[all] | -10 | -20 | -10 | -100% | **FLAG** |
+
+## jobs
+
+### Fire rate per life
+
+| key | base | new | delta | % | |
+|---|---|---|---|---|---|
+| jobs/layoff | 0.1 | 0.2 | +0.1 | +100% | **FLAG** |
+| jobs/promotion | 0.5 | 0.52 | +0.02 | +4% |  |
+
+## Outcome shares (cause of death, % of lives)
+
+| key | base % | new % | delta | % | |
+|---|---|---|---|---|---|
+| gambling-debt | - | 10 | +10 | new/zero base | **FLAG** |
+| old-age | 80 | 70 | -10 | -12.5% | **FLAG** |
+"
+`;

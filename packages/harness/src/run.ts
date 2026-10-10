@@ -32,6 +32,8 @@ import {
   type World,
   worldHash,
 } from "@life/core";
+import { type LifeMetrics, MetricCollector } from "./collect.ts";
+import type { PackMetrics } from "./metrics.ts";
 import {
   type Context,
   type Move,
@@ -135,46 +137,9 @@ export interface LifeResult {
   readonly kickedOut: boolean;
   /** Sum of positive occupation pay over the life (gross, minor units). */
   readonly earnings: number;
-  /** Voluntary actions with an amount: per action id, times done per grid slot (index 0 is slot 1) and money put in. */
-  readonly amountActions: Readonly<
-    Record<
-      string,
-      { readonly slots: readonly number[]; readonly spent: number }
-    >
-  >;
-  readonly gambling: GamblingLife;
+  /** Declared Pack metrics of the life (`packs/<id>/harness/metrics.yaml`), by Pack id. */
+  readonly metrics: Readonly<Record<string, LifeMetrics>>;
 }
-
-/** What one Gambling-Pack action did over a life: bets, stakes placed and money paid back. */
-export interface GameStats {
-  bets: number;
-  wagered: number;
-  /** Net change of cash over all bets (winnings less stakes). */
-  net: number;
-}
-
-export interface GamblingLife {
-  /** Action id -> its totals (only actions that moved `gambling_wagered`). */
-  readonly games: Readonly<Record<string, GameStats>>;
-  /** Lifetime stakes placed, any game, event or lottery. */
-  readonly wagered: number;
-  /** Casino or lottery bets at least once. */
-  readonly gambled: boolean;
-  /** Years lived addicted (counted at each age-up). */
-  readonly addictedYears: number;
-  readonly everAddicted: boolean;
-  /** Was addicted once and no longer is at the end. */
-  readonly recovered: boolean;
-  /** Banned from the casinos at least once. */
-  readonly everBanned: boolean;
-  readonly vip: boolean;
-}
-
-const WAGERED = "gambling_wagered";
-const qnum = (w: World, id: string): number => {
-  const v = playerOf(w).qualities[id];
-  return typeof v === "number" ? v : 0;
-};
 
 const playerOf = (w: World) => {
   const p = w.persons.get(w.playerId);
@@ -245,9 +210,16 @@ export function runLife(
   bundles: readonly PackBundle[],
   seed: number,
   profileName: ProfileName,
+  packMetrics: readonly PackMetrics[] = [],
 ): LifeResult {
   const profile = PROFILES[profileName];
   const ctx: Context = { bundles, menus: menusOf(bundles) };
+  const collector = new MetricCollector(packMetrics, (tag) => {
+    const ids = new Set<string>();
+    for (const b of bundles)
+      for (const st of b.storylets) if (st.tags.includes(tag)) ids.add(st.id);
+    return ids;
+  });
   const rng = streamFor(seed, 0, `harness/${profileName}`, 0);
   const faults: Fault[] = [];
   const seen = new Set<string>();
@@ -302,7 +274,6 @@ export function runLife(
   let retired = false;
   let moveOutAge: number | null = null;
   let earnings = 0;
-  const amountActions: Record<string, { slots: number[]; spent: number }> = {};
   let w: World | null = null;
 
   /** Note the age at which the player first stops living with their parents. */
@@ -333,41 +304,14 @@ export function runLife(
     return true;
   };
 
-  const games: Record<string, GameStats> = {};
-  let addictedYears = 0;
-  let everAddicted = false;
-  let everBanned = false;
-  const noteGambling = (): void => {
-    if (!w) return;
-    const me = playerOf(w);
-    if (me.qualities.gambling_addicted === true) everAddicted = true;
-    if (qnum(w, "gambling_banned_until") > 0) everBanned = true;
-  };
-
   const apply = (m: Move): void => {
     if (!w) return;
     if (m.t === "action") {
-      if (m.amount !== undefined && m.slot !== undefined) {
-        const a = amountActions[m.id] ?? { slots: [], spent: 0 };
-        amountActions[m.id] = a;
-        while (a.slots.length < m.slot) a.slots.push(0);
-        a.slots[m.slot - 1] = (a.slots[m.slot - 1] as number) + 1;
-        a.spent += m.amount;
-      }
-      const cashBefore = playerOf(w).money;
-      const wageredBefore = qnum(w, WAGERED);
+      const before = collector.beforeAction(playerOf(w), m);
       w = runAction(w, bundles, m.id, m.target, m.amount).world;
       if (!resolve()) return;
-      const placed = qnum(w, WAGERED) - wageredBefore;
-      if (placed > 0) {
-        const g = games[m.id] ?? { bets: 0, wagered: 0, net: 0 };
-        games[m.id] = g;
-        g.bets++;
-        g.wagered += placed;
-        g.net += playerOf(w).money - cashBefore;
-        if (playerOf(w).money < 0)
-          fault("assertion", `${m.id} left money below 0`);
-      }
+      for (const msg of collector.afterAction(playerOf(w), m, before))
+        fault("assertion", msg);
     } else if (m.t === "buy") w = purchase(w, bundles, m.kind, m.mode).world;
     else w = sell(w, bundles, m.asset).world;
   };
@@ -407,7 +351,7 @@ export function runLife(
         apply(m);
         if (!resolve()) break;
         noteHome();
-        noteGambling();
+        if (w) collector.observe(playerOf(w));
       }
       if (faults.some((f) => f.kind === "stuck")) break;
       if (!w || w.ended) break;
@@ -427,8 +371,8 @@ export function runLife(
       if (draw) yearDecisions.push({ age, ...draw });
       if (!resolve()) break;
       noteHome();
-      noteGambling();
-      if (playerOf(w).qualities.gambling_addicted === true) addictedYears++;
+      collector.observe(playerOf(w));
+      collector.yearEnd(playerOf(w));
       yearEvents.push(totalFires(w) - firesBefore);
       yearChoices.push({ age, n: firesIn(w, choiceIds) - choicesBefore });
       trackLoans(loansBefore, w);
@@ -457,6 +401,7 @@ export function runLife(
         lived && hh && me.age >= 18 && !livesWithParents(me) && !me.withGuardian
           ? livingBreakdown(w, index, me, lived)
           : null;
+      const nw = netWorth(w, me);
       samples.push({
         household:
           bill && hh
@@ -476,13 +421,14 @@ export function runLife(
             : null,
         age: me.age,
         stats: me.stats,
-        netWorth: netWorth(w, me),
+        netWorth: nw,
         employed,
         withParents: livesWithParents(me),
         standard: livesWithParents(me)
           ? null
           : (standardOf(me, indexBundles(bundles))?.id ?? null),
       });
+      collector.snapshot(me, nw);
       if (rng.int(SAVE_CHECK_ONE_IN) === 0) {
         const bad = checkSave(w, bundles);
         if (bad) fault("save-mismatch", bad);
@@ -503,6 +449,7 @@ export function runLife(
 
   const final = w;
   const me = final ? playerOf(final) : null;
+  const fires = final ? firesById(final) : {};
   const all = me ? [...me.occupationHistory, ...me.occupations] : [];
   return {
     seed,
@@ -512,7 +459,7 @@ export function runLife(
       final?.ended && me
         ? { age: final.ended.age, cause: final.ended.cause }
         : null,
-    fires: final ? firesById(final) : {},
+    fires,
     yearEvents,
     yearChoices,
     yearDecisions,
@@ -538,23 +485,18 @@ export function runLife(
         )
       : false,
     everEmployed,
-    gambling: {
-      games,
-      wagered: final ? qnum(final, WAGERED) : 0,
-      gambled: final ? qnum(final, WAGERED) > 0 : false,
-      addictedYears,
-      everAddicted,
-      recovered:
-        everAddicted && me ? me.qualities.gambling_addicted !== true : false,
-      everBanned,
-      vip: me ? me.qualities.gambling_vip === true : false,
-    },
+    metrics: collector.finish({
+      me,
+      years: samples.length,
+      earnings,
+      death: final?.ended && me ? { cause: final.ended.cause } : null,
+      fires,
+    }),
     retired: retired || all.some((o) => isRetired(o.kindId)),
     moveOutAge,
     kickedOut:
       (final?.storyletLog["core-loop/parents-ask-you-to-leave"]?.count ?? 0) >
       0,
     earnings,
-    amountActions,
   };
 }

@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { compilePacks, formatDiagnostic } from "@life/pack-tools";
 import { runHarness } from "./harness.ts";
+import { loadMetrics } from "./metrics.ts";
 import { resolveJobs, runHarnessParallel } from "./parallel.ts";
 import {
   EXTRA_PROFILE_NAMES,
@@ -13,12 +14,14 @@ import {
 import { renderMarkdown } from "./report.ts";
 
 const USAGE = `usage: pnpm harness --lives N [--profile random|studious|spender|idle|gambler|grinder|all|a,b] [--seed S] [--out dir] [--packs dir] [--life-seed X] [--jobs N]
+       pnpm harness --check-packs [--packs dir]
   --lives      lives to simulate (default 100)
   --profile    simulated player profile(s); several are dealt to lives in turn (default all)
   --seed       base seed, uint32 (default 1)
   --out        write report.md and report.json here
   --packs      Packs directory (default: the repository's packs/)
   --jobs       worker threads (default: available cores); the report is identical for any N
+  --check-packs  validate every Pack's harness/metrics.yaml against the compiled Packs, then exit (0 valid, 2 not)
   --life-seed  run one life with exactly this life seed (to replay a reported fault)
 Exit status 1 when any engine fault is found.
 `;
@@ -45,6 +48,7 @@ const { values: a } = parseArgs({
     packs: { type: "string" },
     "life-seed": { type: "string" },
     jobs: { type: "string" },
+    "check-packs": { type: "boolean" },
     help: { type: "boolean" },
   },
 });
@@ -81,8 +85,22 @@ if (!compiled.ok) {
   process.exit(2);
 }
 
+const loaded = loadMetrics(packsDir, compiled.bundles);
+if (loaded.diagnostics.length > 0) {
+  for (const d of loaded.diagnostics) console.error(formatDiagnostic(d));
+  console.error(`The Pack metrics in ${packsDir} are invalid.`);
+  process.exit(2);
+}
+if (a["check-packs"]) {
+  console.log(
+    `${compiled.bundles.length} Packs compile; metrics valid for ${loaded.metrics.length} (${loaded.metrics.map((m) => m.pack).join(", ")})`,
+  );
+  process.exit(0);
+}
+
 const run = {
   bundles: compiled.bundles,
+  metrics: loaded.metrics,
   lives,
   profiles,
   seed,

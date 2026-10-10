@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Violence (assault and murder)".
+
+- id: assault
+  icon: 👊
+  trigger: action
+  menu: relationships/crime
+  label: Assault
+  tags: [crime]
+  scope: person
+  when: age >= 12 and person.alive
+  cooldown: 1
+  max_per_life: 2
+  text: "You are furious with {person.first_name}. Hitting them would be a crime, and a stupid one."
+  choices:
+    - label: Attack
+      outcomes:
+        - weight: 60
+          text: "You hit {person.first_name} hard enough to end the argument, then walk off. Nobody calls the police."
+          effects:
+            - relationship(person).closeness += -35
+            - "quality.karma_score += -6"
+            - stat.happiness -= 2
+            - "journal(\"Attacked {person.first_name}.\")"
+        - weight: 30
+          text: A neighbor saw the whole thing and calls the police. They are on their way.
+          effects:
+            - relationship(person).closeness += -35
+            - "quality.karma_score += -6"
+            - "quality.crime_pending_charge = 2"
+            - "journal(\"Attacked {person.first_name}.\")"
+        - weight: 10
+          text: "{person.first_name} ends up in hospital with serious injuries. The police are on their way, and the charge is aggravated assault."
+          effects:
+            - relationship(person).closeness += -50
+            - "quality.karma_score += -8"
+            - "quality.crime_pending_charge = 3"
+            - "journal(\"Put {person.first_name} in hospital.\")"
+    - label: Walk away
+      outcomes:
+        - weight: 1
+          text: You take a breath and leave. The moment passes.
+
+- id: murder
+  icon: 🔪
+  trigger: action
+  menu: relationships/crime
+  label: Murder
+  tags: [crime]
+  scope: person
+  when: age >= 14 and person.alive
+  max_per_life: 1
+  text: "Killing {person.first_name} cannot be undone. Are you sure?"
+  choices:
+    - label: Go through with it
+      outcomes:
+        - weight: 60
+          text: "{person.first_name} is dead, and the scene shows no sign of you. For now."
+          effects:
+            - "die(\"murdered\")"
+            - "quality.crime_murders += 1"
+            - "quality.karma_score += -20"
+            - stat.happiness -= 12
+            - "journal(\"Killed {person.first_name}.\")"
+        - weight: 40
+          text: "{person.first_name} is dead, and the police are at your door within hours."
+          effects:
+            - "die(\"murdered\")"
+            - "quality.karma_score += -20"
+            - stat.happiness -= 12
+            - "quality.crime_pending_charge = 4"
+            - "journal(\"Killed {person.first_name}.\")"
+    - label: Back out
+      outcomes:
+        - weight: 1
+          text: You put it down. It was never going to happen.

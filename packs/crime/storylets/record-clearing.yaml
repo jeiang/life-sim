@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Record clearing".
+
+- id: record-appeal
+  icon: 📑
+  trigger: action
+  menu: assets/legal
+  label: Appeal a conviction
+  tags: [crime]
+  when: "quality.crime_record and quality.crime_convictions > quality.crime_appeals and money >= 300000"
+  text: "The conviction is still on your file. A lawyer will look at it for $3,000."
+  choices:
+    - label: Pay for a lawyer and appeal
+      outcomes:
+        - weight: 1
+          text: "You hand over $3,000. The lawyer promises to read the whole file this time."
+          effects:
+            - money -= 300000
+            - "quality.crime_appeals += 1"
+          next: record-appeal-ruling
+    - label: Let it go
+      outcomes:
+        - weight: 1
+          text: You put the paperwork in a drawer and get on with your life.
+
+- id: record-appeal-ruling
+  icon: ⚖️
+  trigger: event
+  chance: 0%
+  text: The appeals court takes another look at your file.
+  outcomes:
+    - weight: "40 - 4 * min(quality.crime_convictions, 5)"
+      text: The appeal is upheld and the conviction is thrown out. Your file is clean.
+      effects:
+        - "quality.crime_record = false"
+        - stat.happiness += 5
+        - "journal(\"An appeal overturned your conviction at age {age}.\")"
+    - weight: "60 + 4 * min(quality.crime_convictions, 5)"
+      text: The appeal is denied. The conviction stands, and the lawyer's invoice arrives anyway.
+      effects:
+        - stat.happiness -= 3
+        - "journal(\"Your appeal was denied at age {age}.\")"
+
+- id: record-expunge
+  icon: 🧾
+  trigger: action
+  menu: assets/legal
+  label: Apply to seal your record
+  tags: [crime]
+  when: "quality.crime_record and quality.crime_years_clean >= 7 and age >= 18 and not quality.crime_wanted and money >= 50000"
+  cooldown: 2
+  text: You have stayed out of trouble for seven years. A judge can seal the file for a fee.
+  choices:
+    - label: File the petition
+      outcomes:
+        - weight: 1
+          text: "You pay the $500 filing fee and the clerk stamps the petition."
+          effects:
+            - money -= 50000
+          next: record-expunge-ruling
+    - label: Not worth the fee
+      outcomes:
+        - weight: 1
+          text: You decide the old file can stay where it is.
+
+- id: record-expunge-ruling
+  icon: 📂
+  trigger: event
+  chance: 0%
+  text: The judge reads the petition and the old file.
+  outcomes:
+    - weight: "90 - 10 * min(quality.crime_convictions, 5)"
+      text: The judge seals the record. The old conviction is gone from the file.
+      effects:
+        - "quality.crime_record = false"
+        - stat.happiness += 4
+        - "journal(\"A judge sealed your record at age {age}.\")"
+    - weight: "10 * min(quality.crime_convictions, 5)"
+      text: The judge refuses. Your history is too long to forget.
+      effects:
+        - stat.happiness -= 2
+        - "journal(\"A judge refused to seal your record at age {age}.\")"

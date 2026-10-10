@@ -1,0 +1,3 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/readables.schema.json
+# Whether the player's courts can pass a death sentence (murder only).
+- { kind: readable, id: crime_death_penalty, type: bool, expr: 'kind("crime_jurisdiction", default).death_penalty > 0' }

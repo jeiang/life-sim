@@ -1,0 +1,68 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Custody intake".
+
+- id: custody-intake
+  icon: 🔒
+  trigger: event
+  tags: [custody-ok]
+  chance: 0%
+  text: The sentence is read out, the cuffs come off, and the cell door closes behind you.
+  outcomes:
+    - weight: 1
+      when: "age >= 18 and not quality.crime_cellmate"
+      text: "Booking takes all afternoon, fingerprints and a jumpsuit. Your cellmate looks up from the bunk and says the place is \"not that bad.\""
+      effects:
+        - "end_group(\"part-time\")"
+        - "end_group(\"full-time\")"
+        - "end_group(\"school\")"
+        - "end_occupation(core-loop/retired)"
+        - "start_occupation(prison)"
+        - "quality.crime_cellmate = true"
+        - "spawn_person(crime/inmate, crime/inmate-gen) as cellmate"
+        - "journal(\"Sent to prison at age {age}.\")"
+    - weight: 1
+      when: "age >= 18 and quality.crime_cellmate"
+      text: Back through the gate. Nobody asks how you got out, and the bunk is still yours.
+      effects:
+        - "end_group(\"part-time\")"
+        - "end_group(\"full-time\")"
+        - "end_group(\"school\")"
+        - "end_occupation(core-loop/retired)"
+        - "start_occupation(prison)"
+        - "journal(\"Returned to prison at age {age}.\")"
+    - weight: 1
+      when: "age < 18 and not quality.crime_cellmate"
+      text: Juvenile detention is cinder block, a curfew, and the kid in the bunk above yours.
+      effects:
+        - "end_group(\"part-time\")"
+        - "end_group(\"full-time\")"
+        - "start_occupation(juvenile_detention)"
+        - "quality.crime_cellmate = true"
+        - "spawn_person(crime/inmate, crime/inmate-gen-juvenile) as cellmate"
+        - "journal(\"Sent to juvenile detention at age {age}.\")"
+    - weight: 1
+      when: "age < 18 and quality.crime_cellmate"
+      text: Back to juvenile detention. The counsellor sighs and checks the bed you already know.
+      effects:
+        - "end_group(\"part-time\")"
+        - "end_group(\"full-time\")"
+        - "start_occupation(juvenile_detention)"
+        - "journal(\"Returned to juvenile detention at age {age}.\")"
+
+- id: crime-recaptured
+  icon: 🔒
+  trigger: event
+  tags: [custody-ok]
+  chance: 0%
+  text: You are brought back in. The gate locks behind you and the sentence gets longer.
+  outcomes:
+    - weight: 1
+      text: The guards log the attempt, the warrant is updated and your release date moves back two years.
+      effects:
+        - "end_occupation(prison)"
+        - "quality.crime_wanted = false"
+        - "quality.crime_escaped = false"
+        - "quality.crime_release_age += 2"
+        - stat.happiness -= 4
+        - "journal(\"Recaptured at age {age}. Two years added to the sentence.\")"
+      next: custody-intake

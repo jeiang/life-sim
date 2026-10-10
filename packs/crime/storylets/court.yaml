@@ -1,0 +1,248 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Court".
+
+- id: court-arraignment
+  icon: ⚖️
+  trigger: event
+  chance: 0%
+  when: "quality.crime_severity > 0"
+  text: The judge reads the charges and asks who is going to speak for you.
+  choices:
+    - label: Take the public defender
+      outcomes:
+        - weight: 1
+          text: The public defender is overworked, but shows up on time.
+          effects:
+            - "quality.crime_lawyer = 0"
+          next: court-plea
+    - label: Hire a private lawyer
+      when: "money >= 150000 * quality.crime_severity"
+      outcomes:
+        - weight: 1
+          text: A sharp suit and an invoice that stings. Worth it, probably.
+          effects:
+            - "money -= 150000 * quality.crime_severity"
+            - "quality.crime_lawyer = 1"
+          next: court-plea
+    - label: Hire the top lawyer
+      when: "money >= 600000 * quality.crime_severity"
+      outcomes:
+        - weight: 1
+          text: The firm's name opens doors. So does the bill.
+          effects:
+            - "money -= 600000 * quality.crime_severity"
+            - "quality.crime_lawyer = 2"
+          next: court-plea
+
+- id: court-plea
+  trigger: event
+  chance: 0%
+  text: The prosecutor slides a deal across the table. The judge waits.
+  choices:
+    - label: Plead guilty
+      outcomes:
+        - weight: 40
+          when: age >= 18
+          text: The prosecutor drops a charge level, and you take the deal before anyone changes their mind.
+          effects:
+            - "quality.crime_severity = max(1, quality.crime_severity - 1)"
+          next: court-sentencing
+        - weight: 60
+          when: age >= 18
+          text: You plead guilty, own it, and ask the judge for mercy.
+          next: court-sentencing
+        - weight: 40
+          when: age < 18
+          text: The prosecutor offers a lighter charge for a kid. You take it.
+          effects:
+            - "quality.crime_severity = max(1, quality.crime_severity - 1)"
+          next: court-sentencing-juvenile
+        - weight: 60
+          when: age < 18
+          text: You say you did it. Your voice barely carries.
+          next: court-sentencing-juvenile
+    - label: Plead not guilty
+      outcomes:
+        - weight: 1
+          text: You tell the judge you did not do it, and a trial date gets set.
+          next: court-verdict
+
+- id: court-verdict
+  trigger: event
+  chance: 0%
+  text: The trial takes three days. The jury comes back.
+  outcomes:
+    - weight: "20 + 15 * quality.crime_lawyer"
+      text: Not guilty. The jury took less time than you spent getting nervous.
+      effects:
+        - "quality.crime_severity = 0"
+        - "quality.crime_wanted = false"
+    - weight: 60
+      when: age >= 18
+      text: Guilty. The judge sets a date for sentencing.
+      next: court-sentencing
+    - weight: 60
+      when: age < 18
+      text: Guilty. The juvenile court sets a date for the disposition.
+      next: court-sentencing-juvenile
+
+- id: court-sentencing
+  trigger: event
+  chance: 0%
+  text: The judge reads the sentence. Everything you did gets read out loud.
+  outcomes:
+    - weight: "70 - 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 1"
+      text: A year in county time. Bad, not the end of the world.
+      effects:
+        - "crime.serve_adult(1)"
+      next: custody-intake
+    - weight: "30 + 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 1"
+      text: A stern lecture and a probation order. You keep your job and your dignity, mostly.
+      effects:
+        - crime.probation()
+    - weight: 50
+      when: "quality.crime_severity == 2"
+      text: Two years inside. The lawyer's paperwork could not change that.
+      effects:
+        - "crime.serve_adult(2)"
+      next: custody-intake
+    - weight: "30 - 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 2"
+      text: "Five years. The judge does not like the word \"accident.\""
+      effects:
+        - "crime.serve_adult(5)"
+      next: custody-intake
+    - weight: "20 + 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 2"
+      text: Probation and a fine that hurts more than the judge's tone.
+      effects:
+        - crime.probation()
+    - weight: "40 + 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 3"
+      text: Four years for a violent crime. It could have been worse.
+      effects:
+        - "crime.serve_adult(4)"
+      next: custody-intake
+    - weight: 35
+      when: "quality.crime_severity == 3"
+      text: Eight years. The gate closes with a sound you will remember.
+      effects:
+        - "crime.serve_adult(8)"
+      next: custody-intake
+    - weight: "25 - 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 3"
+      text: Fifteen years. The judge reads the victim statement twice.
+      effects:
+        - "crime.serve_adult(15)"
+      next: custody-intake
+    - weight: "35 + 5 * quality.crime_lawyer"
+      when: "quality.crime_severity == 4"
+      text: Fifteen years for murder. The lawyer's best argument was that you were sorry.
+      effects:
+        - "crime.serve_adult(15)"
+      next: custody-intake
+    - weight: 30
+      when: "quality.crime_severity == 4"
+      text: Twenty-five years. You will be a different person when the gate opens, if it opens at all.
+      effects:
+        - "crime.serve_adult(25)"
+      next: custody-intake
+    - weight: "35 - 5 * quality.crime_lawyer"
+      when: "quality.crime_severity == 4"
+      text: Life. The word hangs in the room longer than the judge does.
+      effects:
+        - crime.serve(999, 999, age + 25)
+      next: custody-intake
+    - weight: 10
+      when: "quality.crime_severity == 4 and crime_death_penalty"
+      text: The death sentence. Your appeals will take years, and then the date gets set.
+      effects:
+        - crime.serve(999, 999, 999)
+        - "quality.crime_death_row = true"
+        - "schedule(crime/court-execution, after: 3-6 years)"
+      next: custody-intake
+
+- id: court-sentencing-juvenile
+  trigger: event
+  chance: 0%
+  text: The juvenile judge speaks slowly, as if you might still be listening.
+  outcomes:
+    - weight: "50 + 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 1"
+      text: A probation order and a lot of talking. Your parents attend every session.
+      effects:
+        - crime.probation()
+    - weight: "50 - 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 1"
+      text: One year in juvenile detention. It is quieter than you expected.
+      effects:
+        - "crime.serve_juvenile(1)"
+      next: custody-intake
+    - weight: "30 + 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 2"
+      text: Probation with a curfew and a counsellor who wants to talk about feelings.
+      effects:
+        - crime.probation()
+    - weight: 40
+      when: "quality.crime_severity == 2"
+      text: Two years in juvenile detention. School comes with you.
+      effects:
+        - "crime.serve_juvenile(2)"
+      next: custody-intake
+    - weight: "30 - 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 2"
+      text: Four years in juvenile detention, or until you turn 18, whichever comes first.
+      effects:
+        - "crime.serve_juvenile(4)"
+      next: custody-intake
+    - weight: "40 + 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 3"
+      text: Three years in detention for a violent act. Your record follows you out.
+      effects:
+        - "crime.serve_juvenile(3)"
+      next: custody-intake
+    - weight: 40
+      when: "quality.crime_severity == 3"
+      text: Six years in detention. You will be eighteen before you finish.
+      effects:
+        - "crime.serve_juvenile(6)"
+      next: custody-intake
+    - weight: "20 - 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 3"
+      text: Ten years on paper. You will be out at eighteen, and the paper says so.
+      effects:
+        - "crime.serve_juvenile(10)"
+      next: custody-intake
+    - weight: "40 + 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 4"
+      text: "Six years in detention for a killing. The court says the word \"tragic\" four times."
+      effects:
+        - "crime.serve_juvenile(6)"
+      next: custody-intake
+    - weight: 40
+      when: "quality.crime_severity == 4"
+      text: Ten years in detention, and the youth counsellor says you can still change.
+      effects:
+        - "crime.serve_juvenile(10)"
+      next: custody-intake
+    - weight: "20 - 10 * quality.crime_lawyer"
+      when: "quality.crime_severity == 4"
+      text: Fifteen years on paper. Eighteen is the real ceiling, and everyone knows it.
+      effects:
+        - "crime.serve_juvenile(15)"
+      next: custody-intake
+
+- id: court-execution
+  icon: ☠️
+  trigger: event
+  tags: [custody-ok]
+  chance: 0%
+  when: "quality.crime_death_row"
+  text: The date comes. There is no appeal left to file.
+  outcomes:
+    - weight: 1
+      text: The sentence is carried out. Your life ends in a small room.
+      effects:
+        - "die(\"executed\")"

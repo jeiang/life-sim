@@ -1,0 +1,109 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Arrest".
+
+- id: arrest-pending
+  icon: 🚔
+  trigger: event
+  chance: 100%
+  when: "quality.crime_pending_charge > 0 and not confined"
+  text: Police arrive at your door with a charge.
+  choices:
+    - label: Cooperate
+      outcomes:
+        - weight: 1
+          text: You keep your hands where they can be seen and go quietly.
+          effects:
+            - "quality.crime_severity = min(4, quality.crime_pending_charge)"
+            - "quality.crime_pending_charge = 0"
+            - "quality.crime_arrests += 1"
+          next: court-arraignment
+    - label: Run
+      outcomes:
+        - weight: "max(5, 20 + stat.health / 4 - (quality.crime_pending_charge > 2 ? 10 : 0))"
+          text: You break free and vanish into the crowd. The police will be looking for you.
+          effects:
+            - "quality.crime_severity = min(4, quality.crime_pending_charge)"
+            - "quality.crime_pending_charge = 0"
+            - "quality.crime_wanted = true"
+            - stat.happiness -= 4
+            - "schedule(crime/arrest-cold-case, after: 6-15 years)"
+            - "journal(\"Broke away from the police at age {age}. They are looking for you.\")"
+        - weight: 60
+          text: You do not get ten meters. Resisting arrest goes in the file.
+          effects:
+            - "quality.crime_severity = min(4, quality.crime_pending_charge)"
+            - "quality.crime_pending_charge = 0"
+            - "quality.crime_arrests += 1"
+            - stat.health -= 4
+          next: court-arraignment
+    - label: Bribe the officer
+      when: "money >= 50000 * min(4, quality.crime_pending_charge) * min(4, quality.crime_pending_charge)"
+      outcomes:
+        - weight: "max(2, 40 - 8 * min(4, quality.crime_pending_charge))"
+          text: The officer pockets the cash and looks the other way. The case goes away.
+          effects:
+            - "money -= 50000 * min(4, quality.crime_pending_charge) * min(4, quality.crime_pending_charge)"
+            - "quality.crime_pending_charge = 0"
+            - "quality.crime_severity = 0"
+            - "quality.karma_score += -4"
+            - "journal(\"Bribed an officer to make a charge go away at age {age}.\")"
+        - weight: 60
+          text: The officer takes the cash anyway and adds bribery to the file.
+          effects:
+            - "money -= 50000 * min(4, quality.crime_pending_charge) * min(4, quality.crime_pending_charge)"
+            - "quality.crime_severity = min(4, quality.crime_pending_charge + 1)"
+            - "quality.crime_pending_charge = 0"
+            - "quality.crime_arrests += 1"
+            - "quality.karma_score += -4"
+          next: court-arraignment
+
+- id: arrest-manhunt
+  icon: 🚨
+  trigger: event
+  chance: 25%
+  when: "quality.crime_wanted and not confined"
+  text: The police are still looking for you.
+  outcomes:
+    - weight: 1
+      when: "quality.crime_escaped"
+      text: A patrol recognizes you and the escape is over.
+      effects:
+        - "quality.crime_arrests += 1"
+      next: crime-recaptured
+    - weight: 1
+      when: "not quality.crime_escaped"
+      text: A routine check turns up the warrant. You are arrested.
+      effects:
+        - "quality.crime_wanted = false"
+        - "quality.crime_arrests += 1"
+      next: court-arraignment
+
+- id: arrest-cold-case
+  icon: 📁
+  trigger: event
+  chance: 0%
+  when: "quality.crime_wanted and not quality.crime_escaped and not confined"
+  text: The case against you goes cold on a desk somewhere.
+  outcomes:
+    - weight: 1
+      text: The file goes into a box in a basement. Nobody is looking for you any more.
+      effects:
+        - "quality.crime_wanted = false"
+        - "quality.crime_severity = 0"
+        - "journal(\"The police stopped looking for you at age {age}.\")"
+
+- id: arrest-murder-cold
+  icon: 🔎
+  trigger: event
+  chance: 1%
+  when: "quality.crime_murders > 0 and not confined"
+  text: A detective pulls an old file and finds a name that was never checked.
+  outcomes:
+    - weight: 1
+      text: The name turns out to be yours. The handcuffs come out before the questions do.
+      effects:
+        - "quality.crime_murders += -1"
+        - "quality.crime_severity = 4"
+        - "quality.crime_arrests += 1"
+        - "journal(\"Police linked you to an old murder and arrested you at age {age}.\")"
+      next: court-arraignment

@@ -1,4 +1,14 @@
 allow:
-  - code: L006
-    subject: quality.crime_record
-    reason: Set by the conviction storylets, which land with the crime content wave; the readable already feeds hiring_blocked.
+  - code: L003
+    subject: crime/arrest-cold-case
+    reason: Opened by `schedule(crime/arrest-cold-case, ...)` from a fugitive's Run outcome; lint follows `next` only.
+  - code: L003
+    subject: crime/court-execution
+    reason: Opened by `schedule(crime/court-execution, ...)` from the death sentence; lint follows `next` only.
+  - code: L003
+    subject: crime/crime-recaptured
+    reason: Reached by `next` from the manhunt's escaped branch and the escape attempt, both of which need `crime_escaped`, which the escape chain (#236) writes.
+  - code: L002
+    subject: crime/arrest-manhunt
+    path: outcomes[0].when
+    reason: The escaped branch needs `crime_escaped`, which the escape chain (#236) sets; the manhunt is written for it now.

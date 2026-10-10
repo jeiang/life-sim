@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
+# The open case: arrest writes the severity, court reads and clears it.
+- { id: crime_severity, type: int, min: 0, max: 4, default: 0 }   # 1 petty, 2 serious, 3 violent, 4 murder; 0 = no open case
+- { id: crime_lawyer, type: int, min: 0, max: 2, default: 0 }      # chosen at arraignment: 0 public defender, 1 private, 2 top
+# The custodial sentence handed down by court.
+- { id: crime_term, type: int, min: 0, max: 999, default: 0 }          # years of the current custodial sentence; 999 = life or death row; 0 = no custody
+- { id: crime_release_age, type: int, min: 0, max: 999, default: 0 }   # age the sentence ends; 999 = never
+- { id: crime_parole_age, type: int, min: 0, max: 999, default: 0 }    # age the first parole hearing opens; 999 = no hearing
+- { id: crime_death_row, type: flag, default: false }                  # a death sentence; the scheduled execution reads it
+- { id: crime_on_parole, type: flag, default: false }                  # out on parole; raises the caught weight of property crimes
+# Life inside, reset to a fresh sentence by court.
+- { id: crime_behaviour, type: int, min: 0, max: 100, default: 50 }    # conduct in custody and on parole; raises parole odds
+- { id: crime_respect, type: int, min: 0, max: 100, default: 0 }       # standing among inmates; read by riots, gangs and parole
+- { id: crime_gang, type: flag, default: false }                       # member of a prison gang
+- { id: crime_cellmate, type: flag, default: false }                   # this sentence's cellmate is already spawned (a recapture adds none)
+- { id: crime_escape_used, type: flag, default: false }                # a break-out happened this sentence; one per sentence
+- { id: crime_escaped, type: flag, default: false }                    # at large after a break-out; cleared on recapture
+# Unsolved murders: the cold case may still connect them to the player.
+- { id: crime_murders, type: int, min: 0, max: 1000, default: 0 }
+# Counters (balance and gates).
+- { id: crime_arrests, type: int, min: 0, default: 0 }        # lifetime bookings
+- { id: crime_sentences, type: int, min: 0, default: 0 }      # custodial sentences received
+- { id: crime_convictions, type: int, min: 0, default: 0 }    # convictions, probation included
+- { id: crime_appeals, type: int, min: 0, default: 0 }        # paid appeal filings; one per conviction
+- { id: crime_years_clean, type: int, min: 0, max: 200, default: 0 }   # years with a record, free of custody and parole; reset at sentencing

@@ -1,3 +1,7 @@
 # yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
 id: crime
 namespace: crime
+hooks:
+  on_age_up_post:
+    # Years with a record, free of custody and parole; record clearing reads it. Court resets it at each sentence.
+    - "quality.crime_years_clean = (quality.crime_record and not confined and not quality.crime_on_parole) ? quality.crime_years_clean + 1 : quality.crime_years_clean"

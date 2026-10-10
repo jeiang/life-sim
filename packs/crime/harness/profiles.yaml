@@ -1,0 +1,17 @@
+# Simulated player profiles of the Crime Pack; the schema is docs/spec/harness.md#simulated-player-profiles.
+profiles:
+  criminal:
+    description: Commits a crime most years once old enough, then lawyers up and fights the case; appeals and seals the record after release
+    default: false
+    moves: 3
+    choice:
+      prefer: ["hire*", "plead not guilty", "run", "go through with it", "attack", "file*", "pay for a lawyer*"]
+    rules:
+      - ids: [crime/record-appeal, crime/record-expunge]
+      - ids: [crime/assault, crime/murder]
+      - ids: [crime/shoplift, crime/pickpocket, crime/steal-a-car, crime/burglary, crime/fraud, crime/armed-robbery]
+      - ids: ["*/apply-*"]
+# Crime stays rare in the uniform `random` profile: its actions are down-weighted by orders of magnitude (the confirm step alone does not stop a uniform picker).
+adjust:
+  - { profile: random, tags: [crime], weight: 0.004 }
+  - { profile: random, ids: [crime/murder, crime/assault], weight: 0.1 }

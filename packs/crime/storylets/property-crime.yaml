@@ -1,0 +1,176 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Property crime".
+
+- id: shoplift
+  icon: 🛒
+  trigger: action
+  menu: activities/crime
+  label: Shoplift
+  tags: [crime]
+  when: age >= 12 and not confined
+  once: true
+  cooldown: 1
+  text: The corner shop has one bored clerk and a lot of small, expensive things.
+  outcomes:
+    - weight: 55
+      text: "You slip a few things under your coat and walk out. Worth about $60."
+      effects:
+        - money += 6000
+        - "quality.karma_score += -3"
+        - stat.happiness += 1
+    - weight: 45
+      text: "You grab more than you planned, close to $150 of goods."
+      effects:
+        - money += 15000
+        - "quality.karma_score += -3"
+        - stat.happiness += 1
+    - weight: "max(1, 22 + (quality.crime_record ? 10 : 0) + (quality.crime_on_parole ? 10 : 0) - stat.smarts / 6)"
+      text: A security guard grabs your arm at the door and calls the police.
+      effects:
+        - "quality.karma_score += -3"
+        - "quality.crime_pending_charge = 1"
+
+- id: pickpocket
+  icon: 👛
+  trigger: action
+  menu: activities/crime
+  label: Pick pockets
+  tags: [crime]
+  when: age >= 12 and not confined
+  once: true
+  cooldown: 1
+  text: A crowded market is a good place to lighten someone's load.
+  outcomes:
+    - weight: 60
+      text: "A loose pocket in the crush. You come away with $80."
+      effects:
+        - money += 8000
+        - "quality.karma_score += -3"
+        - stat.happiness += 1
+    - weight: 40
+      text: "A fat wallet with $250 in cash, and nobody sees a thing."
+      effects:
+        - money += 25000
+        - "quality.karma_score += -3"
+        - stat.happiness += 1
+    - weight: "max(1, 26 + (quality.crime_record ? 10 : 0) + (quality.crime_on_parole ? 10 : 0) - stat.smarts / 6)"
+      text: A hand closes on your wrist. It belongs to an off-duty officer.
+      effects:
+        - "quality.karma_score += -3"
+        - "quality.crime_pending_charge = 1"
+
+- id: steal-a-car
+  icon: 🚗
+  trigger: action
+  menu: activities/crime
+  label: Steal a car
+  tags: [crime]
+  when: age >= 14 and not confined
+  once: true
+  cooldown: 1
+  text: A row of cars sits with spare keys in the visor and nobody is watching.
+  outcomes:
+    - weight: 70
+      text: "You hot-wire it and sell it on for $4,000."
+      effects:
+        - money += 400000
+        - "quality.karma_score += -3"
+        - stat.happiness += 1
+    - weight: 30
+      text: "A nice one. The fence pays $9,000."
+      effects:
+        - money += 900000
+        - "quality.karma_score += -3"
+        - stat.happiness += 1
+    - weight: "max(1, 30 + (quality.crime_record ? 10 : 0) + (quality.crime_on_parole ? 10 : 0) - stat.smarts / 8)"
+      text: A patrol car pulls in behind you at the first red light.
+      effects:
+        - "quality.karma_score += -3"
+        - "quality.crime_pending_charge = 2"
+
+- id: burglary
+  icon: 🏠
+  trigger: action
+  menu: activities/crime
+  label: Burgle a house
+  tags: [crime]
+  when: age >= 14 and not confined
+  once: true
+  cooldown: 1
+  text: The house on the corner has its lights off and its back gate unlatched. Probably on purpose.
+  outcomes:
+    - weight: 65
+      text: "You find jewelry and cash. The fence pays $2,500."
+      effects:
+        - money += 250000
+        - "quality.karma_score += -3"
+        - stat.happiness += 1
+    - weight: 35
+      text: "A big score: electronics and a safe. $7,000."
+      effects:
+        - money += 700000
+        - "quality.karma_score += -3"
+        - stat.happiness += 1
+    - weight: "max(1, 32 + (quality.crime_record ? 10 : 0) + (quality.crime_on_parole ? 10 : 0) - stat.smarts / 8)"
+      text: An alarm you did not see starts blaring, and the street fills with lights.
+      effects:
+        - "quality.karma_score += -3"
+        - "quality.crime_pending_charge = 2"
+
+- id: fraud
+  icon: 💳
+  trigger: action
+  menu: activities/crime
+  label: Run a scam
+  tags: [crime]
+  when: age >= 16 and not confined
+  once: true
+  cooldown: 1
+  text: Fake invoices, and phone calls to people too polite to hang up.
+  outcomes:
+    - weight: 60
+      text: "A fake invoice goes through. $6,000 lands in your account."
+      effects:
+        - money += 600000
+        - "quality.karma_score += -3"
+        - stat.happiness += 1
+    - weight: 40
+      text: "A phone call sweet-talks a stranger into sending $15,000."
+      effects:
+        - money += 1500000
+        - "quality.karma_score += -3"
+        - stat.happiness += 1
+    - weight: "max(1, 32 + (quality.crime_record ? 10 : 0) + (quality.crime_on_parole ? 10 : 0) - stat.smarts / 4)"
+      text: The bank flags the transfer, and a fraud investigator starts reading your file.
+      effects:
+        - "quality.karma_score += -3"
+        - "quality.crime_pending_charge = 2"
+
+- id: armed-robbery
+  icon: 🔫
+  trigger: action
+  menu: activities/crime
+  label: Rob a store
+  tags: [crime]
+  when: age >= 16 and not confined
+  once: true
+  cooldown: 1
+  text: The corner store is quiet and the clerk looks tired. That is the plan.
+  outcomes:
+    - weight: 70
+      text: "The till gives you $3,500, and you are gone in under a minute."
+      effects:
+        - money += 350000
+        - "quality.karma_score += -3"
+        - stat.happiness += 1
+    - weight: 30
+      text: "The safe was open. $9,000."
+      effects:
+        - money += 900000
+        - "quality.karma_score += -3"
+        - stat.happiness += 1
+    - weight: "max(1, 48 + (quality.crime_record ? 10 : 0) + (quality.crime_on_parole ? 10 : 0) - stat.smarts / 10)"
+      text: The clerk hits a silent alarm, and police cars box you in.
+      effects:
+        - "quality.karma_score += -3"
+        - "quality.crime_pending_charge = 3"

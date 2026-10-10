@@ -1,0 +1,2 @@
+# One default jurisdiction for now; a later Pack (countries) adds entries and picks one per city.
+- { id: default, label: Default jurisdiction, death_penalty: 1 }

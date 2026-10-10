@@ -318,6 +318,13 @@ function applyEffect(
             ? w
             : setWill(w, { mode: "heir", heir: pid });
         }
+        case "unlist": {
+          const name = str(args[0], w, idx, scope);
+          const pid = name === "person" ? scope.person : bound.get(name);
+          return pid === undefined
+            ? w
+            : updatePerson(w, pid, (p) => ({ ...p, listed: false }));
+        }
         case "unschedule":
           return unschedule(w, str(args[0], w, idx, scope));
         case "journal":

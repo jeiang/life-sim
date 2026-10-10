@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/people.schema.json
+# Pets are persons the player holds an animal role toward. `animal: true` keeps every human
+# storylet (no `target`, or a human target) from binding them; only storylets whose `target`
+# names a pet role do (`pet-mortality`, `pet-runs-off`, `play-with-pet`, ...). Their generators
+# have no `last_names`, so they get no family name.
+- { kind: role, id: dog, label: Dog, animal: true }
+- { kind: role, id: cat, label: Cat, animal: true }
+- kind: generator
+  id: dog-gen
+  age: [0, 5]
+  stats:
+    happiness: [60, 100]
+    health: [60, 100]
+  first_names:
+    male: [Rex, Buddy, Max, Charlie, Cooper, Rocky, Duke, Bear, Toby, Jack, Oscar, Bruno, Milo, Winston, Archie]
+    female: [Bella, Daisy, Luna, Lucy, Molly, Sadie, Ruby, Maggie, Penny, Coco, Poppy, Rosie, Willow, Pippa, Nell]
+- kind: generator
+  id: senior-dog-gen
+  age: [6, 10]
+  stats:
+    happiness: [50, 90]
+    health: [40, 80]
+  first_names:
+    male: [Rex, Buddy, Max, Charlie, Cooper, Rocky, Duke, Bear, Toby, Jack, Oscar, Bruno, Milo, Winston, Archie]
+    female: [Bella, Daisy, Luna, Lucy, Molly, Sadie, Ruby, Maggie, Penny, Coco, Poppy, Rosie, Willow, Pippa, Nell]
+- kind: generator
+  id: cat-gen
+  age: [0, 6]
+  stats:
+    happiness: [60, 100]
+    health: [60, 100]
+  first_names:
+    male: [Tom, Felix, Oliver, Leo, Simba, Smokey, Tiger, Ginger, Jasper, Shadow, Whiskers, Garfield, Salem, Pumpkin, Ziggy]
+    female: [Cleo, Mittens, Chloe, Nala, Misty, Lily, Kitty, Tilly, Pepper, Maple, Bean, Olive, Sophie, Pearl, Biscuit]

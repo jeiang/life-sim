@@ -415,6 +415,11 @@ export interface CompiledRole {
   readonly type: "role";
   readonly id: string;
   readonly label: string;
+  /**
+   * An animal role: a person the player holds it toward is an animal. A `scope: person` storylet
+   * binds an animal only when its `target` names an animal role (never with no `target`).
+   */
+  readonly animal?: true;
 }
 
 export interface CompiledGenerator {
@@ -424,6 +429,7 @@ export interface CompiledGenerator {
   readonly firstNames: Readonly<Record<Gender, readonly string[]>>;
   /** Draw weights per gender; a weight of 0 never draws. Default male 1, female 1. */
   readonly genderWeights: Readonly<Record<Gender, number>>;
+  /** Family-name pool; empty (no `last_names`): the person gets no family name (animals). */
   readonly lastNames: readonly string[];
   /** Inclusive age range at spawn. */
   readonly age: readonly [number, number];

@@ -3215,7 +3215,12 @@ class PackCompiler {
 
   private people(_it: LoadedItem, p: PeopleSrc): CompiledPeopleItem {
     if (p.kind === "role")
-      return { type: "role", id: this.owner, label: p.label };
+      return {
+        type: "role",
+        id: this.owner,
+        label: p.label,
+        ...(p.animal ? { animal: true as const } : {}),
+      };
     if (p.age[0] > p.age[1])
       this.err(["age"], "age range minimum exceeds maximum");
     const firstNames: Record<Gender, readonly string[]> = Array.isArray(
@@ -3254,7 +3259,7 @@ class PackCompiler {
       id: this.owner,
       firstNames,
       genderWeights,
-      lastNames: p.last_names,
+      lastNames: p.last_names ?? [],
       age: p.age as [number, number],
       stats,
       ...(p.jobs

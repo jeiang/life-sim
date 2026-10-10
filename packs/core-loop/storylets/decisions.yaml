@@ -296,14 +296,28 @@
   choices:
     - label: Take them home
       outcomes:
-        - weight: 80
-          text: A loyal companion who makes the house feel full.
+        - weight: 40
+          text: "{pet.first_name} is a loyal dog who makes the house feel full."
           effects:
+            - spawn_person(core-loop/dog, core-loop/dog-gen) as pet
             - money -= min(money, 5000)
             - stat.happiness += 6
-        - weight: 20
-          text: The pet is a handful and the vet bills are steep.
+        - weight: 40
+          text: "{pet.first_name} is a loyal cat who makes the house feel full."
           effects:
+            - spawn_person(core-loop/cat, core-loop/cat-gen) as pet
+            - money -= min(money, 5000)
+            - stat.happiness += 6
+        - weight: 10
+          text: "{pet.first_name} is a handful and the vet bills are steep."
+          effects:
+            - spawn_person(core-loop/dog, core-loop/dog-gen) as pet
+            - money -= min(money, 15000)
+            - stat.happiness += 2
+        - weight: 10
+          text: "{pet.first_name} is a handful and the vet bills are steep."
+          effects:
+            - spawn_person(core-loop/cat, core-loop/cat-gen) as pet
             - money -= min(money, 15000)
             - stat.happiness += 2
     - label: Not right now

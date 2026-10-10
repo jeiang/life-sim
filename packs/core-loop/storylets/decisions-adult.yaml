@@ -394,8 +394,9 @@
     - label: "Take it in"
       outcomes:
         - weight: 70
-          text: "A purring companion who rules the household."
+          text: "{pet.first_name} is a purring companion who rules the household."
           effects:
+            - spawn_person(core-loop/cat, core-loop/cat-gen) as pet
             - money -= 8000
             - stat.happiness += 5
         - weight: 30

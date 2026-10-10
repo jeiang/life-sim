@@ -110,7 +110,11 @@ export { listShop, purchase, type ShopRow, sell } from "./purchase.ts";
 export { type ReadableEntry, readableCycle } from "./readables.ts";
 export { replay } from "./replay.ts";
 export { REPOSSESSION_MISSES } from "./settle.ts";
-export type { AmountRange } from "./storylets.ts";
+export {
+  type AmountRange,
+  hasTargetRole,
+  isAnimal,
+} from "./storylets.ts";
 export { canSucceed, heirsOf, succeed } from "./succession.ts";
 export { formatMoney, isMature, pickText, renderText } from "./text.ts";
 export {

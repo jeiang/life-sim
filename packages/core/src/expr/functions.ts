@@ -114,6 +114,11 @@ export const EFFECTS = {
   set_will: { params: ["will"], returns: "bool" },
   /** Set the will to leave all cash to one named person: `person`, or one bound by `spawn_person(...) as <name>`. */
   will_heir: { params: ["person"], returns: "bool" },
+  /**
+   * Unlist one named person (`person`, or one bound by `spawn_person(...) as <name>`): a rehomed
+   * or lost pet. They stay in the world but leave the player's lists and no storylet binds them.
+   */
+  unlist: { params: ["person"], returns: "bool" },
   /** Cancel every queued `schedule(...)` of a storylet, for any person. `schedule` has its own syntax. */
   unschedule: { params: ["id"], returns: "bool" },
 } as const satisfies Record<string, Signature>;

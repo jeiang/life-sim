@@ -152,6 +152,8 @@ export interface Report {
   /** Persons per save: how many exist, how many run a career, and the serialized size. */
   readonly population: {
     readonly persons: Dist | null;
+    /** Animals in the world; `persons` leaves them out. */
+    readonly pets: Dist | null;
     readonly careers: Dist | null;
     readonly saveBytes: Dist | null;
   };
@@ -324,6 +326,7 @@ export class Aggregate {
   private workYears = 0;
   private workingYears = 0;
   private readonly persons: number[] = [];
+  private readonly pets: number[] = [];
   private readonly careers: number[] = [];
   private readonly saveBytes: number[] = [];
   private loansOpened = 0;
@@ -559,6 +562,7 @@ export class Aggregate {
     }
     if (r.persons !== null) {
       this.persons.push(r.persons);
+      this.pets.push(r.pets);
       this.careers.push(r.careers);
       this.saveBytes.push(r.saveBytes);
     }
@@ -756,6 +760,7 @@ export class Aggregate {
       },
       population: {
         persons: dist(this.persons),
+        pets: dist(this.pets),
         careers: dist(this.careers),
         saveBytes: dist(this.saveBytes),
       },
@@ -864,7 +869,8 @@ export function renderMarkdown(
   L.push("## Population per save", "");
   L.push("| | p50 | p99 | max |", "|---|---|---|---|");
   for (const [label, d] of [
-    ["persons", r.population.persons],
+    ["persons (animals excluded)", r.population.persons],
+    ["pets", r.population.pets],
     ["persons with careers", r.population.careers],
     ["save bytes", r.population.saveBytes],
   ] as const)

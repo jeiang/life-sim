@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Pets (people/pets.yaml). Each storylet names a pet role in `target`: a person-scoped storylet
+# with no `target`, or a human one, never binds an animal.
+- id: pet-mortality
+  icon: 🌈
+  trigger: event
+  tags: [npc, mortality, custody-ok]
+  scope: person
+  target: [core-loop/dog, core-loop/cat]
+  chance: "min(10000, person.age >= 8 ? (person.age - 7) * 700 * (140 - person.stat.health) / 90 : 30)"
+  once: true
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness -= 4 + person.closeness / 10
+        - journal("{person.first_name} died at age {person.age}.")
+        - die("old age")
+
+# A pet that is not close enough wanders off for good: unlisted, no longer a person to bind.
+- id: pet-runs-off
+  icon: 🐾
+  trigger: event
+  tags: [npc, custody-ok]
+  scope: person
+  target: [core-loop/dog, core-loop/cat]
+  chance: 80
+  when: person.age >= 1 and person.closeness < 70
+  once: true
+  outcomes:
+    - weight: 1
+      text: "{person.first_name} slips out one morning and never comes back."
+      effects:
+        - stat.happiness -= 3
+        - journal("{person.first_name} ran off at age {age} and was never found.")
+        - unlist(person)
+
+- id: pet-rehome
+  icon: 🏠
+  trigger: event
+  tags: [npc, custody-ok]
+  scope: person
+  target: [core-loop/dog, core-loop/cat]
+  chance: 100
+  when: money < 50000 and person.closeness < 60
+  once: true
+  text: "Looking after {person.first_name} is costing more than {player.first_name} can comfortably spare."
+  choices:
+    - label: Keep them
+      outcomes:
+        - weight: 1
+          text: "Tighter budgets, but {person.first_name} stays."
+          effects:
+            - stat.happiness += 1
+    - label: Find them a new home
+      outcomes:
+        - weight: 1
+          text: "A kind family takes {person.first_name} in, and sends photos."
+          effects:
+            - stat.happiness -= 3
+            - journal("Rehomed {person.first_name} at age {age}.")
+            - unlist(person)
+
+- id: play-with-pet
+  label: Play together
+  icon: 🎾
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [core-loop/dog, core-loop/cat]
+  tags: [relationship, spend-time]
+  repeatable: true
+  text: "You spend an afternoon playing with {person.first_name}."
+  outcomes:
+    - weight: 80
+      text: "Chasing, fetching and plenty of cuddles."
+      effects:
+        - stat.happiness += 3
+        - relationship(person).closeness += 6
+    - weight: 20
+      text: "A nap on the sofa is more their speed."
+      effects:
+        - stat.happiness += 1
+        - relationship(person).closeness += 2

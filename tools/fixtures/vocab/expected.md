@@ -110,6 +110,7 @@ Effect calls. Assign targets (a bound person's name works like `person`): `stat 
 - `reach_milestone(milestone) -> bool`
 - `set_will(will) -> bool`
 - `will_heir(person) -> bool`
+- `unlist(person) -> bool`
 - `unschedule(id) -> bool`
 - `schedule(id, after: <a>-<b> years[, person][, lineage: true]) -> bool`
 - `relationship(<person>).closeness += <int>`

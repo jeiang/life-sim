@@ -8,7 +8,7 @@ One small custom language is used for `when`, `weight`, `chance`, and effect sta
 
 - Literals: integers, percents (`2.5%`, compiled to basis points out of 10,000), strings, booleans, and content ids (`job/cashier`).
 - Operators: `+ - * /`, `mod` (modulo; `%` is used only by percent literals), comparisons, `and or not`, `in`, and the ternary `a ? b : c`.
-- Names (scope `person` also has `person.role` as a content id, `person.alive`, and the read-only `person.closeness`, the player's highest closeness to them across their role rows, 0 with no tie; bound people have `<name>.closeness` too): `age`, `money`, `uses_this_year` (storylets), `confined` (boolean, see [Confinement](content-kinds.md#confinement)), `stat.<id>`, `quality.<id>`, `loan.<field>` (`balance`, `payment`, `missed`) in storylets with `scope: loan`, and other scoped references inside storylets (for example `person.<field>` for a spawned person).
+- Names (scope `person` also has `person.role` as a content id, `person.alive`, and the read-only `person.closeness`, the player's highest closeness to them across their role rows, 0 with no tie; bound people have `<name>.closeness` too): `age`, `money`, `uses_this_year` (storylets), `confined` (boolean, see [Confinement](content-kinds.md#confinement)), `stat.<id>`, `quality.<id>`, `loan.<field>` (`balance`, `payment`, `missed`) in storylets with `scope: loan`, and other scoped references inside storylets (for example `person.<field>` for a spawned person). Declared state containers add `world.<id>` (counters), `table.<id>.<key>` (the player's table cell) and, on scoped or bound people, `person.quality.<id>` / `person.table.<id>.<key>` (see [State containers](state.md)).
 - Functions: a fixed whitelist (for example `min`, `max`, `clamp`, `has`, `has_occupation`, `owns`, `years_in`, `in_group`, `years_in_group`, `has_remote_job()`: true while the player holds an occupation flagged `remote`, `role_closeness(role)`: average closeness to the living people the player holds that role toward, 0 with none (an aggregate over a role, unlike `person.closeness`, which reads one person); `count_role(role, min, max)`: living people the player holds that role toward with closeness in `[min, max]`, inclusive). No user-defined functions and no loops.
 - Group checks: `in_group(g)` is true while the player holds an occupation whose `group` is `g`; `years_in_group(g)` sums completed years over every occupation in `g`, held or ended (0 if none; an occupation ended within its first year adds 0). `g` must be an exclusivity group declared by the Pack or a dependency: a bare word (`in_group(school)`) or, for hyphenated names, a string (`in_group("full-time")`). There is no `end_group` effect and no `ends_groups` field; packs end occupations explicitly with `end_occupation`. Group names are not content ids, so the ids lock is unaffected.
 - `remote: true` on an occupation kind marks work that can be done from anywhere; `has_remote_job()` reads it (Relocation uses it to decide whether a move ends the job).
@@ -26,6 +26,8 @@ Each statement maps to one effect in the closed Core set (ADR 0002):
 
 ```
 stat.<id> += n | -= n | = n          quality.<id> += n | = v
+world.<id> += n | -= n | = n         table.<id>.<key> += n | -= n | = n
+person.quality.<id> += n | = v       person.table.<id>.<key> += n | -= n | = n   (also <bound>.quality… / <bound>.table…)
 money += n | -= n                    take_loan(loan-kind, principal)
 grant_asset(item-kind) | remove_asset(item-kind)
 start_occupation(kind) | end_occupation(kind)

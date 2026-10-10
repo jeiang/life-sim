@@ -28,12 +28,12 @@ The `pack.yaml` manifest, how Packs compose, and capability files. Part of the [
 
 ## Id ownership
 
-- Stats and qualities are bare ids shared by all Packs. A Pack with a `namespace` must prefix both with `<namespace>_` (`vac_`, `gambling_`); the compiler reports each id that does not. Without a `namespace` the prefix is not enforced, and the cross-Pack duplicate check (see Composition) still applies. Content ids are always `<pack>/<id>`.
+- Stats, qualities and state containers (see [State containers](state.md)) are bare ids shared by all Packs. A Pack with a `namespace` must prefix all three with `<namespace>_` (`vac_`, `gambling_`); the compiler reports each id that does not. Without a `namespace` the prefix is not enforced, and the cross-Pack duplicate check (see Composition) still applies. Content ids are always `<pack>/<id>`.
 - Reading another Pack's quality, stat or group needs a required capability that provides it (see Capabilities, Visibility).
 
 ## Qualities
 
-`packs/<id>/qualities/<topic>.yaml` holds a list of quality declarations (schema: `packages/pack-tools/schema/qualities.schema.json`), merged across files like `storylets/*.yaml`. Each is `{ id, type, default }` with `type: int` (optional `min` / `max`) or `type: flag`. A quality id is unique within its Pack; across Packs see Composition. A `qualities` key in `pack.yaml` is an error that names the file to move the list into.
+`packs/<id>/qualities/<topic>.yaml` holds a list of quality declarations (schema: `packages/pack-tools/schema/qualities.schema.json`), merged across files like `storylets/*.yaml`. Each is `{ id, type, default }` with `type: int` (optional `min` / `max`) or `type: flag`, and an optional `scope: person` that also makes it readable and assignable on a scoped or bound person (`person.quality.<id>`, see [State containers](state.md)). A quality id is unique within its Pack; across Packs see Composition. A `qualities` key in `pack.yaml` is an error that names the file to move the list into.
 
 ```yaml
 - { id: gambling_heat, type: int, min: 0, max: 100, default: 0 }
@@ -55,7 +55,7 @@ requires:
   - core-loop/stats
 ```
 
-- `provides` lists the bare ids this feature exports, per category: `stats`, `qualities`, `groups` (exclusivity groups), `tags`, `milestones`, `roles`, `generators`, `cities`, `occupations`, `items` (item kinds and markets), `loans`, `standards`, `storylets`, `singletons` (see Singleton blocks). Every id except `tags` and `milestones` (opaque labels, not checked) must exist in the providing Pack. A feature of a Pack may not export an id another feature of that Pack already exports. Every key is optional; a file with neither key is valid.
+- `provides` lists the bare ids this feature exports, per category: `stats`, `qualities`, `state` (state containers), `groups` (exclusivity groups), `tags`, `milestones`, `roles`, `generators`, `cities`, `occupations`, `items` (item kinds and markets), `loans`, `standards`, `storylets`, `singletons` (see Singleton blocks). Every id except `tags` and `milestones` (opaque labels, not checked) must exist in the providing Pack. A feature of a Pack may not export an id another feature of that Pack already exports. Every key is optional; a file with neither key is valid.
 - `requires` lists capability ids (`<pack>/<feature>`) of other Packs. Each must be provided by a loaded Pack. A missing one fails the build with the Pack and the capability named (`Pack 'x' requires capability 'y/z', but Pack 'y' has no capabilities/z.yaml`).
 - Lists are block lists only, one entry per line (a flow list `[a, b]` is an error), so that two branches adding a line merge cleanly. Adding a capability file, or a line to one, never edits another Pack's files.
 - Visibility: a Pack may use another Pack's stats, qualities and exclusivity groups (in expressions) and content ids (in references) only when a capability of that Pack, required by one of the using Pack's own capability files, provides them. Anything else is a compile error saying the id is not exported by a required capability. Own-Pack ids need no capability.

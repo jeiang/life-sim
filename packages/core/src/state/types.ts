@@ -7,6 +7,19 @@
 export type PersonId = number;
 export type QualityValue = number | boolean;
 
+/**
+ * A stored value of a pack-declared state container: an integer, a flag, or a record of
+ * them (a table). Containers live in `World.state` and `Person.state`, keyed by container
+ * id, so declaring one needs no change here (docs/spec/pack-format/state.md).
+ */
+export type StateValue =
+  | number
+  | boolean
+  | { readonly [key: string]: StateValue };
+
+/** Container id -> stored value; only containers written since the life began appear. */
+export type StateTree = Readonly<Record<string, StateValue>>;
+
 export interface Occupation {
   readonly id: number;
   /** Pack occupation kind id. */
@@ -138,6 +151,8 @@ export interface Person {
   /** Pack-declared stats, integers 0-100. */
   readonly stats: Readonly<Record<string, number>>;
   readonly qualities: Readonly<Record<string, QualityValue>>;
+  /** Per-person state containers (tables); absent while none was written. */
+  readonly state?: StateTree;
   /** Money in minor units; may be held by any person, shown for the player. */
   readonly money: number;
   /** Currently held occupations, in id order. */
@@ -340,6 +355,8 @@ export interface World {
   readonly uses: Readonly<Record<string, number>>;
   /** Every player choice so far, in order; see `replay`. */
   readonly choiceLog: readonly ChoiceEntry[];
+  /** World-scope state containers (counters); absent while none was written. */
+  readonly state?: StateTree;
   /** Capability ids (`<pack>/<feature>`) the life was made with, sorted. */
   readonly capabilities: readonly string[];
   /** Ids (`<pack>/<name>`) of the Pack migrations this world has already had applied, sorted. */

@@ -26,6 +26,15 @@
             "type": "string"
           }
         },
+        "state": {
+          "uniqueItems": true,
+          "description": "Bare ids of state containers this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          }
+        },
         "groups": {
           "uniqueItems": true,
           "description": "Bare ids of exclusivity groups this feature exports (block list, one id per line)",

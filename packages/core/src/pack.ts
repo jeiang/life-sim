@@ -7,7 +7,7 @@ import type { Effect, Expr } from "./expr/index.ts";
 import type { Gender } from "./state/types.ts";
 
 /** Bundle format version; bump when the shape below changes incompatibly. */
-export const PACK_BUNDLE_FORMAT = 3;
+export const PACK_BUNDLE_FORMAT = 4;
 
 /** `twemoji:<codepoints>` (for example `twemoji:1f4bc`) or `gameicons:<author>/<name>`. */
 export type IconRef = string;
@@ -27,12 +27,49 @@ export type QualityDecl =
       readonly min?: number;
       readonly max?: number;
       readonly default: number;
+      /** `person`: also readable and assignable on a bound person (`person.quality.<id>`). */
+      readonly scope?: "person";
     }
   | {
       readonly id: string;
       readonly type: "flag";
       readonly default: boolean;
+      readonly scope?: "person";
     };
+
+/**
+ * A pack-declared state container (docs/spec/pack-format/state.md). The engine stores values
+ * in the generic `World.state` / `Person.state` trees, keyed by container id, so a new
+ * container needs no change to the core state types, serializer or save codec.
+ */
+export type StateDecl = CounterDecl | TableDecl;
+
+/** One world-wide value (`world.<id>`): an integer or a flag. */
+export type CounterDecl =
+  | {
+      readonly kind: "counter";
+      readonly id: string;
+      readonly type: "int";
+      readonly min?: number;
+      readonly max?: number;
+      readonly default: number;
+    }
+  | {
+      readonly kind: "counter";
+      readonly id: string;
+      readonly type: "flag";
+      readonly default: boolean;
+    };
+
+/** Per-person integers under closed keys (`table.<id>.<key>`). */
+export interface TableDecl {
+  readonly kind: "table";
+  readonly id: string;
+  readonly keys: readonly string[];
+  readonly min?: number;
+  readonly max?: number;
+  readonly default: number;
+}
 
 export interface CompiledOutcome {
   /** Integer expression; 1 when omitted in the source. */
@@ -383,6 +420,8 @@ export interface PackBundle {
   readonly currency?: { readonly symbol: string; readonly digits: number };
   readonly stats: readonly StatDecl[];
   readonly qualities: readonly QualityDecl[];
+  /** Declared state containers, sorted by id. */
+  readonly state: readonly StateDecl[];
   readonly exclusivity: readonly string[];
   readonly year?: {
     readonly slots: readonly [number, number];

@@ -1,0 +1,40 @@
+- id: meet
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - spawn_person(neighbour, local) as n
+        - n.quality.grudge += 3
+        - n.quality.sulky = true
+        - n.table.favours.food += 2
+        - n.table.favours.gossip = 7
+
+- id: visit
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - world.visits += 1
+        - world.festival = true
+        - table.favours.help += 4
+        - quality.plain += 1
+
+- id: bonus
+  trigger: action
+  menu: relationships
+  when: world.visits >= 2 and table.favours.help >= 8
+  outcomes:
+    - effects:
+        - stat.happiness += 5
+
+- id: forgive
+  trigger: action
+  menu: relationships
+  scope: person
+  when: person.quality.grudge > 0 and person.table.favours.food >= 2
+  outcomes:
+    - effects:
+        - person.quality.grudge += 10
+        - person.table.favours.food -= 1
+        - person.quality.sulky = false
+        - world.visits -= 1

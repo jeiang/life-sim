@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "State containers (list)",
+  "type": "array",
+  "items": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["id", "kind", "type", "default"],
+        "properties": {
+          "id": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "kind": {
+            "const": "counter",
+            "type": "string"
+          },
+          "type": {
+            "const": "int",
+            "type": "string"
+          },
+          "min": {
+            "type": "integer"
+          },
+          "max": {
+            "type": "integer"
+          },
+          "default": {
+            "type": "integer"
+          }
+        }
+      },
+      {
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["id", "kind", "type", "default"],
+        "properties": {
+          "id": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "kind": {
+            "const": "counter",
+            "type": "string"
+          },
+          "type": {
+            "const": "flag",
+            "type": "string"
+          },
+          "default": {
+            "type": "boolean"
+          }
+        }
+      },
+      {
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["id", "kind", "keys", "default"],
+        "properties": {
+          "id": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "kind": {
+            "const": "table",
+            "type": "string"
+          },
+          "keys": {
+            "minItems": 1,
+            "uniqueItems": true,
+            "description": "Closed key set; a cell is `table.<id>.<key>`",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            }
+          },
+          "min": {
+            "type": "integer"
+          },
+          "max": {
+            "type": "integer"
+          },
+          "default": {
+            "description": "Value of every cell until written",
+            "type": "integer"
+          }
+        }
+      }
+    ]
+  }
+}

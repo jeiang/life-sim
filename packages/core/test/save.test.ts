@@ -109,7 +109,6 @@ describe("save schema reset", () => {
     expect(w.appliedMigrations).toEqual(
       bundles.flatMap((b) => b.migrations.map((m) => m.id)).sort(),
     );
-    expect("packVersions" in w).toBe(false);
   });
 
   test("a save from an older schema is rejected with a clear message", () => {

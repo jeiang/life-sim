@@ -8,6 +8,7 @@ import {
   type Expr,
   evaluate,
   FUNCTIONS,
+  GENDERS,
   isKinshipId,
   KIND_CALL,
   KINSHIP_IDS,
@@ -59,6 +60,8 @@ const TYPE_NAME: Record<Type, string> = {
   person: "a person name",
   kinship: "a kinship id",
   will: "a will mode",
+  gender: "a gender",
+  target: "'player' or a person name",
 };
 
 const MAX_SUGGEST = 2;
@@ -134,6 +137,26 @@ export class Checker {
       return this.err(
         n,
         `expected a person name${suggest(n.k === "name" ? n.v : "", this.env.persons ?? [])}; person names are 'person' in a person-scoped storylet and names bound by spawn_person(...) as <name>`,
+      );
+    }
+    if (want === "target") {
+      if (
+        n.k === "name" &&
+        (n.v === "player" || this.env.persons?.includes(n.v))
+      )
+        return ["target", ["s", n.v]];
+      return this.err(
+        n,
+        `expected 'player' or a person name${suggest(n.k === "name" ? n.v : "", ["player", ...(this.env.persons ?? [])])}; person names are 'person' in a person-scoped storylet and names bound by spawn_person(...) as <name>`,
+      );
+    }
+    if (want === "gender") {
+      const id = n.k === "str" || n.k === "name" ? n.v : undefined;
+      if (id !== undefined && (GENDERS as readonly string[]).includes(id))
+        return ["gender", ["s", id]];
+      return this.err(
+        n,
+        `expected a gender${id === undefined ? "" : suggest(id, GENDERS)}; genders: ${GENDERS.join(", ")}`,
       );
     }
     if (want === "will") {

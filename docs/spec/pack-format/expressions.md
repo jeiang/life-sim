@@ -41,10 +41,13 @@ relationship(<person>).role = role   (replaces all the player's role rows toward
 move_in()                            merge_money()
 schedule(storylet, after: a-b years[, person][, lineage: true])   unschedule(storylet)
 reach_milestone(milestone)
+set_gender(target, gender)           rename(target, generator)
 journal("text")                      die("cause")
 ```
 
 A `kind: generator` item in `people/` sets `first_names` (a list used for every gender, or `{ male: [...], female: [...] }` pools where non-binary people draw from both), `last_names` (optional: omit it for people with no family name, such as animals), `age`, optional `stats`, and an optional `gender`: a fixed value (`gender: female`) or integer weights (`gender: { male: 1, female: 3 }`; omitted genders weigh 0; default male 1, female 1). A spawned person's gender is drawn from these weights and their first name from that gender's pool, so a Pack can spawn a person of a chosen gender.
+
+A generator may also set `qualities: { <id>: <value> }` for `scope: person` qualities visible to its Pack: a fixed integer or flag, or an inclusive `[min, max]` range drawn at spawn (so every person carries, say, a culture from their birth country; the player's generator sets the player's own values). Ranges draw after every older draw of the spawn, in quality id order, so adding `qualities` moves no other draw of that stream. The stored body flag `can_carry` is set at spawn: from the gender (female yes, male no; a nonbinary person draws it, one bit, last) or fixed by the generator's `can_carry: true | false`. It is the body, separate from gender identity: `set_gender` never changes it. Expressions read it as the boolean `player.can_carry`, `person.can_carry` and `<name>.can_carry`; it is never shown as "sex". A Pack can also give every generated person a weighted quality draw with `spawn_qualities` ([manifest](manifest.md)).
 
 A Pack may also name a sequence of these statements and call it as `<pack>.<macro>(args)`; see [Effect macros](effects.md). A macro call is expanded at build time into the closed effects above.
 
@@ -59,6 +62,8 @@ A Pack may also name a sequence of these statements and call it as `<pack>.<macr
 `unlist(person)` unlists one named person (`person`, or a name bound by `spawn_person ... as <name>`; no person in scope does nothing): a rehomed or lost pet. They stay in the world, alive and in the save, but leave the player's relationship lists and `count_role`, and no storylet binds them again ([Animals](content-kinds.md#animals)).
 
 `set_will(mode)` makes or removes the player's will: `even` (the cash is split evenly among the children), `spouse` (all of it to the living spouse), `charity`, or `none` to remove it; `will_heir(person)` leaves all the cash to one named person (`person`, or a name bound by `spawn_person ... as <name>`; no person in scope does nothing). A later call replaces the earlier will. `has_will()` is true while one is made. The mode is a bare word checked at build time. The will is read at the player's death ([estate rule](../core-loop.md#the-estate)) and then cleared; see [the will](state.md#the-will).
+
+`set_gender(target, gender)` sets the identity of `target` to `male`, `female` or `nonbinary` (bare words, checked at build time), and `rename(target, generator)` gives `target` a new first name drawn from that generator's pool for their current gender (the family name stays; the roll is a stream of its own, `rename/<generator>`, or the statement's key inside a lifecycle hook). `target` is `player` (the subject), `person` or a name bound by `spawn_person ... as <name>`; no person in scope does nothing. Both are closed effects, so they work in storylets, macros and hooks (`set_gender(player, female)` in a macro body), and both replay and round-trip saves: the gender and name are stored on the person, `can_carry` is not touched.
 
 ### The deceased
 

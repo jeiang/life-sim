@@ -1,4 +1,5 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
-- { id: dating_attracted_men, type: int, min: 0, max: 100, default: 0 }
-- { id: dating_attracted_women, type: int, min: 0, max: 100, default: 0 }
-- { id: dating_attracted_nonbinary, type: int, min: 0, max: 100, default: 0 }
+# `scope: person`: generated people carry their own values too (`spawn_qualities` in pack.yaml).
+- { id: dating_attracted_men, type: int, min: 0, max: 100, default: 0, scope: person }
+- { id: dating_attracted_women, type: int, min: 0, max: 100, default: 0, scope: person }
+- { id: dating_attracted_nonbinary, type: int, min: 0, max: 100, default: 0, scope: person }

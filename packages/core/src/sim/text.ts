@@ -46,6 +46,14 @@ const MONEY_NAMES = new Set([
   "deceased.money",
 ]);
 
+/** A `quality.<id>` name (bare, or behind `person.`, `deceased.` or a bound name) of a `format: money` quality. */
+function isMoneyQuality(name: string, idx: PackIndex): boolean {
+  const at = name.lastIndexOf("quality.");
+  if (at < 0 || (at > 0 && name[at - 1] !== ".")) return false;
+  const d = idx.qualities.get(name.slice(at + 8));
+  return d?.type === "int" && d.format === "money";
+}
+
 /**
  * Render `{placeholder}` text. Names resolve through the expression environment for `scope`;
  * money names print as currency; `{{` and `}}` are literal braces. Unknown names throw (the
@@ -71,9 +79,10 @@ export function renderText(
       const end = text.indexOf("}", i);
       const name = text.slice(i + 1, end).trim();
       const v = env.get(name);
-      out += MONEY_NAMES.has(name)
-        ? formatMoney(v as number, idx.currency)
-        : String(v);
+      out +=
+        MONEY_NAMES.has(name) || isMoneyQuality(name, idx)
+          ? formatMoney(v as number, idx.currency)
+          : String(v);
       i = end;
     } else if (ch === "}" && text[i + 1] === "}") {
       out += "}";

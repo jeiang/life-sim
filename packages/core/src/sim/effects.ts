@@ -6,13 +6,14 @@ import {
   setCell,
   setCounter,
 } from "../state/containers.ts";
-import type { World } from "../state/types.ts";
+import { GENDERS, type Gender, type World } from "../state/types.ts";
 import { clearWill, setWill, type WillMode } from "../state/will.ts";
 import {
   addJournalLine,
   addMoney,
   clamp,
   getPerson,
+  nextStream,
   putRelationship,
   setQuality,
   setStat,
@@ -27,13 +28,16 @@ import { livesWithParents } from "./living.ts";
 import { grantUnit, removeHolding, tradeHolding } from "./market.ts";
 import { occupationStarted, reachMilestone } from "./milestones.ts";
 import {
+  clockAge,
   dropAsset,
   endLife,
   endOccupation,
   evalInt,
   grantAsset,
   killPerson,
+  NAME_ROLL_RANGE,
   openLoan,
+  pickFirstName,
   spawnPerson,
   startOccupation,
 } from "./ops.ts";
@@ -325,6 +329,38 @@ function applyEffect(
             ? w
             : updatePerson(w, pid, (p) => ({ ...p, listed: false }));
         }
+        case "set_gender": {
+          const pid = effectTarget(str(args[0], w, idx, scope), scope, bound);
+          const gender = str(args[1], w, idx, scope);
+          if (!(GENDERS as readonly string[]).includes(gender))
+            throw new RangeError(`unknown gender '${gender}'`);
+          return pid === undefined
+            ? w
+            : updatePerson(w, pid, (p) => ({ ...p, gender: gender as Gender }));
+        }
+        case "rename": {
+          const pid = effectTarget(str(args[0], w, idx, scope), scope, bound);
+          const genId = str(args[1], w, idx, scope);
+          const gen = idx.generators.get(genId);
+          if (!gen) throw new RangeError(`unknown generator '${genId}'`);
+          if (pid === undefined) return w;
+          const [w2, rng] = nextStream(
+            w,
+            clockAge(w),
+            scope.purpose ?? `rename/${genId}`,
+          );
+          const current = getPerson(w2, pid);
+          const roll = rng.int(NAME_ROLL_RANGE);
+          return updatePerson(w2, pid, (p) => ({
+            ...p,
+            givenName: pickFirstName(
+              gen,
+              current.gender ?? "nonbinary",
+              roll,
+              p.givenName,
+            ),
+          }));
+        }
         case "unschedule":
           return unschedule(w, str(args[0], w, idx, scope));
         case "journal":
@@ -343,6 +379,16 @@ function applyEffect(
       throw new RangeError(`unknown effect '${e[1]}'`);
     }
   }
+}
+
+/** The person an effect's `target` argument names: `player` is the subject. */
+function effectTarget(
+  name: string,
+  scope: Scope,
+  bound: Map<string, number>,
+): number | undefined {
+  if (name === "player") return scope.subject;
+  return name === "person" ? scope.person : bound.get(name);
 }
 
 /**

@@ -17,6 +17,7 @@ import {
   replay,
   runAction,
   serializeWorld,
+  setQuality,
   updatePerson,
   type World,
   worldHash,
@@ -95,6 +96,17 @@ describe("kick-out pressure", () => {
       w = updatePerson(w, w.playerId, (p) => ({ ...p, age: 18 + i }));
     }
     expect(livesWithParents(player(w))).toBe(true);
+  });
+
+  test("kickout_pct multiplies the chance: 100 is the base, 0 never, 250 raises it", () => {
+    const w = at(25, 50, 1);
+    const base = pressure(w);
+    expect(base).toBeGreaterThan(0);
+    expect(player(w).qualities.kickout_pct).toBe(100);
+    const set = (pct: number) => setQuality(w, w.playerId, "kickout_pct", pct);
+    expect(pressure(set(100))).toBe(base);
+    expect(pressure(set(0))).toBe(0);
+    expect(pressure(set(250))).toBe(Math.trunc((base * 250) / 100));
   });
 });
 

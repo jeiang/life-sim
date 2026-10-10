@@ -146,6 +146,11 @@ export interface Person {
   readonly givenName: string;
   readonly familyName: string;
   readonly gender?: Gender;
+  /**
+   * The body flag `can_carry`, stored at spawn and independent of gender (identity), so
+   * `set_gender` never changes it. Absent: read from the gender (female yes, otherwise no).
+   */
+  readonly canCarry?: boolean;
   readonly age: number;
   readonly alive: boolean;
   /** Pack-declared stats, integers 0-100. */

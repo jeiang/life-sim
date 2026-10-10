@@ -5,3 +5,6 @@ allow:
   - code: L006
     subject: quality.fame_age
     reason: Written only by the add_fame macro, which no core-loop content calls; the Social expansion grants fame.
+  - code: L006
+    subject: quality.kickout_pct
+    reason: A multiplier cultural expansion Packs set (Cultures, via spawn-time person qualities or hooks); core-loop reads it and keeps the default 100.

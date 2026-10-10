@@ -1,0 +1,28 @@
+- { kind: role, id: neighbour, label: Neighbour }
+- { kind: role, id: pet, label: Pet, animal: true }
+# Sorts first, so it is also the player's generator.
+- kind: generator
+  id: citizen
+  first_names: { male: [Al], female: [Bea] }
+  last_names: [Ng]
+  age: [20, 30]
+  qualities: { culture: [3, 5], tagged: false, pocket: 1234 }
+# A fixed culture, and a body flag that differs from the gender (always female, never able to carry).
+- kind: generator
+  id: elder
+  first_names: { male: [Gus], female: [Hal] }
+  last_names: [Ito]
+  gender: female
+  can_carry: false
+  age: [60, 80]
+  qualities: { culture: 7 }
+- kind: generator
+  id: nb
+  first_names: { male: [Sky], female: [Rae] }
+  last_names: [Cho]
+  gender: nonbinary
+  age: [20, 30]
+- kind: generator
+  id: pup
+  first_names: [Rex]
+  age: [1, 3]

@@ -143,6 +143,41 @@
             "minItems": 2,
             "maxItems": 2
           },
+          "qualities": {
+            "description": "Person-scoped qualities set on the spawned person: a fixed value, or an inclusive `[min, max]` range drawn at spawn. Must be `scope: person` qualities visible to this Pack",
+            "type": "object",
+            "patternProperties": {
+              "^[a-z][a-z0-9_]*$": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "description": "Inclusive [min, max]",
+                    "type": "array",
+                    "items": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "integer"
+                      }
+                    ],
+                    "additionalItems": false,
+                    "minItems": 2,
+                    "maxItems": 2
+                  }
+                ]
+              }
+            }
+          },
+          "can_carry": {
+            "description": "Fixed `can_carry` body flag for every person of this generator; omitted: from the gender (female yes, male no, nonbinary drawn). Independent of gender identity: `set_gender` never changes it",
+            "type": "boolean"
+          },
           "stats": {
             "type": "object",
             "patternProperties": {

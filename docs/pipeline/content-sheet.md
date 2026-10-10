@@ -26,6 +26,7 @@ A sheet is UTF-8 text, read line by line. Trailing spaces are ignored.
 
 - A blank line is ignored anywhere.
 - A line whose first character is `>` is a **note** (for the reviewer and the implementer) and is ignored by every tool.
+- The required fields, the `event`/`action` rules and the once-per-key rules in the tables are validation rules applied after parsing; a violation is rejected with the line number.
 - Any other line must match one of the forms below; a line that matches none is a parse error reported with its line number.
 
 ```
@@ -89,7 +90,7 @@ An outcome starts with `- outcome: <weight>` (an integer or an expression, requi
 | `next` | no | Id of the storylet opened immediately after this outcome (a storylet of this sheet or an existing one). |
 | `rate` | no | Expected share of this outcome, see below. |
 
-An effect line is the exact effect string; `scaffold` does not rewrite it. Effects that need quoting in YAML (a `journal("...")` or a `:`) are still written bare in the sheet; `scaffold` quotes them.
+Within an outcome, `effect` may repeat; `text`, `when`, `next` and `rate` appear at most once. An effect line is the exact effect string; `scaffold` does not rewrite it. Effects that need quoting in YAML (a `journal("...")` or a `:`) are still written bare in the sheet; `scaffold` quotes them.
 
 ### Expected rates
 
@@ -199,7 +200,7 @@ The school bully chain from `packs/core-loop/storylets/choice.yaml`, as a drafte
   - rate: 15..25%
 ```
 
-The mapping to YAML is mechanical: `bully-showdown` becomes the Pack's entry of the same name, `### choice:` becomes a `choices:` item, `- outcome: 40` a `- weight: 40` item with `text`, `effects:` (the `effect` lines in order) and `next`. `opens` and `rate` are dropped from the YAML.
+The mapping to YAML is mechanical: `bully-showdown` becomes the Pack's entry of the same name, `### choice:` becomes a `choices:` item, `- outcome: 40` a `- weight: 40` item with `when`, `text`, `effects:` (the `effect` lines in order) and `next`. `opens` and `rate` are dropped from the YAML.
 
 ## Reviewing a sheet
 
@@ -208,7 +209,7 @@ The `smol` reviewer checks, and returns a list of defects (it does not rewrite):
 1. Every line parses (the grammar above); required fields are present; ids are unique and match the Pack's naming.
 2. Every name in `when`, `weight`, `chance`, `amount.*` and `effect` exists in the vocabulary for `packs`, and every effect is a closed effect or a listed macro.
 3. Every `next` names a storylet of the sheet or an existing one; every chain step is `chance: 0%` and reached by some `next`; no outcome weights all zero.
-4. `opens` and `rate` are present and plausible against `weight`/`chance`, the gate and the repeat limits.
+4. Every storylet has `opens` (outcome `rate` is optional, but where given, plausible against the weights); `opens` is plausible against `weight`/`chance`, the gate and the repeat limits.
 5. Each `needs` line names a kind, a name, a type and range and a meaning.
 
 ## Notes for the implementer

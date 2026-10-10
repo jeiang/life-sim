@@ -31,6 +31,8 @@ export type WorkerOut =
 export interface ParallelOptions extends HarnessOptions {
   /** Directory `bundles` were compiled from; every worker compiles it once for itself. */
   readonly packsDir: string;
+  /** Pack subset every worker compiles (with its required closure); unset means every Pack. */
+  readonly only?: readonly string[];
   /** Worker threads; 0 or unset means the available cores. */
   readonly jobs?: number;
 }
@@ -88,7 +90,7 @@ export function runHarnessParallel(
 
     for (let k = 0; k < jobs; k++) {
       const w = new Worker(new URL("./worker.ts", import.meta.url), {
-        workerData: { packsDir: opts.packsDir },
+        workerData: { packsDir: opts.packsDir, only: opts.only },
       });
       workers.push(w);
       w.on("error", (e) => stop(e));

@@ -415,6 +415,16 @@ describe("build checks fail", () => {
     expect(compilePacks(dir, { only: ["nope"] }).ok).toBe(false);
   });
 
+  test("`only` never reads a Pack outside the closure", () => {
+    const dir = fixture();
+    mkdirSync(join(dir, "broken"), { recursive: true });
+    writeFileSync(join(dir, "broken/pack.yaml"), "id: [not, valid\n");
+    expect(compilePacks(dir).ok).toBe(false);
+    const r = compilePacks(dir, { only: ["base"] });
+    expect(r.diagnostics.map(formatDiagnostic)).toEqual([]);
+    expect(r.bundles.map((b) => b.id)).toEqual(["base"]);
+  });
+
   test("dangling `next`", () => {
     expectError(
       { "base/storylets/work.yaml": sub("next: job-hunt-tips", "next: nope") },

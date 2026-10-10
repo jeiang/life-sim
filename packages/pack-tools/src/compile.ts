@@ -434,7 +434,6 @@ class Compiler {
 
   run(): CompileOutput {
     this.load();
-    this.restrict();
     this.checkCapabilities();
     this.checkCrossPackDeclarations();
     this.checkNamespaces();
@@ -513,32 +512,6 @@ class Compiler {
         }
   }
 
-  /** Drop every Pack outside the `only` selection and its required closure. */
-  private restrict(): void {
-    if (this.only === undefined) return;
-    for (const id of this.only)
-      if (!this.packs.has(id))
-        this.diags.push({
-          file: this.packsDir,
-          path: "",
-          message: `only: no Pack '${id}'`,
-        });
-    const keep = new Set<string>();
-    const visit = (id: string): void => {
-      const pack = this.packs.get(id);
-      if (!pack || keep.has(id)) return;
-      keep.add(id);
-      for (const cap of pack.capabilities)
-        for (const req of cap.requires) visit(req.slice(0, req.indexOf("/")));
-    };
-    for (const id of this.only) visit(id);
-    for (const id of [...this.packs.keys()])
-      if (!keep.has(id)) {
-        this.packs.delete(id);
-        this.index.delete(id);
-      }
-  }
-
   diag(
     src: Source,
     path: Path,
@@ -578,7 +551,9 @@ class Compiler {
       .filter((d) => statSync(join(this.packsDir, d)).isDirectory())
       .filter((d) => d !== "node_modules")
       .sort();
+    const wanted = this.only === undefined ? undefined : this.closure(dirs);
     for (const d of dirs) {
+      if (wanted && !wanted.has(d)) continue;
       const dir = join(this.packsDir, d);
       const manifestFile = join(dir, "pack.yaml");
       const hasContent = Object.keys(CONTENT_DIRS).some((c) =>
@@ -597,6 +572,43 @@ class Compiler {
       }
       this.loadPack(d, dir, manifestFile);
     }
+    for (const id of this.only ?? [])
+      if (!this.packs.has(id) && !dirs.includes(id))
+        this.diags.push({
+          file: this.packsDir,
+          path: "",
+          message: `only: no Pack '${id}'`,
+        });
+  }
+
+  /**
+   * The Pack directories `only` selects plus those their capabilities require, transitively.
+   * Reads only the capability files' `requires` lists, so a broken sibling Pack is never parsed;
+   * problems in the closure's own files are reported when they are loaded.
+   */
+  private closure(dirs: readonly string[]): Set<string> {
+    const keep = new Set<string>();
+    const visit = (id: string): void => {
+      if (keep.has(id) || !dirs.includes(id)) return;
+      keep.add(id);
+      const capDir = join(this.packsDir, id, "capabilities");
+      for (const f of this.listYaml(capDir)) {
+        const src = parseYaml(
+          this.rel(id, "capabilities", f),
+          readFileSync(join(capDir, f), "utf8"),
+          [],
+          true,
+        );
+        const requires = (src?.value as { requires?: unknown } | null)
+          ?.requires;
+        if (!Array.isArray(requires)) continue;
+        for (const req of requires)
+          if (typeof req === "string" && req.includes("/"))
+            visit(req.slice(0, req.indexOf("/")));
+      }
+    };
+    for (const id of this.only ?? []) visit(id);
+    return keep;
   }
 
   private loadPack(d: string, dir: string, manifestFile: string): void {

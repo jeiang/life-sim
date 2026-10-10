@@ -9,8 +9,11 @@ const port = parentPort;
 if (!port) throw new Error("worker.ts must run as a worker thread");
 const send = (m: WorkerOut): void => port.postMessage(m);
 
-const { packsDir } = workerData as { packsDir: string };
-const compiled = compilePacks(packsDir);
+const { packsDir, only } = workerData as {
+  packsDir: string;
+  only?: readonly string[];
+};
+const compiled = compilePacks(packsDir, only ? { only } : {});
 const loaded = compiled.ok ? loadMetrics(packsDir, compiled.bundles) : null;
 if (!compiled.ok || !loaded || loaded.diagnostics.length > 0) {
   send({

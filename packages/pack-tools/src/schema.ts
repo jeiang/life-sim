@@ -147,6 +147,26 @@ export const ReadableSchema = Type.Union([
   }),
 ]);
 
+/**
+ * `effects/<topic>.yaml` (docs/spec/pack-format/effects.md): effect macros. A macro is a named,
+ * ordered list of effect statements over the closed Core primitives, with integer parameters
+ * usable as bare names in the body. Called as `<pack>.<id>(args)` from any effect list.
+ */
+export const MacroSchema = obj({
+  id: Name,
+  params: Type.Optional(
+    Type.Array(Name, {
+      uniqueItems: true,
+      description: "Integer parameters, usable as bare names in the effects",
+    }),
+  ),
+  effects: Type.Array(Type.String(), {
+    minItems: 1,
+    description:
+      "Effect statements run in order (the closed Core effect set, or other macros)",
+  }),
+});
+
 const PERCENT = "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$";
 
 /** A repeat curve; every field is optional because a storylet overrides the manifest's field by field. */
@@ -211,6 +231,7 @@ export const CapabilitySchema = obj(
         qualities: provided("qualities", NAME_PATTERN),
         state: provided("state containers", NAME_PATTERN),
         readables: provided("readables and slots", NAME_PATTERN),
+        effects: provided("effect macros", NAME_PATTERN),
         groups: provided("exclusivity groups", ID_PATTERN),
         tags: provided("storylet tags", ID_PATTERN),
         milestones: provided("milestones", ID_PATTERN),
@@ -811,6 +832,7 @@ export const FILE_SCHEMAS = {
   "qualities.schema.json": list(QualitySchema, "Qualities"),
   "state.schema.json": list(StateSchema, "State containers"),
   "readables.schema.json": list(ReadableSchema, "Readables"),
+  "effects.schema.json": list(MacroSchema, "Effect macros"),
   "migration.schema.json": MigrationSchema,
   "storylets.schema.json": list(StoryletSchema, "Storylets"),
   "occupations.schema.json": list(OccupationSchema, "Occupation kinds"),
@@ -834,3 +856,4 @@ export type PeopleSrc = Static<typeof PeopleSchema>;
 export type Quality = Static<typeof QualitySchema>;
 export type State = Static<typeof StateSchema>;
 export type Readable = Static<typeof ReadableSchema>;
+export type Macro = Static<typeof MacroSchema>;

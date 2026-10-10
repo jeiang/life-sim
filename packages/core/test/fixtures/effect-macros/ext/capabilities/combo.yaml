@@ -1,0 +1,5 @@
+provides:
+  effects:
+    - combo
+requires:
+  - base/macros

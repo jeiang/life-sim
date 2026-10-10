@@ -12,6 +12,7 @@ packs/<pack-id>/
   qualities/<topic>.yaml     # list of quality declarations (see Qualities)
   state/<topic>.yaml         # list of state container declarations (see state.md)
   readables/<topic>.yaml     # readables, slots and slot contributions (see readables.md)
+  effects/<topic>.yaml       # effect macros over the closed effects (see effects.md)
   CONTEXT.md                 # glossary of the terms this Pack owns
   BALANCE.md                 # balance targets, harness profiles and report notes
   test/*.test.ts             # the Pack's own vitest tests
@@ -32,6 +33,7 @@ packs/<pack-id>/
 
 - [Manifest, composition and capabilities](manifest.md): `pack.yaml`, qualities, composition rules, capability files.
 - [State containers](state.md): pack-declared world counters, per-person tables and person-scope qualities, and the engine contract behind them.
+- [Effect macros](effects.md): pack-declared named effect sequences over the closed Core effects, with integer parameters, called as `<pack>.<macro>(...)`.
 - [Readables](readables.md): named read-only expressions, closed aggregators over containers, and slots other Packs contribute to.
 - [Storylets and the year draw](storylets.md): storylets, repeatable actions, year draw and decision slots.
 - [Content kinds](content-kinds.md): market kinds, cities, standards of living, household costs, confinement, NPC careers.

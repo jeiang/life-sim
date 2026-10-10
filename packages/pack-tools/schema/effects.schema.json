@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Effect macros (list)",
+  "type": "array",
+  "items": {
+    "additionalProperties": false,
+    "type": "object",
+    "required": ["id", "effects"],
+    "properties": {
+      "id": {
+        "pattern": "^[a-z][a-z0-9_]*$",
+        "type": "string"
+      },
+      "params": {
+        "uniqueItems": true,
+        "description": "Integer parameters, usable as bare names in the effects",
+        "type": "array",
+        "items": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "type": "string"
+        }
+      },
+      "effects": {
+        "minItems": 1,
+        "description": "Effect statements run in order (the closed Core effect set, or other macros)",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

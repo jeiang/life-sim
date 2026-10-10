@@ -62,6 +62,10 @@ _Avoid_: Custom field, variable, extension state
 A named, read-only `int` or `bool` the Core computes from the world each time an expression reads it: a Pack-declared expression over the names it can see (with the aggregators `sum`, `count`, `max`, `min` over containers), evaluated for the player and never stored. A **slot** is a readable with a default whose value also combines the terms other Packs contribute, so the owner gates on state it does not require. Declared in `readables/*.yaml`; shared through a capability's `provides: readables`.
 _Avoid_: Computed field, derived stat, hook, variable
 
+**Effect macro**:
+A Pack-declared, named sequence of closed Core effects with integer parameters (`effects/*.yaml`), called from storylets and other macros as `<pack>.<macro>(args)`. The Pack compiler expands it, so the compiled bundle holds only the closed effects and replay is unaffected; a macro adds no primitive, and a new kind of change is still a Core release.
+_Avoid_: Function, script, hook, procedure
+
 **Relationship**:
 A directed link from one person to another with a role (parent, sibling, partner, friend, classmate, coworker) and a closeness from 0 to 100. A person can hold several role rows toward another; setting a role replaces them all and keeps the highest closeness. Expressions read `person.closeness` (the highest across rows) and `count_role(role, min, max)` (living people only).
 _Avoid_: Connection, bond

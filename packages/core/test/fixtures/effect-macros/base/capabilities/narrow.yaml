@@ -1,0 +1,1 @@
+# Exports nothing; used to test that requiring a capability alone does not expose macros.

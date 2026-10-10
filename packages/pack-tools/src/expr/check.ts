@@ -30,6 +30,12 @@ export interface CheckEnv {
   aggregates?: Readonly<Record<string, Type>>;
   /** Bound person names usable in `relationship(<person>)`. */
   persons?: readonly string[];
+  /**
+   * Effect macros this statement may call: `<pack>.<macro>` -> number of integer parameters
+   * (docs/spec/pack-format/effects.md). A macro call checks to `["do", "<pack>.<macro>", ...args]`;
+   * the Pack compiler expands it before anything reaches the Core.
+   */
+  macros?: Readonly<Record<string, number>>;
   /** Overrides the core `FUNCTIONS` whitelist (tests only). */
   functions?: Readonly<Record<string, Signature>>;
 }
@@ -339,6 +345,27 @@ export function checkStmt(c: Checker, env: CheckEnv, s: Stmt): Effect | null {
       return err(c, s, "relationship(...).closeness only allows '+='");
     const v = c.expr(s.value, "int");
     return v && ["add", ["relationship", s.person.name, s.field], v[1]];
+  }
+  if (s.name.includes(".")) {
+    const macros = env.macros ?? {};
+    if (!Object.hasOwn(macros, s.name))
+      return err(
+        c,
+        s,
+        `unknown effect macro '${s.name}'${suggest(s.name, Object.keys(macros))} (a macro is called as <pack>.<macro>(...) and its capability must be required)`,
+      );
+    if (s.as) return err(c, s.as, "'as' is only valid after spawn_person(...)");
+    const arity = macros[s.name] as number;
+    if (s.args.length !== arity)
+      return err(
+        c,
+        s,
+        `macro '${s.name}' takes ${arity} argument(s), got ${s.args.length}`,
+      );
+    const args = s.args.map((a) => c.expr(a, "int"));
+    return args.some((a) => !a)
+      ? null
+      : ["do", s.name, ...args.map((a) => (a as [Type, Expr])[1])];
   }
   const sig = Object.hasOwn(EFFECTS, s.name)
     ? EFFECTS[s.name as keyof typeof EFFECTS]

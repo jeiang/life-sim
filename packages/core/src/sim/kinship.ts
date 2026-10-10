@@ -2,6 +2,7 @@ import {
   addParentLink,
   type Gender,
   getPerson,
+  type ParentKind,
   type ParentLink,
   type PersonId,
   parentLinks,
@@ -311,6 +312,30 @@ export function countKin(
   return n;
 }
 
+/** Whether a role row is a partner (the marriage role is `spouse`; this is the unmarried one). */
+const isPartnerRole = (role: string): boolean =>
+  role === "partner" || role.endsWith("/partner");
+
+/**
+ * The other birth parent of a child `from` gains: the named `parent` when given, else the
+ * living spouses, else the living partner with the lowest person id (exactly one).
+ */
+function otherParents(
+  world: World,
+  from: PersonId,
+  parent: PersonId | undefined,
+): PersonId[] {
+  if (parent !== undefined) return [parent];
+  const alive = (id: PersonId): boolean => getPerson(world, id).alive;
+  const spouses = spousesOf(world, from).filter(alive);
+  if (spouses.length > 0) return spouses;
+  const partners = world.relationships
+    .filter((r) => isPartnerRole(r.role))
+    .flatMap((r) => (r.from === from ? [r.to] : r.to === from ? [r.from] : []))
+    .filter(alive);
+  return partners.length > 0 ? [Math.min(...partners)] : [];
+}
+
 /** The family role a spawned or re-roled person holds, by the last segment of the role id. */
 export type FamilyRole = "parent" | "sibling" | "child" | "grandparent";
 
@@ -335,13 +360,14 @@ export function linkFamilyRole(
   from: PersonId,
   person: PersonId,
   roleId: string,
+  opts: { parent?: PersonId; kind?: ParentKind } = {},
 ): World {
   switch (familyRoleOf(roleId)) {
     case "parent":
       return addParentLink(world, from, person);
     case "child":
-      return [from, ...spousesOf(world, from)].reduce(
-        (w, parent) => addParentLink(w, person, parent),
+      return [from, ...otherParents(world, from, opts.parent)].reduce(
+        (w, parent) => addParentLink(w, person, parent, opts.kind),
         world,
       );
     case "sibling":

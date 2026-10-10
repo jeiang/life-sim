@@ -38,6 +38,7 @@ import {
   CORE_MILESTONES,
   DEFAULT_GENDER_WEIGHTS,
   DEFAULT_REPEAT,
+  familyRoleOf,
   GENDERS,
   HOOK_PHASES,
   isKinshipId,
@@ -335,8 +336,24 @@ function instantiate(
       }
       case "do":
         return ["do", e[1], ...(e.slice(2) as Expr[]).map(subst)] as Effect;
-      default:
-        return ["spawn", subst(e[1]), subst(e[2]), rename.get(e[3]) as string];
+      default: {
+        const name = rename.get(e[3]) as string;
+        const parent = e[4]?.parent;
+        return e[4] === undefined
+          ? ["spawn", subst(e[1]), subst(e[2]), name]
+          : [
+              "spawn",
+              subst(e[1]),
+              subst(e[2]),
+              name,
+              {
+                ...e[4],
+                ...(parent === undefined
+                  ? {}
+                  : { parent: rename.get(parent) ?? parent }),
+              },
+            ];
+      }
     }
   });
 }
@@ -3020,9 +3037,23 @@ class PackCompiler {
       case "spawn": {
         const role = this.resolveExpr(e[1], ["role"], path);
         const gen = this.resolveExpr(e[2], ["generator"], path);
-        return role === undefined || gen === undefined
-          ? undefined
-          : ["spawn", role, gen, e[3]];
+        if (role === undefined || gen === undefined) return undefined;
+        if (e[4] !== undefined) {
+          const id =
+            typeof role === "object" && role[0] === "id"
+              ? (role[1] as string)
+              : undefined;
+          if (id !== undefined && familyRoleOf(id) !== "child") {
+            this.err(
+              path,
+              `'parent' and 'link' need a child role, '${id}' is not one (its last id segment must be 'child')`,
+            );
+            return undefined;
+          }
+        }
+        return e[4] === undefined
+          ? ["spawn", role, gen, e[3]]
+          : ["spawn", role, gen, e[3], e[4]];
       }
     }
   }

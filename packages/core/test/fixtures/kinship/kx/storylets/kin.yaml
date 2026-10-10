@@ -34,3 +34,26 @@
       outcomes:
         - effects:
             - quality.kin_hits += 1
+
+- id: partner-child
+  trigger: action
+  menu: activities
+  outcomes:
+    - effects:
+        - spawn_person(core-loop/partner, core-loop/coworker-gen) as mate
+        - "spawn_person(core-loop/child, core-loop/sibling-gen, parent: mate) as kid"
+
+- id: adopt-child
+  trigger: action
+  menu: activities
+  outcomes:
+    - effects:
+        - spawn_person(core-loop/partner, core-loop/coworker-gen) as mate
+        - "spawn_person(core-loop/child, core-loop/sibling-gen, parent: mate, link: adopted) as kid"
+
+- id: adopt-alone
+  trigger: action
+  menu: activities
+  outcomes:
+    - effects:
+        - "spawn_person(core-loop/child, core-loop/sibling-gen, link: step) as kid"

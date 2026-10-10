@@ -434,6 +434,126 @@ describe("family roles keep the tree in step", () => {
   });
 });
 
+describe("spawn_person parent and link", () => {
+  const kidOf = (w: World) => {
+    const row = w.relationships.find(
+      (r) => r.from === w.playerId && r.role === "core-loop/child",
+    );
+    return row?.to as number;
+  };
+  const mateOf = (w: World) =>
+    w.relationships.find(
+      (r) => r.from === w.playerId && r.role === "core-loop/partner",
+    )?.to as number;
+
+  test("a child of a partner links both as birth parents", () => {
+    const w0 = newLife(bundles, 5);
+    const w = runAction(w0, bundles, "kx/partner-child").world;
+    const kid = kidOf(w);
+    const mate = mateOf(w);
+    expect(parentLinks(w, kid)).toEqual([
+      { id: w.playerId, kind: "birth" },
+      { id: mate, kind: "birth" },
+    ]);
+    expect(kinshipOf(w, w.playerId, kid)).toBe("child");
+    expect(kinshipOf(w, mate, kid)).toBe("child");
+    expect(deserializeWorld(serializeWorld(w))).toEqual(w);
+  });
+
+  test("the named parent replaces the spouses, so an affair child has one spouse-free pair", () => {
+    let w0 = newLife(bundles, 5);
+    const [w1, spouse] = addPerson(w0, {
+      givenName: "S",
+      familyName: "L",
+      age: 30,
+    });
+    w0 = putRelationship(w1, {
+      from: w1.playerId,
+      to: spouse,
+      role: "core-loop/spouse",
+      closeness: 50,
+    });
+    const w = runAction(w0, bundles, "kx/partner-child").world;
+    const links = parentLinks(w, kidOf(w)).map((l) => l.id);
+    expect(links).toEqual([w.playerId, mateOf(w)]);
+    expect(links).not.toContain(spouse);
+  });
+
+  test("a child with no parent: argument takes the living spouse, else the lowest-id partner", () => {
+    const role = (name: string) => `core-loop/${name}`;
+    const t = tree({ me: [], p2: [], p1: [], kid: [] });
+    const id = (n: string) => t.ids[n] as number;
+    const partner = (w: World, n: string) =>
+      putRelationship(w, {
+        from: id("me"),
+        to: id(n),
+        role: "core-loop/partner",
+        closeness: 50,
+      });
+    let w = partner(partner(t.w, "p2"), "p1");
+    const p1 = id("p1") < id("p2") ? "p1" : "p2";
+    const low = linkFamilyRole(w, id("me"), id("kid"), role("child"));
+    expect(parentLinks(low, id("kid")).map((l) => l.id)).toEqual(
+      [id("me"), id(p1)].sort((a, b) => a - b),
+    );
+    w = putRelationship(w, {
+      from: id("me"),
+      to: id("p1"),
+      role: "core-loop/spouse",
+      closeness: 50,
+    });
+    const wed = linkFamilyRole(w, id("me"), id("kid"), role("child"));
+    expect(parentLinks(wed, id("kid")).map((l) => l.id)).toEqual(
+      [id("me"), id("p1")].sort((a, b) => a - b),
+    );
+  });
+
+  test("link: adopted makes the player's own link adopted too", () => {
+    const w = runAction(newLife(bundles, 5), bundles, "kx/adopt-child").world;
+    expect(parentLinks(w, kidOf(w))).toEqual([
+      { id: w.playerId, kind: "adopted" },
+      { id: mateOf(w), kind: "adopted" },
+    ]);
+    expect(kinshipOf(w, w.playerId, kidOf(w))).toBe("child");
+  });
+
+  test("link without parent keeps the default parents with that kind", () => {
+    const w = runAction(newLife(bundles, 5), bundles, "kx/adopt-alone").world;
+    expect(parentLinks(w, kidOf(w))).toEqual([
+      { id: w.playerId, kind: "step" },
+    ]);
+  });
+
+  test("parent and link are checked at build time", () => {
+    const bad = mkdtempSync(join(tmpdir(), "kinship-bad-"));
+    try {
+      copyPacks(bad);
+      const file = join(bad, "kx", "storylets", "kin.yaml");
+      const src = readFileSync(file, "utf8");
+      const messages = (from: string, to: string): string => {
+        writeFileSync(file, src.replace(from, to));
+        const r = compilePacks(bad);
+        expect(r.ok).toBe(false);
+        return r.diagnostics.map((d) => d.message).join("\n");
+      };
+      expect(messages("parent: mate)", "parent: mat)")).toMatch(
+        /unknown person 'mat'.*did you mean 'mate'/,
+      );
+      expect(messages("link: adopted", "link: fostered")).toMatch(
+        /unknown link kind 'fostered'/,
+      );
+      expect(
+        messages(
+          "spawn_person(core-loop/child, core-loop/sibling-gen, link: step)",
+          "spawn_person(core-loop/partner, core-loop/coworker-gen, link: step)",
+        ),
+      ).toMatch(/need a child role/);
+    } finally {
+      rmSync(bad, { recursive: true, force: true });
+    }
+  });
+});
+
 describe("state container, replay and save", () => {
   const play = (seed: number) => {
     let w = newLife(bundles, seed);

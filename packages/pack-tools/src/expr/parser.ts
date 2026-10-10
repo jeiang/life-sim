@@ -36,7 +36,16 @@ export type Stmt = Pos &
         op: string;
         value: Node;
       }
-    | { k: "call"; name: string; args: Node[]; as?: Pos & { name: string } }
+    | {
+        k: "call";
+        name: string;
+        args: Node[];
+        as?: Pos & { name: string };
+        /** `spawn_person(..., parent: <person>)`: the child's other parent. */
+        parent?: Pos & { name: string };
+        /** `spawn_person(..., link: <kind>)`: the kind of the parent links. */
+        link?: Pos & { name: string };
+      }
     | {
         k: "schedule";
         storylet: Node;
@@ -224,7 +233,12 @@ class Parser {
     }
     if (t.value === "schedule" && this.is("op", "(")) return this.schedule(pos);
     if (this.is("op", "(")) {
-      const args = this.args();
+      const spawn = t.value === "spawn_person";
+      const opts: {
+        parent?: Pos & { name: string };
+        link?: Pos & { name: string };
+      } = {};
+      const args = spawn ? this.spawnArgs(opts) : this.args();
       let as: (Pos & { name: string }) | undefined;
       if (this.accept("kw", "as")) {
         const n = this.ident("a name after 'as'");
@@ -235,6 +249,7 @@ class Parser {
         name: t.value as string,
         args,
         ...(as ? { as } : {}),
+        ...opts,
         ...pos,
       };
     }
@@ -252,6 +267,55 @@ class Parser {
       value: this.expr(),
       ...pos,
     };
+  }
+
+  /**
+   * `spawn_person(role, generator[, parent: <person>][, link: <kind>])`: the two positional
+   * arguments are returned; the named ones fill `opts`, each at most once, parent first.
+   */
+  private spawnArgs(opts: {
+    parent?: Pos & { name: string };
+    link?: Pos & { name: string };
+  }): Node[] {
+    this.expect("op", "(");
+    const args: Node[] = [];
+    if (!this.accept("op", ")")) {
+      do {
+        if (this.is("name") && this.toks[this.i + 1]?.value === ":") {
+          const key = this.ident("'parent: <person>' or 'link: <kind>'");
+          this.next();
+          const word = this.ident(
+            key.value === "link" ? "a link kind" : "a person name",
+          );
+          const val = {
+            name: word.value as string,
+            line: word.line,
+            column: word.column,
+          };
+          if (key.value === "parent") {
+            if (opts.parent) this.fail("'parent' given twice", key);
+            if (opts.link) this.fail("'parent' comes before 'link'", key);
+            opts.parent = val;
+          } else if (key.value === "link") {
+            if (opts.link) this.fail("'link' given twice", key);
+            opts.link = val;
+          } else {
+            this.fail(
+              `unknown spawn_person option '${key.value}'; options are 'parent: <person>' and 'link: <kind>'`,
+              key,
+            );
+          }
+        } else {
+          if (opts.parent || opts.link)
+            this.fail(
+              "spawn_person's role and generator come before 'parent:' and 'link:'",
+            );
+          args.push(this.expr());
+        }
+      } while (this.accept("op", ","));
+      this.expect("op", ")", "',' or ')'");
+    }
+    return args;
   }
 
   private count(what: string): number {

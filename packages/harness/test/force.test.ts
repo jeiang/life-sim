@@ -7,6 +7,7 @@ import { afterEach, describe, expect, test } from "vitest";
 import {
   compileScript,
   forceSetOf,
+  keyMatches,
   loadScripts,
   parseForceArg,
   SCRIPTED_ID,
@@ -210,6 +211,31 @@ describe("force validation", () => {
       "value",
     );
     expect(check("steps: []\n")).toHaveLength(1);
+  });
+
+  test("a script may declare generations and heir; a trailing * matches key prefixes", () => {
+    const check = (text: string) => {
+      const diags: Diagnostic[] = [];
+      const src = parseYaml("x.yaml", text, diags);
+      if (!src) throw new Error("bad yaml");
+      return compileScript("base", "base/x", src, bundles, profileSpecs);
+    };
+    const ok = check(
+      "generations: 3\nheir: random\nsteps:\n  - roll: guardian/none/*\n    value: hit\n",
+    );
+    expect(ok.diagnostics).toEqual([]);
+    expect(ok.script?.lineage).toEqual({ generations: 3, heir: "random" });
+    expect(
+      check("heir: random\nsteps:\n  - roll: base/meteor\n    value: hit\n")
+        .diagnostics,
+    ).toHaveLength(1);
+    expect(
+      check(
+        "generations: 2\nheir: oldest\nsteps:\n  - roll: base/meteor\n    value: hit\n",
+      ).diagnostics,
+    ).toHaveLength(1);
+    expect(keyMatches("guardian/none/*", "guardian/none/p7")).toBe(true);
+    expect(keyMatches("guardian/none/p7", "guardian/none/p8")).toBe(false);
   });
 });
 

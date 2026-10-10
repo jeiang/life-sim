@@ -1,5 +1,4 @@
 # Forced script (docs/spec/harness.md#forced-outcomes): every ask-out succeeds and every try for a baby takes, so the founder has a spouse, children and (with the dynasty profile) a will at death.
-# Scripts cannot combine with --generations; use `--profile dynasty --generations N` for lineages.
 description: Every ask-out and every try for a baby succeeds, so the founder leaves children
 profile: dynasty
 steps:

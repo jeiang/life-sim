@@ -51,7 +51,12 @@ import {
   type LifeMetrics,
   MetricCollector,
 } from "./collect.ts";
-import { chooseIndex, type ForceEntry, installRollOverride } from "./force.ts";
+import {
+  chooseIndex,
+  type ForceEntry,
+  type HeirPolicy,
+  installRollOverride,
+} from "./force.ts";
 import type { PackMetrics } from "./metrics.ts";
 import type { ProfileSpec } from "./profile-spec.ts";
 import {
@@ -733,13 +738,7 @@ function playLife(
   };
 }
 
-/** Who inherits when several children survive. */
-export type HeirPolicy = "eldest" | "richest" | "random";
-export const HEIR_POLICIES: readonly HeirPolicy[] = [
-  "eldest",
-  "richest",
-  "random",
-];
+export { HEIR_POLICIES, type HeirPolicy } from "./force.ts";
 
 /** How many generations a life continues for (`--generations`) and who inherits (`--heir`). */
 export interface Lineage {
@@ -803,7 +802,7 @@ const NO_ENTRY = { inheritance: 0, heirAge: 0, minorHeir: 0, insolvent: 0 };
  * Play one life to its end (or a fault) as `profile`; with `lineage.generations` above 1 the
  * life continues as an heir (chosen by `lineage.heir`) until the line ends, a fault stops it
  * or that many generations were played. The result is the founder's; heirs' faults join it
- * and `lineage` has one record per generation. Forcing applies to the founder only.
+ * and `lineage` has one record per generation. Forcing applies to every generation; each entry's count is summed over them.
  */
 export function runLife(
   bundles: readonly PackBundle[],
@@ -824,6 +823,7 @@ export function runLife(
   ];
   const faults = [...first.result.faults];
   const heirFires = new Set<string>();
+  const forced = first.result.forced ? [...first.result.forced] : undefined;
   let cur = first;
   const rng = streamFor(seed, 0, `harness/${spec.id}/heir`, 0);
   for (let g = 1; g < (lineage?.generations ?? 1); g++) {
@@ -854,10 +854,13 @@ export function runLife(
         age: before.age,
         message: `after succession: ${bad}`,
       });
-    cur = playLife(bundles, seed, spec, packMetrics, [], next, g);
+    cur = playLife(bundles, seed, spec, packMetrics, force, next, g);
     faults.push(...cur.result.faults);
     for (const [id, n] of Object.entries(cur.result.fires))
       if (n > 0) heirFires.add(id);
+    cur.result.forced?.forEach((n, i) => {
+      if (forced) forced[i] = (forced[i] ?? 0) + n;
+    });
     records.push(
       recordOf(
         cur,
@@ -875,6 +878,7 @@ export function runLife(
   return {
     ...first.result,
     faults,
+    ...(forced ? { forced } : {}),
     metrics: first.finish(records),
     ...(lineage && lineage.generations > 1
       ? { lineage: records, heirFires: [...heirFires].sort() }

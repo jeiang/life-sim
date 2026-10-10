@@ -105,6 +105,48 @@ export const StateSchema = Type.Union([
   }),
 ]);
 
+/**
+ * `readables/<topic>.yaml` (docs/spec/pack-format/readables.md): named read-only values the
+ * Core computes from declared names each time they are read. `readable` names an expression
+ * (with the closed aggregators `sum`, `count`, `max`, `min`), `slot` declares a readable other
+ * Packs add terms to, and `contribute` adds one term to a slot. Ids are bare, like state.
+ */
+export const ReadableSchema = Type.Union([
+  obj({
+    kind: Type.Literal("readable"),
+    id: Name,
+    type: Type.Union([Type.Literal("int"), Type.Literal("bool")]),
+    expr: Src,
+  }),
+  obj({
+    kind: Type.Literal("slot"),
+    id: Name,
+    type: Type.Literal("int"),
+    combine: Type.Optional(
+      Type.Union([Type.Literal("sum"), Type.Literal("max")], {
+        description:
+          "How the default and the terms combine: summed (default) or maxed",
+      }),
+    ),
+    default: Type.Integer({
+      description: "Value with no terms; part of the sum or max otherwise",
+    }),
+  }),
+  obj({
+    kind: Type.Literal("slot"),
+    id: Name,
+    type: Type.Literal("bool"),
+    default: Type.Boolean({
+      description: "Value with no true term; true when any term is true",
+    }),
+  }),
+  obj({
+    kind: Type.Literal("contribute"),
+    slot: Name,
+    expr: Src,
+  }),
+]);
+
 const PERCENT = "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$";
 
 /** A repeat curve; every field is optional because a storylet overrides the manifest's field by field. */
@@ -168,6 +210,7 @@ export const CapabilitySchema = obj(
         stats: provided("stats", NAME_PATTERN),
         qualities: provided("qualities", NAME_PATTERN),
         state: provided("state containers", NAME_PATTERN),
+        readables: provided("readables and slots", NAME_PATTERN),
         groups: provided("exclusivity groups", ID_PATTERN),
         tags: provided("storylet tags", ID_PATTERN),
         milestones: provided("milestones", ID_PATTERN),
@@ -767,6 +810,7 @@ export const FILE_SCHEMAS = {
   "capability.schema.json": CapabilitySchema,
   "qualities.schema.json": list(QualitySchema, "Qualities"),
   "state.schema.json": list(StateSchema, "State containers"),
+  "readables.schema.json": list(ReadableSchema, "Readables"),
   "migration.schema.json": MigrationSchema,
   "storylets.schema.json": list(StoryletSchema, "Storylets"),
   "occupations.schema.json": list(OccupationSchema, "Occupation kinds"),
@@ -789,3 +833,4 @@ export type StandardSrc = Static<typeof StandardSchema>;
 export type PeopleSrc = Static<typeof PeopleSchema>;
 export type Quality = Static<typeof QualitySchema>;
 export type State = Static<typeof StateSchema>;
+export type Readable = Static<typeof ReadableSchema>;

@@ -1,0 +1,5 @@
+provides:
+  qualities:
+    - heat
+requires:
+  - base/ledger

@@ -45,6 +45,17 @@ export const FUNCTIONS = {
   forecast: { params: ["id"], returns: "int" },
 } as const satisfies Record<string, Signature>;
 
+/** Closed aggregators over state containers (docs/spec/pack-format/readables.md). */
+export const AGGREGATES = ["sum", "count", "max", "min"] as const;
+export type Aggregate = (typeof AGGREGATES)[number];
+
+/**
+ * A compiled aggregator is `["call", "agg_<op>", ["s", "<source>"]]`: the source is a
+ * container path (`table.<id>` over the player's keys, `people.quality.<id>` or
+ * `people.table.<id>.<key>` over every living person) the compiler has already checked.
+ */
+export const AGGREGATE_PREFIX = "agg_";
+
 /** Effect calls (statements with arguments). `spawn_person(...) as <name>` is parsed separately. */
 export const EFFECTS = {
   take_loan: { params: ["id", "int"], returns: "bool" },

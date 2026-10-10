@@ -1,4 +1,6 @@
 import {
+  AGGREGATE_PREFIX,
+  AGGREGATES,
   ASSIGNABLE,
   assignOps,
   EFFECTS,
@@ -21,6 +23,11 @@ const MATURE_HINT =
 export interface CheckEnv {
   /** Dotted name -> type, for example `{ age: "int", "stat.smarts": "int" }`. */
   names: Readonly<Record<string, Type>>;
+  /**
+   * Container paths the aggregators `sum`, `count`, `max`, `min` accept, with the type of one
+   * element (`table.<id>`, `people.quality.<id>`, `people.table.<id>.<key>`).
+   */
+  aggregates?: Readonly<Record<string, Type>>;
   /** Bound person names usable in `relationship(<person>)`. */
   persons?: readonly string[];
   /** Overrides the core `FUNCTIONS` whitelist (tests only). */
@@ -157,6 +164,7 @@ export class Checker {
         return [a[0], ["?", c[1], a[1], b[1]]];
       }
       case "call": {
+        if (isAggregate(n)) return this.aggregate(n);
         const sig = Object.hasOwn(this.fns, n.name)
           ? this.fns[n.name]
           : undefined;
@@ -169,6 +177,30 @@ export class Checker {
         return args && [sig.returns, ["call", n.name, ...args]];
       }
     }
+  }
+
+  /** `sum(src)`, `count(src)`, `max(src)`, `min(src)` over a declared container. */
+  private aggregate(n: Node & { k: "call" }): Checked {
+    const sources = this.env.aggregates ?? {};
+    const arg = n.args[0];
+    if (n.args.length !== 1)
+      return this.err(
+        n,
+        `'${n.name}' takes one container, got ${n.args.length}`,
+      );
+    if (arg?.k !== "name" || !Object.hasOwn(sources, arg.v))
+      return this.err(
+        n,
+        `'${n.name}' needs a container (table.<id>, people.quality.<id> or people.table.<id>.<key>) declared and visible to this Pack${
+          arg?.k === "name" ? suggest(arg.v, Object.keys(sources)) : ""
+        }`,
+      );
+    if (n.name !== "count" && sources[arg.v] !== "int")
+      return this.err(
+        arg,
+        `'${n.name}' needs integer values, '${arg.v}' holds flags (use 'count')`,
+      );
+    return ["int", ["call", AGGREGATE_PREFIX + n.name, ["s", arg.v]]];
   }
 
   args(pos: Pos, name: string, sig: Signature, nodes: Node[]): Expr[] | null {
@@ -204,6 +236,20 @@ export class Checker {
     const type: Type = arith ? "int" : "bool";
     return [type, [op as "+", l[1], r[1]]];
   }
+}
+
+/**
+ * `sum` and `count` are always aggregators. `min` and `max` are the pure two-argument
+ * functions unless given one argument that looks like a container path (`table.<id>...`,
+ * `people....`), so `min(1)` keeps its arity error.
+ */
+function isAggregate(n: Node & { k: "call" }): boolean {
+  if (!(AGGREGATES as readonly string[]).includes(n.name)) return false;
+  if (n.name === "sum" || n.name === "count") return true;
+  const arg = n.args[0];
+  return (
+    n.args.length === 1 && arg?.k === "name" && /^(table|people)\./.test(arg.v)
+  );
 }
 
 /** Constant value of a name-free, call-free integer subtree, else undefined. */

@@ -1,5 +1,8 @@
 import {
+  AGGREGATE_PREFIX,
+  type Aggregate,
   type ExprEnv as Env,
+  evaluate,
   pureFunctions,
   type Value,
 } from "../expr/index.ts";
@@ -35,6 +38,7 @@ import {
   priceNow,
 } from "./market.ts";
 import type { PackIndex } from "./pack-index.ts";
+import { aggregate, combineSlot } from "./readables.ts";
 
 /** What names resolve against: the subject person (the player) and optional bindings. */
 export interface Scope {
@@ -243,6 +247,18 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
       if (path === "money") return subject.money;
       if (path === "uses_this_year") return scope.uses ?? 0;
       if (path === "amount" && scope.amount !== undefined) return scope.amount;
+      const readable = idx.readables.get(path);
+      if (readable) {
+        // Readables read the player-level names only, whatever scope the caller is in.
+        const base = makeEnv(world, idx, { subject: scope.subject });
+        const d = readable.decl;
+        return d.kind === "readable"
+          ? evaluate(d.expr, base)
+          : combineSlot(
+              d,
+              readable.terms.map((t) => evaluate(t, base) as number | boolean),
+            );
+      }
       if (path.startsWith("stat.")) return subject.stats[path.slice(5)] ?? 0;
       if (path.startsWith("quality."))
         return qualityOf(subject, idx, path.slice(8)) as Value;
@@ -301,6 +317,14 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
     call(name: string, args: Value[]): Value {
       const pure = pureFunctions[name];
       if (pure) return pure(...(args as number[]));
+      if (name.startsWith(AGGREGATE_PREFIX))
+        return aggregate(
+          world,
+          idx,
+          subject,
+          name.slice(AGGREGATE_PREFIX.length) as Aggregate,
+          args[0] as string,
+        );
       const id = args[0] as string;
       switch (name) {
         case "has_remote_job":

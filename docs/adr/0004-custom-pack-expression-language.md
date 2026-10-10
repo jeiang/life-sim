@@ -6,3 +6,7 @@ Pack conditions, weights, chances, and effect statements use a small custom infi
 
 - We own the parser, checker, interpreter, and author error messages (about 150 lines in the research prototype). CEL stays usable as a differential-testing oracle.
 - Adding a function or operator is a Core release, consistent with the closed effect set (ADR 0002).
+
+## Note (2026-10-10): pack-declared readables (#187)
+
+Packs name expressions and read each other's state through them, without the language gaining a user-defined function or a loop. A readable is a build-time-checked expression with a declared `int` or `bool` type, evaluated on every read for the player and never stored; a slot is a readable whose value is a default combined (summed, maxed or any-true) with terms that dependent Packs contribute, so a gate in one Pack can follow state of a Pack it does not require. The only additions to the language are bare names for readables and four aggregators, `sum`, `count`, `max` and `min` of a container path; they compile to calls of `agg_<op>` with the path as a string argument, so the AST node set and the interpreter's `Env` interface do not change, and the aggregation itself is Core code. The checker rejects cycles across Packs, and there is still no randomness. Spec: [Readables](../spec/pack-format/readables.md).

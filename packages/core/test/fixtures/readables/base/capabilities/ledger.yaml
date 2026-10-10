@@ -1,0 +1,18 @@
+provides:
+  qualities:
+    - grudge
+  state:
+    - visits
+  readables:
+    - favour_total
+    - favour_top
+    - favour_low
+    - favour_kinds
+    - grudge_total
+    - sulky_count
+    - food_owed
+    - well_liked
+    - hiring_blocked
+    - pay_bonus
+    - perk_cap
+    - echo

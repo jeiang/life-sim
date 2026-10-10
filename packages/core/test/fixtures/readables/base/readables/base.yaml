@@ -1,0 +1,16 @@
+# Aggregators: per kind (a table's keys) and per person (every living person).
+- { kind: readable, id: favour_total, type: int, expr: sum(table.favours) }
+- { kind: readable, id: favour_top, type: int, expr: max(table.favours) }
+- { kind: readable, id: favour_low, type: int, expr: min(table.favours) }
+- { kind: readable, id: favour_kinds, type: int, expr: count(table.favours) }
+- { kind: readable, id: grudge_total, type: int, expr: sum(people.quality.grudge) }
+- { kind: readable, id: sulky_count, type: int, expr: count(people.quality.sulky) }
+- { kind: readable, id: food_owed, type: int, expr: sum(people.table.favours.food) }
+# A readable over another readable, a name and a function.
+- { kind: readable, id: well_liked, type: bool, expr: "favour_total >= 10 and min(favour_top, 99) > 0" }
+# Slots other Packs add terms to.
+- { kind: slot, id: hiring_blocked, type: bool, default: false }
+- { kind: slot, id: pay_bonus, type: int, default: 5 }
+- { kind: slot, id: perk_cap, type: int, combine: max, default: 2 }
+# Reads a slot, so a Pack whose term reads it back closes a cycle.
+- { kind: readable, id: echo, type: bool, expr: hiring_blocked }

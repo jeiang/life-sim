@@ -12,6 +12,7 @@ import type {
   CompiledPeopleItem,
   CompiledStandard,
   CompiledStorylet,
+  ContributionDecl,
   Effect,
   Expr,
   Type as ExprType,
@@ -22,6 +23,7 @@ import type {
   PackBundle,
   PackMigration,
   QualityDecl,
+  ReadableDecl,
   RepeatCurve,
   StatDecl,
   StateDecl,
@@ -32,6 +34,7 @@ import {
   GENDERS,
   PACK_BUNDLE_FORMAT,
   PRONOUN_FIELDS,
+  readableCycle,
 } from "@life/core";
 import type { TSchema } from "@sinclair/typebox";
 import { buildCredits, type CreditsManifest } from "./credits.ts";
@@ -58,6 +61,8 @@ import {
   type PeopleSrc,
   type Quality,
   QualitySchema,
+  type Readable,
+  ReadableSchema,
   SINGLETONS,
   StandardSchema,
   type StandardSrc,
@@ -140,6 +145,8 @@ interface LoadedPack {
   qualities: LoadedQuality[];
   /** Declared by `state/*.yaml`, in file order. */
   state: LoadedState[];
+  /** Declared by `readables/*.yaml`, in file order. */
+  readables: LoadedReadable[];
   items: LoadedItem[];
   capabilities: LoadedCapability[];
   migrations: LoadedMigration[];
@@ -166,6 +173,21 @@ interface LoadedState {
   src: Source;
   index: number;
 }
+
+/** One readables entry (a readable, a slot or a contribution) and where it was written. */
+interface LoadedReadable {
+  decl: Readable;
+  src: Source;
+  index: number;
+}
+
+/** A readable or slot declaration (not a contribution), narrowed. */
+type ReadableDeclSrc = Exclude<Readable, { kind: "contribute" }>;
+const declaresReadable = (
+  r: LoadedReadable,
+): r is LoadedReadable & {
+  decl: ReadableDeclSrc;
+} => r.decl.kind !== "contribute";
 
 /** One `capabilities/<feature>.yaml`; its id is `<pack>/<feature>`. */
 interface LoadedCapability {
@@ -212,6 +234,19 @@ const TOP_RESERVED = new Set([
   "portfolio",
   "world",
   "table",
+]);
+
+/**
+ * Names a readable id may not take: every root of an expression name, and the bare names some
+ * scopes bind (`uses_this_year`, `amount`).
+ */
+const READABLE_RESERVED = new Set([
+  ...TOP_RESERVED,
+  "uses_this_year",
+  "amount",
+  "confined",
+  "mature",
+  "people",
 ]);
 
 /** Kinds each id-typed function parameter accepts; `undefined` accepts any content id. */
@@ -314,6 +349,7 @@ class Compiler {
       const pack = this.packs.get(id) as LoadedPack;
       bundles.push(new PackCompiler(this, pack).compile());
     }
+    this.checkReadableCycle(bundles);
     let twemoji = 0;
     const authors = new Map<string, number>();
     for (const u of this.icons.values()) {
@@ -332,6 +368,27 @@ class Compiler {
       credits: buildCredits(twemoji, authors),
       ids: this.ids,
     };
+  }
+
+  /** A cycle among readables, across Packs, through slot contributions included. */
+  private checkReadableCycle(bundles: readonly PackBundle[]): void {
+    const cycle = readableCycle(
+      bundles.flatMap((b) => b.readables),
+      bundles.flatMap((b) => b.contributions),
+    );
+    if (cycle === undefined) return;
+    const first = cycle.split(" -> ")[0] as string;
+    for (const pack of this.packs.values())
+      for (const r of pack.readables)
+        if (declaresReadable(r) && r.decl.id === first) {
+          this.diag(
+            r.src,
+            [r.index],
+            `readables form a cycle: ${cycle}`,
+            first,
+          );
+          return;
+        }
   }
 
   /** Drop every Pack outside the `only` selection and its required closure. */
@@ -506,6 +563,7 @@ class Compiler {
     }
     const qualities = this.loadQualities(d, dir);
     const state = this.loadState(d, dir);
+    const readables = this.loadReadables(d, dir);
     const capabilities = this.loadCapabilities(d, dir);
     const migrations = this.loadMigrations(d, dir);
     // Stat and quality ids share the expression namespace `stat.<id>` / `quality.<id>`.
@@ -519,6 +577,7 @@ class Compiler {
       manifestSrc: src,
       qualities,
       state,
+      readables,
       items,
       capabilities,
       migrations,
@@ -636,6 +695,61 @@ class Compiler {
             );
         }
         out.push({ decl: s, src, index: i });
+      });
+    }
+    return out;
+  }
+
+  /** `readables/<topic>.yaml`: readables, slots and slot contributions (docs/spec/pack-format/readables.md). */
+  private loadReadables(d: string, dir: string): LoadedReadable[] {
+    const out: LoadedReadable[] = [];
+    const seen = new Map<string, string>();
+    const rDir = join(dir, "readables");
+    for (const f of this.listYaml(rDir)) {
+      const file = this.rel(d, "readables", f);
+      const src = parseYaml(
+        file,
+        readFileSync(join(rDir, f), "utf8"),
+        this.diags,
+      );
+      if (!src || src.value === null || src.value === undefined) continue;
+      if (!Array.isArray(src.value)) {
+        this.diag(
+          src,
+          [],
+          "a readables file must be a list of readable, slot and contribute entries",
+        );
+        continue;
+      }
+      src.value.forEach((raw: unknown, i: number) => {
+        const id = (raw as { id?: unknown } | null)?.id;
+        const label = (p: Path): string =>
+          `${typeof id === "string" ? id : `[${i}]`}${p.length > 1 ? `.${formatPath(p.slice(1))}` : ""}`;
+        if (!validate(src, ReadableSchema, raw, [i], this.diags, label)) return;
+        const r = raw as Readable;
+        if (r.kind !== "contribute") {
+          if (READABLE_RESERVED.has(r.id)) {
+            this.diag(
+              src,
+              [i, "id"],
+              `'${r.id}' is a reserved name and cannot name a readable`,
+              r.id,
+            );
+            return;
+          }
+          const prev = seen.get(r.id);
+          if (prev) {
+            this.diag(
+              src,
+              [i, "id"],
+              `duplicate readable '${r.id}' (already defined in ${prev})`,
+              r.id,
+            );
+            return;
+          }
+          seen.set(r.id, file);
+        }
+        out.push({ decl: r, src, index: i });
       });
     }
     return out;
@@ -764,6 +878,10 @@ class Compiler {
     if (key === "qualities")
       return pack.qualities.some((q) => q.decl.id === name);
     if (key === "state") return pack.state.some((s) => s.decl.id === name);
+    if (key === "readables")
+      return pack.readables.some(
+        (r) => declaresReadable(r) && r.decl.id === name,
+      );
     if (key === "groups")
       return (pack.manifest.exclusivity ?? []).includes(name);
     if (key === "singletons")
@@ -794,6 +912,7 @@ class Compiler {
         ["stat", "stats"],
         ["quality", "qualities"],
         ["state", "state"],
+        ["readable", "readables"],
       ] as const) {
         const decls =
           key === "stats"
@@ -802,11 +921,19 @@ class Compiler {
                 src: pack.manifestSrc,
                 at: [key, i, "id"] as Path,
               }))
-            : (key === "qualities" ? pack.qualities : pack.state).map((q) => ({
-                d: q.decl,
-                src: q.src,
-                at: [q.index, "id"] as Path,
-              }));
+            : key === "readables"
+              ? pack.readables.filter(declaresReadable).map((q) => ({
+                  d: q.decl,
+                  src: q.src,
+                  at: [q.index, "id"] as Path,
+                }))
+              : (key === "qualities" ? pack.qualities : pack.state).map(
+                  (q) => ({
+                    d: q.decl,
+                    src: q.src,
+                    at: [q.index, "id"] as Path,
+                  }),
+                );
         for (const { d, src, at } of decls) {
           const first = owner.get(`${kind}.${d.id}`);
           if (first === undefined) owner.set(`${kind}.${d.id}`, id);
@@ -851,6 +978,8 @@ class Compiler {
         bad("quality", q.decl.id, q.src, [q.index, "id"]);
       for (const s of pack.state)
         bad("state container", s.decl.id, s.src, [s.index, "id"]);
+      for (const r of pack.readables.filter(declaresReadable))
+        bad("readable", r.decl.id, r.src, [r.index, "id"]);
     }
   }
 
@@ -933,6 +1062,10 @@ class PackCompiler {
   /** Person-addressable qualities and state tables visible to this Pack (`person.quality.x`, `person.table.x.k`). */
   readonly personQualities = new Map<string, ExprType>();
   readonly tables = new Map<string, readonly string[]>();
+  /** Container paths the aggregators accept, with the element type. */
+  readonly aggregates: Names = {};
+  /** Slots visible to this Pack (its own and required ones) by id, with their type. */
+  readonly slots = new Map<string, "int" | "bool">();
   owner = "";
 
   readonly c: Compiler;
@@ -956,8 +1089,10 @@ class PackCompiler {
    */
   private addDecls(pack: LoadedPack, only?: Capability["provides"]): void {
     const m = pack.manifest;
-    const has = (key: "stats" | "qualities" | "state" | "groups", id: string) =>
-      only === undefined || (only[key] ?? []).includes(id);
+    const has = (
+      key: "stats" | "qualities" | "state" | "readables" | "groups",
+      id: string,
+    ) => only === undefined || (only[key] ?? []).includes(id);
     for (const s of m.stats ?? []) {
       if (!has("stats", s.id)) continue;
       this.baseNames[`stat.${s.id}`] = "int";
@@ -969,13 +1104,23 @@ class PackCompiler {
       const type = q.type === "flag" ? "bool" : "int";
       this.baseNames[`quality.${q.id}`] = type;
       this.declared.add(`quality.${q.id}`);
-      if (q.scope === "person") this.personQualities.set(q.id, type);
+      if (q.scope === "person") {
+        this.personQualities.set(q.id, type);
+        this.aggregates[`people.quality.${q.id}`] = type;
+      }
+    }
+    for (const r of pack.readables) {
+      if (!declaresReadable(r) || !has("readables", r.decl.id)) continue;
+      this.baseNames[r.decl.id] = r.decl.type;
+      if (r.decl.kind === "slot") this.slots.set(r.decl.id, r.decl.type);
     }
     for (const { decl: s } of pack.state) {
       if (!has("state", s.id)) continue;
       if (s.kind === "table") {
         this.tables.set(s.id, s.keys);
+        this.aggregates[`table.${s.id}`] = "int";
         for (const k of s.keys) {
+          this.aggregates[`people.table.${s.id}.${k}`] = "int";
           this.baseNames[`table.${s.id}.${k}`] = "int";
           this.declared.add(`table.${s.id}.${k}`);
         }
@@ -1074,6 +1219,7 @@ class PackCompiler {
     const state = this.pack.state
       .map((s) => ({ ...s.decl }) as StateDecl)
       .sort((a, b) => (a.id < b.id ? -1 : 1));
+    const { readables, contributions } = this.readables();
     const migrations = this.migrations(pack, m);
     this.idLock(m, migrations);
     return {
@@ -1086,6 +1232,8 @@ class PackCompiler {
       stats,
       qualities,
       state,
+      readables,
+      contributions,
       exclusivity: [...(m.exclusivity ?? [])],
       ...(m.year
         ? {
@@ -1109,6 +1257,55 @@ class PackCompiler {
       migrations,
       ...bundle,
     };
+  }
+
+  // ---- readables ----------------------------------------------------------
+
+  /** Compile this Pack's readables, slots and slot contributions. */
+  private readables(): {
+    readables: ReadableDecl[];
+    contributions: ContributionDecl[];
+  } {
+    const readables: ReadableDecl[] = [];
+    const contributions: ContributionDecl[] = [];
+    for (const { decl: r, src, index } of this.pack.readables) {
+      this.src = src;
+      this.itemIndex = index;
+      this.owner = `${this.pack.id}/${r.kind === "contribute" ? r.slot : r.id}`;
+      if (r.kind === "readable") {
+        const expr = this.expr(r.expr, r.type, ["expr"]);
+        if (expr !== undefined)
+          readables.push({ kind: "readable", id: r.id, type: r.type, expr });
+      } else if (r.kind === "slot") {
+        readables.push(
+          r.type === "int"
+            ? {
+                kind: "slot",
+                id: r.id,
+                type: "int",
+                combine: r.combine ?? "sum",
+                default: r.default,
+              }
+            : { kind: "slot", id: r.id, type: "bool", default: r.default },
+        );
+      } else {
+        const type = this.slots.get(r.slot);
+        if (type === undefined) {
+          this.err(
+            ["slot"],
+            `unknown slot '${r.slot}': it must be a slot this Pack declares or one a required capability provides under 'readables'; slots in reach: ${[...this.slots.keys()].sort().join(", ") || "none"}`,
+          );
+          continue;
+        }
+        const expr = this.expr(r.expr, type, ["expr"]);
+        if (expr !== undefined) contributions.push({ slot: r.slot, expr });
+      }
+    }
+    this.src = this.pack.manifestSrc;
+    this.itemIndex = undefined;
+    this.owner = this.pack.id;
+    readables.sort((a, b) => (a.id < b.id ? -1 : 1));
+    return { readables, contributions };
   }
 
   // ---- manifest -----------------------------------------------------------
@@ -1339,6 +1536,7 @@ class PackCompiler {
     const text = String(srcValue);
     const env: CheckEnv = {
       names: { ...this.baseNames, ...extra },
+      aggregates: this.aggregates,
       persons,
     };
     const r = compileExpr(text, env, kind);
@@ -2058,7 +2256,7 @@ class PackCompiler {
 
   /** Normalise a migration id to a full id (`<pack>/<id>`) or a declared name (`stat.x`). */
   private migId(raw: string, path: Path): string | undefined {
-    if (/^(stat|quality|state)\./.test(raw)) return raw;
+    if (/^(stat|quality|state|readable)\./.test(raw)) return raw;
     const slash = raw.indexOf("/");
     if (slash >= 0 && raw.slice(0, slash) !== this.pack.id) {
       this.err(
@@ -2077,6 +2275,8 @@ class PackCompiler {
     for (const s of m.stats ?? []) ids.add(`stat.${s.id}`);
     for (const q of this.pack.qualities) ids.add(`quality.${q.decl.id}`);
     for (const s of this.pack.state) ids.add(`state.${s.decl.id}`);
+    for (const r of this.pack.readables)
+      if (declaresReadable(r)) ids.add(`readable.${r.decl.id}`);
     return ids;
   }
 
@@ -2118,7 +2318,7 @@ class PackCompiler {
         let fallback: string | null = null;
         if (r.fallback !== undefined) {
           fallback =
-            /^(stat|quality|state)\./.test(r.fallback) &&
+            /^(stat|quality|state|readable)\./.test(r.fallback) &&
             current.has(r.fallback)
               ? r.fallback
               : (this.ref(r.fallback, undefined, ["remove", i, "fallback"]) ??

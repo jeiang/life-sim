@@ -9,6 +9,7 @@
 > Two parallel chains. Player carrier: `pregnancy-end` and `pregnancy-outcome` are unscoped, so the schedule survives the partner's death and the flag always resolves. Partner carrier: `partner-pregnancy-end` and `partner-pregnancy-outcome` are scoped to the partner, so the partner is the second birth parent; if the partner dies, the schedule drops and only the dead partner's flag is left set.
 > The schedule window is in whole years, so the outline's nine months becomes one year.
 > Birth spawns `dating/baby-gen` as `core-loop/child`. The partner-carrier branch passes `parent: person`. Player-carrier births pass no `parent:`; core links the player and the living spouse, else the player and the living partner.
+> `quality.dating_children` tallies the children the player has had (births and adoptions) for the harness metrics and `dating_first_child_age` is set by the `first_child` milestone hook.
 > `first_child` is reached by the child-role spawn, so no `reach_milestone` is written here.
 
 ## try-for-a-baby
@@ -102,6 +103,7 @@
   - text: You bring your baby home. Life is about to get a lot busier.
   - effect: quality.dating_pregnant = 0
   - effect: spawn_person(core-loop/child, dating/baby-gen) as baby
+  - effect: quality.dating_children += 1
   - effect: journal("Your baby is born.")
   - rate: 100..100%
 
@@ -154,6 +156,7 @@
   - text: You bring your baby home. Life is about to get a lot busier.
   - effect: person.quality.dating_pregnant = 0
   - effect: spawn_person(core-loop/child, dating/baby-gen, parent: person) as baby
+  - effect: quality.dating_children += 1
   - effect: journal("Your baby is born.")
   - rate: 100..100%
 

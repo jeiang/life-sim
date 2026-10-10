@@ -8,3 +8,6 @@
 - { id: dating_pays_support, type: flag, default: false }              # the ex keeps the kids after a divorce: the player pays child support while a child is under 18
 - { id: dating_pregnant, type: int, min: 0, max: 1, default: 0, scope: person }  # 1 while the carrier has a pregnancy running (the player via quality, a partner via person.quality)
 - { id: dating_moved_out, type: flag, default: false, scope: person }  # the child has left home; set once so the move-out scene fires at most once per child
+- { id: dating_children, type: int, min: 0, max: 30, default: 0 }       # children the player has had, births and adoptions (harness metric)
+- { id: dating_married_age, type: int, min: 0, max: 120, default: 0 }   # age at the first marriage (the `married` milestone hook); 0 = never married
+- { id: dating_first_child_age, type: int, min: 0, max: 120, default: 0 } # age when the first child joined (the `first_child` milestone hook); 0 = none

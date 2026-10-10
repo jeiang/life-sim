@@ -4,6 +4,12 @@ namespace: dating
 hooks:
   on_birth:
     - "schedule(dating/roll-attraction, after: 1-1 years)"
+  # Ages for the harness metrics; the Core fires both milestones (a spouse role, a child-role person), once per life.
+  on_milestone:
+    married:
+      - quality.dating_married_age = age
+    first_child:
+      - quality.dating_first_child_age = age
 # NPC attraction: every generated person (family, friends, partners; not animals, not the player) rolls
 # the same table as the player's `roll-attraction`, by their own gender. Values are hidden.
 spawn_qualities:

@@ -1,0 +1,15 @@
+# Forced script (docs/spec/harness.md#forced-outcomes): every attempt to try for a baby takes (1 in 4 unforced) and every pregnancy ends in a miscarriage (1 in 20 unforced).
+# A pick index counts the outcomes eligible at that moment: for try-for-a-baby, index 1 is the pregnancy, whoever carries.
+description: Every try for a baby takes and every pregnancy ends in a miscarriage
+profile: romantic
+steps:
+  - roll: outcome/dating/ask-out
+    value: 0
+  - roll: outcome/dating/try-for-a-baby
+    value: 1
+  - roll: outcome/dating/unplanned-pregnancy
+    value: 0
+  - roll: outcome/dating/pregnancy-end
+    value: 0
+  - roll: outcome/dating/partner-pregnancy-end
+    value: 0

@@ -85,6 +85,7 @@
           effects:
             - "quality.dating_pregnant = 0"
             - "spawn_person(core-loop/child, dating/baby-gen) as baby"
+            - "quality.dating_children += 1"
             - "journal(\"Your baby is born.\")"
     - label: Place the baby for adoption
       outcomes:
@@ -134,6 +135,7 @@
           effects:
             - "person.quality.dating_pregnant = 0"
             - "spawn_person(core-loop/child, dating/baby-gen, parent: person) as baby"
+            - "quality.dating_children += 1"
             - "journal(\"Your baby is born.\")"
     - label: Place the baby for adoption
       outcomes:

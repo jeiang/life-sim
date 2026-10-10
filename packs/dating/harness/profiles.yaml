@@ -1,0 +1,26 @@
+# Simulated player profiles of the Dating Pack; the schema is docs/spec/harness.md#simulated-player-profiles.
+profiles:
+  romantic:
+    description: Looks for love and settles down. Asks out, proposes, moves in, plans a wedding, tries for a baby, spends time with the family; never breaks up, cheats or divorces
+    moves: 3
+    once_per_year: true
+    choice:
+      prefer: ["ask them out", "propose", "keep the baby", "sign a prenup", "give it a go", "forgive*"]
+    rules:
+      - ids: [dating/plan-wedding, dating/move-in-together, dating/try-for-a-baby, dating/adopt-a-child]
+      - ids: [dating/date-night, dating/spend-time-with-child]
+  unfaithful:
+    description: Builds a relationship (date nights, a wedding, a baby), then from 30 cheats and walks away from the marriage; the affair and divorce chains are reached through it
+    default: false
+    moves: 5
+    once_per_year: true
+    choice:
+      prefer: ["ask them out", "propose", "skip the prenup", "keep the baby", "your ex keeps the kids", "walk away"]
+    rules:
+      - ids: [dating/plan-wedding, dating/move-in-together, dating/try-for-a-baby]
+      - ids: [dating/date-night]
+      - when: { age_at_least: 30 }
+        ids: [dating/affair-cheat, dating/divorce]
+# Destructive relationship actions stay rare in the uniform `random` profile: a uniform picker would break up, cheat and divorce far more often than anyone chooses to.
+adjust:
+  - { profile: random, ids: [dating/break-up, dating/divorce, dating/affair-cheat], weight: 0.05 }

@@ -106,3 +106,4 @@
         - money -= 500000
         - "spawn_person(core-loop/child, dating/adoptee-gen, link: adopted) as kid"
         - "reach_milestone(adopted)"
+        - "quality.dating_children += 1"

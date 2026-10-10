@@ -128,4 +128,5 @@
   - effect: money -= 500000
   - effect: spawn_person(core-loop/child, dating/adoptee-gen, link: adopted) as kid
   - effect: reach_milestone(adopted)
+  - effect: quality.dating_children += 1
   - rate: 100..100%

@@ -4,6 +4,7 @@ provides:
   qualities:
     - dating_prenup
     - dating_pays_support
+    - dating_married_age
 requires:
   - dating/romance
   - core-loop/family

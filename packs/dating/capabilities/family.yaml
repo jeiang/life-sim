@@ -4,6 +4,8 @@ provides:
   qualities:
     - dating_pregnant
     - dating_moved_out
+    - dating_children
+    - dating_first_child_age
   generators:
     - baby-gen
     - adoptee-gen

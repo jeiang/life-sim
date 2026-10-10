@@ -1,0 +1,138 @@
+# Harness metrics for the Dating Pack; the schema is docs/spec/harness.md#pack-metrics.
+title: Dating
+intro: Partnership, marriage, divorce, affairs, pregnancy and children by profile. A partner is a successful ask-out; marriage is the Core `married` milestone (age at the first marriage is recorded by the pack's hook). Heir availability (share of deaths with a living child) and persons per save are core-loop and report-wide numbers. Money is in minor units.
+measures:
+  asked_ok: { outcome: { storylet: dating/ask-out, key: c0.o0 } }
+  partnered: { when: "asked_ok > 0" }
+  married_age: { quality: dating_married_age, at: end }
+  married: { when: "married_age > 0" }
+  prenup: { quality: dating_prenup, at: ever }
+  breakups: { fires: { storylet: dating/break-up } }
+  divorces_chosen: { fires: { storylet: dating/divorce } }
+  divorces_forced: { fires: { storylet: dating/divorce-forced } }
+  divorced: { when: "divorces_chosen > 0 or divorces_forced > 0" }
+  affairs: { quality: dating_affair, at: end }
+  affair_ever: { when: "affairs > 0" }
+  partner_cheated: { fires: { storylet: dating/partner-cheats } }
+  pregnancies_own: { fires: { storylet: dating/pregnancy-end } }
+  pregnancies_partner: { fires: { storylet: dating/partner-pregnancy-end } }
+  pregnant: { when: "pregnancies_own > 0 or pregnancies_partner > 0" }
+  miscarried_own: { outcome: { storylet: dating/pregnancy-end, key: o0 } }
+  miscarried_partner: { outcome: { storylet: dating/partner-pregnancy-end, key: o0 } }
+  miscarried: { when: "miscarried_own > 0 or miscarried_partner > 0" }
+  children: { quality: dating_children, at: end }
+  parent: { when: "children > 0" }
+  first_child_age: { quality: dating_first_child_age, at: end }
+  adoptions: { fires: { storylet: dating/adopt-a-child } }
+  adopted: { when: "adoptions > 0" }
+  support_paid: { quality: dating_pays_support, at: ever }
+  nw65: { snapshot: net_worth, ages: [65] }
+stats:
+  partnered_share:
+    kind: share
+    when: partnered
+    by: profile
+    label: had a partner through ask-out
+  married_share:
+    kind: share
+    when: married
+    by: profile
+    label: married
+  prenup_of_married:
+    kind: share
+    when: prenup
+    of: married
+    label: married with a prenup
+  divorced_share:
+    kind: share
+    when: divorced
+    by: profile
+    label: divorced
+  divorced_of_married:
+    kind: share
+    when: divorced
+    of: married
+    label: married lives that divorced
+  breakups_per_life:
+    kind: mean
+    value: breakups
+    by: profile
+    label: break-ups per life
+  affair_share:
+    kind: share
+    when: affair_ever
+    by: profile
+    label: had an affair
+  pregnant_share:
+    kind: share
+    when: pregnant
+    by: profile
+    label: had a pregnancy
+  miscarried_of_pregnant:
+    kind: share
+    when: miscarried
+    of: pregnant
+    label: pregnant lives with a miscarriage
+  parent_share:
+    kind: share
+    when: parent
+    by: profile
+    label: had a child
+  adopted_share:
+    kind: share
+    when: adopted
+    by: profile
+    label: adopted a child
+  support_share:
+    kind: share
+    when: support_paid
+    label: paid child support
+  marriage_age:
+    kind: dist
+    value: married_age
+    of: married
+    label: age at the first marriage
+  first_child_age_dist:
+    kind: dist
+    value: first_child_age
+    of: parent
+    label: age when the first child joined
+  children_per_parent:
+    kind: dist
+    value: children
+    of: parent
+    label: children per parent
+  children_per_life:
+    kind: mean
+    value: children
+    by: profile
+    label: children per life
+  nw65_parents:
+    kind: median
+    value: nw65
+    of: parent
+    ages: [65]
+    label: net worth at 65, parents (median)
+  nw65_childless:
+    kind: median
+    value: nw65
+    of: "not parent"
+    ages: [65]
+    label: net worth at 65, childless (median)
+  nw65_divorced:
+    kind: median
+    value: nw65
+    of: divorced
+    ages: [65]
+    label: net worth at 65, divorced (median)
+blocks:
+  - text: Partnership, marriage and divorce.
+  - stats: [partnered_share, married_share, divorced_share, affair_share]
+  - stats: [prenup_of_married, divorced_of_married, breakups_per_life]
+  - stats: [marriage_age]
+  - text: Pregnancy, children and support.
+  - stats: [pregnant_share, parent_share, adopted_share, children_per_life]
+  - stats: [miscarried_of_pregnant, support_share]
+  - stats: [first_child_age_dist, children_per_parent]
+  - text: Net worth at 65 (minor units).
+  - stats: [nw65_parents, nw65_childless, nw65_divorced]

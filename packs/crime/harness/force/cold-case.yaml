@@ -1,0 +1,12 @@
+# Forced script: a robber breaks away from the arrest, the manhunt never finds them, and the case goes cold.
+description: A suspect runs from the police and the case goes cold
+steps:
+  - age: 20
+    do: crime/armed-robbery
+  - roll: outcome/crime/armed-robbery
+    value: The clerk hits a silent alarm, and police cars box you in.
+  - choose: Run
+  - roll: outcome/crime/arrest-pending
+    value: You break free and vanish into the crowd. The police will be looking for you.
+  - roll: crime/arrest-manhunt
+    value: miss

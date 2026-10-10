@@ -134,28 +134,6 @@
         - stat.health -= 10
         - stat.happiness -= 4
 
-- id: prison-study-ged
-  icon: 📝
-  trigger: action
-  menu: occupation/prison
-  label: Study for your GED
-  tags: [custody-ok, education, learning, ged]
-  when: "has_occupation(prison) and not quality.graduated_high_school"
-  cooldown: 1
-  text: The prep class meets in the chapel on Tuesdays, between the bingo and the sermon.
-  outcomes:
-    - weight: 40
-      text: You pass with a few points to spare, and a diploma comes in the mail.
-      effects:
-        - "quality.graduated_high_school = true"
-        - stat.smarts += 3
-        - stat.happiness += 4
-        - "journal(\"Earned a GED in prison at age {age}.\")"
-    - weight: 60
-      text: You almost pass. The teacher circles one number and tells you to come back next year.
-      effects:
-        - stat.smarts += 2
-
 - id: prison-talk-cellmate
   icon: 💬
   trigger: action

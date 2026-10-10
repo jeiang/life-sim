@@ -22,9 +22,8 @@ measures:
   offender: { when: "property_crimes > 0 or murderer or assaulted > 0" }
   diploma_end: { quality: graduated_high_school, at: end }
   studied_ged: { fires: { tag: ged } }
-  earned_prison_ged: { outcome: { storylet: crime/prison-study-ged, key: o0 } }
   earned_juvie_ged: { outcome: { storylet: crime/juvie-study-ged, key: o0 } }
-  earned_ged: { when: "earned_prison_ged > 0 or earned_juvie_ged > 0" }
+  earned_ged: { when: "earned_juvie_ged > 0" }
   inmate_no_diploma: { when: "imprisoned and diploma_end == 0" }
   escaped: { quality: crime_escapes, at: ever }
   recaptures: { fires: { storylet: crime/crime-recaptured } }

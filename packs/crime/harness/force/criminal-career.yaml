@@ -1,0 +1,5 @@
+# Forced script: the criminal profile offends most years, so the whole custody, parole and record-clearing cycle plays.
+description: A criminal career through arrest, juvenile detention, prison, parole and the record
+profile: criminal
+steps:
+  - choose: Cooperate

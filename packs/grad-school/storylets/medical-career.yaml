@@ -7,7 +7,7 @@
   menu: activities/job-board
   label: Apply for a medical residency
   tags: [job, apply]
-  when: "quality.grad_degree_medical and quality.grad_licensed_medical and not in_group(school) and not in_group(\"full-time\") and not hiring_blocked"
+  when: "quality.grad_degree_medical and quality.grad_licensed_medical and not in_group(school) and not hiring_blocked and not has_occupation(grad-school/resident-doctor) and not has_occupation(grad-school/attending-doctor) and not has_occupation(grad-school/chief-of-medicine)"
   cooldown: 1
   text: Residency programs take new doctors every spring. You send applications across the country and wait by the phone.
   outcomes:
@@ -49,7 +49,7 @@
   icon: 👑
   trigger: event
   tags: [job, promotion]
-  chance: 0.3%
+  chance: 0.2%
   when: "has_occupation(grad-school/attending-doctor) and years_in(grad-school/attending-doctor) >= 6"
   once: true
   text: The hospital board wants a new face at the top, and your name keeps coming up in the meetings.

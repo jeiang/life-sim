@@ -41,12 +41,12 @@
   text: "The scholarship committee checks your grade report, {player.first_name}."
   outcomes:
     - weight: 1
-      when: "quality.grad_gpa >= 70"
+      when: "quality.grad_gpa >= 85"
       text: Strong grades. The scholarship renews for another year without a fuss.
       effects:
         - "schedule(grad-school/grad-scholarship-review, after: 1-1 years)"
     - weight: 1
-      when: "quality.grad_gpa >= 50 and quality.grad_gpa < 70 and quality.grad_scholarship == 100"
+      when: "quality.grad_gpa >= 67 and quality.grad_gpa < 85 and quality.grad_scholarship == 100"
       text: Your grades slip, and the committee cuts the scholarship to half.
       effects:
         - "quality.grad_scholarship = 50"
@@ -54,12 +54,12 @@
         - "journal(\"Scholarship cut to partial, grades slipped\")"
       next: grad-funding-gap
     - weight: 1
-      when: "quality.grad_gpa >= 50 and quality.grad_gpa < 70 and quality.grad_scholarship == 50"
+      when: "quality.grad_gpa >= 67 and quality.grad_gpa < 85 and quality.grad_scholarship == 50"
       text: Middling grades. The partial scholarship survives one more year.
       effects:
         - "schedule(grad-school/grad-scholarship-review, after: 1-1 years)"
     - weight: 1
-      when: "quality.grad_gpa < 50 and quality.grad_scholarship == 100"
+      when: "quality.grad_gpa < 67 and quality.grad_scholarship == 100"
       text: Failing grades. The full scholarship drops to half, and the committee wants to see a turnaround.
       effects:
         - "quality.grad_scholarship = 50"
@@ -68,7 +68,7 @@
         - "journal(\"Scholarship cut to partial, grades failing\")"
       next: grad-funding-gap
     - weight: 1
-      when: "quality.grad_gpa < 50 and quality.grad_scholarship == 50"
+      when: "quality.grad_gpa < 67 and quality.grad_scholarship == 50"
       text: Failing grades again. The scholarship is gone, and so is some of your confidence.
       effects:
         - "quality.grad_scholarship = 0"

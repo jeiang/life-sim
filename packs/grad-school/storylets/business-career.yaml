@@ -6,7 +6,7 @@
   menu: activities/job-board
   label: Apply for a business manager job
   tags: [job, apply]
-  when: "quality.grad_degree_mba and not in_group(school) and not in_group(\"full-time\") and not hiring_blocked"
+  when: "quality.grad_degree_mba and not in_group(school) and not hiring_blocked and not has_occupation(grad-school/business-manager) and not has_occupation(grad-school/ceo)"
   cooldown: 1
   text: You dust off the MBA, tailor your resume, and send it to every company with a corner office.
   outcomes:
@@ -69,7 +69,7 @@
   icon: 🏢
   trigger: event
   tags: [job, promotion]
-  chance: 0.3%
+  chance: 0.2%
   when: "has_occupation(grad-school/business-manager) and years_in(grad-school/business-manager) >= 5"
   once: true
   text: The board chair asks to see you. Her office smells like money and carpet cleaner.

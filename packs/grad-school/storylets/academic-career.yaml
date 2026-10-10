@@ -7,7 +7,7 @@
   menu: activities/job-board
   label: Apply for a postdoc
   tags: [job, apply]
-  when: "quality.grad_degree_phd and not in_group(school) and not in_group(\"full-time\") and not hiring_blocked"
+  when: "quality.grad_degree_phd and not in_group(school) and not hiring_blocked and not has_occupation(grad-school/postdoc) and not has_occupation(grad-school/assistant-professor) and not has_occupation(grad-school/associate-professor) and not has_occupation(grad-school/full-professor)"
   cooldown: 1
   text: A university lab has a two-year postdoc open and wants someone who can finish a project.
   outcomes:
@@ -74,7 +74,7 @@
   icon: 📚
   trigger: event
   tags: [job, promotion]
-  chance: 1%
+  chance: 0.8%
   when: "has_occupation(grad-school/associate-professor) and years_in(grad-school/associate-professor) >= 5"
   text: The tenure committee meets again this spring, and your file is on the agenda.
   outcomes:

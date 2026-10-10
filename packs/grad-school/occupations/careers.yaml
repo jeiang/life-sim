@@ -8,7 +8,7 @@
   ladder: doctor
   npc: false
   requires: age >= 18 and quality.grad_degree_medical and quality.grad_licensed_medical
-  pay: (7000000 + quality.raise_bonus) * city.wage_index / 10000
+  pay: (7500000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: attending-doctor
   promotion_years: 3
 - id: attending-doctor
@@ -18,7 +18,7 @@
   ladder: doctor
   npc: false
   requires: age >= 18 and quality.grad_degree_medical and quality.grad_licensed_medical
-  pay: (15000000 + quality.raise_bonus) * city.wage_index / 10000
+  pay: (16000000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: chief-of-medicine
   promotion_years: 6
 - id: chief-of-medicine
@@ -28,7 +28,7 @@
   ladder: doctor
   npc: false
   requires: age >= 18 and quality.grad_degree_medical and quality.grad_licensed_medical
-  pay: (22000000 + quality.raise_bonus) * city.wage_index / 10000
+  pay: (21000000 + quality.raise_bonus) * city.wage_index / 10000
 - id: associate-lawyer
   label: Associate lawyer
   icon: ⚖️
@@ -36,7 +36,7 @@
   ladder: lawyer
   npc: false
   requires: age >= 18 and quality.grad_degree_law and quality.grad_licensed_law
-  pay: (9000000 + quality.raise_bonus) * city.wage_index / 10000
+  pay: (9500000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: partner-lawyer
   promotion_years: 4
 - id: partner-lawyer
@@ -46,7 +46,7 @@
   ladder: lawyer
   npc: false
   requires: age >= 18 and quality.grad_degree_law and quality.grad_licensed_law
-  pay: (18000000 + quality.raise_bonus) * city.wage_index / 10000
+  pay: (19000000 + quality.raise_bonus) * city.wage_index / 10000
 - id: judge
   label: Judge
   icon: 👨‍⚖️
@@ -62,7 +62,7 @@
   ladder: business
   npc: false
   requires: age >= 18 and quality.grad_degree_mba
-  pay: (10000000 + quality.raise_bonus) * city.wage_index / 10000
+  pay: (9500000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: ceo
   promotion_years: 5
 - id: ceo
@@ -72,7 +72,7 @@
   ladder: business
   npc: false
   requires: age >= 18 and quality.grad_degree_mba
-  pay: (25000000 + quality.raise_bonus) * city.wage_index / 10000
+  pay: (26000000 + quality.raise_bonus) * city.wage_index / 10000
 - id: postdoc
   label: Postdoc
   icon: 🔬
@@ -80,7 +80,7 @@
   ladder: professor
   npc: false
   requires: age >= 18 and quality.grad_degree_phd
-  pay: (5000000 + quality.raise_bonus) * city.wage_index / 10000
+  pay: (4500000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: assistant-professor
   promotion_years: 2
 - id: assistant-professor
@@ -90,7 +90,7 @@
   ladder: professor
   npc: false
   requires: age >= 18 and quality.grad_degree_phd
-  pay: (7500000 + quality.raise_bonus) * city.wage_index / 10000
+  pay: (7000000 + quality.raise_bonus) * city.wage_index / 10000
   promotes_to: associate-professor
   promotion_years: 4
 - id: associate-professor

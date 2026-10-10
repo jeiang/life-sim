@@ -411,29 +411,29 @@ describe("scholarship", () => {
     }
   });
 
-  test("grades 70+ keep a full and a partial scholarship", () => {
+  test("grades 85+ keep a full and a partial scholarship", () => {
     for (const s of [100, 50]) {
-      const w = fire(enrolled(s, 80), G("grad-scholarship-review"));
+      const w = fire(enrolled(s, 90), G("grad-scholarship-review"));
       expect(q(w, "grad_scholarship")).toBe(s);
     }
   });
 
-  test("grades 50-69: full -> partial, partial stays", () => {
+  test("grades 67-84: full -> partial, partial stays", () => {
     expect(
       q(
-        fire(enrolled(100, 60), G("grad-scholarship-review")),
+        fire(enrolled(100, 75), G("grad-scholarship-review")),
         "grad_scholarship",
       ),
     ).toBe(50);
     expect(
       q(
-        fire(enrolled(50, 60), G("grad-scholarship-review")),
+        fire(enrolled(50, 75), G("grad-scholarship-review")),
         "grad_scholarship",
       ),
     ).toBe(50);
   });
 
-  test("grades under 50: full -> partial, partial -> none", () => {
+  test("grades under 67: full -> partial, partial -> none", () => {
     expect(
       q(
         fire(enrolled(100, 40), G("grad-scholarship-review")),
@@ -699,7 +699,7 @@ describe("careers", () => {
     return { b, w: runAction(at(40, { ...BACH, ...quals }), b, G(id)).world };
   };
 
-  test("residency needs degree, boards, no job; hires and spawns a coworker", () => {
+  test("residency needs degree and boards; hires and spawns a coworker", () => {
     const need = { grad_degree_medical: true, grad_licensed_medical: true };
     expect(
       row(
@@ -755,7 +755,35 @@ describe("careers", () => {
     ).toBe(false);
   });
 
-  test("a grad job blocks a second application (full-time group)", () => {
+  test("a held Core job does not block a grad career: starting it replaces the job", () => {
+    const base = at(40, { ...BACH, grad_degree_phd: true });
+    const w0 = updatePerson(base, base.playerId, (p) => ({
+      ...p,
+      occupations: [
+        {
+          id: 901,
+          kindId: "core-loop/senior-engineer",
+          group: "full-time",
+          startedAge: 30,
+          years: 8,
+          performance: 50,
+          pay: 0,
+        },
+      ],
+    }));
+    expect(row(w0, "activities/job-board", G("apply-postdoc"))?.locked).toBe(
+      false,
+    );
+    const w = fire(
+      w0,
+      G("postdoc-interview"),
+      only(G("postdoc-interview"), null, 0),
+    );
+    expect(held(w, G("postdoc"))).toBe(true);
+    expect(held(w, "core-loop/senior-engineer")).toBe(false);
+  });
+
+  test("a grad job blocks a second application of its own ladder", () => {
     const w = fire(
       at(40, { ...BACH, grad_degree_phd: true }),
       G("postdoc-interview"),

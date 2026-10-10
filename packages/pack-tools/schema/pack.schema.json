@@ -433,6 +433,55 @@
           }
         }
       }
+    },
+    "settlement": {
+      "minItems": 1,
+      "description": "Yearly income and cost lines, applied in order after the Core lines (docs/spec/pack-format/settlement.md)",
+      "type": "array",
+      "items": {
+        "additionalProperties": false,
+        "title": "Settlement line",
+        "type": "object",
+        "required": ["id", "kind", "label", "amount"],
+        "properties": {
+          "id": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "description": "Content id",
+            "type": "string"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "const": "income",
+                "type": "string"
+              },
+              {
+                "const": "cost",
+                "type": "string"
+              }
+            ]
+          },
+          "label": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "amount": {
+            "description": "Yearly amount in minor units (int expression, player scope); zero or less posts nothing",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "when": {
+            "description": "Condition (bool expression); absent: every year",
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }

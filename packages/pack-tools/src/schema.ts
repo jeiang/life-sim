@@ -455,6 +455,32 @@ export const ManifestSchema = obj(
         "Lifecycle hooks (docs/spec/pack-format/hooks.md)",
       ),
     ),
+    settlement: Type.Optional(
+      Type.Array(
+        obj(
+          {
+            id: Id,
+            kind: Type.Union([Type.Literal("income"), Type.Literal("cost")]),
+            label: Label,
+            amount: Type.Union([Type.String(), Type.Number()], {
+              description:
+                "Yearly amount in minor units (int expression, player scope); zero or less posts nothing",
+            }),
+            when: Type.Optional(
+              Type.String({
+                description: "Condition (bool expression); absent: every year",
+              }),
+            ),
+          },
+          "Settlement line",
+        ),
+        {
+          minItems: 1,
+          description:
+            "Yearly income and cost lines, applied in order after the Core lines (docs/spec/pack-format/settlement.md)",
+        },
+      ),
+    ),
   },
   "Pack manifest (pack.yaml)",
 );

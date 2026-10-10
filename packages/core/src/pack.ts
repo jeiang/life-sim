@@ -474,6 +474,20 @@ export interface HooksDecl {
   >;
 }
 
+/**
+ * One yearly income or cost line a Pack adds to settlement (docs/spec/pack-format/settlement.md).
+ * Acts on the player; `amount` is in minor units, evaluated in the player's scope.
+ */
+export interface SettlementLine {
+  /** Local id, unique within the Pack; the full id is `<pack>/<id>`. */
+  readonly id: string;
+  readonly kind: "income" | "cost";
+  readonly label: string;
+  readonly amount: Expr;
+  /** Condition; absent means every year. */
+  readonly when?: Expr;
+}
+
 export interface PackBundle {
   readonly format: typeof PACK_BUNDLE_FORMAT;
   readonly id: string;
@@ -508,6 +522,8 @@ export interface PackBundle {
   };
   /** Lifecycle hooks (phase effects); run in bundle order. */
   readonly hooks?: HooksDecl;
+  /** Yearly settlement lines, in source order; run after the Core lines, in bundle order. */
+  readonly settlement?: readonly SettlementLine[];
   /** Living costs; needs `standards`. */
   readonly living?: LivingDecl;
   /** Default diminishing-returns curve for repeatable actions. */

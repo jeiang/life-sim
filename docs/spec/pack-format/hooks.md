@@ -28,7 +28,7 @@ hooks:
 | `on_death` | Once, when the player dies (the `die` effect with no person in scope), right after the obituary is written. |
 | `on_milestone: <id>` | Once per `fireMilestone` call for that id (see Milestones). Keyed by milestone id. |
 
-Each phase is optional and non-empty. `on_succession` and settlement line items are added by their own issues (#219, #190).
+Each phase is optional and non-empty. `on_succession` is added by its own issue (#219). Yearly income and cost lines are in [Settlement line items](settlement.md).
 
 ## Meaning
 

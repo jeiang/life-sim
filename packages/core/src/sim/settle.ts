@@ -12,7 +12,7 @@ import {
 import { inCareerRole, isJointSpouse } from "./careers.ts";
 import { settleLiving } from "./living.ts";
 import { settleMarket } from "./market.ts";
-import { dropAsset, endOccupation, evalInt } from "./ops.ts";
+import { dropAsset, endOccupation, evalBool, evalInt } from "./ops.ts";
 import type { PackIndex } from "./pack-index.ts";
 import { formatMoney } from "./text.ts";
 
@@ -21,7 +21,7 @@ export const REPOSSESSION_MISSES = 3;
 
 /**
  * Settlement (ADR 0003): occupations pay or charge, then market series move and bonds pay, then the player pays living costs, then loans take payments (with default
- * and repossession), then assets change value; each in person id, then item id order.
+ * and repossession), then assets change value; each in person id, then item id order. Pack settlement lines come last.
  */
 export function settle(world: World, idx: PackIndex): World {
   let w = world;
@@ -33,6 +33,48 @@ export function settle(world: World, idx: PackIndex): World {
   w = settleLiving(w, idx);
   for (const id of ids) w = settleLoans(w, idx, id);
   for (const id of ids) w = settleAssets(w, idx, id);
+  return settleLines(w, idx);
+}
+
+/**
+ * Pack settlement lines (docs/spec/pack-format/settlement.md), after every Core line: Packs in
+ * bundle order, lines in source order. Each acts on the player, skips when its `when` is false
+ * or its amount is zero or less, and journals what it moved. A cost is capped at the player's
+ * cash (money never goes below zero here, as with living costs and loan payments).
+ */
+function settleLines(world: World, idx: PackIndex): World {
+  let w = world;
+  for (const b of idx.bundles) {
+    for (const line of b.settlement ?? []) {
+      const player = getPerson(w, w.playerId);
+      if (!player.alive) return w;
+      const scope = {
+        subject: w.playerId,
+        purpose: `pack/${b.id}/settlement/${line.id}`,
+      };
+      if (!evalBool(line.when, w, idx, scope)) continue;
+      const amount = evalInt(line.amount, w, idx, scope);
+      if (amount <= 0) continue;
+      if (line.kind === "income") {
+        w = addMoney(w, w.playerId, amount);
+        w = addJournalLine(
+          w,
+          player.age,
+          `${line.label}: you received ${formatMoney(amount, idx.currency)}.`,
+        );
+        continue;
+      }
+      const paid = Math.min(amount, Math.max(0, player.money));
+      w = addMoney(w, w.playerId, -paid);
+      w = addJournalLine(
+        w,
+        player.age,
+        paid < amount
+          ? `${line.label}: you could only pay ${formatMoney(paid, idx.currency)} of ${formatMoney(amount, idx.currency)}.`
+          : `${line.label}: you paid ${formatMoney(amount, idx.currency)}.`,
+      );
+    }
+  }
   return w;
 }
 

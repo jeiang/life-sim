@@ -26,6 +26,7 @@ import type {
   QualityDecl,
   ReadableDecl,
   RepeatCurve,
+  SettlementLine,
   StatDecl,
   StateDecl,
 } from "@life/core";
@@ -1459,6 +1460,7 @@ class PackCompiler {
       ...(m.living ? { living: this.living(m.living) } : {}),
       ...(m.npc_careers ? { npcCareers: this.npcCareers(m.npc_careers) } : {}),
       ...(m.hooks ? { hooks: this.hooks(m.hooks) } : {}),
+      ...(m.settlement ? { settlement: this.settlement(m.settlement) } : {}),
       migrations,
       ...bundle,
     };
@@ -2347,6 +2349,37 @@ class PackCompiler {
           "on_milestone",
         );
       out.on_milestone = byId;
+    }
+    return out;
+  }
+
+  /** Settlement lines of the manifest (docs/spec/pack-format/settlement.md): player-scope amounts and conditions. */
+  private settlement(
+    lines: NonNullable<Manifest["settlement"]>,
+  ): SettlementLine[] {
+    const out: SettlementLine[] = [];
+    const seen = new Set<string>();
+    for (const [i, l] of lines.entries()) {
+      if (seen.has(l.id))
+        this.err(
+          ["settlement", i, "id"],
+          `duplicate settlement line '${l.id}'`,
+        );
+      seen.add(l.id);
+      const amount = this.expr(l.amount, "int", ["settlement", i, "amount"]);
+      const when =
+        l.when === undefined
+          ? undefined
+          : this.expr(l.when, "bool", ["settlement", i, "when"]);
+      if (amount === undefined || (l.when !== undefined && when === undefined))
+        continue;
+      out.push({
+        id: l.id,
+        kind: l.kind,
+        label: l.label,
+        amount,
+        ...(when !== undefined ? { when } : {}),
+      });
     }
     return out;
   }

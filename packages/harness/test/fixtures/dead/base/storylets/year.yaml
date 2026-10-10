@@ -1,0 +1,16 @@
+- id: calm-year
+  trigger: event
+  weight: 10
+  text: A quiet year.
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: never-year
+  trigger: event
+  weight: 10
+  when: age >= 200
+  text: A year no life reaches.
+  outcomes:
+    - effects:
+        - stat.happiness += 1

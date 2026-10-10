@@ -23,6 +23,8 @@ export const MAX_HISTORY = 100;
 const MAX_PRICE = 10_000_000_000;
 /** Range of a yearly return, basis points. */
 const MIN_RETURN = -10000;
+/** Lowest return of a kind that cannot delist: its price never reaches the floor in one move. */
+const MIN_RETURN_LISTED = -9900;
 const MAX_RETURN = 500000;
 
 /** Cash value of `units` (x10^4) at `price` per whole unit, rounded down, without overflow. */
@@ -127,10 +129,11 @@ function drawReturn(
   if (m.beta && parentReturn !== undefined)
     r += Math.trunc((m.beta.factorBp * parentReturn) / 10000);
   if (m.crash && rng.chanceBp(m.crash.chanceBp)) r -= m.crash.dropBp;
-  r = Math.max(r, MIN_RETURN);
+  const min = m.delistBp === undefined ? MIN_RETURN_LISTED : MIN_RETURN;
+  r = Math.max(r, min);
   if (m.jump && rng.chanceBp(m.jump.chanceBp))
     r = (10000 + r) * m.jump.multiple - 10000;
-  return Math.min(Math.max(r, MIN_RETURN), MAX_RETURN);
+  return Math.min(Math.max(r, min), MAX_RETURN);
 }
 
 /** What happened to a market kind at one settlement, for the holders' journals. */
@@ -151,16 +154,28 @@ function step(
   const cur = s.prices[s.prices.length - 1] as number;
   let price = cur;
   let face = s.face;
+  if (cur === 0 && m.relistAfterYears !== undefined) {
+    let gone = 0;
+    while (gone < s.prices.length && s.prices[s.prices.length - 1 - gone] === 0)
+      gone++;
+    if (gone >= m.relistAfterYears) price = m.start;
+  }
   if (cur > 0) {
-    price = Math.max(
-      1,
-      Math.min(MAX_PRICE, Math.trunc((cur * (10000 + s.next)) / 10000)),
-    );
+    const moved = Math.trunc((cur * (10000 + s.next)) / 10000);
+    // A gain never rounds away to nothing, so a price at the floor can recover.
+    price = Math.min(MAX_PRICE, s.next > 0 && moved === cur ? cur + 1 : moved);
+    if (price < 1) {
+      if (m.delistBp === undefined) price = 1;
+      else {
+        price = 0;
+        events.push({ kindId, what: "delisted" });
+      }
+    }
     const rng = streamFor(world.seed, year, `market/${kindId}/event`, 0);
-    if (m.delistBp !== undefined && rng.chanceBp(m.delistBp)) {
+    if (price > 0 && m.delistBp !== undefined && rng.chanceBp(m.delistBp)) {
       price = 0;
       events.push({ kindId, what: "delisted" });
-    } else if (m.bond && rng.chanceBp(m.bond.defaultBp)) {
+    } else if (price > 0 && m.bond && rng.chanceBp(m.bond.defaultBp)) {
       const left = Math.trunc(
         ((face ?? 10000) * (10000 - m.bond.lossBp)) / 10000,
       );
@@ -357,8 +372,9 @@ export function removeHolding(
 }
 
 /**
- * Market part of settlement (after pay, before living costs): series move (delisting and bond
- * default are journaled for the player when they hold the kind), then every bond holding pays
+ * Market part of settlement (after pay, before living costs): series move (delisting writes
+ * every holding off to nothing; it and bond default are journaled for the player when they
+ * hold the kind), then every bond holding pays
  * its coupon and, at maturity, its remaining principal.
  */
 export function settleMarket(world: World, idx: PackIndex): World {
@@ -369,12 +385,17 @@ export function settleMarket(world: World, idx: PackIndex): World {
   const player = getPerson(w, w.playerId);
   for (const e of events) {
     const label = idx.markets.get(e.kindId)?.label ?? e.kindId;
-    if (!player.holdings.some((h) => h.kindId === e.kindId)) continue;
+    const playerHeld = player.holdings.some((h) => h.kindId === e.kindId);
+    if (e.what === "delisted")
+      for (const person of personsInIdOrder(w))
+        if (person.holdings.some((h) => h.kindId === e.kindId))
+          w = removeHolding(w, person.id, e.kindId);
+    if (!playerHeld) continue;
     w = addJournalLine(
       w,
       player.age,
       e.what === "delisted"
-        ? `${label} was delisted. Your holding is worth nothing now.`
+        ? `${label} was delisted. Your holding was written off.`
         : `The issuer of ${label} defaulted. Your bonds lost part of their principal.`,
     );
   }

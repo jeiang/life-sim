@@ -40,6 +40,8 @@ const STOCK = "mkt/stock";
 const PENNY = "mkt/penny";
 const BOND = "mkt/bond";
 const SHAKY = "mkt/shaky-bond";
+const DOOMED = "mkt/doomed";
+const DOOMED_LISTED = "mkt/doomed-listed";
 
 const rich = (money = 1_000_000, seed = 5): World => {
   const w = newLife(bundles, seed);
@@ -206,6 +208,8 @@ describe("trading", () => {
     expect(() => purchase(rich(), bundles, INDEX, "cash")).toThrow(RangeError);
     expect(listMarket(rich(), bundles).map((r) => r.id)).toEqual([
       BOND,
+      DOOMED,
+      DOOMED_LISTED,
       INDEX,
       PENNY,
       SHAKY,
@@ -227,7 +231,7 @@ describe("trading", () => {
     expect(call(later, "holding_years", INDEX)).toBe(5);
   });
 
-  test("a delisted kind prices at 0 for good and its holding can still be cleared", () => {
+  test("a delisted kind prices at 0, its holdings are written off and it leaves the market screen", () => {
     let w = trade(rich(), bundles, PENNY, 100_000).world;
     let delisted = false;
     for (let i = 0; i < 40 && !delisted; i++) {
@@ -237,11 +241,66 @@ describe("trading", () => {
     expect(delisted).toBe(true);
     expect(w.market[PENNY]?.next).toBe(0);
     expect(years(w, 2).market[PENNY]?.prices.at(-1)).toBe(0);
-    const cash = me(w).money;
-    expect(() => trade(w, bundles, PENNY, 100)).toThrow(/afford/);
-    w = trade(w, bundles, PENNY, -1).world;
     expect(held(w, PENNY)).toBeUndefined();
-    expect(me(w).money).toBe(cash);
+    expect(w.journal.flatMap((e) => e.lines).join("\n")).toContain(
+      "Penny stock was delisted. Your holding was written off.",
+    );
+    expect(listMarket(w, bundles).map((r) => r.id)).not.toContain(PENNY);
+    expect(() => trade(w, bundles, PENNY, 100)).toThrow(/afford/);
+  });
+
+  test("a price pushed to the floor by a -100% year delists a delistable kind", () => {
+    let w = trade(rich(), bundles, DOOMED_LISTED, 100_000).world;
+    expect(held(w, DOOMED_LISTED)).toBeDefined();
+    w = years(w, 1);
+    expect(price(w, DOOMED_LISTED)).toBe(0);
+    expect(held(w, DOOMED_LISTED)).toBeUndefined();
+    expect(listMarket(w, bundles).map((r) => r.id)).not.toContain(
+      DOOMED_LISTED,
+    );
+  });
+
+  test("a delisted kind with relist_after returns at its starting price", () => {
+    let w = years(trade(rich(), bundles, DOOMED_LISTED, 100_000).world, 1);
+    expect(price(w, DOOMED_LISTED)).toBe(0);
+    w = years(w, 1);
+    expect(price(w, DOOMED_LISTED)).toBe(0);
+    w = years(w, 1);
+    expect(price(w, DOOMED_LISTED)).toBe(10000);
+    expect(w.market[DOOMED_LISTED]?.next).not.toBe(0);
+    expect(listMarket(w, bundles).map((r) => r.id)).toContain(DOOMED_LISTED);
+    expect(held(w, DOOMED_LISTED)).toBeUndefined();
+  });
+
+  test("a kind without delist clamps its yearly move above -100%", () => {
+    const w = years(rich(), 1);
+    // -150% drift is clamped to -99%: 10000 -> 100, never the floor.
+    expect(price(w, DOOMED)).toBe(100);
+    expect(w.market[DOOMED]?.next).toBe(-9900);
+    expect(listMarket(w, bundles).map((r) => r.id)).toContain(DOOMED);
+  });
+
+  test("a price stuck at the floor recovers on a positive return", () => {
+    const w = rich();
+    const stuck: World = {
+      ...w,
+      market: {
+        ...w.market,
+        [INDEX]: { from: 0, prices: [1], next: 500 },
+      },
+    };
+    expect(price(years(stuck, 1), INDEX)).toBe(2);
+    const dead = years(
+      {
+        ...stuck,
+        market: {
+          ...stuck.market,
+          [INDEX]: { from: 0, prices: [1], next: -9900 },
+        },
+      },
+      1,
+    );
+    expect(price(dead, INDEX)).toBe(1);
   });
 });
 

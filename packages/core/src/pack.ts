@@ -249,8 +249,14 @@ export interface CompiledMarket {
   readonly crash?: { readonly chanceBp: number; readonly dropBp: number };
   /** Yearly chance the price is multiplied by `multiple` (a whole number, 2 or more). */
   readonly jump?: { readonly chanceBp: number; readonly multiple: number };
-  /** Yearly chance the issuer is delisted: the price falls to 0 for good. */
+  /**
+   * Makes the kind delistable: each year this chance rolls, and a price that would fall below
+   * 1 minor unit delists it too. A delisted kind's price is 0, holdings are written off and it
+   * leaves the market screen. Kinds without it clamp their yearly return above -100%.
+   */
   readonly delistBp?: number;
+  /** A delisted kind relists at `start` this many world years after delisting (needs `delistBp`). */
+  readonly relistAfterYears?: number;
   /** Government bond: fixed coupon on the principal, principal back at maturity, issuer default chance. */
   readonly bond?: {
     readonly termYears: number;

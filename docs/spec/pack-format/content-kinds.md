@@ -25,7 +25,8 @@ An item kind with a `market` block is traded by amount instead of bought (no `pr
     vol: 25%
     beta: { of: total-market, factor: 120% }   # adds 120% of that kind's return; no loops
     jump: { chance: 2%, multiple: 10 }          # optional: price x10
-    delist: 3%                                  # optional: price falls to 0 for good
+    delist: 3%                                  # optional: delistable (price 0, holdings written off)
+    relist_after: 5                             # optional, needs delist: back at `start` 5 years later
 - id: gov-bond-5
   label: Government bond (5 years)
   category: investments
@@ -37,6 +38,8 @@ An item kind with a `market` block is traded by amount instead of bought (no `pr
 ```
 
 Return of a year: `drift + vol x shock + factor x (return of beta.of)`, minus `crash.drop` when the crash rolls, then the price is multiplied by `jump.multiple` when the jump rolls. All of it is the stored forecast. At settlement the price applies the forecast, then `delist` and the bond `default` roll (not part of the forecast).
+
+**Price floor and delisting.** A price is never below 1 minor unit while listed, and a positive return always moves it by at least 1 so a price at the floor can recover. A kind with `delist` is delistable: its price falls to 0 when the `delist` chance rolls or when a move would take it below 1 minor unit (a -100% year). Delisting writes every holding off to nothing (units and cost gone, a journal line for the player), the kind leaves the market screen while nobody holds it, and buying it does nothing. With `relist_after: N` (1 to 99, needs `delist`) the kind relists at `start` N world years after delisting, as a fresh series. A kind without `delist` (index funds, bonds) cannot reach the floor in one move: its yearly return is clamped to -99% or more.
 
 **Government bonds** (`bond`): each settlement pays `coupon` on the remaining principal (`units x start`); the holding records its maturity (world year of the first purchase + `term`) and at maturity the principal is paid and the holding closes. A bond sells early at the market price. The issuer's yearly `default` chance is Pack data (a later country can set its own); a default takes `loss` (default 100%) off the remaining principal and the price, and coupons and principal follow the reduced figure. Buying more of a held bond keeps the first maturity.
 

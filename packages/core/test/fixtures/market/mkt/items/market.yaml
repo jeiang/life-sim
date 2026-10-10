@@ -39,3 +39,19 @@
     drift: 0%
     vol: 0%
     bond: { term: 10, coupon: 5%, default: 100%, loss: 40% }
+- id: doomed
+  label: Doomed index
+  category: investments
+  market:
+    start: 10000
+    drift: -150%
+    vol: 0%
+- id: doomed-listed
+  label: Doomed stock
+  category: investments
+  market:
+    start: 10000
+    drift: -150%
+    vol: 0%
+    delist: 0%
+    relist_after: 2

@@ -304,7 +304,7 @@ export const ManifestSchema = obj(
 );
 
 /**
- * `packs/<id>/migrations/<name>.yaml` (docs/spec/pack-format.md). One file per migration; its
+ * `packs/<id>/migrations/<name>.yaml` (docs/spec/pack-format/saves.md). One file per migration; its
  * id is `<pack>/<name>`. Saves record the ids they have applied. Lists are block lists, so
  * concurrent edits merge cleanly.
  */

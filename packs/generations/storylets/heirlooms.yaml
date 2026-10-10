@@ -4,7 +4,7 @@
 - id: heirloom-attic-find
   icon: 📦
   trigger: event
-  weight: 8
+  weight: 1
   when: "age >= 20 and age <= 60 and ((table.gen_heirloom.watch_held == 0 and table.gen_heirloom.watch_sold == 0) or (table.gen_heirloom.quilt_held == 0 and table.gen_heirloom.quilt_sold == 0) or (table.gen_heirloom.clock_held == 0 and table.gen_heirloom.clock_sold == 0) or (table.gen_heirloom.violin_held == 0 and table.gen_heirloom.violin_sold == 0) or (table.gen_heirloom.letters_held == 0 and table.gen_heirloom.letters_sold == 0))"
   max_per_life: 5
   text: Clearing out the attic, you find a dusty box with something older than you.
@@ -112,7 +112,7 @@
 - id: heirloom-appraisal
   icon: 💎
   trigger: event
-  weight: 6
+  weight: 2
   when: "table.gen_heirloom.watch_held == 1 or table.gen_heirloom.quilt_held == 1 or table.gen_heirloom.clock_held == 1 or table.gen_heirloom.violin_held == 1 or table.gen_heirloom.letters_held == 1"
   max_per_life: 5
   text: A local appraiser offers to look over one of the family pieces for free.

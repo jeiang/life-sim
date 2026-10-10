@@ -4,9 +4,8 @@ import { afterEach, describe, expect, test } from "vitest";
 import {
   addParentLink,
   addPerson,
-  allocId,
-  putAsset,
   ageUp,
+  allocId,
   type CounterDecl,
   cellValue,
   checkWorldState,
@@ -20,6 +19,7 @@ import {
   listActions,
   newLife,
   type PersonId,
+  putAsset,
   putRelationship,
   serializeWorld,
   startStorylet,
@@ -329,9 +329,9 @@ describe("aftermath", () => {
     const w = inherit(family({ kids: [30] }));
     const r = year(w);
     expect(r.world.storyletLog[G("aftermath-grief")]).toBeDefined();
-    expect(
-      Object.keys(r.world.state?._schedule ?? {}),
-    ).toContain(G("aftermath-anniversary"));
+    expect(Object.keys(r.world.state?._schedule ?? {})).toContain(
+      G("aftermath-anniversary"),
+    );
   });
 
   test("cash-left opens only when the dead player held cash", () => {
@@ -353,9 +353,7 @@ describe("aftermath", () => {
       qualities: {},
     });
     const w = inherit({ ...f, w: w0 });
-    expect(
-      year(w).world.storyletLog[G("aftermath-family-home")],
-    ).toBeDefined();
+    expect(year(w).world.storyletLog[G("aftermath-family-home")]).toBeDefined();
   });
 });
 

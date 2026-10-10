@@ -17,7 +17,7 @@
 ## heirloom-attic-find
 - trigger: event
 - icon: 📦
-- weight: 8
+- weight: 1
 - when: age >= 20 and age <= 60 and ((table.gen_heirloom.watch_held == 0 and table.gen_heirloom.watch_sold == 0) or (table.gen_heirloom.quilt_held == 0 and table.gen_heirloom.quilt_sold == 0) or (table.gen_heirloom.clock_held == 0 and table.gen_heirloom.clock_sold == 0) or (table.gen_heirloom.violin_held == 0 and table.gen_heirloom.violin_sold == 0) or (table.gen_heirloom.letters_held == 0 and table.gen_heirloom.letters_sold == 0))
 - max_per_life: 5
 - text: Clearing out the attic, you find a dusty box with something older than you.
@@ -89,7 +89,7 @@
 - when: (table.gen_heirloom.watch_passed >= 1 and table.gen_heirloom.watch_told == 0) or (table.gen_heirloom.quilt_passed >= 1 and table.gen_heirloom.quilt_told == 0) or (table.gen_heirloom.clock_passed >= 1 and table.gen_heirloom.clock_told == 0) or (table.gen_heirloom.violin_passed >= 1 and table.gen_heirloom.violin_told == 0) or (table.gen_heirloom.letters_passed >= 1 and table.gen_heirloom.letters_told == 0)
 - max_per_life: 5
 - text: At dinner, someone finally tells the story behind one of the family pieces.
-- opens: 0.1..0.3 per life
+- opens: 0..0.3 per life
 
 ### outcomes
 - outcome: 12
@@ -156,7 +156,7 @@
 ## heirloom-appraisal
 - trigger: event
 - icon: 💎
-- weight: 6
+- weight: 2
 - when: table.gen_heirloom.watch_held == 1 or table.gen_heirloom.quilt_held == 1 or table.gen_heirloom.clock_held == 1 or table.gen_heirloom.violin_held == 1 or table.gen_heirloom.letters_held == 1
 - max_per_life: 5
 - text: A local appraiser offers to look over one of the family pieces for free.

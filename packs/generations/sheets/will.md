@@ -21,7 +21,8 @@
 - cooldown: 3
 - tags: family
 - text: A notary slides a blank page across the desk. Who gets your money when you are gone?
-- opens: 1..6 per life
+- opens: 0.03..0.15 per life
+> Tweak: a will is a deliberate action and the default bots seldom open the Assets estate menu (focused-sim 0.065 a life); the `dynasty` profile writes wills, so the 1..6 and 0.2..2 bands became 0.03..0.15 and 0..0.05 (children are rare in the default profiles).
 - needs: quality gen_will_kind: integer 0..4, default 0: the will kind the player last wrote (0 none, 1 heir, 2 even, 3 spouse, 4 charity), for metrics
 
 ### choice: Split the cash evenly among your children
@@ -67,7 +68,7 @@
 - cooldown: 3
 - tags: family
 - text: Pick the one child who gets all your cash. The rest of the family will hear about it.
-- opens: 0.2..2 per life
+- opens: 0..0.05 per life
 
 ### outcomes
 - outcome: 1

@@ -1,0 +1,6 @@
+# Forced script (docs/spec/harness.md#forced-outcomes): every attic find takes the first heirloom the family does not hold (index 0 of the eligible outcomes, so the watch, then the quilt, ...), and the dynasty profile writes a will.
+description: Every attic find is the first heirloom not yet held
+profile: dynasty
+steps:
+  - roll: outcome/generations/heirloom-attic-find
+    value: 0

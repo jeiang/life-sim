@@ -6,9 +6,6 @@ currency:
 stats:
   - { id: happiness, label: Happiness, icon: 😀, start: [50, 100] }
   - { id: smarts, label: Smarts, start: [0, 100] }
-qualities:
-  - { id: years_worked, type: int, min: 0, default: 0 }
-  - { id: has_diploma, type: flag, default: false }
 exclusivity: [school, full-time]
 migrations:
   rename:

@@ -1,0 +1,5 @@
+- { id: chaos, type: flag, default: false }
+- { id: chain, type: flag, default: false }
+- { id: mortal, type: flag, default: false }
+- { id: licensed, type: flag, default: false }
+- { id: lucky, type: int, min: 0, max: 5, default: 0 }

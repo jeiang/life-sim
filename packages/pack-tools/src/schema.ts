@@ -1,5 +1,5 @@
 /**
- * TypeBox schemas for Pack source files (docs/spec/pack-format.md). The same objects are
+ * TypeBox schemas for Pack source files (docs/spec/pack-format/). The same objects are
  * exported as JSON Schema into `packages/pack-tools/schema/` for yaml-language-server.
  */
 import { type Static, type TSchema, Type } from "@sinclair/typebox";
@@ -103,7 +103,7 @@ const provided = (what: string, pattern: string) =>
   );
 
 /**
- * `packs/<id>/capabilities/<feature>.yaml` (docs/spec/pack-format.md). One file per feature;
+ * `packs/<id>/capabilities/<feature>.yaml` (docs/spec/pack-format/manifest.md). One file per feature;
  * lists are block lists, one entry per line, so concurrent edits merge cleanly.
  */
 export const CapabilitySchema = obj(
@@ -146,7 +146,6 @@ export const ManifestSchema = obj(
       }),
     ),
     stats: Type.Optional(Type.Array(StatSchema)),
-    qualities: Type.Optional(Type.Array(QualitySchema)),
     exclusivity: Type.Optional(Type.Array(Id)),
     repeat: Type.Optional(
       repeatCurve("Default diminishing-returns curve for repeatable actions"),
@@ -689,6 +688,7 @@ const list = (item: TSchema, title: string) =>
 export const FILE_SCHEMAS = {
   "pack.schema.json": ManifestSchema,
   "capability.schema.json": CapabilitySchema,
+  "qualities.schema.json": list(QualitySchema, "Qualities"),
   "storylets.schema.json": list(StoryletSchema, "Storylets"),
   "occupations.schema.json": list(OccupationSchema, "Occupation kinds"),
   "items.schema.json": list(ItemSchema, "Item kinds"),
@@ -707,3 +707,4 @@ export type LoanSrc = Static<typeof LoanSchema>;
 export type CitySrc = Static<typeof CitySchema>;
 export type StandardSrc = Static<typeof StandardSchema>;
 export type PeopleSrc = Static<typeof PeopleSchema>;
+export type Quality = Static<typeof QualitySchema>;

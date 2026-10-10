@@ -6,7 +6,7 @@ Decided in [Later Pack roadmap](https://github.com/jeiang/life-sim/issues/21). T
 
 - Each Pack is one backlog epic. The epic starts with its Core additions, built just in time (consistent with ADRs 0002 and 0004: new effects, functions, and primitives arrive as Core releases).
 - Each epic then opens with a short grilling session that fixes its content list (the Core loop spec is the model), followed by content authoring and balance passes with the [harness](harness.md).
-- A Pack declares its dependencies in its manifest and only adds content ([Pack format](pack-format.md#composition)).
+- A Pack declares its dependencies in its manifest and only adds content ([Pack format](pack-format/manifest.md#composition)).
 
 ## Order
 

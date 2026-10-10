@@ -53,6 +53,8 @@ import {
   type OccupationSrc,
   PeopleSchema,
   type PeopleSrc,
+  type Quality,
+  QualitySchema,
   StandardSchema,
   type StandardSrc,
   StoryletSchema,
@@ -128,8 +130,17 @@ interface LoadedPack {
   dir: string;
   manifest: Manifest;
   manifestSrc: Source;
+  /** Declared by `qualities/*.yaml`, in file order. */
+  qualities: LoadedQuality[];
   items: LoadedItem[];
   capabilities: LoadedCapability[];
+}
+
+/** One quality declaration and where it was written, for diagnostics. */
+interface LoadedQuality {
+  decl: Quality;
+  src: Source;
+  index: number;
 }
 
 /** One `capabilities/<feature>.yaml`; its id is `<pack>/<feature>`. */
@@ -237,8 +248,16 @@ const PLAYER_NAMES: Record<string, ExprType> = {
   ...pronounNames("player"),
 };
 
-export function compilePacks(packsDir: string): CompileOutput {
-  return new Compiler(packsDir).run();
+export interface CompileOptions {
+  /** Compile only these Packs and the Packs their capabilities require, transitively. */
+  readonly only?: readonly string[];
+}
+
+export function compilePacks(
+  packsDir: string,
+  options: CompileOptions = {},
+): CompileOutput {
+  return new Compiler(packsDir, options.only).run();
 }
 
 class Compiler {
@@ -250,12 +269,15 @@ class Compiler {
   readonly ids = new Map<string, string[]>();
 
   readonly packsDir: string;
-  constructor(packsDir: string) {
+  readonly only: readonly string[] | undefined;
+  constructor(packsDir: string, only?: readonly string[]) {
     this.packsDir = packsDir;
+    this.only = only;
   }
 
   run(): CompileOutput {
     this.load();
+    this.restrict();
     this.checkCapabilities();
     this.checkCrossPackDeclarations();
     const order = this.order();
@@ -282,6 +304,32 @@ class Compiler {
       credits: buildCredits(twemoji, authors),
       ids: this.ids,
     };
+  }
+
+  /** Drop every Pack outside the `only` selection and its required closure. */
+  private restrict(): void {
+    if (this.only === undefined) return;
+    for (const id of this.only)
+      if (!this.packs.has(id))
+        this.diags.push({
+          file: this.packsDir,
+          path: "",
+          message: `only: no Pack '${id}'`,
+        });
+    const keep = new Set<string>();
+    const visit = (id: string): void => {
+      const pack = this.packs.get(id);
+      if (!pack || keep.has(id)) return;
+      keep.add(id);
+      for (const cap of pack.capabilities)
+        for (const req of cap.requires) visit(req.slice(0, req.indexOf("/")));
+    };
+    for (const id of this.only) visit(id);
+    for (const id of [...this.packs.keys()])
+      if (!keep.has(id)) {
+        this.packs.delete(id);
+        this.index.delete(id);
+      }
   }
 
   diag(
@@ -348,6 +396,18 @@ class Compiler {
     const file = this.rel(d, "pack.yaml");
     const src = parseYaml(file, readFileSync(manifestFile, "utf8"), this.diags);
     if (!src) return;
+    if (
+      src.value !== null &&
+      typeof src.value === "object" &&
+      "qualities" in src.value
+    ) {
+      this.diag(
+        src,
+        ["qualities"],
+        `'qualities' is no longer allowed in pack.yaml; move the list into ${d}/qualities/<topic>.yaml`,
+      );
+      return;
+    }
     if (!validate(src, ManifestSchema, src.value, [], this.diags)) return;
     const manifest = src.value as Manifest;
     if (manifest.id !== d) {
@@ -416,6 +476,7 @@ class Compiler {
         });
       }
     }
+    const qualities = this.loadQualities(d, dir);
     const capabilities = this.loadCapabilities(d, dir);
     // Stat and quality ids share the expression namespace `stat.<id>` / `quality.<id>`.
     const idx = new Map<string, Kind>();
@@ -426,9 +487,68 @@ class Compiler {
       dir,
       manifest,
       manifestSrc: src,
+      qualities,
       items,
       capabilities,
     });
+  }
+
+  /** `qualities/<topic>.yaml`: a list of quality declarations, merged across files like `storylets/*.yaml`. */
+  private loadQualities(d: string, dir: string): LoadedQuality[] {
+    const out: LoadedQuality[] = [];
+    const seen = new Map<string, string>();
+    const qDir = join(dir, "qualities");
+    for (const f of this.listYaml(qDir)) {
+      const file = this.rel(d, "qualities", f);
+      const src = parseYaml(
+        file,
+        readFileSync(join(qDir, f), "utf8"),
+        this.diags,
+      );
+      if (!src || src.value === null || src.value === undefined) continue;
+      if (!Array.isArray(src.value)) {
+        this.diag(
+          src,
+          [],
+          "a qualities file must be a list of quality declarations",
+        );
+        continue;
+      }
+      src.value.forEach((raw: unknown, i: number) => {
+        const id = (raw as { id?: unknown } | null)?.id;
+        const label = (p: Path): string =>
+          `${typeof id === "string" ? id : `[${i}]`}${p.length > 1 ? `.${formatPath(p.slice(1))}` : ""}`;
+        if (!validate(src, QualitySchema, raw, [i], this.diags, label)) return;
+        const q = raw as Quality;
+        const prev = seen.get(q.id);
+        if (prev) {
+          this.diag(
+            src,
+            [i, "id"],
+            `duplicate quality '${q.id}' (already defined in ${prev})`,
+            q.id,
+          );
+          return;
+        }
+        seen.set(q.id, file);
+        if (q.type === "int") {
+          if (q.min !== undefined && q.max !== undefined && q.min > q.max)
+            this.diag(src, [i], "min exceeds max", q.id);
+          if (
+            (q.min !== undefined && q.default < q.min) ||
+            (q.max !== undefined && q.default > q.max)
+          )
+            this.diag(
+              src,
+              [i, "default"],
+              "default is outside min/max",
+              `${q.id}.default`,
+            );
+        }
+        out.push({ decl: q, src, index: i });
+      });
+    }
+    return out;
   }
 
   private loadCapabilities(d: string, dir: string): LoadedCapability[] {
@@ -519,7 +639,7 @@ class Compiler {
     if (key === "stats")
       return (pack.manifest.stats ?? []).some((s) => s.id === name);
     if (key === "qualities")
-      return (pack.manifest.qualities ?? []).some((q) => q.id === name);
+      return pack.qualities.some((q) => q.decl.id === name);
     if (key === "groups")
       return (pack.manifest.exclusivity ?? []).includes(name);
     const kind = this.index.get(pack.id)?.get(`${pack.id}/${name}`);
@@ -546,13 +666,25 @@ class Compiler {
         ["stat", "stats"],
         ["quality", "qualities"],
       ] as const) {
-        for (const [i, d] of (pack.manifest[key] ?? []).entries()) {
+        const decls =
+          key === "stats"
+            ? (pack.manifest.stats ?? []).map((d, i) => ({
+                d,
+                src: pack.manifestSrc,
+                at: [key, i, "id"] as Path,
+              }))
+            : pack.qualities.map((q) => ({
+                d: q.decl,
+                src: q.src,
+                at: [q.index, "id"] as Path,
+              }));
+        for (const { d, src, at } of decls) {
           const first = owner.get(`${kind}.${d.id}`);
           if (first === undefined) owner.set(`${kind}.${d.id}`, id);
           else if (first !== id)
             this.diag(
-              pack.manifestSrc,
-              [key, i, "id"],
+              src,
+              at,
               `${kind} '${d.id}' is declared by both Pack '${first}' and Pack '${id}'; prefix Pack-specific ids with the Pack name`,
             );
         }
@@ -620,7 +752,8 @@ class PackCompiler {
    * Add stat/quality/exclusivity declarations of this Pack (all of them, `only` undefined)
    * or those another Pack exports through a capability this Pack requires.
    */
-  private addDecls(m: Manifest, only?: Capability["provides"]): void {
+  private addDecls(pack: LoadedPack, only?: Capability["provides"]): void {
+    const m = pack.manifest;
     const has = (key: "stats" | "qualities" | "groups", id: string) =>
       only === undefined || (only[key] ?? []).includes(id);
     for (const s of m.stats ?? []) {
@@ -629,7 +762,7 @@ class PackCompiler {
       this.declared.add(`stat.${s.id}`);
       this.statIds.add(s.id);
     }
-    for (const q of m.qualities ?? []) {
+    for (const { decl: q } of pack.qualities) {
       if (!has("qualities", q.id)) continue;
       this.baseNames[`quality.${q.id}`] = q.type === "flag" ? "bool" : "int";
       this.declared.add(`quality.${q.id}`);
@@ -642,12 +775,12 @@ class PackCompiler {
     const { pack, c } = this;
     const m = pack.manifest;
     // Declarations: own Pack, then what required capabilities export.
-    this.addDecls(m);
+    this.addDecls(pack);
     this.checkDeclarations(m);
     for (const req of [...this.required].sort()) {
       const cap = c.capabilities.get(req);
       const dp = cap && c.packs.get(cap.pack);
-      if (cap && dp && dp !== pack) this.addDecls(dp.manifest, cap.provides);
+      if (cap && dp && dp !== pack) this.addDecls(dp, cap.provides);
     }
 
     const bundle = {
@@ -708,9 +841,9 @@ class PackCompiler {
         : {}),
       start: s.start as [number, number],
     }));
-    const qualities = (m.qualities ?? []).map((q) => ({
-      ...q,
-    })) as QualityDecl[];
+    const qualities = this.pack.qualities.map(
+      (q) => ({ ...q.decl }) as QualityDecl,
+    );
     const migrations = this.migrations(m);
     this.idLock(m, migrations);
     return {
@@ -850,20 +983,6 @@ class PackCompiler {
       seen.add(`stat.${s.id}`);
       if (s.start[0] > s.start[1])
         this.err(["stats", i, "start"], "start range minimum exceeds maximum");
-    }
-    for (const [i, q] of (m.qualities ?? []).entries()) {
-      if (seen.has(`quality.${q.id}`))
-        this.err(["qualities", i, "id"], `duplicate quality '${q.id}'`);
-      seen.add(`quality.${q.id}`);
-      if (q.type === "int") {
-        if (q.min !== undefined && q.max !== undefined && q.min > q.max)
-          this.err(["qualities", i], "min exceeds max");
-        if (
-          (q.min !== undefined && q.default < q.min) ||
-          (q.max !== undefined && q.default > q.max)
-        )
-          this.err(["qualities", i, "default"], "default is outside min/max");
-      }
     }
     if (this.pack.id !== CORE_LOOP)
       for (const key of ["year", "family", "npc_careers"] as const)
@@ -1730,7 +1849,7 @@ class PackCompiler {
     for (const full of this.c.index.get(this.pack.id)?.keys() ?? [])
       ids.add(full);
     for (const s of m.stats ?? []) ids.add(`stat.${s.id}`);
-    for (const q of m.qualities ?? []) ids.add(`quality.${q.id}`);
+    for (const q of this.pack.qualities) ids.add(`quality.${q.decl.id}`);
     return ids;
   }
 

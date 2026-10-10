@@ -1,0 +1,3 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
+- { id: missed_payments, type: int, min: 0, default: 0 }
+- { id: family_wealth, type: int, min: 1, max: 5, default: 3 }

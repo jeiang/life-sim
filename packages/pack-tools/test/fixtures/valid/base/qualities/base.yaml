@@ -1,0 +1,2 @@
+- { id: years_worked, type: int, min: 0, default: 0 }
+- { id: has_diploma, type: flag, default: false }

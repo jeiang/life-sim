@@ -1,0 +1,45 @@
+# Pack format: expressions and effects
+
+The expression language, 18+ text variants and effect statements. Part of the [Pack format](index.md).
+
+## Expressions
+
+One small custom language is used for `when`, `weight`, `chance`, and effect statements (ADR 0004).
+
+- Literals: integers, percents (`2.5%`, compiled to basis points out of 10,000), strings, booleans, and content ids (`job/cashier`).
+- Operators: `+ - * /`, `mod` (modulo; `%` is used only by percent literals), comparisons, `and or not`, `in`, and the ternary `a ? b : c`.
+- Names (scope `person` also has `person.role` as a content id, `person.alive`, and the read-only `person.closeness`, the player's highest closeness to them across their role rows, 0 with no tie; bound people have `<name>.closeness` too): `age`, `money`, `uses_this_year` (storylets), `confined` (boolean, see [Confinement](content-kinds.md#confinement)), `stat.<id>`, `quality.<id>`, `loan.<field>` (`balance`, `payment`, `missed`) in storylets with `scope: loan`, and other scoped references inside storylets (for example `person.<field>` for a spawned person).
+- Functions: a fixed whitelist (for example `min`, `max`, `clamp`, `has`, `has_occupation`, `owns`, `years_in`, `in_group`, `years_in_group`, `has_remote_job()`: true while the player holds an occupation flagged `remote`, `role_closeness(role)`: average closeness to the living people the player holds that role toward, 0 with none (an aggregate over a role, unlike `person.closeness`, which reads one person); `count_role(role, min, max)`: living people the player holds that role toward with closeness in `[min, max]`, inclusive). No user-defined functions and no loops.
+- Group checks: `in_group(g)` is true while the player holds an occupation whose `group` is `g`; `years_in_group(g)` sums completed years over every occupation in `g`, held or ended (0 if none; an occupation ended within its first year adds 0). `g` must be an exclusivity group declared by the Pack or a dependency: a bare word (`in_group(school)`) or, for hyphenated names, a string (`in_group("full-time")`). There is no `end_group` effect and no `ends_groups` field; packs end occupations explicitly with `end_occupation`. Group names are not content ids, so the ids lock is unaffected.
+- `remote: true` on an occupation kind marks work that can be done from anywhere; `has_remote_job()` reads it (Relocation uses it to decide whether a move ends the job).
+- Person-scoped storylets that involve a romantic or age-sensitive tie guard on both sides of 18: `when: (age < 18) == (person.age < 18)`.
+- Integer-only. `/` truncates toward zero. A constant zero divisor is a build error. At runtime, division by zero gives 0 and overflow clamps to the safe-integer range. Dev builds and the balance harness assert on both.
+- No randomness inside expressions. Rolls happen only for `chance` and `weight`, and each roll site's RNG purpose key comes from the content id.
+
+### Text variants for 18+ mode
+
+`mature_text` on a storylet or an outcome, and `mature_label` on a choice, replace `text` / `label` in a life that began with the player's 18+ mode switch on. The switch is recorded in the life at its start (a leading `mature` choice log entry), never read live, so replay is unaffected by later changes to the setting. There is no `mature` expression name: using it in `when`, `weight`, `chance`, effects or a placeholder is a compile error ("unknown name 'mature'"). Variants take the same `{placeholders}` as the plain text.
+
+### Effect statements
+
+Each statement maps to one effect in the closed Core set (ADR 0002):
+
+```
+stat.<id> += n | -= n | = n          quality.<id> += n | = v
+money += n | -= n                    take_loan(loan-kind, principal)
+grant_asset(item-kind) | remove_asset(item-kind)
+start_occupation(kind) | end_occupation(kind)
+spawn_person(role, generator) as <name>
+relationship(<person>).closeness += n
+move_to(city)                        move_out()
+set_standard(standard)
+relationship(<person>).role = role   (replaces all the player's role rows toward them; keeps the highest closeness)
+move_in()                            merge_money()
+journal("text")                      die("cause")
+```
+
+A `kind: generator` item in `people/` sets `first_names` (a list used for every gender, or `{ male: [...], female: [...] }` pools where non-binary people draw from both), `last_names`, `age`, optional `stats`, and an optional `gender`: a fixed value (`gender: female`) or integer weights (`gender: { male: 1, female: 3 }`; omitted genders weigh 0; default male 1, female 1). A spawned person's gender is drawn from these weights and their first name from that gender's pool, so a Pack can spawn a person of a chosen gender.
+
+`person.money += n | -= n` (only in `scope: person`) changes that person's money, not the player's; no other `person.*` name can be assigned.
+
+`move_to(city)` puts the player in a city (family and everyone else stay); `move_in()` and `merge_money()` (in `scope: person`, bound to a partner) move a partner in and merge their money; `move_out()` ends living with parents (under 18 a guardian takes over instead) and picks the starting standard of living; `set_standard(standard)` chooses one (ignored with parents).

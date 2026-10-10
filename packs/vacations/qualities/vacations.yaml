@@ -1,0 +1,2 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
+- { id: vac_family_trip_age, type: int, min: 0, default: 0 }

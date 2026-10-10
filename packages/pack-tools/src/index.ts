@@ -1,4 +1,9 @@
-export { type CompileOutput, compilePacks, type IconUse } from "./compile.ts";
+export {
+  type CompileOptions,
+  type CompileOutput,
+  compilePacks,
+  type IconUse,
+} from "./compile.ts";
 export type { CreditEntry, CreditsManifest } from "./credits.ts";
 export { type Diagnostic, formatDiagnostic } from "./diagnostics.ts";
 export * from "./expr/index.ts";

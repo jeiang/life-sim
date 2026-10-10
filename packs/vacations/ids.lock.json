@@ -1,6 +1,5 @@
 {
   "pack": "vacations",
-  "version": 1,
   "ids": [
     "quality.vac_family_trip_age",
     "vacations/family-trip",

@@ -1,0 +1,3 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+requires:
+  - core-loop/stats

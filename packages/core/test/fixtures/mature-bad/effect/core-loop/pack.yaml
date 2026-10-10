@@ -1,6 +1,4 @@
 id: core-loop
-version: 1
-depends: [life]
 year:
   slots: [3, 3]
   cap: 4

@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+provides:
+  stats:
+    - happiness
+    - health
+    - smarts
+    - looks

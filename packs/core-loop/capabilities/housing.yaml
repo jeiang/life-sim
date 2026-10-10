@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+provides:
+  items:
+    - studio-condo
+    - house
+    - big-house
+    - used-bike
+    - used-car
+    - new-car
+  standards:
+    - homeless
+    - thrifty
+    - average
+    - above-average
+    - wealthy
+    - rich
+    - ultra-rich
+  loans:
+    - auto-loan
+    - mortgage

@@ -1,4 +1,4 @@
-import type { PackBundle } from "../pack.ts";
+import { type PackBundle, packRevision } from "../pack.ts";
 import { canonicalStringify, deserializeWorld } from "../state/serialize.ts";
 import type { Obituary, World } from "../state/types.ts";
 import { migrateSave, SAVE_SCHEMA_VERSION, SaveError } from "./migrate.ts";
@@ -174,7 +174,7 @@ export function validateImport(
     }
     const save = readSave(migrateSave(raw));
     if (bundles) {
-      const have = new Map(bundles.map((b) => [b.id, b.version]));
+      const have = new Map(bundles.map((b) => [b.id, packRevision(b)]));
       const needed = [
         ...save.packVersions,
         ...save.lives.flatMap((l) => l.world.packVersions),

@@ -12,7 +12,6 @@ import type { Diagnostic } from "./diagnostics.ts";
 export const LockSchema = Type.Object(
   {
     pack: Type.String(),
-    version: Type.Integer({ minimum: 1 }),
     ids: Type.Array(Type.String()),
   },
   { additionalProperties: false },
@@ -40,7 +39,7 @@ export function readLock(
     diags.push({
       file,
       path: "",
-      message: "lock must be { pack, version, ids[] }",
+      message: "lock must be { pack, ids[] }",
     });
     return undefined;
   }

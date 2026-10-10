@@ -1,4 +1,4 @@
-import type { FamilyDecl, PackBundle } from "../pack.ts";
+import { type FamilyDecl, type PackBundle, packRevision } from "../pack.ts";
 import type {
   ChoiceEntry,
   CustomStart,
@@ -83,7 +83,7 @@ export function newLife(
   };
   const packVersions = bundles.map((b) => ({
     id: b.id,
-    version: String(b.version),
+    version: String(packRevision(b)),
   }));
 
   // The player's name, stats and qualities.

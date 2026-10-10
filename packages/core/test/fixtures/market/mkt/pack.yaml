@@ -1,5 +1,4 @@
 id: mkt
-version: 1
 currency:
   symbol: "$"
   digits: 2

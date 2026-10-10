@@ -1,6 +1,4 @@
 id: core-loop
-version: 1
-depends: [base]
 year:
   slots: [1, 3]
   cap: 4

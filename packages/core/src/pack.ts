@@ -7,7 +7,7 @@ import type { Effect, Expr } from "./expr/index.ts";
 import type { Gender } from "./state/types.ts";
 
 /** Bundle format version; bump when the shape below changes incompatibly. */
-export const PACK_BUNDLE_FORMAT = 1;
+export const PACK_BUNDLE_FORMAT = 2;
 
 /** `twemoji:<codepoints>` (for example `twemoji:1f4bc`) or `gameicons:<author>/<name>`. */
 export type IconRef = string;
@@ -372,8 +372,12 @@ export interface NpcCareersDecl {
 export interface PackBundle {
   readonly format: typeof PACK_BUNDLE_FORMAT;
   readonly id: string;
-  readonly version: number;
+  /** Packs whose capabilities this Pack requires (derived from `requires`), sorted. */
   readonly depends: readonly string[];
+  /** Capability ids this Pack provides, one per `capabilities/<feature>.yaml`, sorted. */
+  readonly capabilities: readonly string[];
+  /** Capability ids (`<pack>/<feature>`) its features require, sorted. */
+  readonly requires: readonly string[];
   readonly currency?: { readonly symbol: string; readonly digits: number };
   readonly stats: readonly StatDecl[];
   readonly qualities: readonly QualityDecl[];
@@ -408,4 +412,16 @@ export interface PackBundle {
   readonly cities: readonly CompiledCity[];
   readonly standards: readonly CompiledStandard[];
   readonly people: readonly CompiledPeopleItem[];
+}
+
+/**
+ * Position of a Pack in its own migration history: the number of rename and removal entries.
+ * Saves record it (as `packVersions`) to tell which migrations they have not yet seen. Packs
+ * carry no integer version; this is replaced by applied migration ids with the save schema reset.
+ */
+export function packRevision(b: PackBundle): number {
+  return (
+    Object.keys(b.migrations.renamed).length +
+    Object.keys(b.migrations.removed).length
+  );
 }

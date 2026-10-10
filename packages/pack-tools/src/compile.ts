@@ -39,6 +39,8 @@ import { type CheckEnv, compileExpr } from "./expr/index.ts";
 import { resolveIcon } from "./icons.ts";
 import { readLock } from "./lock.ts";
 import {
+  type Capability,
+  CapabilitySchema,
   CitySchema,
   type CitySrc,
   ItemSchema,
@@ -127,7 +129,30 @@ interface LoadedPack {
   manifest: Manifest;
   manifestSrc: Source;
   items: LoadedItem[];
+  capabilities: LoadedCapability[];
 }
+
+/** One `capabilities/<feature>.yaml`; its id is `<pack>/<feature>`. */
+interface LoadedCapability {
+  id: string;
+  pack: string;
+  src: Source;
+  file: string;
+  provides: Capability["provides"] & object;
+  requires: readonly string[];
+}
+
+/** Which `provides` key exports which content kinds. */
+const PROVIDES_KINDS: Record<string, readonly Kind[]> = {
+  storylets: ["storylet"],
+  occupations: ["occupation"],
+  items: ["item", "market"],
+  loans: ["loan"],
+  cities: ["city"],
+  standards: ["standard"],
+  roles: ["role"],
+  generators: ["generator"],
+};
 
 interface LoadedItem {
   kind: Kind;
@@ -231,6 +256,7 @@ class Compiler {
 
   run(): CompileOutput {
     this.load();
+    this.checkCapabilities();
     this.checkCrossPackDeclarations();
     const order = this.order();
     const bundles: PackBundle[] = [];
@@ -390,6 +416,7 @@ class Compiler {
         });
       }
     }
+    const capabilities = this.loadCapabilities(d, dir);
     // Stat and quality ids share the expression namespace `stat.<id>` / `quality.<id>`.
     const idx = new Map<string, Kind>();
     for (const it of items) idx.set(`${manifest.id}/${it.id}`, it.kind);
@@ -400,7 +427,114 @@ class Compiler {
       manifest,
       manifestSrc: src,
       items,
+      capabilities,
     });
+  }
+
+  private loadCapabilities(d: string, dir: string): LoadedCapability[] {
+    const out: LoadedCapability[] = [];
+    const capDir = join(dir, "capabilities");
+    for (const f of this.listYaml(capDir)) {
+      const file = this.rel(d, "capabilities", f);
+      const stem = f.replace(/\.ya?ml$/, "");
+      if (!/^[a-z][a-z0-9_-]*$/.test(stem)) {
+        this.diags.push({
+          file,
+          path: "",
+          message: `capability file name '${stem}' must match ^[a-z][a-z0-9_-]*$`,
+        });
+        continue;
+      }
+      const src = parseYaml(
+        file,
+        readFileSync(join(capDir, f), "utf8"),
+        this.diags,
+        true,
+      );
+      if (!src) continue;
+      const value = src.value ?? {};
+      if (!validate(src, CapabilitySchema, value, [], this.diags)) continue;
+      out.push({
+        id: `${d}/${stem}`,
+        pack: d,
+        src,
+        file,
+        provides: (value as Capability).provides ?? {},
+        requires: (value as Capability).requires ?? [],
+      });
+    }
+    return out;
+  }
+
+  /** Capability id -> loaded capability, over every loaded Pack. */
+  readonly capabilities = new Map<string, LoadedCapability>();
+
+  /**
+   * Every `requires` names a capability some loaded Pack provides; every `provides` entry
+   * names something that Pack declares; no two features of a Pack export the same id.
+   */
+  private checkCapabilities(): void {
+    for (const pack of this.packs.values())
+      for (const cap of pack.capabilities) this.capabilities.set(cap.id, cap);
+    for (const id of [...this.packs.keys()].sort()) {
+      const pack = this.packs.get(id) as LoadedPack;
+      const exported = new Map<string, string>();
+      for (const cap of pack.capabilities) {
+        const at = (path: Path, message: string) =>
+          this.diag(cap.src, path, message, formatPath(path));
+        for (const [i, req] of cap.requires.entries()) {
+          if (this.capabilities.has(req)) continue;
+          const reqPack = req.slice(0, req.indexOf("/"));
+          at(
+            ["requires", i],
+            this.packs.has(reqPack)
+              ? `Pack '${id}' requires capability '${req}', but Pack '${reqPack}' has no capabilities/${req.slice(reqPack.length + 1)}.yaml`
+              : `Pack '${id}' requires capability '${req}', but no Pack '${reqPack}' is loaded`,
+          );
+        }
+        for (const [key, ids] of Object.entries(cap.provides)) {
+          for (const [i, name] of ((ids ?? []) as string[]).entries()) {
+            const slot = `${key}:${name}`;
+            const first = exported.get(slot);
+            if (first !== undefined)
+              at(
+                ["provides", key, i],
+                `${key} '${name}' is provided by both '${first}' and '${cap.id}'`,
+              );
+            exported.set(slot, cap.id);
+            if (key === "tags" || key === "milestones") continue;
+            if (!this.provided(pack, key, name))
+              at(
+                ["provides", key, i],
+                `'${cap.id}' provides ${key} '${name}', but Pack '${id}' declares none`,
+              );
+          }
+        }
+      }
+    }
+  }
+
+  /** Does `pack` declare `name` of the `provides` category `key`? */
+  private provided(pack: LoadedPack, key: string, name: string): boolean {
+    if (key === "stats")
+      return (pack.manifest.stats ?? []).some((s) => s.id === name);
+    if (key === "qualities")
+      return (pack.manifest.qualities ?? []).some((q) => q.id === name);
+    if (key === "groups")
+      return (pack.manifest.exclusivity ?? []).includes(name);
+    const kind = this.index.get(pack.id)?.get(`${pack.id}/${name}`);
+    return kind !== undefined && (PROVIDES_KINDS[key] ?? []).includes(kind);
+  }
+
+  /** Packs whose capabilities `pack` requires, excluding itself. */
+  requiredPacks(pack: LoadedPack): Set<string> {
+    const out = new Set<string>();
+    for (const cap of pack.capabilities)
+      for (const req of cap.requires) {
+        const p = req.slice(0, req.indexOf("/"));
+        if (p !== pack.id && this.packs.has(p)) out.add(p);
+      }
+    return out;
   }
 
   /** Stats and qualities are bare ids shared by every Pack, so two Packs may not declare the same one. */
@@ -426,7 +560,7 @@ class Compiler {
     }
   }
 
-  /** Topological order; reports unknown dependencies and cycles. */
+  /** Topological order over capability requirements; reports cycles. */
   private order(): string[] {
     const out: string[] = [];
     const state = new Map<string, 1 | 2>();
@@ -436,28 +570,15 @@ class Compiler {
         const pack = this.packs.get(id) as LoadedPack;
         this.diag(
           pack.manifestSrc,
-          ["depends"],
-          `dependency cycle: ${[...stack.slice(stack.indexOf(id)), id].join(" -> ")}`,
+          [],
+          `capability cycle between Packs: ${[...stack.slice(stack.indexOf(id)), id].join(" -> ")}`,
         );
         return;
       }
       state.set(id, 1);
       const pack = this.packs.get(id) as LoadedPack;
-      for (const [i, dep] of (pack.manifest.depends ?? []).entries()) {
-        if (dep === id) {
-          this.diag(
-            pack.manifestSrc,
-            ["depends", i],
-            "a Pack cannot depend on itself",
-          );
-        } else if (!this.packs.has(dep)) {
-          this.diag(
-            pack.manifestSrc,
-            ["depends", i],
-            `unknown dependency '${dep}': no such Pack in ${this.packsDir}`,
-          );
-        } else visit(dep, [...stack, id]);
-      }
+      for (const dep of [...this.requiredPacks(pack)].sort())
+        visit(dep, [...stack, id]);
       state.set(id, 2);
       out.push(id);
     };
@@ -469,7 +590,10 @@ class Compiler {
 type Names = Record<string, ExprType>;
 
 class PackCompiler {
+  /** Packs whose capabilities this Pack requires. */
   readonly depends: Set<string>;
+  /** Capabilities this Pack requires (every `requires` of its capability files). */
+  readonly required = new Set<string>();
   readonly baseNames: Names = { ...PLAYER_NAMES };
   readonly groups = new Set<string>();
   /** Declared stat and quality names usable as `stat.x`/`quality.x`. */
@@ -487,32 +611,43 @@ class PackCompiler {
     this.c = c;
     this.pack = pack;
     this.src = pack.manifestSrc;
-    this.depends = new Set(pack.manifest.depends ?? []);
+    this.depends = c.requiredPacks(pack);
+    for (const cap of pack.capabilities)
+      for (const req of cap.requires) this.required.add(req);
   }
 
-  /** Add stat/quality/exclusivity declarations of this Pack or a dependency. */
-  private addDecls(m: Manifest): void {
+  /**
+   * Add stat/quality/exclusivity declarations of this Pack (all of them, `only` undefined)
+   * or those another Pack exports through a capability this Pack requires.
+   */
+  private addDecls(m: Manifest, only?: Capability["provides"]): void {
+    const has = (key: "stats" | "qualities" | "groups", id: string) =>
+      only === undefined || (only[key] ?? []).includes(id);
     for (const s of m.stats ?? []) {
+      if (!has("stats", s.id)) continue;
       this.baseNames[`stat.${s.id}`] = "int";
       this.declared.add(`stat.${s.id}`);
       this.statIds.add(s.id);
     }
     for (const q of m.qualities ?? []) {
+      if (!has("qualities", q.id)) continue;
       this.baseNames[`quality.${q.id}`] = q.type === "flag" ? "bool" : "int";
       this.declared.add(`quality.${q.id}`);
     }
-    for (const g of m.exclusivity ?? []) this.groups.add(g);
+    for (const g of m.exclusivity ?? [])
+      if (has("groups", g)) this.groups.add(g);
   }
 
   compile(): PackBundle {
     const { pack, c } = this;
     const m = pack.manifest;
-    // Declarations: own Pack, then direct dependencies only.
+    // Declarations: own Pack, then what required capabilities export.
     this.addDecls(m);
     this.checkDeclarations(m);
-    for (const dep of this.depends) {
-      const dp = c.packs.get(dep);
-      if (dp) this.addDecls(dp.manifest);
+    for (const req of [...this.required].sort()) {
+      const cap = c.capabilities.get(req);
+      const dp = cap && c.packs.get(cap.pack);
+      if (cap && dp && dp !== pack) this.addDecls(dp.manifest, cap.provides);
     }
 
     const bundle = {
@@ -581,8 +716,9 @@ class PackCompiler {
     return {
       format: PACK_BUNDLE_FORMAT,
       id: pack.id,
-      version: m.version,
       depends: [...this.depends].sort(),
+      capabilities: pack.capabilities.map((x) => x.id).sort(),
+      requires: [...this.required].sort(),
       ...(m.currency ? { currency: m.currency } : {}),
       stats,
       qualities,
@@ -747,10 +883,6 @@ class PackCompiler {
             "decision slot probabilities must not increase",
           );
     }
-    for (const [i, dep] of (m.depends ?? []).entries()) {
-      if ((m.depends ?? []).indexOf(dep) !== i)
-        this.err(["depends", i], `duplicate dependency '${dep}'`);
-    }
   }
 
   // ---- errors, ids, icons, expressions -----------------------------------
@@ -780,7 +912,7 @@ class PackCompiler {
       if (this.c.packs.has(packId))
         this.err(
           path,
-          `'${raw}' refers to Pack '${packId}', which is not declared in depends`,
+          `'${raw}' refers to Pack '${packId}', but no capability of Pack '${this.pack.id}' requires one of its capabilities`,
         );
       else this.err(path, `dangling reference '${raw}': no Pack '${packId}'`);
       return undefined;
@@ -795,7 +927,32 @@ class PackCompiler {
       this.err(path, `'${raw}' is a ${kind}, expected ${kinds.join(" or ")}`);
       return undefined;
     }
+    if (packId !== this.pack.id && !this.exported(packId, full, kind)) {
+      this.err(
+        path,
+        `'${raw}' is not exported by any capability that Pack '${this.pack.id}' requires; require a '${packId}' capability that provides it`,
+      );
+      return undefined;
+    }
     return full;
+  }
+
+  /** Does a capability this Pack requires export content item `full` of kind `kind`? */
+  private exported(packId: string, full: string, kind: Kind): boolean {
+    const bare = full.slice(packId.length + 1);
+    for (const req of this.required) {
+      const cap = this.c.capabilities.get(req);
+      if (!cap || cap.pack !== packId) continue;
+      for (const [key, kinds] of Object.entries(PROVIDES_KINDS))
+        if (
+          kinds.includes(kind) &&
+          (
+            (cap.provides as Record<string, string[] | undefined>)[key] ?? []
+          ).includes(bare)
+        )
+          return true;
+    }
+    return false;
   }
 
   iconField(raw: string, path: Path): { icon?: string } {
@@ -1641,17 +1798,12 @@ class PackCompiler {
         path: "pack",
         message: `lock is for Pack '${lock.pack}'`,
       });
-    if (m.version < lock.version)
-      this.err(
-        ["version"],
-        `version ${m.version} is lower than the released version ${lock.version}`,
-      );
     for (const id of lock.ids) {
       if (current.has(id)) continue;
       if (id in mig.renamed || id in mig.removed) continue;
       this.err(
         ["migrations"],
-        `id '${id}' shipped in release v${lock.version} but is gone; add a rename or remove entry to 'migrations' in pack.yaml`,
+        `id '${id}' shipped in the last release but is gone; add a rename or remove entry to 'migrations' in pack.yaml`,
       );
     }
   }

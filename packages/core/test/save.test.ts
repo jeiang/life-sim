@@ -15,6 +15,7 @@ import {
   newLife,
   type Obituary,
   type PackBundle,
+  packRevision,
   parseSave,
   putAsset,
   SAVE_SCHEMA_VERSION,
@@ -46,7 +47,7 @@ function play(seed: number, years: number, picks: number[]): World {
 function fileOf(...worlds: World[]): SaveFile {
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
-    packVersions: [{ id: "life", version: "1" }],
+    packVersions: [{ id: "life", version: "0" }],
     lives: worlds.map((world, i) => ({
       id: `life-${i}`,
       name: `Life ${i}`,
@@ -116,8 +117,8 @@ describe("schema migrations", () => {
     expect(save.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(save.graveyard).toEqual([]);
     expect(save.packVersions).toEqual([
-      { id: "core-loop", version: "1" },
-      { id: "life", version: "1" },
+      { id: "core-loop", version: "0" },
+      { id: "life", version: "0" },
     ]);
     const mig = save.lives.map((l) => l.world)[0] as World;
     expect(mig.pending).toBeNull();
@@ -172,7 +173,6 @@ describe("pack migrations", () => {
   const base = bundles[0] as PackBundle;
   const next = (m: PackBundle["migrations"]): PackBundle => ({
     ...base,
-    version: base.version + 1,
     migrations: m,
   });
 
@@ -213,8 +213,8 @@ describe("pack migrations", () => {
       "life/new#7": { count: 1, lastAge: 4 },
     });
     expect(m.packVersions).toEqual([
-      { id: "core-loop", version: "1" },
-      { id: "life", version: String(b.version) },
+      { id: "core-loop", version: "0" },
+      { id: "life", version: String(packRevision(b)) },
     ]);
   });
 
@@ -232,7 +232,15 @@ describe("pack migrations", () => {
   });
 
   test("up-to-date saves are untouched and migration is idempotent", () => {
-    const w = worldWithContent();
+    const w0 = worldWithContent();
+    // Recorded at revision 1: the one rename below is already applied.
+    const w: World = {
+      ...w0,
+      packVersions: [
+        { id: "core-loop", version: "0" },
+        { id: "life", version: "1" },
+      ],
+    };
     const same = {
       ...base,
       migrations: { renamed: { "life/car": "life/auto" }, removed: {} },
@@ -275,7 +283,11 @@ describe("pack migrations", () => {
     ]);
     expect(m.graveyard[0]?.obituary.career[0]?.kindId).toBe("life/work");
     expect(m.packVersions.find((v) => v.id === "life")?.version).toBe(
-      String(base.version + 1),
+      String(
+        packRevision(
+          next({ renamed: { "life/job": "life/work" }, removed: {} }),
+        ),
+      ),
     );
   });
 });

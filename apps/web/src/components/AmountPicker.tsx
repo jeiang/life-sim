@@ -62,7 +62,7 @@ export function AmountPicker(props: {
       />
       <label class="mb-4 block text-sm">
         <span class="mb-1 block text-text-muted">
-          Amount ({min} to {max})
+          Amount ({fmt(min)} to {fmt(max)})
         </span>
         <input
           type="number"

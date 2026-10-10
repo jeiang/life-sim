@@ -438,6 +438,7 @@ test("the market screen buys and sells through the shared amount picker", async 
   await expect(page.getByTestId("holding")).toHaveText("You hold none.");
   await expect(page.getByRole("img", { name: /price by year/ })).toBeVisible();
   await page.getByRole("button", { name: "Buy", exact: true }).click();
+  await expect(dialog.getByText("Amount ($1.00 to $1,000.00)")).toBeVisible();
   await dialog.getByRole("spinbutton").fill("5000");
   await dialog.getByRole("button", { name: "Confirm" }).click();
   await expect(page.getByTestId("holding")).toContainText(

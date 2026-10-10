@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Grad medical career".
+
+- id: apply-residency
+  icon: 🩺
+  trigger: action
+  menu: activities/job-board
+  label: Apply for a medical residency
+  tags: [job, apply]
+  when: "quality.grad_degree_medical and quality.grad_licensed_medical and not in_group(school) and not in_group(\"full-time\") and not hiring_blocked"
+  cooldown: 1
+  text: Residency programs take new doctors every spring. You send applications across the country and wait by the phone.
+  outcomes:
+    - weight: "20 + stat.smarts / 2 + quality.grad_gpa / 4"
+      text: "A program director calls with an offer. You start as a resident doctor, and your first shift is tomorrow. {c1.first_name} {c1.last_name} starts the same week and shows you where the good coffee is."
+      effects:
+        - "start_occupation(grad-school/resident-doctor)"
+        - "schedule(grad-school/promote-attending, after: 3-3 years)"
+        - "spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1"
+        - relationship(c1).closeness += 10
+        - "quality.raise_bonus = 0"
+        - "quality.work_effort = 0"
+        - stat.happiness += 4
+        - "journal(\"Matched into a residency at age {age}.\")"
+    - weight: 60
+      text: No program calls back this year. The rejection emails are polite and very short.
+      effects:
+        - stat.happiness -= 3
+
+- id: promote-attending
+  icon: 🏥
+  trigger: event
+  tags: [job, promotion]
+  chance: 0%
+  when: "has_occupation(grad-school/resident-doctor) and years_in(grad-school/resident-doctor) >= 3"
+  text: Three years of thirty-hour weeks have left a mark. The chief of medicine calls you into the office.
+  outcomes:
+    - weight: 1
+      text: You are an attending now, with your name on a door and a long list of people who want your time.
+      effects:
+        - "start_occupation(grad-school/attending-doctor)"
+        - "quality.times_promoted += 1"
+        - "quality.raise_bonus = 0"
+        - "quality.work_effort = 0"
+        - stat.happiness += 6
+        - "journal(\"Promoted to attending doctor at age {age}.\")"
+
+- id: promote-chief
+  icon: 👑
+  trigger: event
+  tags: [job, promotion]
+  chance: 0.3%
+  when: "has_occupation(grad-school/attending-doctor) and years_in(grad-school/attending-doctor) >= 6"
+  once: true
+  text: The hospital board wants a new face at the top, and your name keeps coming up in the meetings.
+  outcomes:
+    - weight: 1
+      text: The board names you chief of medicine. The hospital is yours to run, along with every headache that comes with it.
+      effects:
+        - "start_occupation(grad-school/chief-of-medicine)"
+        - "quality.times_promoted += 1"
+        - "quality.raise_bonus = 0"
+        - "quality.work_effort = 0"
+        - stat.happiness += 8
+        - "journal(\"Named chief of medicine at age {age}.\")"
+
+- id: doctor-on-call-strain
+  icon: 🌙
+  trigger: event
+  tags: [job, health]
+  chance: 30%
+  when: "has_occupation(grad-school/resident-doctor) or has_occupation(grad-school/attending-doctor)"
+  text: The pager goes off at 3am, and the night shift has no end in sight.
+  outcomes:
+    - weight: 50
+      text: A run of thirty-hour shifts leaves you running on vending machine coffee and bad decisions.
+      effects:
+        - stat.happiness -= 3
+    - weight: 35
+      text: A patient you pulled through sends a handwritten card, and the ward feels a little less grim for a week.
+      effects:
+        - stat.happiness += 3
+    - weight: 15
+      text: The third night in a row ends with a death you could not prevent. The drive home is a blur.
+      effects:
+        - stat.happiness -= 6

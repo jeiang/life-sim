@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
+# Current program: 0 none, 1 medical, 2 law, 3 MBA, 4 PhD.
+- { id: grad_program, type: int, min: 0, max: 4, default: 0 }
+# Yearly tuition of the current program in cents, fixed at enrolment.
+- { id: grad_tuition, type: int, min: 0, default: 0, format: money }
+# Scholarship percent of the current program: 0 none, 50 partial, 100 full.
+- { id: grad_scholarship, type: int, min: 0, max: 100, default: 0 }
+# Share of the tuition (after the scholarship) the parents pay: 0, 50 or 100.
+- { id: grad_parents, type: int, min: 0, max: 100, default: 0 }
+# True while the player's share of tuition is borrowed instead of paid in cash.
+- { id: grad_loan, type: flag, default: false }
+# Borrowed tuition of the current program in cents, converted into a grad-loan when the program ends.
+- { id: grad_debt, type: int, min: 0, default: 0, format: money }
+# Grades: set at enrolment from smarts, moved by the yearly review and by studying. Kept after the program ends (residency match).
+- { id: grad_gpa, type: int, min: 0, max: 100, default: 0 }
+# Cheated on a licensing exam; read and cleared by the dishonesty case.
+- { id: grad_cheated, type: flag, default: false }
+# Degrees, one per school per life.
+- { id: grad_degree_medical, type: flag, default: false }
+- { id: grad_degree_law, type: flag, default: false }
+- { id: grad_degree_mba, type: flag, default: false }
+- { id: grad_degree_phd, type: flag, default: false }
+# Exam preparation, raised by studying for a licensing exam and spent by every sitting.
+- { id: grad_prep, type: int, min: 0, max: 5, default: 0 }
+- { id: grad_licensed_medical, type: flag, default: false }
+- { id: grad_licensed_law, type: flag, default: false }
+# The judge offer is made at most once per life.
+- { id: grad_judge_offered, type: flag, default: false }
+# Rejected applications (any school); the schools stop looking at a player after two.
+- { id: grad_rejections, type: int, min: 0, max: 9, default: 0 }

@@ -1,0 +1,22 @@
+# Harness profiles of the Grad School Pack; the schema is docs/spec/harness.md#simulated-player-profiles.
+profiles:
+  scholar:
+    default: false
+    description: Applies to every grad school it qualifies for, studies, sits and prepares for its licensing exams, asks the parents for tuition help, and takes the career offers; never cheats
+    moves: 3
+    once_per_year: true
+    choice:
+      prefer: [accept*, yes*, take*, sit it straight*, keep paying*, ask your parents*]
+      avoid: ["cheat*"]
+    rules:
+      - when: { age_at_least: 65 }
+        ids: ["*/retire"]
+        pick: first
+      - ids: ["grad-school/sit-*", "grad-school/grad-exam-prep"]
+      - ids: ["grad-school/apply-residency", "grad-school/apply-associate-lawyer", "grad-school/apply-business-manager", "grad-school/apply-postdoc"]
+      - ids: ["grad-school/apply-medical-school", "grad-school/apply-law-school", "grad-school/apply-mba", "grad-school/apply-phd"]
+      - ids: ["grad-school/ask-parents-tuition", "grad-school/study-grad"]
+      - ids: ["*/enrol-*", "*/study-harder"]
+# A studious player is not a grad student by default: 15-30% of studious lives enter grad school (#229).
+adjust:
+  - { profile: studious, ids: ["grad-school/apply-*"], weight: 0.05 }

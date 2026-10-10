@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
+id: grad-school
+namespace: grad
+# Tuition runs through the yearly hook (before settlement, while the school stage is still held):
+# a player who cannot cover the year in cash is moved onto the graduate loan, and every loan year
+# adds the tuition due to `grad_debt`, which converts into a grad-loan at graduation or drop-out.
+hooks:
+  on_age_up_pre:
+    - quality.grad_loan = quality.grad_loan or (grad_tuition_due > 0 and grad_enrolled and money < grad_tuition_due)
+    - quality.grad_debt += grad_debt_accrual

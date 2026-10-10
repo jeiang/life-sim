@@ -1,0 +1,8 @@
+# Forced script (docs/spec/harness.md#forced-outcomes): every medical school application is accepted and the boards are passed.
+description: A scholar gets into medical school and passes the boards
+profile: scholar
+steps:
+  - roll: outcome/grad-school/apply-medical-school
+    value: 0
+  - roll: outcome/grad-school/sit-medical-boards
+    value: 0

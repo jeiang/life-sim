@@ -1,0 +1,165 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Grad programs".
+
+- id: grad-year-review
+  icon: 📚
+  trigger: event
+  chance: 0%
+  when: "grad_enrolled"
+  text: The year-end transcript lands in your mailbox. Time to see how you really did.
+  outcomes:
+    - weight: 10 + stat.smarts / 2
+      text: Your professors start learning your name. Top marks this year.
+      effects:
+        - "quality.grad_gpa += 5"
+        - "schedule(grad-school/grad-year-review, after: 1-1 years)"
+    - weight: 50
+      text: A solid year of B minuses. Nobody is writing letters for you yet.
+      effects:
+        - "quality.grad_gpa += 1"
+        - "schedule(grad-school/grad-year-review, after: 1-1 years)"
+    - weight: 60 - stat.smarts / 2
+      text: Your transcript reads like a cry for help. Your grades slide badly.
+      effects:
+        - "quality.grad_gpa += 0 - 6"
+        - "schedule(grad-school/grad-year-review, after: 1-1 years)"
+
+- id: graduate-medical-school
+  icon: 🩺
+  trigger: event
+  chance: 0%
+  when: "quality.grad_program == 1 and not in_group(school)"
+  text: The last rotation ends and the hospital hands you a diploma. Your mother cries first.
+  outcomes:
+    - weight: 1
+      text: You finish the rotations and the faculty signs off on your degree.
+      effects:
+        - "take_loan(grad-school/grad-loan, quality.grad_debt)"
+        - "money -= quality.grad_debt"
+        - "quality.grad_degree_medical = true"
+        - "reach_milestone(grad_medical_graduated)"
+        - stat.happiness += 6
+        - "quality.grad_program = 0"
+        - "quality.grad_tuition = 0"
+        - "quality.grad_scholarship = 0"
+        - "quality.grad_parents = 0"
+        - "quality.grad_loan = false"
+        - "quality.grad_debt = 0"
+        - "journal(\"Graduated from medical school at age {age}.\")"
+
+- id: graduate-law-school
+  icon: ⚖️
+  trigger: event
+  chance: 0%
+  when: "quality.grad_program == 2 and not in_group(school)"
+  text: The last exam is done. The bar results are weeks away, but the degree is yours.
+  outcomes:
+    - weight: 1
+      text: You turn in your last brief and the registrar confirms your degree.
+      effects:
+        - "take_loan(grad-school/grad-loan, quality.grad_debt)"
+        - "money -= quality.grad_debt"
+        - "quality.grad_degree_law = true"
+        - "reach_milestone(grad_law_graduated)"
+        - stat.happiness += 6
+        - "quality.grad_program = 0"
+        - "quality.grad_tuition = 0"
+        - "quality.grad_scholarship = 0"
+        - "quality.grad_parents = 0"
+        - "quality.grad_loan = false"
+        - "quality.grad_debt = 0"
+        - "journal(\"Graduated from law school at age {age}.\")"
+
+- id: graduate-mba-program
+  icon: 💼
+  trigger: event
+  chance: 0%
+  when: "quality.grad_program == 3 and not in_group(school)"
+  text: You present your capstone to a room of executives. They applaud, and they hand you a diploma.
+  outcomes:
+    - weight: 1
+      text: The capstone goes well enough. The degree is official.
+      effects:
+        - "take_loan(grad-school/grad-loan, quality.grad_debt)"
+        - "money -= quality.grad_debt"
+        - "quality.grad_degree_mba = true"
+        - "reach_milestone(grad_mba_graduated)"
+        - stat.happiness += 6
+        - "quality.grad_program = 0"
+        - "quality.grad_tuition = 0"
+        - "quality.grad_scholarship = 0"
+        - "quality.grad_parents = 0"
+        - "quality.grad_loan = false"
+        - "quality.grad_debt = 0"
+        - "journal(\"Graduated from mba school at age {age}.\")"
+
+- id: graduate-phd-program
+  icon: 🎓
+  trigger: event
+  chance: 0%
+  when: "quality.grad_program == 4 and not in_group(school)"
+  text: Your dissertation survives the defense with only minor corrections. You are now a doctor of philosophy.
+  outcomes:
+    - weight: 1
+      text: The committee signs the last form and the degree is yours.
+      effects:
+        - "take_loan(grad-school/grad-loan, quality.grad_debt)"
+        - "money -= quality.grad_debt"
+        - "quality.grad_degree_phd = true"
+        - "reach_milestone(grad_phd_graduated)"
+        - stat.happiness += 6
+        - "quality.grad_program = 0"
+        - "quality.grad_tuition = 0"
+        - "quality.grad_scholarship = 0"
+        - "quality.grad_parents = 0"
+        - "quality.grad_loan = false"
+        - "quality.grad_debt = 0"
+        - "journal(\"Graduated from phd school at age {age}.\")"
+
+- id: study-grad
+  icon: 📖
+  trigger: action
+  menu: occupation
+  label: Hit the books for your program
+  when: "grad_enrolled"
+  cooldown: 1
+  text: You settle in for another stretch of reading and problem sets.
+  outcomes:
+    - weight: 60
+      text: You live in the library until it closes, and the notes start to make sense.
+      effects:
+        - "quality.grad_gpa += 4"
+    - weight: 40
+      text: You cram all night and forget to eat. The grades go up, and so does the stress.
+      effects:
+        - "quality.grad_gpa += 3"
+        - stat.health -= 2
+
+- id: drop-out-grad
+  icon: 🚪
+  trigger: action
+  menu: occupation
+  label: Drop out of grad school
+  when: "grad_enrolled"
+  text: You stop going to class, then stop answering the emails. The school quietly stops waiting for you.
+  outcomes:
+    - weight: 1
+      text: You leave without a degree. The loan paperwork arrives a few weeks later.
+      effects:
+        - "end_group(school)"
+        - unschedule(grad-school/grad-year-review)
+        - unschedule(grad-school/grad-scholarship-review)
+        - unschedule(grad-school/graduate-medical-school)
+        - unschedule(grad-school/graduate-law-school)
+        - unschedule(grad-school/graduate-mba-program)
+        - unschedule(grad-school/graduate-phd-program)
+        - "take_loan(grad-school/grad-loan, quality.grad_debt)"
+        - "money -= quality.grad_debt"
+        - stat.happiness -= 4
+        - "quality.grad_program = 0"
+        - "quality.grad_tuition = 0"
+        - "quality.grad_scholarship = 0"
+        - "quality.grad_parents = 0"
+        - "quality.grad_loan = false"
+        - "quality.grad_debt = 0"
+        - "journal(\"Dropped out of grad school at age {age}.\")"

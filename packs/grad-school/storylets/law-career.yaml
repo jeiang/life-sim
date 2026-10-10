@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Grad school law career".
+
+- id: apply-associate-lawyer
+  icon: 📄
+  trigger: action
+  menu: activities/job-board
+  label: Apply as an associate lawyer
+  tags: [job, apply]
+  when: "quality.grad_degree_law and quality.grad_licensed_law and not in_group(school) and not in_group(\"full-time\") and not hiring_blocked"
+  cooldown: 1
+  text: A mid-sized law firm is taking applications for associates.
+  outcomes:
+    - weight: 3
+      text: The partners like your moot court answers and offer you an associate's chair.
+      effects:
+        - "start_occupation(grad-school/associate-lawyer)"
+        - "spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1"
+        - "schedule(grad-school/partner-track, after: 4-4 years)"
+        - "journal(\"You start as an associate at a law firm.\")"
+    - weight: 1
+      text: They go with a candidate who clerked for a federal judge. Maybe next year.
+
+- id: partner-track
+  icon: ⚖️
+  trigger: event
+  tags: [job, promotion]
+  chance: 0%
+  when: "has_occupation(grad-school/associate-lawyer) and years_in(grad-school/associate-lawyer) >= 4"
+  text: "The managing partner calls {player.first_name} into a corner office."
+  outcomes:
+    - weight: 1
+      text: You make partner, and the letterhead gets your name.
+      effects:
+        - "start_occupation(grad-school/partner-lawyer)"
+        - "quality.times_promoted += 1"
+        - "quality.raise_bonus = 0"
+        - "quality.work_effort = 0"
+
+- id: judge-offer
+  icon: ⚖️
+  trigger: event
+  tags: [job, promotion]
+  chance: 0.4%
+  when: "has_occupation(grad-school/partner-lawyer) and years_in(grad-school/partner-lawyer) >= 2 and not quality.grad_judge_offered"
+  text: "A state judicial nominating committee wants a word with {player.first_name}."
+  outcomes:
+    - weight: stat.smarts
+      text: They want you on the bench. The robe fits better than you expected.
+      effects:
+        - "start_occupation(grad-school/judge)"
+        - "quality.grad_judge_offered = true"
+        - "quality.times_promoted += 1"
+        - "quality.raise_bonus = 0"
+        - "quality.work_effort = 0"
+        - "journal(\"The governor appoints you a judge.\")"
+    - weight: 100 - stat.smarts
+      text: The committee asks about your availability, then never calls back.
+      effects:
+        - "quality.grad_judge_offered = true"

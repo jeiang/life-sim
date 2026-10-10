@@ -1,0 +1,7 @@
+description: A scholar gets into law school and passes the bar
+profile: scholar
+steps:
+  - roll: outcome/grad-school/apply-law-school
+    value: 0
+  - roll: outcome/grad-school/sit-bar-exam
+    value: 0

@@ -1,0 +1,106 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Grad scholarship".
+
+- id: grad-scholarship-offer
+  icon: 🎓
+  trigger: event
+  tags: [education, money]
+  chance: 0%
+  when: "grad_enrolled"
+  text: "The financial aid office opens your file, {player.first_name}, and starts reading."
+  outcomes:
+    - weight: 25
+      text: A form letter arrives. Financial aid thanks you for applying and wishes you luck with tuition.
+    - weight: 25
+      text: Another form letter, a little warmer. No scholarship this year, but they liked your essay.
+    - weight: max(0, stat.smarts - 30) / 4
+      text: A partial scholarship is offered. Half your tuition is covered, for now.
+      effects:
+        - "quality.grad_scholarship = 50"
+        - "schedule(grad-school/grad-scholarship-review, after: 1-1 years)"
+        - "journal(\"Partial scholarship awarded, half of tuition covered\")"
+    - weight: max(0, stat.smarts - 30) / 4
+      text: The committee splits the difference. Half your tuition is covered by a scholarship.
+      effects:
+        - "quality.grad_scholarship = 50"
+        - "schedule(grad-school/grad-scholarship-review, after: 1-1 years)"
+        - "journal(\"Partial scholarship awarded, half of tuition covered\")"
+    - weight: max(0, stat.smarts - 60) / 4
+      text: A full scholarship. The committee calls your transcript a pleasure to read, and your bank account agrees.
+      effects:
+        - "quality.grad_scholarship = 100"
+        - "schedule(grad-school/grad-scholarship-review, after: 1-1 years)"
+        - "journal(\"Full scholarship awarded, tuition covered\")"
+
+- id: grad-scholarship-review
+  icon: 📝
+  trigger: event
+  tags: [education, money]
+  chance: 0%
+  when: "grad_enrolled and quality.grad_scholarship > 0"
+  text: "The scholarship committee checks your grade report, {player.first_name}."
+  outcomes:
+    - weight: 1
+      when: "quality.grad_gpa >= 70"
+      text: Strong grades. The scholarship renews for another year without a fuss.
+      effects:
+        - "schedule(grad-school/grad-scholarship-review, after: 1-1 years)"
+    - weight: 1
+      when: "quality.grad_gpa >= 50 and quality.grad_gpa < 70 and quality.grad_scholarship == 100"
+      text: Your grades slip, and the committee cuts the scholarship to half.
+      effects:
+        - "quality.grad_scholarship = 50"
+        - "schedule(grad-school/grad-scholarship-review, after: 1-1 years)"
+        - "journal(\"Scholarship cut to partial, grades slipped\")"
+      next: grad-funding-gap
+    - weight: 1
+      when: "quality.grad_gpa >= 50 and quality.grad_gpa < 70 and quality.grad_scholarship == 50"
+      text: Middling grades. The partial scholarship survives one more year.
+      effects:
+        - "schedule(grad-school/grad-scholarship-review, after: 1-1 years)"
+    - weight: 1
+      when: "quality.grad_gpa < 50 and quality.grad_scholarship == 100"
+      text: Failing grades. The full scholarship drops to half, and the committee wants to see a turnaround.
+      effects:
+        - "quality.grad_scholarship = 50"
+        - stat.happiness -= 1
+        - "schedule(grad-school/grad-scholarship-review, after: 1-1 years)"
+        - "journal(\"Scholarship cut to partial, grades failing\")"
+      next: grad-funding-gap
+    - weight: 1
+      when: "quality.grad_gpa < 50 and quality.grad_scholarship == 50"
+      text: Failing grades again. The scholarship is gone, and so is some of your confidence.
+      effects:
+        - "quality.grad_scholarship = 0"
+        - stat.happiness -= 2
+        - "journal(\"Scholarship ended, grades failing\")"
+      next: grad-funding-gap
+
+- id: grad-dishonesty-case
+  icon: 🚨
+  trigger: event
+  tags: [education]
+  chance: 0%
+  when: "quality.grad_cheated"
+  text: "Someone on the exam board has noticed your answers were a little too neat, {player.first_name}."
+  outcomes:
+    - weight: 40
+      when: "grad_enrolled and quality.grad_scholarship > 0"
+      text: Caught cheating. The committee revokes your scholarship and you are suspended for a week.
+      effects:
+        - "quality.grad_scholarship = 0"
+        - "quality.grad_cheated = false"
+        - stat.happiness -= 5
+        - "journal(\"Caught cheating, scholarship revoked, suspended for a week\")"
+      next: grad-funding-gap
+    - weight: 40
+      when: "not (grad_enrolled and quality.grad_scholarship > 0)"
+      text: Caught cheating. The board makes a note of it, and you feel very small.
+      effects:
+        - "quality.grad_cheated = false"
+        - stat.happiness -= 5
+        - "journal(\"Caught cheating on an exam\")"
+    - weight: 60
+      text: The records office never notices, and your secret stays buried.
+      effects:
+        - "quality.grad_cheated = false"

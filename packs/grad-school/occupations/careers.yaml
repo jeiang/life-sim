@@ -1,0 +1,113 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/occupations.schema.json
+# Grad careers. Pay is gross cents per year at a 100% wage index plus the raise bonus, scaled by the city wage index.
+# partner-lawyer -> judge is a rare offer event, not a promotes_to. Tuned in the artemis balance issue.
+- id: resident-doctor
+  label: Resident doctor
+  icon: 🩺
+  group: full-time
+  ladder: doctor
+  npc: false
+  requires: age >= 18 and quality.grad_degree_medical and quality.grad_licensed_medical
+  pay: (7000000 + quality.raise_bonus) * city.wage_index / 10000
+  promotes_to: attending-doctor
+  promotion_years: 3
+- id: attending-doctor
+  label: Attending doctor
+  icon: 🩺
+  group: full-time
+  ladder: doctor
+  npc: false
+  requires: age >= 18 and quality.grad_degree_medical and quality.grad_licensed_medical
+  pay: (15000000 + quality.raise_bonus) * city.wage_index / 10000
+  promotes_to: chief-of-medicine
+  promotion_years: 6
+- id: chief-of-medicine
+  label: Chief of medicine
+  icon: 🏥
+  group: full-time
+  ladder: doctor
+  npc: false
+  requires: age >= 18 and quality.grad_degree_medical and quality.grad_licensed_medical
+  pay: (22000000 + quality.raise_bonus) * city.wage_index / 10000
+- id: associate-lawyer
+  label: Associate lawyer
+  icon: ⚖️
+  group: full-time
+  ladder: lawyer
+  npc: false
+  requires: age >= 18 and quality.grad_degree_law and quality.grad_licensed_law
+  pay: (9000000 + quality.raise_bonus) * city.wage_index / 10000
+  promotes_to: partner-lawyer
+  promotion_years: 4
+- id: partner-lawyer
+  label: Partner lawyer
+  icon: ⚖️
+  group: full-time
+  ladder: lawyer
+  npc: false
+  requires: age >= 18 and quality.grad_degree_law and quality.grad_licensed_law
+  pay: (18000000 + quality.raise_bonus) * city.wage_index / 10000
+- id: judge
+  label: Judge
+  icon: 👨‍⚖️
+  group: full-time
+  ladder: lawyer
+  npc: false
+  requires: age >= 18 and quality.grad_degree_law and quality.grad_licensed_law
+  pay: (20000000 + quality.raise_bonus) * city.wage_index / 10000
+- id: business-manager
+  label: Business manager
+  icon: 💼
+  group: full-time
+  ladder: business
+  npc: false
+  requires: age >= 18 and quality.grad_degree_mba
+  pay: (10000000 + quality.raise_bonus) * city.wage_index / 10000
+  promotes_to: ceo
+  promotion_years: 5
+- id: ceo
+  label: CEO
+  icon: 🏢
+  group: full-time
+  ladder: business
+  npc: false
+  requires: age >= 18 and quality.grad_degree_mba
+  pay: (25000000 + quality.raise_bonus) * city.wage_index / 10000
+- id: postdoc
+  label: Postdoc
+  icon: 🔬
+  group: full-time
+  ladder: professor
+  npc: false
+  requires: age >= 18 and quality.grad_degree_phd
+  pay: (5000000 + quality.raise_bonus) * city.wage_index / 10000
+  promotes_to: assistant-professor
+  promotion_years: 2
+- id: assistant-professor
+  label: Assistant professor
+  icon: 📚
+  group: full-time
+  ladder: professor
+  npc: false
+  requires: age >= 18 and quality.grad_degree_phd
+  pay: (7500000 + quality.raise_bonus) * city.wage_index / 10000
+  promotes_to: associate-professor
+  promotion_years: 4
+- id: associate-professor
+  label: Associate professor
+  icon: 📚
+  group: full-time
+  ladder: professor
+  npc: false
+  requires: age >= 18 and quality.grad_degree_phd
+  pay: (10000000 + quality.raise_bonus) * city.wage_index / 10000
+  promotes_to: full-professor
+  promotion_years: 5
+- id: full-professor
+  label: Full professor
+  icon: 🎓
+  group: full-time
+  ladder: professor
+  npc: false
+  requires: age >= 18 and quality.grad_degree_phd
+  pay: (13000000 + quality.raise_bonus) * city.wage_index / 10000

@@ -1,0 +1,5 @@
+description: Every yearly review is a bad year, so any scholarship steps down (full to partial, partial to none) and the funding gap opens
+profile: scholar
+steps:
+  - roll: outcome/grad-school/grad-year-review
+    value: 2

@@ -1,0 +1,93 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Academic career".
+
+- id: apply-postdoc
+  icon: 🔬
+  trigger: action
+  menu: activities/job-board
+  label: Apply for a postdoc
+  tags: [job, apply]
+  when: "quality.grad_degree_phd and not in_group(school) and not in_group(\"full-time\") and not hiring_blocked"
+  cooldown: 1
+  text: A university lab has a two-year postdoc open and wants someone who can finish a project.
+  outcomes:
+    - weight: 1
+      text: You send in your application and get asked to come in and present your research.
+      next: postdoc-interview
+
+- id: postdoc-interview
+  trigger: event
+  chance: 0%
+  text: The lab's principal investigator skims your CV and asks what you would do with two years of funding.
+  outcomes:
+    - weight: 30 + stat.smarts / 2
+      text: The lab offers you the postdoc, and you start on Monday.
+      effects:
+        - "start_occupation(grad-school/postdoc)"
+        - "spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1"
+        - stat.happiness += 5
+        - "journal(\"Started a postdoc position at age {age}.\")"
+    - weight: 50 - stat.smarts / 4
+      text: The committee goes with a candidate who already has more papers out.
+      effects:
+        - stat.happiness -= 3
+
+- id: promote-assistant-professor
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 40%
+  when: "has_occupation(grad-school/postdoc) and years_in(grad-school/postdoc) >= 2"
+  once: true
+  text: Your principal investigator wants to talk about your next step.
+  outcomes:
+    - weight: 1
+      text: The lab gives you a faculty title and a bigger office. You are now an assistant professor.
+      effects:
+        - "start_occupation(grad-school/assistant-professor)"
+        - "quality.times_promoted += 1"
+        - "quality.raise_bonus = 0"
+        - "quality.work_effort = 0"
+        - stat.happiness += 6
+        - "journal(\"Promoted to assistant professor at age {age}.\")"
+
+- id: promote-associate-professor
+  icon: 📈
+  trigger: event
+  tags: [job, promotion]
+  chance: 35%
+  when: "has_occupation(grad-school/assistant-professor) and years_in(grad-school/assistant-professor) >= 4"
+  once: true
+  text: The department chair asks whether you are ready to run a lab of your own.
+  outcomes:
+    - weight: 1
+      text: The department names you associate professor, with a lab, a budget and a tenure clock.
+      effects:
+        - "start_occupation(grad-school/associate-professor)"
+        - "quality.times_promoted += 1"
+        - "quality.raise_bonus = 0"
+        - "quality.work_effort = 0"
+        - stat.happiness += 6
+        - "journal(\"Promoted to associate professor at age {age}.\")"
+
+- id: tenure-review
+  icon: 📚
+  trigger: event
+  tags: [job, promotion]
+  chance: 1%
+  when: "has_occupation(grad-school/associate-professor) and years_in(grad-school/associate-professor) >= 5"
+  text: The tenure committee meets again this spring, and your file is on the agenda.
+  outcomes:
+    - weight: 1 + stat.smarts / 30
+      text: The committee grants you tenure, and the title of full professor comes with it.
+      effects:
+        - "start_occupation(grad-school/full-professor)"
+        - "quality.times_promoted += 1"
+        - "quality.raise_bonus = 0"
+        - "quality.work_effort = 0"
+        - stat.happiness += 10
+        - "journal(\"Granted tenure as a full professor at age {age}.\")"
+    - weight: 9
+      text: The committee wants one more year of papers, so the answer is not yet.
+      effects:
+        - stat.happiness -= 2

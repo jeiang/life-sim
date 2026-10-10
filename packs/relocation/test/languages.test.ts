@@ -29,7 +29,11 @@ const quality = (w: World, id: string) =>
 
 test("relocation compiles with the core-loop capabilities it requires", () => {
   expect(out.diagnostics).toEqual([]);
-  expect(bundles.map((b) => b.id)).toEqual(["core-loop", "relocation"]);
+  expect(bundles.map((b) => b.id)).toEqual([
+    "karma",
+    "core-loop",
+    "relocation",
+  ]);
 });
 
 test("language qualities: English 100, the rest 0", () => {

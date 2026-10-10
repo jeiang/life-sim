@@ -18,7 +18,8 @@ const packs = fileURLToPath(new URL("../../../packs", import.meta.url));
 /** The real Packs under test in a directory of their own, so other Packs cannot break the run. */
 function dirWith(...ids: string[]): string {
   const dir = mkdtempSync(join(tmpdir(), "harness-metrics-"));
-  for (const id of ids)
+  // core-loop requires the karma leaf Pack, so it always comes along.
+  for (const id of ["karma", ...ids])
     cpSync(join(packs, id), join(dir, id), { recursive: true });
   return dir;
 }

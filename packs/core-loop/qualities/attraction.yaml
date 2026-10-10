@@ -1,4 +1,0 @@
-# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
-- { id: attracted_men, type: int, min: 0, max: 100, default: 0 }
-- { id: attracted_women, type: int, min: 0, max: 100, default: 0 }
-- { id: attracted_nonbinary, type: int, min: 0, max: 100, default: 0 }

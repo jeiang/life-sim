@@ -46,6 +46,13 @@ export const StatSchema = obj({
   ),
 });
 
+const QualityScope = Type.Optional(
+  Type.Literal("person", {
+    description:
+      "`person`: also readable and assignable on a bound person (`person.quality.<id>`); the player's own value is always `quality.<id>`",
+  }),
+);
+
 export const QualitySchema = Type.Union([
   obj({
     id: Name,
@@ -53,11 +60,48 @@ export const QualitySchema = Type.Union([
     min: Type.Optional(Type.Integer()),
     max: Type.Optional(Type.Integer()),
     default: Type.Integer(),
+    scope: QualityScope,
   }),
   obj({
     id: Name,
     type: Type.Literal("flag"),
     default: Type.Boolean(),
+    scope: QualityScope,
+  }),
+]);
+
+/**
+ * `state/<topic>.yaml` (docs/spec/pack-format/state.md): pack-declared state containers the
+ * engine persists, hashes and replays generically. `counter` is one world-wide value
+ * (`world.<id>`); `table` is a per-person record of integers under closed keys
+ * (`table.<id>.<key>`). A new container kind is a new member of this union.
+ */
+export const StateSchema = Type.Union([
+  obj({
+    id: Name,
+    kind: Type.Literal("counter"),
+    type: Type.Literal("int"),
+    min: Type.Optional(Type.Integer()),
+    max: Type.Optional(Type.Integer()),
+    default: Type.Integer(),
+  }),
+  obj({
+    id: Name,
+    kind: Type.Literal("counter"),
+    type: Type.Literal("flag"),
+    default: Type.Boolean(),
+  }),
+  obj({
+    id: Name,
+    kind: Type.Literal("table"),
+    keys: Type.Array(Name, {
+      minItems: 1,
+      uniqueItems: true,
+      description: "Closed key set; a cell is `table.<id>.<key>`",
+    }),
+    min: Type.Optional(Type.Integer()),
+    max: Type.Optional(Type.Integer()),
+    default: Type.Integer({ description: "Value of every cell until written" }),
   }),
 ]);
 
@@ -123,6 +167,7 @@ export const CapabilitySchema = obj(
       obj({
         stats: provided("stats", NAME_PATTERN),
         qualities: provided("qualities", NAME_PATTERN),
+        state: provided("state containers", NAME_PATTERN),
         groups: provided("exclusivity groups", ID_PATTERN),
         tags: provided("storylet tags", ID_PATTERN),
         milestones: provided("milestones", ID_PATTERN),
@@ -721,6 +766,7 @@ export const FILE_SCHEMAS = {
   "pack.schema.json": ManifestSchema,
   "capability.schema.json": CapabilitySchema,
   "qualities.schema.json": list(QualitySchema, "Qualities"),
+  "state.schema.json": list(StateSchema, "State containers"),
   "migration.schema.json": MigrationSchema,
   "storylets.schema.json": list(StoryletSchema, "Storylets"),
   "occupations.schema.json": list(OccupationSchema, "Occupation kinds"),
@@ -742,3 +788,4 @@ export type CitySrc = Static<typeof CitySchema>;
 export type StandardSrc = Static<typeof StandardSchema>;
 export type PeopleSrc = Static<typeof PeopleSchema>;
 export type Quality = Static<typeof QualitySchema>;
+export type State = Static<typeof StateSchema>;

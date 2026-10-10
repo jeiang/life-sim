@@ -12,6 +12,8 @@ import {
   type QueuedEvent,
   type ScopeRef,
   type Series,
+  type StateTree,
+  type StateValue,
   type StoryletRecord,
   type World,
 } from "./types.ts";
@@ -86,6 +88,25 @@ function qualities(v: unknown, p: string): Record<string, QualityValue> {
 function intRecord(v: unknown, p: string): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [k, x] of Object.entries(obj(v, p))) out[k] = int(x, `${p}.${k}`);
+  return out;
+}
+
+/** A container tree: integers, booleans and records of them, any depth. */
+function stateValue(v: unknown, p: string): StateValue {
+  if (typeof v === "boolean") return v;
+  if (typeof v === "object" && v !== null && !Array.isArray(v)) {
+    const out: Record<string, StateValue> = {};
+    for (const [k, x] of Object.entries(v as Json))
+      out[k] = stateValue(x, `${p}.${k}`);
+    return out;
+  }
+  return int(v, p);
+}
+
+function stateTree(v: unknown, p: string): StateTree {
+  const out: Record<string, StateValue> = {};
+  for (const [k, x] of Object.entries(obj(v, p)))
+    out[k] = stateValue(x, `${p}.${k}`);
   return out;
 }
 
@@ -167,6 +188,8 @@ function person(v: unknown, p: string): Person {
             tier: int(j.tier, `${p}.job.tier`),
           };
         })();
+  const state =
+    o.state === undefined ? undefined : stateTree(o.state, `${p}.state`);
   return {
     ...(job === undefined ? {} : { job }),
     ...(cityId === undefined ? {} : { cityId }),
@@ -174,6 +197,7 @@ function person(v: unknown, p: string): Person {
     ...(withGuardian === undefined ? {} : { withGuardian }),
     ...(standardId === undefined ? {} : { standardId }),
     ...(livedStandardId === undefined ? {} : { livedStandardId }),
+    ...(state === undefined ? {} : { state }),
     id: int(o.id, `${p}.id`),
     givenName: str(o.givenName, `${p}.givenName`),
     familyName: str(o.familyName, `${p}.familyName`),
@@ -400,6 +424,7 @@ export function deserializeWorld(text: string): World {
     // Saves from before markets: no series yet (they start at the next settlement).
     market: o.market === undefined ? {} : market(o.market, "$.market"),
     persons,
+    ...(o.state === undefined ? {} : { state: stateTree(o.state, "$.state") }),
     relationships: arr(o.relationships, "$.relationships").map((x, i) => {
       const r = obj(x, `$.relationships[${i}]`);
       const household = r.household;

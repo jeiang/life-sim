@@ -1,5 +1,6 @@
 import {
   ASSIGNABLE,
+  assignOps,
   EFFECTS,
   type Effect,
   type Expr,
@@ -229,7 +230,7 @@ export function checkStmt(c: Checker, env: CheckEnv, s: Stmt): Effect | null {
   if (s.k === "assign") {
     const path = s.target.path;
     const root = path.split(".")[0] as string;
-    const ops = Object.hasOwn(ASSIGNABLE, root) ? ASSIGNABLE[root] : undefined;
+    const ops = assignOps(path, env.persons);
     const declared = Object.hasOwn(env.names, path)
       ? env.names[path]
       : undefined;
@@ -237,13 +238,9 @@ export function checkStmt(c: Checker, env: CheckEnv, s: Stmt): Effect | null {
       return err(
         c,
         s.target,
-        `'${path}' cannot be assigned; assignable: ${Object.keys(ASSIGNABLE).join(", ")}`,
-      );
-    if (root === "person" && path !== "person.money")
-      return err(
-        c,
-        s.target,
-        `'${path}' cannot be assigned (on a person only 'person.money' can)`,
+        root === "person" || env.persons?.includes(root)
+          ? `'${path}' cannot be assigned (on a person only 'money', 'quality.<id>' and 'table.<id>.<key>' can)`
+          : `'${path}' cannot be assigned; assignable: ${Object.keys(ASSIGNABLE).join(", ")}`,
       );
     if (declared === undefined) {
       return err(

@@ -54,6 +54,10 @@ _Avoid_: Attribute, bar
 A Pack-declared hidden integer or flag on a person (for example has a driving licence, times arrested). Declared in the owning Pack's `qualities/*.yaml`. Ids are shared across Packs: a Pack prefixes its own with the Pack name, and two Packs declaring the same id is a load error.
 _Avoid_: Variable, state flag
 
+**State container**:
+Pack-declared persisted state beyond stats and qualities: a world **counter** (`world.<id>`) or a per-person integer **table** (`table.<id>.<key>`), declared in the owning Pack's `state/*.yaml`; a quality with `scope: person` is the third form. Values live in generic trees (`World.state`, `Person.state`) that the Core saves, hashes, replays and migrates without knowing any container, and an unwritten value reads as the declared default.
+_Avoid_: Custom field, variable, extension state
+
 **Relationship**:
 A directed link from one person to another with a role (parent, sibling, partner, friend, classmate, coworker) and a closeness from 0 to 100. A person can hold several role rows toward another; setting a role replaces them all and keeps the highest closeness. Expressions read `person.closeness` (the highest across rows) and `count_role(role, min, max)` (living people only).
 _Avoid_: Connection, bond

@@ -4,6 +4,7 @@ export { evaluate } from "./eval.ts";
 export type { AssignOp, Signature, Type } from "./functions.ts";
 export {
   ASSIGNABLE,
+  assignOps,
   EFFECTS,
   FUNCTIONS,
   pureFunctions,

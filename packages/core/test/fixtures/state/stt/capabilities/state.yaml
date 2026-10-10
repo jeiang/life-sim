@@ -1,0 +1,7 @@
+provides:
+  qualities:
+    - grudge
+  state:
+    - visits
+    - festival
+    - favours

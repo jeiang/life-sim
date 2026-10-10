@@ -24,6 +24,7 @@ import type {
   QualityDecl,
   RepeatCurve,
   StatDecl,
+  StateDecl,
 } from "@life/core";
 import {
   DEFAULT_GENDER_WEIGHTS,
@@ -60,6 +61,8 @@ import {
   SINGLETONS,
   StandardSchema,
   type StandardSrc,
+  type State,
+  StateSchema,
   StoryletSchema,
   type StoryletSrc,
 } from "./schema.ts";
@@ -135,6 +138,8 @@ interface LoadedPack {
   manifestSrc: Source;
   /** Declared by `qualities/*.yaml`, in file order. */
   qualities: LoadedQuality[];
+  /** Declared by `state/*.yaml`, in file order. */
+  state: LoadedState[];
   items: LoadedItem[];
   capabilities: LoadedCapability[];
   migrations: LoadedMigration[];
@@ -151,6 +156,13 @@ interface LoadedMigration {
 /** One quality declaration and where it was written, for diagnostics. */
 interface LoadedQuality {
   decl: Quality;
+  src: Source;
+  index: number;
+}
+
+/** One state container declaration and where it was written, for diagnostics. */
+interface LoadedState {
+  decl: State;
   src: Source;
   index: number;
 }
@@ -198,6 +210,8 @@ const TOP_RESERVED = new Set([
   "person",
   "asset",
   "portfolio",
+  "world",
+  "table",
 ]);
 
 /** Kinds each id-typed function parameter accepts; `undefined` accepts any content id. */
@@ -491,6 +505,7 @@ class Compiler {
       }
     }
     const qualities = this.loadQualities(d, dir);
+    const state = this.loadState(d, dir);
     const capabilities = this.loadCapabilities(d, dir);
     const migrations = this.loadMigrations(d, dir);
     // Stat and quality ids share the expression namespace `stat.<id>` / `quality.<id>`.
@@ -503,6 +518,7 @@ class Compiler {
       manifest,
       manifestSrc: src,
       qualities,
+      state,
       items,
       capabilities,
       migrations,
@@ -562,6 +578,64 @@ class Compiler {
             );
         }
         out.push({ decl: q, src, index: i });
+      });
+    }
+    return out;
+  }
+
+  /** `state/<topic>.yaml`: a list of state container declarations (docs/spec/pack-format/state.md). */
+  private loadState(d: string, dir: string): LoadedState[] {
+    const out: LoadedState[] = [];
+    const seen = new Map<string, string>();
+    const sDir = join(dir, "state");
+    for (const f of this.listYaml(sDir)) {
+      const file = this.rel(d, "state", f);
+      const src = parseYaml(
+        file,
+        readFileSync(join(sDir, f), "utf8"),
+        this.diags,
+      );
+      if (!src || src.value === null || src.value === undefined) continue;
+      if (!Array.isArray(src.value)) {
+        this.diag(
+          src,
+          [],
+          "a state file must be a list of container declarations",
+        );
+        continue;
+      }
+      src.value.forEach((raw: unknown, i: number) => {
+        const id = (raw as { id?: unknown } | null)?.id;
+        const label = (p: Path): string =>
+          `${typeof id === "string" ? id : `[${i}]`}${p.length > 1 ? `.${formatPath(p.slice(1))}` : ""}`;
+        if (!validate(src, StateSchema, raw, [i], this.diags, label)) return;
+        const s = raw as State;
+        const prev = seen.get(s.id);
+        if (prev) {
+          this.diag(
+            src,
+            [i, "id"],
+            `duplicate state container '${s.id}' (already defined in ${prev})`,
+            s.id,
+          );
+          return;
+        }
+        seen.set(s.id, file);
+        if (s.kind === "table" || (s.kind === "counter" && s.type === "int")) {
+          if (s.min !== undefined && s.max !== undefined && s.min > s.max)
+            this.diag(src, [i], "min exceeds max", s.id);
+          if (
+            (s.min !== undefined && s.default < s.min) ||
+            (s.max !== undefined && s.default > s.max)
+          )
+            this.diag(
+              src,
+              [i, "default"],
+              "default is outside min/max",
+              `${s.id}.default`,
+            );
+        }
+        out.push({ decl: s, src, index: i });
       });
     }
     return out;
@@ -689,6 +763,7 @@ class Compiler {
       return (pack.manifest.stats ?? []).some((s) => s.id === name);
     if (key === "qualities")
       return pack.qualities.some((q) => q.decl.id === name);
+    if (key === "state") return pack.state.some((s) => s.decl.id === name);
     if (key === "groups")
       return (pack.manifest.exclusivity ?? []).includes(name);
     if (key === "singletons")
@@ -718,6 +793,7 @@ class Compiler {
       for (const [kind, key] of [
         ["stat", "stats"],
         ["quality", "qualities"],
+        ["state", "state"],
       ] as const) {
         const decls =
           key === "stats"
@@ -726,7 +802,7 @@ class Compiler {
                 src: pack.manifestSrc,
                 at: [key, i, "id"] as Path,
               }))
-            : pack.qualities.map((q) => ({
+            : (key === "qualities" ? pack.qualities : pack.state).map((q) => ({
                 d: q.decl,
                 src: q.src,
                 at: [q.index, "id"] as Path,
@@ -773,6 +849,8 @@ class Compiler {
         bad("stat", s.id, pack.manifestSrc, ["stats", i, "id"]);
       for (const q of pack.qualities)
         bad("quality", q.decl.id, q.src, [q.index, "id"]);
+      for (const s of pack.state)
+        bad("state container", s.decl.id, s.src, [s.index, "id"]);
     }
   }
 
@@ -852,6 +930,9 @@ class PackCompiler {
   /** Declared stat and quality names usable as `stat.x`/`quality.x`. */
   readonly declared = new Set<string>();
   readonly statIds = new Set<string>();
+  /** Person-addressable qualities and state tables visible to this Pack (`person.quality.x`, `person.table.x.k`). */
+  readonly personQualities = new Map<string, ExprType>();
+  readonly tables = new Map<string, readonly string[]>();
   owner = "";
 
   readonly c: Compiler;
@@ -875,7 +956,7 @@ class PackCompiler {
    */
   private addDecls(pack: LoadedPack, only?: Capability["provides"]): void {
     const m = pack.manifest;
-    const has = (key: "stats" | "qualities" | "groups", id: string) =>
+    const has = (key: "stats" | "qualities" | "state" | "groups", id: string) =>
       only === undefined || (only[key] ?? []).includes(id);
     for (const s of m.stats ?? []) {
       if (!has("stats", s.id)) continue;
@@ -885,11 +966,36 @@ class PackCompiler {
     }
     for (const { decl: q } of pack.qualities) {
       if (!has("qualities", q.id)) continue;
-      this.baseNames[`quality.${q.id}`] = q.type === "flag" ? "bool" : "int";
+      const type = q.type === "flag" ? "bool" : "int";
+      this.baseNames[`quality.${q.id}`] = type;
       this.declared.add(`quality.${q.id}`);
+      if (q.scope === "person") this.personQualities.set(q.id, type);
+    }
+    for (const { decl: s } of pack.state) {
+      if (!has("state", s.id)) continue;
+      if (s.kind === "table") {
+        this.tables.set(s.id, s.keys);
+        for (const k of s.keys) {
+          this.baseNames[`table.${s.id}.${k}`] = "int";
+          this.declared.add(`table.${s.id}.${k}`);
+        }
+      } else {
+        this.baseNames[`world.${s.id}`] = s.type === "flag" ? "bool" : "int";
+        this.declared.add(`world.${s.id}`);
+      }
     }
     for (const g of m.exclusivity ?? [])
       if (has("groups", g)) this.groups.add(g);
+  }
+
+  /** `<prefix>.quality.<id>` and `<prefix>.table.<id>.<key>` names of a person in scope. */
+  private personStateNames(prefix: string): Names {
+    const n: Names = {};
+    for (const [id, type] of this.personQualities)
+      n[`${prefix}.quality.${id}`] = type;
+    for (const [id, keys] of this.tables)
+      for (const k of keys) n[`${prefix}.table.${id}.${k}`] = "int";
+    return n;
   }
 
   compile(): PackBundle {
@@ -965,6 +1071,9 @@ class PackCompiler {
     const qualities = this.pack.qualities.map(
       (q) => ({ ...q.decl }) as QualityDecl,
     );
+    const state = this.pack.state
+      .map((s) => ({ ...s.decl }) as StateDecl)
+      .sort((a, b) => (a.id < b.id ? -1 : 1));
     const migrations = this.migrations(pack, m);
     this.idLock(m, migrations);
     return {
@@ -976,6 +1085,7 @@ class PackCompiler {
       ...(m.currency ? { currency: m.currency } : {}),
       stats,
       qualities,
+      state,
       exclusivity: [...(m.exclusivity ?? [])],
       ...(m.year
         ? {
@@ -1330,6 +1440,7 @@ class PackCompiler {
         "person.income_tier": "int",
       };
       for (const s of this.statIds) n[`person.stat.${s}`] = "int";
+      Object.assign(n, this.personStateNames("person"));
       return n;
     }
     return {};
@@ -1593,6 +1704,7 @@ class PackCompiler {
         Object.assign(bound, pronounNames(name));
         bound[`${name}.age`] = "int";
         bound[`${name}.closeness`] = "int";
+        Object.assign(bound, this.personStateNames(name));
         persons.push(name);
       }
       this.effectText(
@@ -1946,7 +2058,7 @@ class PackCompiler {
 
   /** Normalise a migration id to a full id (`<pack>/<id>`) or a declared name (`stat.x`). */
   private migId(raw: string, path: Path): string | undefined {
-    if (/^(stat|quality)\./.test(raw)) return raw;
+    if (/^(stat|quality|state)\./.test(raw)) return raw;
     const slash = raw.indexOf("/");
     if (slash >= 0 && raw.slice(0, slash) !== this.pack.id) {
       this.err(
@@ -1964,6 +2076,7 @@ class PackCompiler {
       ids.add(full);
     for (const s of m.stats ?? []) ids.add(`stat.${s.id}`);
     for (const q of this.pack.qualities) ids.add(`quality.${q.decl.id}`);
+    for (const s of this.pack.state) ids.add(`state.${s.decl.id}`);
     return ids;
   }
 
@@ -2005,7 +2118,8 @@ class PackCompiler {
         let fallback: string | null = null;
         if (r.fallback !== undefined) {
           fallback =
-            /^(stat|quality)\./.test(r.fallback) && current.has(r.fallback)
+            /^(stat|quality|state)\./.test(r.fallback) &&
+            current.has(r.fallback)
               ? r.fallback
               : (this.ref(r.fallback, undefined, ["remove", i, "fallback"]) ??
                 null);

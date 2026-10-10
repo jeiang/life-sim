@@ -25,6 +25,11 @@
           },
           "default": {
             "type": "integer"
+          },
+          "scope": {
+            "description": "`person`: also readable and assignable on a bound person (`person.quality.<id>`); the player's own value is always `quality.<id>`",
+            "const": "person",
+            "type": "string"
           }
         }
       },
@@ -43,6 +48,11 @@
           },
           "default": {
             "type": "boolean"
+          },
+          "scope": {
+            "description": "`person`: also readable and assignable on a bound person (`person.quality.<id>`); the player's own value is always `quality.<id>`",
+            "const": "person",
+            "type": "string"
           }
         }
       }

@@ -1,0 +1,8 @@
+- { id: visits, kind: counter, type: int, min: 0, max: 5, default: 0 }
+- { id: festival, kind: counter, type: flag, default: false }
+- id: favours
+  kind: table
+  keys: [food, help, gossip]
+  min: 0
+  max: 50
+  default: 0

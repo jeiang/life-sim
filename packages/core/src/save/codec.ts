@@ -1,7 +1,9 @@
 import type { PackBundle } from "../pack.ts";
+import { checkWorldState } from "../state/containers.ts";
 import { canonicalStringify, deserializeWorld } from "../state/serialize.ts";
 import type { Obituary, World } from "../state/types.ts";
 import { checkSaveVersion, SAVE_SCHEMA_VERSION, SaveError } from "./migrate.ts";
+import { applyPackMigrations } from "./pack-migrations.ts";
 import type { GraveyardEntry, SavedLife, SaveFile } from "./types.ts";
 
 type Json = Record<string, unknown>;
@@ -180,6 +182,19 @@ export function validateImport(
           throw new SaveError(
             `This save needs the capability "${id}", which this version of the game does not include. Update the app and try again.`,
           );
+      const decls = new Map(
+        bundles.flatMap((b) => b.state).map((s) => [s.id, s]),
+      );
+      for (const [i, life] of save.lives.entries()) {
+        const problems = checkWorldState(
+          applyPackMigrations(life.world, bundles),
+          decls,
+        );
+        if (problems.length > 0)
+          throw new SaveError(
+            `This save does not match the state this version of the game declares (life ${i + 1}: ${problems[0]}).`,
+          );
+      }
     }
     return { ok: true, save };
   } catch (e) {

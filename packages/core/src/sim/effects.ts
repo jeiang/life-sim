@@ -1,4 +1,11 @@
 import { type Effect, type Expr, evaluate } from "../expr/index.ts";
+import {
+  cellValue,
+  clampDecl,
+  counterValue,
+  setCell,
+  setCounter,
+} from "../state/containers.ts";
 import type { World } from "../state/types.ts";
 import {
   addJournalLine,
@@ -11,7 +18,7 @@ import {
   updatePerson,
 } from "../state/world.ts";
 import { enterRole } from "./careers.ts";
-import { makeEnv, qualityOf, type Scope } from "./env.ts";
+import { makeEnv, qualityOf, type Scope, tableRef } from "./env.ts";
 import { livesWithParents, startLivingOnOwn } from "./living.ts";
 import { grantUnit, removeHolding, tradeHolding } from "./market.ts";
 import {
@@ -141,18 +148,7 @@ function applyEffect(
         const cur = getPerson(w, who).stats[id] ?? 0;
         return setStat(w, who, id, e[0] === "set" ? delta : cur + gain());
       }
-      const id = target.slice(8);
-      const decl = idx.qualities.get(id);
-      if (!decl) throw new RangeError(`unknown quality '${id}'`);
-      if (decl.type === "flag") {
-        const v = evaluate(e[2], makeEnv(w, idx, scope));
-        return setQuality(w, who, id, Boolean(v));
-      }
-      const cur = qualityOf(getPerson(w, who), idx, id) as number;
-      let next = e[0] === "set" ? delta : cur + sign * delta;
-      if (decl.min !== undefined) next = Math.max(decl.min, next);
-      if (decl.max !== undefined) next = Math.min(decl.max, next);
-      return setQuality(w, who, id, next);
+      return assignState(w, idx, e, target, delta, sign, scope, bound);
     }
     case "spawn": {
       const role = str(e[1], w, idx, scope);
@@ -266,4 +262,62 @@ function applyEffect(
       throw new RangeError(`unknown effect '${e[1]}'`);
     }
   }
+}
+
+/**
+ * Assign a quality, world counter or table cell. A target is `quality.<id>` / `table.<id>.<key>`
+ * on the subject, `world.<id>` on the world, or `quality.…` / `table.…` behind `person.` or a
+ * bound person's name; with no such person in scope the effect does nothing.
+ */
+function assignState(
+  w: World,
+  idx: PackIndex,
+  e: Effect,
+  target: string,
+  delta: number,
+  sign: 1 | -1,
+  scope: Scope,
+  bound: Map<string, number>,
+): World {
+  const dot = target.indexOf(".");
+  const root = target.slice(0, dot);
+  const next = (cur: number): number =>
+    e[0] === "set" ? delta : cur + sign * delta;
+  if (root === "world") {
+    const decl = idx.state.get(target.slice(dot + 1));
+    if (decl?.kind !== "counter")
+      throw new RangeError(`unknown world counter '${target}'`);
+    if (decl.type === "flag") {
+      const v = evaluate(e[2] as Expr, makeEnv(w, idx, scope));
+      return setCounter(w, decl, Boolean(v));
+    }
+    return setCounter(w, decl, next(counterValue(w, decl) as number));
+  }
+  let pid = scope.subject;
+  let rest = target;
+  if (root !== "quality" && root !== "table") {
+    const bp =
+      bound.get(root) ?? (root === "person" ? scope.person : undefined);
+    if (bp === undefined) return w;
+    pid = bp;
+    rest = target.slice(dot + 1);
+  }
+  const person = getPerson(w, pid);
+  if (rest.startsWith("table.")) {
+    const [decl, key] = tableRef(idx, rest.slice(6));
+    return setCell(w, pid, decl, key, next(cellValue(person, decl, key)));
+  }
+  const id = rest.slice(8);
+  const decl = idx.qualities.get(id);
+  if (!decl) throw new RangeError(`unknown quality '${id}'`);
+  if (decl.type === "flag") {
+    const v = evaluate(e[2] as Expr, makeEnv(w, idx, scope));
+    return setQuality(w, pid, id, Boolean(v));
+  }
+  return setQuality(
+    w,
+    pid,
+    id,
+    clampDecl(decl, next(qualityOf(person, idx, id) as number)),
+  );
 }

@@ -74,14 +74,37 @@ export const EFFECTS = {
 
 export type AssignOp = "=" | "+=" | "-=";
 
-/** Assignable roots and the operators each allows (pack-format/expressions.md#effect-statements). */
+/**
+ * Assignable roots and the operators each allows (pack-format/expressions.md#effect-statements).
+ * `person` (and a bound person's name) takes `money`, `quality.<id>` and `table.<id>.<key>`
+ * only; see `assignOps`.
+ */
 export const ASSIGNABLE: Readonly<Record<string, readonly AssignOp[]>> = {
   stat: ["+=", "-=", "="],
   quality: ["+=", "="],
   money: ["+=", "-="],
-  /** Only `person.money`; the checker rejects every other `person.*` target. */
-  person: ["+=", "-="],
+  person: ["+=", "-=", "="],
+  world: ["+=", "-=", "="],
+  table: ["+=", "-=", "="],
 };
+
+/**
+ * Operators allowed on an assignment target path, or undefined when it cannot be assigned.
+ * `persons` are the bound person names in scope (`person` is always one).
+ */
+export function assignOps(
+  path: string,
+  persons: readonly string[] = [],
+): readonly AssignOp[] | undefined {
+  const [root = "", second] = path.split(".");
+  if (root === "person" || persons.includes(root)) {
+    if (path === "person.money") return ["+=", "-="];
+    if (second === "quality") return ASSIGNABLE.quality;
+    if (second === "table") return ASSIGNABLE.table;
+    return undefined;
+  }
+  return Object.hasOwn(ASSIGNABLE, root) ? ASSIGNABLE[root] : undefined;
+}
 
 /** Pure function implementations, usable as the base of an evaluator function table. */
 export const pureFunctions: Readonly<

@@ -3,6 +3,8 @@ import {
   pureFunctions,
   type Value,
 } from "../expr/index.ts";
+import type { TableDecl } from "../pack.ts";
+import { cellValue, counterValue } from "../state/containers.ts";
 import {
   type Loan,
   type Person,
@@ -64,6 +66,15 @@ export function qualityOf(p: Person, idx: PackIndex, id: string): QualityValue {
   const d = idx.qualities.get(id);
   if (!d) throw new RangeError(`unknown quality '${id}'`);
   return d.default;
+}
+
+/** The table declaration and key of a `<id>.<key>` path tail (after `table.`). */
+export function tableRef(idx: PackIndex, rest: string): [TableDecl, string] {
+  const dot = rest.indexOf(".");
+  const decl = idx.state.get(dot < 0 ? rest : rest.slice(0, dot));
+  if (dot < 0 || decl?.kind !== "table")
+    throw new RangeError(`unknown table cell 'table.${rest}'`);
+  return [decl, rest.slice(dot + 1)];
 }
 
 /** The player's relationship role toward a person (first by id order), if any. */
@@ -131,6 +142,10 @@ function personField(
   if (field.startsWith("stat.")) return p.stats[field.slice(5)] ?? 0;
   if (field.startsWith("quality."))
     return qualityOf(p, idx, field.slice(8)) as Value;
+  if (field.startsWith("table.")) {
+    const [decl, key] = tableRef(idx, field.slice(6));
+    return cellValue(p, decl, key);
+  }
   throw new RangeError(`unknown name '${path}'`);
 }
 
@@ -231,6 +246,16 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
       if (path.startsWith("stat.")) return subject.stats[path.slice(5)] ?? 0;
       if (path.startsWith("quality."))
         return qualityOf(subject, idx, path.slice(8)) as Value;
+      if (path.startsWith("world.")) {
+        const decl = idx.state.get(path.slice(6));
+        if (decl?.kind !== "counter")
+          throw new RangeError(`unknown name '${path}'`);
+        return counterValue(world, decl);
+      }
+      if (path.startsWith("table.")) {
+        const [decl, key] = tableRef(idx, path.slice(6));
+        return cellValue(subject, decl, key);
+      }
       if (path.startsWith("player."))
         return personField(world, idx, scope.subject, path.slice(7), path);
       if (path === "city.cost_index") return costIndexOf(subject, idx);

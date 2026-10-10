@@ -15,6 +15,7 @@ import {
   type QualityDecl,
   type RepeatCurve,
   type StatDecl,
+  type StateDecl,
 } from "../pack.ts";
 
 /** Lookup tables over a set of bundles, built once per bundle array. */
@@ -38,6 +39,8 @@ export interface PackIndex {
   /** Bundle order (dependencies first). */
   readonly stats: readonly StatDecl[];
   readonly qualities: ReadonlyMap<string, QualityDecl>;
+  /** State containers (counters and tables) by bare id, over every Pack. */
+  readonly state: ReadonlyMap<string, StateDecl>;
   readonly currency: { readonly symbol: string; readonly digits: number };
   /** Starting family from the first manifest that declares one. */
   readonly family: FamilyDecl | undefined;
@@ -89,6 +92,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
   const generators = new Map<string, CompiledGenerator>();
   const qualities = new Map<string, QualityDecl>();
   const stats: StatDecl[] = [];
+  const state = new Map<string, StateDecl>();
   let currency = { symbol: "", digits: 0 };
   let year: PackIndex["year"] | undefined;
   let family: FamilyDecl | undefined;
@@ -123,6 +127,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
       else put(generators, "generator", p.id, p);
     }
     for (const q of b.qualities) put(qualities, "quality", q.id, q);
+    for (const s of b.state) put(state, "state", s.id, s);
     for (const s of b.stats) {
       const first = owners.get(`stat.${s.id}`);
       if (first !== undefined && first !== b.id)
@@ -163,6 +168,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     generators,
     stats,
     qualities,
+    state,
     currency,
     family,
     npcCareers,

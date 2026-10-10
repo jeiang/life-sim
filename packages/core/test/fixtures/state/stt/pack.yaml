@@ -1,0 +1,6 @@
+id: stt
+currency:
+  symbol: "$"
+  digits: 2
+stats:
+  - { id: happiness, label: Happiness, start: [50, 100] }

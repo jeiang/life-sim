@@ -1,4 +1,5 @@
 import type { PackBundle, PackMigration } from "../pack.ts";
+import { migrateState } from "../state/containers.ts";
 import type {
   Asset,
   Loan,
@@ -72,12 +73,14 @@ const kind = <T extends { kindId: string }>(
   });
 
 function person(p: Person, r: Resolve): Person {
-  const { cityId, standardId, livedStandardId, ...rest } = p;
+  const { cityId, standardId, livedStandardId, state, ...rest } = p;
+  const moved = migrateState(state, r);
   const city = cityId === undefined ? null : r(cityId);
   const standard = standardId === undefined ? null : r(standardId);
   const lived = livedStandardId === undefined ? null : r(livedStandardId);
   return {
     ...rest,
+    ...(moved === undefined ? {} : { state: moved }),
     ...(city === null ? {} : { cityId: city }),
     ...(standard === null ? {} : { standardId: standard }),
     ...(lived === null ? {} : { livedStandardId: lived }),
@@ -184,8 +187,11 @@ export function applyPackMigrations(
     uses[nk] = (uses[nk] ?? 0) + n;
   }
 
+  const { state: worldState, ...restWorld } = world;
+  const worldMoved = migrateState(worldState, r);
   return {
-    ...world,
+    ...restWorld,
+    ...(worldMoved === undefined ? {} : { state: worldMoved }),
     persons,
     relationships,
     pending: open,

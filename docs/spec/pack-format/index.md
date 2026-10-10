@@ -10,6 +10,7 @@ packs/<pack-id>/
   capabilities/<feature>.yaml  # one file per feature: provides and requires (see Capabilities)
   migrations/<name>.yaml     # one file per migration: renamed and removed ids (see saves.md)
   qualities/<topic>.yaml     # list of quality declarations (see Qualities)
+  state/<topic>.yaml         # list of state container declarations (see state.md)
   CONTEXT.md                 # glossary of the terms this Pack owns
   BALANCE.md                 # balance targets, harness profiles and report notes
   test/*.test.ts             # the Pack's own vitest tests
@@ -29,6 +30,7 @@ packs/<pack-id>/
 ## Topics
 
 - [Manifest, composition and capabilities](manifest.md): `pack.yaml`, qualities, composition rules, capability files.
+- [State containers](state.md): pack-declared world counters, per-person tables and person-scope qualities, and the engine contract behind them.
 - [Storylets and the year draw](storylets.md): storylets, repeatable actions, year draw and decision slots.
 - [Content kinds](content-kinds.md): market kinds, cities, standards of living, household costs, confinement, NPC careers.
 - [Expressions and effects](expressions.md): the expression language, 18+ text variants, effect statements.

@@ -155,6 +155,7 @@
   trigger: action
   menu: assets/heirlooms
   label: Sell a family heirloom
+  when: "table.gen_heirloom.watch_held == 1 or table.gen_heirloom.quilt_held == 1 or table.gen_heirloom.clock_held == 1 or table.gen_heirloom.violin_held == 1 or table.gen_heirloom.letters_held == 1"
   text: Dust off a family piece and see what someone will pay for it.
   choices:
     - label: Sell the watch

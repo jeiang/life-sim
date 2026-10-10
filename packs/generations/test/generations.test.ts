@@ -406,6 +406,16 @@ describe("heirlooms", () => {
     expect(cell(w, `${id}_value`)).toBe(BASE[id]);
   });
 
+  test("the sell action is locked while no heirloom is held", () => {
+    const f = family();
+    const sell = (w: World) =>
+      listActions(w, bundles, "assets/heirlooms").find(
+        (a) => a.id === G("heirloom-sell"),
+      );
+    expect(sell(f.w)?.locked).toBe(true);
+    expect(sell(setCellRaw(f.w, f.dead, "quilt_held", 1))?.locked).toBe(false);
+  });
+
   test("selling pays the value in cash, clears the held flag and keeps the attic from returning it", () => {
     const f = family({ cash: 0 });
     let w = setCellRaw(f.w, f.dead, "violin_held", 1);

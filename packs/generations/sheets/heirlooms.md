@@ -202,6 +202,7 @@
 - label: Sell a family heirloom
 - icon: 💰
 - text: Dust off a family piece and see what someone will pay for it.
+- when: table.gen_heirloom.watch_held == 1 or table.gen_heirloom.quilt_held == 1 or table.gen_heirloom.clock_held == 1 or table.gen_heirloom.violin_held == 1 or table.gen_heirloom.letters_held == 1
 - opens: 0.1..0.4 per life
 
 ### choice: Sell the watch

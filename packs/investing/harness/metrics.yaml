@@ -52,6 +52,12 @@ stats:
     ages: [40, 65]
     of: "not investor"
     label: net worth, others
+  net_worth_by_profile:
+    kind: median
+    value: net_worth
+    ages: [40, 65]
+    by: profile
+    label: net worth by profile (minor units)
   insider_offers_per_life:
     kind: mean
     value: insider_offers
@@ -165,6 +171,8 @@ blocks:
       - holdings_median
       - net_worth_investors
       - net_worth_others
+  - stats:
+      - net_worth_by_profile
   - text: Annualised return is in basis points a year, compounded over the world years the life saw (median over lives).
   - stats:
       - return_total_market

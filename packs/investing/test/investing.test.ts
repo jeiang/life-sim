@@ -136,7 +136,8 @@ function settle(w0: World): World {
 /** Plays `years` age-ups, passing on every choice. */
 function play(w0: World, years: number): World {
   let w = w0;
-  for (let y = 0; y < years && !w.ended; y++) w = settle(ageUp(w, bundles).world);
+  for (let y = 0; y < years && !w.ended; y++)
+    w = settle(ageUp(w, bundles).world);
   return w;
 }
 
@@ -161,7 +162,7 @@ describe("market kinds", () => {
       ["gov-bond-10", 10],
     ] as const) {
       const b = idx.markets.get(I(k))?.market?.bond;
-      expect(b?.term).toBe(term);
+      expect(b?.termYears).toBe(term);
       expect(b?.defaultBp).toBe(40);
       expect(b?.lossBp).toBe(6000);
     }
@@ -177,7 +178,8 @@ describe("market kinds", () => {
         for (const k of KINDS) {
           const p = w.market[I(k)]?.prices.at(-1) as number;
           expect(Number.isSafeInteger(p), `${k} ${p}`).toBe(true);
-          if (!PENNY.includes(k)) expect(p, `${k} year ${y}`).toBeGreaterThan(0);
+          if (!PENNY.includes(k))
+            expect(p, `${k} year ${y}`).toBeGreaterThan(0);
           maxByKind[k] = Math.max(maxByKind[k] ?? 0, p);
         }
       }
@@ -213,9 +215,17 @@ describe("market kinds", () => {
   test("government bonds pay a coupon and return the principal at maturity", () => {
     let w = life(10_000_00);
     const idx0 = idx;
-    const [bought] = tradeHolding(w, idx0, w.playerId, I("gov-bond-5"), 500_000);
+    const [bought] = tradeHolding(
+      w,
+      idx0,
+      w.playerId,
+      I("gov-bond-5"),
+      500_000,
+    );
     w = bought;
-    expect(me(w).holdings.find((h) => h.kindId === I("gov-bond-5"))).toBeDefined();
+    expect(
+      me(w).holdings.find((h) => h.kindId === I("gov-bond-5")),
+    ).toBeDefined();
     const cash = me(w).money;
     // Hold the bond through the term; its coupon (3% of 5,000.00) arrives each settlement.
     const w1 = play(w, 1);
@@ -333,13 +343,27 @@ describe("trading from a tip", () => {
   test("a buy tip puts 5% or 25% of cash into the kind; a sell tip sells a quarter", () => {
     const w = life(100_000_00);
     const buy = story("tip-total-market");
-    const small = apply(w, buy.choices[0]?.outcomes[0] as CompiledOutcome, "tip-total-market");
-    expect(me(small).holdings.some((h) => h.kindId === I("total-market"))).toBe(true);
+    const small = apply(
+      w,
+      buy.choices[0]?.outcomes[0] as CompiledOutcome,
+      "tip-total-market",
+    );
+    expect(me(small).holdings.some((h) => h.kindId === I("total-market"))).toBe(
+      true,
+    );
     expect(me(small).money).toBe(100_000_00 - 5_000_00);
-    const big = apply(w, buy.choices[1]?.outcomes[0] as CompiledOutcome, "tip-total-market");
+    const big = apply(
+      w,
+      buy.choices[1]?.outcomes[0] as CompiledOutcome,
+      "tip-total-market",
+    );
     expect(me(big).money).toBe(100_000_00 - 25_000_00);
     const sell = story("tip-total-market-sell");
-    const sold = apply(big, sell.choices[0]?.outcomes[0] as CompiledOutcome, "tip-total-market-sell");
+    const sold = apply(
+      big,
+      sell.choices[0]?.outcomes[0] as CompiledOutcome,
+      "tip-total-market-sell",
+    );
     const held = (x: World) =>
       me(x).holdings.find((h) => h.kindId === I("total-market"))?.units ?? 0;
     expect(held(sold)).toBeLessThan(held(big));
@@ -350,7 +374,9 @@ describe("trading from a tip", () => {
   test("selling needs a holding", () => {
     const w = life(100_000_00);
     const sell = story("tip-total-market-sell");
-    expect(evalBool(sell.choices[0]?.when, w, idx, scopeFor(w, undefined, sell.id))).toBe(false);
+    expect(
+      evalBool(sell.choices[0]?.when, w, idx, scopeFor(w, undefined, sell.id)),
+    ).toBe(false);
   });
 });
 
@@ -376,15 +402,25 @@ describe("insider tips", () => {
     expect(eligible(rising, base.p)).toBe(false);
     const holder = held(rising, "acme-robotics");
     expect(eligible(holder, base.p)).toBe(true);
-    expect(eligible(withForecast(holder, "acme-robotics", 1900), base.p)).toBe(false);
+    expect(eligible(withForecast(holder, "acme-robotics", 1900), base.p)).toBe(
+      false,
+    );
     // A bond fund is not on the list.
-    const bond = withForecast(held(base.w, "income-bond-fund"), "income-bond-fund", 3000);
+    const bond = withForecast(
+      held(base.w, "income-bond-fund"),
+      "income-bond-fund",
+      3000,
+    );
     expect(eligible(bond, base.p)).toBe(false);
   });
 
   test("a source tips once a year and the weight is (forecast - 20%) / 1%, capped at 20", () => {
     const base = insiderAt(life(1_000_00));
-    const w = withForecast(withForecast(base.w, "acme-robotics", 2500), "lumen-energy", 9000);
+    const w = withForecast(
+      withForecast(base.w, "acme-robotics", 2500),
+      "lumen-energy",
+      9000,
+    );
     expect(weightTo(w, "insider-tip", "insider-acme-robotics", base.p)).toBe(5);
     expect(weightTo(w, "insider-tip", "insider-lumen-energy", base.p)).toBe(20);
     expect(weightTo(w, "insider-tip", "insider-world-index", base.p)).toBe(0);
@@ -401,7 +437,9 @@ describe("insider tips", () => {
     const act = apply(w, s.choices[0]?.outcomes[0] as CompiledOutcome, s.id);
     expect(qn(act, "invest_insider_age")).toBe(41);
     expect(me(act).money).toBe(60_000_00);
-    expect(me(act).holdings.some((h) => h.kindId === I("acme-robotics"))).toBe(true);
+    expect(me(act).holdings.some((h) => h.kindId === I("acme-robotics"))).toBe(
+      true,
+    );
     const pass = apply(w, s.choices[1]?.outcomes[0] as CompiledOutcome, s.id);
     expect(qn(pass, "invest_insider_age")).toBe(0);
     expect(me(pass).money).toBe(100_000_00);
@@ -414,7 +452,8 @@ describe("scams", () => {
   test("need age 18 and $500; four-year cooldown", () => {
     for (const id of scams) {
       const s = story(id);
-      const t = (w: World) => evalBool(s.when, w, idx, scopeFor(w, undefined, s.id));
+      const t = (w: World) =>
+        evalBool(s.when, w, idx, scopeFor(w, undefined, s.id));
       expect(t(life(50_000, 17))).toBe(false);
       expect(t(life(49_999))).toBe(false);
       expect(t(life(50_000))).toBe(true);
@@ -425,7 +464,12 @@ describe("scams", () => {
   test("the weight falls with smarts and with each scam fallen for, never below 1", () => {
     const s = story("ponzi-scheme");
     const wt = (smarts: number, lost: number) => {
-      const w = setQuality(life(50_000, 30, smarts), "player" in {} ? "" : life(0).playerId, "invest_scams", lost);
+      const w = setQuality(
+        life(50_000, 30, smarts),
+        "player" in {} ? "" : life(0).playerId,
+        "invest_scams",
+        lost,
+      );
       return evalInt(s.weight, w, idx, scopeFor(w, undefined, s.id));
     };
     expect(wt(0, 0)).toBe(2 + Math.trunc(100 / 15));
@@ -453,7 +497,9 @@ describe("scams", () => {
       const spot = apply(w, s.choices[2]?.outcomes[0] as CompiledOutcome, id);
       expect(me(spot).money).toBe(100_000_00);
       expect(me(spot).stats.smarts).toBe(51);
-      expect(me(apply(w, s.choices[3]?.outcomes[0] as CompiledOutcome, id)).money).toBe(100_000_00);
+      expect(
+        me(apply(w, s.choices[3]?.outcomes[0] as CompiledOutcome, id)).money,
+      ).toBe(100_000_00);
     }
   });
 
@@ -475,10 +521,18 @@ describe("scams", () => {
 
 describe("headlines", () => {
   // Both movers flat, so each test moves only the series it names.
-  const w0 = withPrices(withPrices(life(1_000_00), "total-market", 10000, 10000), "quark-coin", 10000, 10000);
-  const index = (w: World, prev: number, cur: number) => withPrices(w, "total-market", prev, cur);
+  const w0 = withPrices(
+    withPrices(life(1_000_00), "total-market", 10000, 10000),
+    "quark-coin",
+    10000,
+    10000,
+  );
+  const index = (w: World, prev: number, cur: number) =>
+    withPrices(w, "total-market", prev, cur);
   const pick = (w: World, id: string) =>
-    weights(w, id).filter((x) => x.ok).map((x) => x.o.text);
+    weights(w, id)
+      .filter((x) => x.ok)
+      .map((x) => x.o.text);
 
   test("exactly one headline outcome is drawable in every year", () => {
     for (const [a, b, c, d] of [
@@ -499,8 +553,12 @@ describe("headlines", () => {
     const text = (w: World) => pick(w, "market-headline")[0] as string;
     expect(text(index(w0, 10000, 7000))).toMatch(/^Markets crash/);
     expect(text(index(w0, 10000, 13000))).toMatch(/^A market rally/);
-    expect(text(withPrices(w0, "quark-coin", 10000, 16000))).toMatch(/^Quark Coin is the story/);
-    expect(text(withPrices(w0, "quark-coin", 10000, 5500))).toMatch(/^Quark Coin loses/);
+    expect(text(withPrices(w0, "quark-coin", 10000, 16000))).toMatch(
+      /^Quark Coin is the story/,
+    );
+    expect(text(withPrices(w0, "quark-coin", 10000, 5500))).toMatch(
+      /^Quark Coin loses/,
+    );
     expect(text(w0)).toMatch(/^Markets drift/);
     // Both qualify: the larger move wins (the index here).
     const both = withPrices(index(w0, 10000, 4000), "quark-coin", 10000, 15000);
@@ -509,7 +567,13 @@ describe("headlines", () => {
 
   test("the statement compares holdings with cash", () => {
     const holder = (cash: number, spend: number) => {
-      const [w] = tradeHolding(life(cash + spend), idx, life(0).playerId, I("total-market"), spend);
+      const [w] = tradeHolding(
+        life(cash + spend),
+        idx,
+        life(0).playerId,
+        I("total-market"),
+        spend,
+      );
       return w;
     };
     const t = (w: World) => pick(w, "portfolio-statement")[0] as string;
@@ -521,18 +585,28 @@ describe("headlines", () => {
   test("headlines need a holding and age 18", () => {
     for (const id of ["market-headline", "portfolio-statement"]) {
       const s = story(id);
-      const t = (w: World) => evalBool(s.when, w, idx, scopeFor(w, undefined, s.id));
+      const t = (w: World) =>
+        evalBool(s.when, w, idx, scopeFor(w, undefined, s.id));
       expect(t(w0)).toBe(false);
-      const [held] = tradeHolding(w0, idx, w0.playerId, I("total-market"), 100_000);
+      const [held] = tradeHolding(
+        w0,
+        idx,
+        w0.playerId,
+        I("total-market"),
+        100_000,
+      );
       expect(t(held)).toBe(true);
-      expect(t(updatePerson(held, held.playerId, (p) => ({ ...p, age: 17 })))).toBe(false);
+      expect(
+        t(updatePerson(held, held.playerId, (p) => ({ ...p, age: 17 }))),
+      ).toBe(false);
     }
   });
 
   test("penny headlines read the surge and the delisting year only", () => {
     const s = story("penny-surge-pinecrest-mining");
     const d = story("penny-delisted-pinecrest-mining");
-    const t = (w: World, st: typeof s) => evalBool(st.when, w, idx, scopeFor(w, undefined, st.id));
+    const t = (w: World, st: typeof s) =>
+      evalBool(st.when, w, idx, scopeFor(w, undefined, st.id));
     const surge = withPrices(w0, "pinecrest-mining", 100, 4000);
     expect(t(surge, s)).toBe(true);
     expect(t(withPrices(w0, "pinecrest-mining", 100, 200), s)).toBe(false);
@@ -547,9 +621,16 @@ describe("shortfall", () => {
   test("living costs never sell holdings", () => {
     let w = life(2_000_00, 40);
     [w] = tradeHolding(w, idx, w.playerId, I("total-market"), 1_500_00);
-    const before = me(w).holdings.find((h) => h.kindId === I("total-market"))?.units;
-    const after = play(updatePerson(w, w.playerId, (p) => ({ ...p, money: 0 })), 3);
-    const units = me(after).holdings.find((h) => h.kindId === I("total-market"))?.units;
+    const before = me(w).holdings.find(
+      (h) => h.kindId === I("total-market"),
+    )?.units;
+    const after = play(
+      updatePerson(w, w.playerId, (p) => ({ ...p, money: 0 })),
+      3,
+    );
+    const units = me(after).holdings.find(
+      (h) => h.kindId === I("total-market"),
+    )?.units;
     expect(units).toBe(before);
   });
 });

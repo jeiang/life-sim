@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/kind.schema.json
+label: Heirloom
+fields:
+  base: { type: int }   # appraised value when found, minor units
+  gain: { type: int }   # percent the value gains each generation it passes down
+  story: { type: string }

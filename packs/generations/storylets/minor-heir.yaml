@@ -1,0 +1,101 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Minor heir".
+
+- id: minor-guardian-takes-in
+  icon: 🏠
+  trigger: succession
+  when: "quality.gen_minor_heir == 1 and living.with_guardian"
+  once: true
+  text: A guardian steps up to take you in, and the family table gets one more chair.
+  choices:
+    - label: Move in and keep the peace
+      outcomes:
+        - weight: 1
+          text: "{player.first_name} unpacks, learns the house rules, and keeps the noise down."
+          effects:
+            - stat.happiness += 2
+    - label: Push back on the new rules
+      outcomes:
+        - weight: 70
+          text: The guardian gives a little on curfew, and so do you.
+          effects:
+            - stat.happiness += 1
+        - weight: 30
+          text: Every dinner turns into a lecture about your future.
+          effects:
+            - stat.happiness -= 4
+
+- id: minor-guardian-review
+  icon: 📋
+  trigger: event
+  scope: person
+  target: [grandparent, aunt-uncle, sibling, cousin]
+  weight: 6
+  when: "quality.gen_minor_heir == 1 and living.with_guardian and age >= 14 and age <= 17 and person.alive and person.age >= 18 and (is_kin(person, grandparent) or (count_kin(grandparent, 18, 200) == 0 and (is_kin(person, \"aunt-uncle\") or (count_kin(\"aunt-uncle\", 18, 200) == 0 and (is_kin(person, sibling) or (count_kin(sibling, 18, 200) == 0 and is_kin(person, cousin)))))))"
+  once: true
+  text: "{person.first_name} {person.last_name} sits you down for a talk about school, money, and who you are hanging out with."
+  choices:
+    - label: Hear them out
+      outcomes:
+        - weight: 1
+          text: You listen, nod, and mean it a little.
+          effects:
+            - relationship(person).closeness += 2
+            - stat.happiness += 1
+    - label: Tell them to back off
+      outcomes:
+        - weight: 60
+          text: They back off, grumbling about the state of young people.
+          effects:
+            - relationship(person).closeness += -2
+        - weight: 40
+          text: They don't back off, and the house gets colder.
+          effects:
+            - relationship(person).closeness += -4
+            - stat.happiness -= 3
+
+- id: minor-on-own
+  icon: 🔑
+  trigger: event
+  weight: 3
+  when: "quality.gen_minor_heir == 1 and living.no_guardian and age < 18"
+  once: true
+  text: No guardian, no curfew, and no one to call when the rent is due.
+  choices:
+    - label: Look for a first job
+      outcomes:
+        - weight: 60
+          text: A diner takes you on for weekend shifts, paid in cash.
+          effects:
+            - money += 12000
+            - stat.happiness -= 1
+        - weight: 40
+          text: Nobody hires a kid with no reference. You try three more places.
+          effects:
+            - stat.happiness -= 3
+    - label: Sign a cheap lease
+      outcomes:
+        - weight: 1
+          text: A landlord rents you a room above a laundromat, with a deposit you can barely cover.
+          effects:
+            - money -= 150000
+            - stat.happiness += 2
+
+- id: minor-handover-at-18
+  icon: 🎓
+  trigger: event
+  weight: 40
+  when: "age == 18 and quality.gen_minor_heir == 1"
+  once: true
+  text: Eighteen. The money your family held for you is all yours to manage now.
+  outcomes:
+    - weight: 60
+      text: You sit down with the statements and make a plan for the money.
+      effects:
+        - stat.smarts += 1
+        - "quality.gen_minor_heir = 0"
+    - weight: 40
+      text: You treat yourself to a car and a trip, and most of it is gone by summer.
+      effects:
+        - stat.happiness += 4
+        - "quality.gen_minor_heir = 0"

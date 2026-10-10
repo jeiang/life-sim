@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Will".
+
+- id: will-make
+  icon: 📜
+  trigger: action
+  menu: assets/estate
+  label: Make or change your will
+  tags: [family]
+  when: age >= 18
+  cooldown: 3
+  text: A notary slides a blank page across the desk. Who gets your money when you are gone?
+  choices:
+    - label: Split the cash evenly among your children
+      when: "count_kin(child, 0, 120) >= 1"
+      outcomes:
+        - weight: 1
+          text: Every child gets an equal share. Fair is fair, even when nobody is thrilled about the amount.
+          effects:
+            - "set_will(even)"
+            - "quality.gen_will_kind = 2"
+    - label: Leave everything to your spouse
+      when: "count_kin(spouse, 0, 120) >= 1"
+      outcomes:
+        - weight: 1
+          text: Your spouse gets the lot. They will know what to do with it, probably.
+          effects:
+            - "set_will(spouse)"
+            - "quality.gen_will_kind = 3"
+    - label: Leave the cash to charity
+      outcomes:
+        - weight: 1
+          text: Every dollar goes to a good cause. Your family wants to know why, and you do not have a good answer.
+          effects:
+            - "set_will(charity)"
+            - "quality.gen_will_kind = 4"
+    - label: Tear up the old will
+      when: "has_will()"
+      outcomes:
+        - weight: 1
+          text: You shred the old will and let the law sort it out. The law is not very interested in your feelings.
+          effects:
+            - "set_will(none)"
+            - "quality.gen_will_kind = 0"
+
+- id: will-heir
+  icon: 👶
+  trigger: action
+  menu: assets/estate
+  label: Name one child as your heir
+  tags: [family]
+  scope: person
+  target: [child, step-child]
+  when: age >= 18
+  cooldown: 3
+  text: Pick the one child who gets all your cash. The rest of the family will hear about it.
+  outcomes:
+    - weight: 1
+      text: "You name {person.first_name} as the one heir. Everything you have in cash is theirs when you go."
+      effects:
+        - "will_heir(person)"
+        - "quality.gen_will_kind = 1"

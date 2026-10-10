@@ -1,0 +1,133 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Generations, chain 3 (aftermath)".
+
+- id: aftermath-grief
+  icon: 🕯️
+  trigger: succession
+  when: "deceased.kin == \"mother\" or deceased.kin == \"father\""
+  once: true
+  text: "{deceased.first_name} {deceased.last_name} died at {deceased.age}. The house still smells like them, and you keep waiting for the door."
+  outcomes:
+    - weight: 60
+      text: The first weeks are the worst. You go through the motions and cry where nobody can see.
+      effects:
+        - stat.happiness -= 8
+        - "schedule(generations/aftermath-anniversary, after: 1-1 years)"
+    - weight: 25
+      text: "You talk about {deceased.first_name} with anyone who will listen. It helps more than you expected."
+      effects:
+        - stat.happiness -= 3
+        - "schedule(generations/aftermath-anniversary, after: 1-1 years)"
+    - weight: 15
+      text: You put on a brave face for everyone, and it costs you more than you admit.
+      effects:
+        - stat.happiness -= 12
+        - "schedule(generations/aftermath-anniversary, after: 1-1 years)"
+
+- id: aftermath-cash-left
+  icon: 🏦
+  trigger: succession
+  when: deceased.money > 0
+  once: true
+  text: "{deceased.first_name} died with {deceased.money} in the bank before the bills were paid. Your share is yours to decide."
+  choices:
+    - label: Treat yourself
+      when: money >= 200000
+      outcomes:
+        - weight: 1
+          text: "You spend a chunk of it on something {deceased.first_name} always said was a waste. You feel a little better for a day."
+          effects:
+            - money -= 200000
+            - stat.happiness += 4
+    - label: Put it away
+      outcomes:
+        - weight: 1
+          text: You open a savings account in your own name and leave it alone. It feels like the responsible thing to do.
+          effects:
+            - stat.happiness += 1
+
+- id: aftermath-sibling-contests
+  icon: ⚖️
+  trigger: event
+  scope: person
+  target: [core-loop/sibling]
+  chance: 10%
+  when: deceased.money > 0 and age >= 16
+  once: true
+  text: "{person.first_name} wants to talk about the money. They have opinions about how it was split, and they are not shy about them."
+  choices:
+    - label: Settle it at the kitchen table
+      outcomes:
+        - weight: 70
+          text: "You sit down and work it out between you. {person.first_name} is not thrilled, but the matter is closed."
+          effects:
+            - relationship(person).closeness += 2
+        - weight: 30
+          text: They want more than the will gave them. The talk ends with a door closing hard.
+          effects:
+            - relationship(person).closeness += -4
+            - stat.happiness -= 3
+    - label: Take it to a lawyer
+      when: money >= 150000
+      outcomes:
+        - weight: 1
+          text: "It is slow and expensive. You win on the paperwork, and {person.first_name} never fully forgives you."
+          effects:
+            - money -= 150000
+            - relationship(person).closeness += -8
+            - stat.happiness -= 4
+
+- id: aftermath-spouse-share
+  icon: 💍
+  trigger: event
+  scope: person
+  target: [core-loop/spouse]
+  chance: 20%
+  when: "deceased.quality.gen_will_kind == 0 and deceased.money > 0"
+  once: true
+  text: "{person.first_name} sits you down. The estate is settled, and they want you to know how it was split."
+  outcomes:
+    - weight: 60
+      text: "{person.first_name} says their share is theirs now and they are grateful it is over. They ask how you are holding up."
+      effects:
+        - relationship(person).closeness += 2
+    - weight: 40
+      text: "{person.first_name} says the split was harder than it should have been. You can hear the grief under the paperwork."
+      effects:
+        - relationship(person).closeness += 1
+        - stat.happiness -= 2
+
+- id: aftermath-family-home
+  icon: 🏠
+  trigger: succession
+  when: owns(core-loop/house) or owns(core-loop/big-house)
+  once: true
+  text: The family house is yours now. Every room has a memory in it, and some of them are not comfortable.
+  outcomes:
+    - weight: 60
+      text: You move your things into the room you grew up in. It feels like home again, even with the empty chair.
+      effects:
+        - stat.happiness += 3
+    - weight: 40
+      text: The house is yours, and so are the bills, the leaking roof and the stairs that creak at night.
+      effects:
+        - stat.happiness -= 2
+
+- id: aftermath-anniversary
+  icon: 🌅
+  trigger: event
+  chance: 0%
+  text: "One year since {deceased.first_name} died. The day comes around without warning."
+  outcomes:
+    - weight: 50
+      text: "You walk to the place {deceased.first_name} used to sit. It helps more than you thought it would."
+      effects:
+        - stat.happiness += 4
+    - weight: 30
+      text: You meant to visit and didn't. The guilt sits with you all day.
+      effects:
+        - stat.happiness -= 3
+    - weight: 20
+      text: You make a small ritual of it, and the day gets a little lighter each year.
+      effects:
+        - stat.happiness += 2

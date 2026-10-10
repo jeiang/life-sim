@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
+# Per-generation bookkeeping. Qualities live on the player's person, so an heir starts each at its default.
+- { id: gen_will_kind, type: int, min: 0, max: 4, default: 0 }   # the will kind the player last wrote: 0 none, 1 heir, 2 even, 3 spouse, 4 charity (metrics; the dead player's value is read as deceased.quality.gen_will_kind)
+- { id: gen_inherit_band, type: int, min: 0, max: 3, default: 0 } # heir age band that opened this generation: 0 under 12, 1 for 12-17, 2 for 18-39, 3 for 40 and up
+- { id: gen_minor_heir, type: int, min: 0, max: 1, default: 0 }           # the heir was under 18 at succession; set in on_succession, cleared at the 18 handover

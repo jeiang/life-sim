@@ -78,6 +78,7 @@ function* effectsOf(b: PackBundle): Generator<Effect> {
     h.on_age_up_pre,
     h.on_age_up_post,
     h.on_death,
+    h.on_succession,
     ...Object.values(h.on_milestone ?? {}),
   ];
   for (const l of lists) for (const st of l ?? []) yield* st;

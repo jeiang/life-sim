@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/state.schema.json
+- { id: gen_generation, kind: counter, type: int, min: 0, max: 999, default: 0 }  # generations lived in this world, 0 for the founder; incremented in on_succession
+# Heirloom record per person: <id>_held (1 while in the family), _value (current value, minor units), _passed (generations passed down), _told (family story told), _sold (sold; the attic never returns it)
+- id: gen_heirloom
+  kind: table
+  keys: [watch_held, watch_value, watch_passed, watch_told, watch_sold, quilt_held, quilt_value, quilt_passed, quilt_told, quilt_sold, clock_held, clock_value, clock_passed, clock_told, clock_sold, violin_held, violin_value, violin_passed, violin_told, violin_sold, letters_held, letters_value, letters_passed, letters_told, letters_sold]
+  min: 0
+  max: 100000000
+  default: 0

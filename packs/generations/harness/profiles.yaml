@@ -1,0 +1,15 @@
+# Simulated player profile of the Generations Pack; the schema is docs/spec/harness.md#simulated-player-profiles.
+profiles:
+  dynasty:
+    description: Builds a family so the line continues. Asks out, proposes, moves in, plans a wedding and tries for a baby, looks for work, writes a will (naming one child as the heir), sells an heirloom when it finds one; never breaks up, cheats, divorces or adopts. Meant for `--generations N` runs
+    default: false
+    moves: 4
+    once_per_year: true
+    choice:
+      prefer: ["ask them out", "propose", "keep the baby", "give it a go", "forgive*"]
+    rules:
+      - ids: [dating/plan-wedding, dating/move-in-together, dating/try-for-a-baby]
+      - ids: ["*/apply-*"]
+      - when: { age_at_least: 30 }
+        ids: [generations/will-heir, generations/will-make]
+      - ids: [dating/date-night, dating/spend-time-with-child]

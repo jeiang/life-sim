@@ -1,0 +1,56 @@
+# Harness metrics for the Generations Pack; the schema is docs/spec/harness.md#pack-metrics.
+# The per-generation numbers (heir availability, inheritance, heir age, minor-heir and insolvent-estate rates, net worth by generation) are the core-loop Pack's generation tables; this section adds the will and the heirlooms of the founder's life. Money is in minor units.
+title: Generations
+intro: The will, the family heirlooms and the succession openers. Run with `--profile dynasty --generations 3` to see the lines continue (a founder with no child ends the line). Each measure is the founder's life; the heirloom and opener numbers of later generations show in the storylet fire rates of the full report.
+measures:
+  will_kind: { quality: gen_will_kind, at: end }
+  will: { when: "will_kind > 0" }
+  will_heir: { when: "will_kind == 1" }
+  will_even: { when: "will_kind == 2" }
+  will_spouse: { when: "will_kind == 3" }
+  will_charity: { when: "will_kind == 4" }
+  wills_written: { fires: { storylet: generations/will-heir } }
+  attic_finds: { fires: { storylet: generations/heirloom-attic-find } }
+  found: { when: "attic_finds > 0" }
+  heirloom_sales: { fires: { storylet: generations/heirloom-sell } }
+  sold: { when: "heirloom_sales > 0" }
+  stories: { fires: { storylet: generations/heirloom-history } }
+  quarrels: { fires: { storylet: generations/heirloom-family-quarrel } }
+  appraisals: { fires: { storylet: generations/heirloom-appraisal } }
+stats:
+  will_share:
+    kind: share
+    when: will
+    by: profile
+    label: died with a will
+  will_by_kind:
+    kind: dist
+    value: will_kind
+    of: will
+    label: will kind among lives with one (1 heir, 2 even, 3 spouse, 4 charity)
+  found_share:
+    kind: share
+    when: found
+    by: profile
+    label: found an heirloom in the attic
+  attic_per_life:
+    kind: mean
+    value: attic_finds
+    by: profile
+    label: attic finds per life
+  sold_share:
+    kind: share
+    when: sold
+    by: profile
+    label: sold an heirloom
+  quarrels_per_life:
+    kind: mean
+    value: quarrels
+    by: profile
+    label: heirloom quarrels per life
+blocks:
+  - text: The will.
+  - stats: [will_share]
+  - stats: [will_by_kind]
+  - text: Heirlooms.
+  - stats: [found_share, attic_per_life, sold_share, quarrels_per_life]

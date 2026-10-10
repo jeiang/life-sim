@@ -1,0 +1,5 @@
+- { id: watch, label: Pocket watch, base: 60000, gain: 8, story: "Your grandfather's pocket watch, still ticking if someone winds it on Sunday." }
+- { id: quilt, label: Patchwork quilt, base: 20000, gain: 5, story: "Forty dresses cut into squares, one for each year your family kept sewing together." }
+- { id: clock, label: Mantel clock, base: 180000, gain: 14, story: "A mantel clock that set the rhythm of three generations of dinners." }
+- { id: violin, label: Violin, base: 900000, gain: 15, story: "A violin with a burned name in the neck, played at every wedding in the county." }
+- { id: letters, label: Bundle of letters, base: 35000, gain: 10, story: "A bundle of letters tied with string, from a long winter nobody talks about." }

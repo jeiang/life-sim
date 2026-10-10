@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# The will, the succession openers, the aftermath and the minor heir; the on_succession bookkeeping.
+provides:
+  qualities:
+    - gen_will_kind
+    - gen_inherit_band
+    - gen_minor_heir
+  state:
+    - gen_generation
+requires:
+  - core-loop/stats
+  - core-loop/family
+  - core-loop/singletons
+  - core-loop/housing
+  - dating/marriage
+  - dating/family

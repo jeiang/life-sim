@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# Five family heirlooms that pass down at succession and gain value; sold for cash from the Assets menu.
+provides:
+  kinds:
+    - gen_heirloom
+  state:
+    - gen_heirloom
+requires:
+  - generations/succession
+  - core-loop/economy

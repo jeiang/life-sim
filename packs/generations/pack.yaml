@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
+id: generations
+namespace: gen
+# The heir takes the family's state forward: the generation counter, the minor-heir flag and the heirlooms.
+# Heirlooms are not holdings: each pass copies the dead player's rows and adds the generation gain to the held ones.
+hooks:
+  on_succession:
+    - world.gen_generation += 1
+    - "quality.gen_minor_heir = age < 18 ? 1 : 0"
+    - table.gen_heirloom.watch_held = deceased.table.gen_heirloom.watch_held
+    - table.gen_heirloom.watch_value = deceased.table.gen_heirloom.watch_value * (100 + kind("gen_heirloom", watch).gain * deceased.table.gen_heirloom.watch_held) / 100
+    - table.gen_heirloom.watch_passed = deceased.table.gen_heirloom.watch_passed + deceased.table.gen_heirloom.watch_held
+    - table.gen_heirloom.watch_told = deceased.table.gen_heirloom.watch_told
+    - table.gen_heirloom.watch_sold = deceased.table.gen_heirloom.watch_sold
+    - table.gen_heirloom.quilt_held = deceased.table.gen_heirloom.quilt_held
+    - table.gen_heirloom.quilt_value = deceased.table.gen_heirloom.quilt_value * (100 + kind("gen_heirloom", quilt).gain * deceased.table.gen_heirloom.quilt_held) / 100
+    - table.gen_heirloom.quilt_passed = deceased.table.gen_heirloom.quilt_passed + deceased.table.gen_heirloom.quilt_held
+    - table.gen_heirloom.quilt_told = deceased.table.gen_heirloom.quilt_told
+    - table.gen_heirloom.quilt_sold = deceased.table.gen_heirloom.quilt_sold
+    - table.gen_heirloom.clock_held = deceased.table.gen_heirloom.clock_held
+    - table.gen_heirloom.clock_value = deceased.table.gen_heirloom.clock_value * (100 + kind("gen_heirloom", clock).gain * deceased.table.gen_heirloom.clock_held) / 100
+    - table.gen_heirloom.clock_passed = deceased.table.gen_heirloom.clock_passed + deceased.table.gen_heirloom.clock_held
+    - table.gen_heirloom.clock_told = deceased.table.gen_heirloom.clock_told
+    - table.gen_heirloom.clock_sold = deceased.table.gen_heirloom.clock_sold
+    - table.gen_heirloom.violin_held = deceased.table.gen_heirloom.violin_held
+    - table.gen_heirloom.violin_value = deceased.table.gen_heirloom.violin_value * (100 + kind("gen_heirloom", violin).gain * deceased.table.gen_heirloom.violin_held) / 100
+    - table.gen_heirloom.violin_passed = deceased.table.gen_heirloom.violin_passed + deceased.table.gen_heirloom.violin_held
+    - table.gen_heirloom.violin_told = deceased.table.gen_heirloom.violin_told
+    - table.gen_heirloom.violin_sold = deceased.table.gen_heirloom.violin_sold
+    - table.gen_heirloom.letters_held = deceased.table.gen_heirloom.letters_held
+    - table.gen_heirloom.letters_value = deceased.table.gen_heirloom.letters_value * (100 + kind("gen_heirloom", letters).gain * deceased.table.gen_heirloom.letters_held) / 100
+    - table.gen_heirloom.letters_passed = deceased.table.gen_heirloom.letters_passed + deceased.table.gen_heirloom.letters_held
+    - table.gen_heirloom.letters_told = deceased.table.gen_heirloom.letters_told
+    - table.gen_heirloom.letters_sold = deceased.table.gen_heirloom.letters_sold

@@ -1,0 +1,4 @@
+allow:
+  - code: L003
+    subject: generations/aftermath-anniversary
+    reason: "Opened by `schedule(generations/aftermath-anniversary, after: 1-1 years)` from every outcome of aftermath-grief; lint follows `next` only."

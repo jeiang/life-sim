@@ -1,0 +1,101 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Succession openers".
+
+- id: inherit-under-12
+  trigger: succession
+  tags: [family]
+  when: age < 12
+  once: true
+  text: "Your {deceased.kin} died of {deceased.cause} at {deceased.age}. A lawyer explains it slowly, and you nod like you understand."
+  choices:
+    - label: Ask whether it hurt
+      outcomes:
+        - weight: 1
+          text: You ask whether it hurt. The lawyer pauses, then answers you honestly and kindly.
+          effects:
+            - stat.happiness -= 3
+            - "quality.gen_inherit_band = 0"
+            - "journal(\"Your parent died when you were small. You asked the question nobody wanted to answer.\")"
+    - label: Pretend you are fine
+      outcomes:
+        - weight: 1
+          text: You go to school the next day and tell everyone you are fine. Nobody believes you, but they let you pretend.
+          effects:
+            - stat.happiness -= 2
+            - "quality.gen_inherit_band = 0"
+            - "journal(\"You went back to school the next day and said you were fine.\")"
+
+- id: inherit-12-17
+  trigger: succession
+  tags: [family]
+  when: age >= 12 and age < 18
+  once: true
+  text: "Your {deceased.kin} died of {deceased.cause}. Suddenly the household is your problem, and school is still your problem too."
+  choices:
+    - label: Keep the house running
+      outcomes:
+        - weight: 1
+          text: You take over the chores, the bills folder, and the grocery list. It is more than anyone asked of you, and you do it anyway.
+          effects:
+            - stat.happiness -= 2
+            - stat.smarts += 1
+            - "quality.gen_inherit_band = 1"
+            - "journal(\"At seventeen, or younger, you became the one who kept the house going.\")"
+    - label: Tell the school you need time
+      outcomes:
+        - weight: 1
+          text: The counselor offers a few weeks off and a box of tissues. You take the weeks and leave the tissues.
+          effects:
+            - stat.happiness += 1
+            - stat.smarts -= 1
+            - "quality.gen_inherit_band = 1"
+            - "journal(\"School gave you a few weeks off after your parent died.\")"
+
+- id: inherit-18-39
+  trigger: succession
+  tags: [family]
+  when: age >= 18 and age < 40
+  once: true
+  text: "Your {deceased.kin} died of {deceased.cause} at {deceased.age}. You are an adult now, and the paperwork is yours to sign."
+  choices:
+    - label: Sign what the lawyer puts in front of you
+      outcomes:
+        - weight: 1
+          text: The estate settles in a stack of forms and a pen that never seems to work. You sign where the little flags say to.
+          effects:
+            - stat.happiness -= 2
+            - "quality.gen_inherit_band = 2"
+            - "journal(\"You signed the estate papers and took over what was left.\")"
+    - label: Ask what was left
+      outcomes:
+        - weight: 1
+          text: "The estate holds {deceased.money} before the bills. It is not much, but it is something, after the bills are paid."
+          effects:
+            - stat.happiness += 1
+            - "quality.gen_inherit_band = 2"
+            - "journal(\"The estate paid out what was left after the bills.\")"
+
+- id: inherit-40-plus
+  trigger: succession
+  tags: [family]
+  when: age >= 40
+  once: true
+  text: "Your {deceased.kin} died at {deceased.age} of {deceased.cause}. You half expected the call, and it still lands hard."
+  choices:
+    - label: Take the family books in hand
+      outcomes:
+        - weight: 1
+          text: You take the folder of statements and the old recipe box home. Somewhere in there is your whole childhood, filed by date.
+          effects:
+            - stat.happiness -= 2
+            - stat.smarts += 1
+            - "quality.gen_inherit_band = 3"
+            - "journal(\"You took the family papers home and started going through them.\")"
+    - label: Let your own kids lead the arrangements
+      outcomes:
+        - weight: 1
+          text: Your children pick the flowers and the hymn. You are proud of them and a little sad that they had to.
+          effects:
+            - stat.happiness += 1
+            - "quality.gen_inherit_band = 3"
+            - "journal(\"Your children arranged the funeral, and you let them.\")"

@@ -1,0 +1,209 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Family heirlooms".
+
+- id: heirloom-attic-find
+  icon: 📦
+  trigger: event
+  weight: 8
+  when: "age >= 20 and age <= 60 and ((table.gen_heirloom.watch_held == 0 and table.gen_heirloom.watch_sold == 0) or (table.gen_heirloom.quilt_held == 0 and table.gen_heirloom.quilt_sold == 0) or (table.gen_heirloom.clock_held == 0 and table.gen_heirloom.clock_sold == 0) or (table.gen_heirloom.violin_held == 0 and table.gen_heirloom.violin_sold == 0) or (table.gen_heirloom.letters_held == 0 and table.gen_heirloom.letters_sold == 0))"
+  max_per_life: 5
+  text: Clearing out the attic, you find a dusty box with something older than you.
+  outcomes:
+    - weight: 25
+      when: "table.gen_heirloom.watch_held == 0 and table.gen_heirloom.watch_sold == 0"
+      text: "A pocket watch, stopped at 4:17, sits under a yellowed sheet. Someone wound it every Sunday once."
+      effects:
+        - "table.gen_heirloom.watch_held = 1"
+        - "table.gen_heirloom.watch_value = kind(\"gen_heirloom\", watch).base"
+    - weight: 30
+      when: "table.gen_heirloom.quilt_held == 0 and table.gen_heirloom.quilt_sold == 0"
+      text: A patchwork quilt, every square cut from a different dress. It smells like cedar.
+      effects:
+        - "table.gen_heirloom.quilt_held = 1"
+        - "table.gen_heirloom.quilt_value = kind(\"gen_heirloom\", quilt).base"
+    - weight: 20
+      when: "table.gen_heirloom.clock_held == 0 and table.gen_heirloom.clock_sold == 0"
+      text: A mantel clock with a cracked face. It still keeps good time, which is more than you can say for you.
+      effects:
+        - "table.gen_heirloom.clock_held = 1"
+        - "table.gen_heirloom.clock_value = kind(\"gen_heirloom\", clock).base"
+    - weight: 10
+      when: "table.gen_heirloom.violin_held == 0 and table.gen_heirloom.violin_sold == 0"
+      text: A violin in a dented case, with a name burned into the neck. The strings are still tight.
+      effects:
+        - "table.gen_heirloom.violin_held = 1"
+        - "table.gen_heirloom.violin_value = kind(\"gen_heirloom\", violin).base"
+    - weight: 15
+      when: "table.gen_heirloom.letters_held == 0 and table.gen_heirloom.letters_sold == 0"
+      text: A bundle of letters tied with string. Nobody has read them in years, and the handwriting is lovely.
+      effects:
+        - "table.gen_heirloom.letters_held = 1"
+        - "table.gen_heirloom.letters_value = kind(\"gen_heirloom\", letters).base"
+
+- id: heirloom-history
+  icon: 📜
+  trigger: event
+  weight: 6
+  when: "(table.gen_heirloom.watch_passed >= 1 and table.gen_heirloom.watch_told == 0) or (table.gen_heirloom.quilt_passed >= 1 and table.gen_heirloom.quilt_told == 0) or (table.gen_heirloom.clock_passed >= 1 and table.gen_heirloom.clock_told == 0) or (table.gen_heirloom.violin_passed >= 1 and table.gen_heirloom.violin_told == 0) or (table.gen_heirloom.letters_passed >= 1 and table.gen_heirloom.letters_told == 0)"
+  max_per_life: 5
+  text: At dinner, someone finally tells the story behind one of the family pieces.
+  outcomes:
+    - weight: 12
+      when: "table.gen_heirloom.watch_passed >= 1 and table.gen_heirloom.watch_told == 0"
+      text: Your grandfather kept the pocket watch wound every Sunday and was never late to anything. You are starting to see where you get it.
+      effects:
+        - stat.happiness += 2
+        - "table.gen_heirloom.watch_told = 1"
+    - weight: 8
+      when: "table.gen_heirloom.watch_passed >= 1 and table.gen_heirloom.watch_told == 0"
+      text: The watch was pawned during a family feud forty years ago, and nobody agrees on who did it. The argument is back on the table.
+      effects:
+        - stat.happiness -= 1
+        - "table.gen_heirloom.watch_told = 1"
+    - weight: 12
+      when: "table.gen_heirloom.quilt_passed >= 1 and table.gen_heirloom.quilt_told == 0"
+      text: Each square in the quilt came from a dress one of your aunts wore to a dance. Someone starts naming them one by one.
+      effects:
+        - stat.happiness += 2
+        - "table.gen_heirloom.quilt_told = 1"
+    - weight: 8
+      when: "table.gen_heirloom.quilt_passed >= 1 and table.gen_heirloom.quilt_told == 0"
+      text: Two cousins still say the quilt should have gone to them, not to whoever got it. Dinner gets quiet for a while.
+      effects:
+        - stat.happiness -= 1
+        - "table.gen_heirloom.quilt_told = 1"
+    - weight: 12
+      when: "table.gen_heirloom.clock_passed >= 1 and table.gen_heirloom.clock_told == 0"
+      text: Your great-grandfather set the clock every night by the radio news. Hearing that makes it feel less like a relic and more like a habit.
+      effects:
+        - stat.happiness += 2
+        - "table.gen_heirloom.clock_told = 1"
+    - weight: 8
+      when: "table.gen_heirloom.clock_passed >= 1 and table.gen_heirloom.clock_told == 0"
+      text: The clock stopped the night your uncle left town. The family still disagrees about whether he meant to leave it behind.
+      effects:
+        - stat.happiness -= 1
+        - "table.gen_heirloom.clock_told = 1"
+    - weight: 12
+      when: "table.gen_heirloom.violin_passed >= 1 and table.gen_heirloom.violin_told == 0"
+      text: The violin belonged to a cousin who played weddings all over the county and never once missed a cue. Her friends still tell that story.
+      effects:
+        - stat.happiness += 2
+        - "table.gen_heirloom.violin_told = 1"
+    - weight: 8
+      when: "table.gen_heirloom.violin_passed >= 1 and table.gen_heirloom.violin_told == 0"
+      text: The violin was promised to your mother, then given to a neighbor. That story has been finishing its argument for forty years.
+      effects:
+        - stat.happiness -= 1
+        - "table.gen_heirloom.violin_told = 1"
+    - weight: 12
+      when: "table.gen_heirloom.letters_passed >= 1 and table.gen_heirloom.letters_told == 0"
+      text: The letters are from a grandmother writing to her sister through a long winter. Reading the first few makes everyone smile.
+      effects:
+        - stat.happiness += 2
+        - "table.gen_heirloom.letters_told = 1"
+    - weight: 8
+      when: "table.gen_heirloom.letters_passed >= 1 and table.gen_heirloom.letters_told == 0"
+      text: The letters are from a grandfather to someone outside the marriage. Nobody wants to say whose side they were on.
+      effects:
+        - stat.happiness -= 1
+        - "table.gen_heirloom.letters_told = 1"
+
+- id: heirloom-appraisal
+  icon: 💎
+  trigger: event
+  weight: 6
+  when: "table.gen_heirloom.watch_held == 1 or table.gen_heirloom.quilt_held == 1 or table.gen_heirloom.clock_held == 1 or table.gen_heirloom.violin_held == 1 or table.gen_heirloom.letters_held == 1"
+  max_per_life: 5
+  text: A local appraiser offers to look over one of the family pieces for free.
+  outcomes:
+    - weight: 70
+      text: The appraiser says it is worth what you hoped, and you learn a few things about old craftsmanship along the way.
+      effects:
+        - stat.smarts += 1
+    - weight: 30
+      text: The appraiser calls it a fine piece, just not a valuable one. You feel a little silly for hoping.
+      effects:
+        - stat.happiness -= 2
+
+- id: heirloom-family-quarrel
+  icon: 😤
+  trigger: event
+  scope: person
+  target: [core-loop/sibling]
+  weight: 6
+  when: "table.gen_heirloom.watch_held == 1 or table.gen_heirloom.quilt_held == 1 or table.gen_heirloom.clock_held == 1 or table.gen_heirloom.violin_held == 1 or table.gen_heirloom.letters_held == 1"
+  cooldown: 30
+  text: Your sibling has noticed the family piece in your house, and they want a say in what happens to it.
+  choices:
+    - label: Keep it
+      outcomes:
+        - weight: 1
+          text: You say no, and the room goes cold for the rest of the night.
+          effects:
+            - relationship(person).closeness += -2
+            - stat.happiness -= 1
+    - label: Offer a small keepsake
+      outcomes:
+        - weight: 1
+          text: You pass over a smaller keepsake from the box. It is not the same, but it helps.
+          effects:
+            - relationship(person).closeness += 2
+
+- id: heirloom-sell
+  icon: 💰
+  trigger: action
+  menu: assets/heirlooms
+  label: Sell a family heirloom
+  text: Dust off a family piece and see what someone will pay for it.
+  choices:
+    - label: Sell the watch
+      when: "table.gen_heirloom.watch_held == 1"
+      outcomes:
+        - weight: 1
+          text: The dealer turns the watch over twice, then counts out the cash without looking up.
+          effects:
+            - "money += table.gen_heirloom.watch_value"
+            - "table.gen_heirloom.watch_held = 0"
+            - "table.gen_heirloom.watch_value = 0"
+            - "table.gen_heirloom.watch_sold = 1"
+    - label: Sell the quilt
+      when: "table.gen_heirloom.quilt_held == 1"
+      outcomes:
+        - weight: 1
+          text: The dealer runs a thumb over the stitching and makes you an offer you take.
+          effects:
+            - "money += table.gen_heirloom.quilt_value"
+            - "table.gen_heirloom.quilt_held = 0"
+            - "table.gen_heirloom.quilt_value = 0"
+            - "table.gen_heirloom.quilt_sold = 1"
+    - label: Sell the clock
+      when: "table.gen_heirloom.clock_held == 1"
+      outcomes:
+        - weight: 1
+          text: The clock goes to a collector who promises to wind it on the hour. You doubt they will.
+          effects:
+            - "money += table.gen_heirloom.clock_value"
+            - "table.gen_heirloom.clock_held = 0"
+            - "table.gen_heirloom.clock_value = 0"
+            - "table.gen_heirloom.clock_sold = 1"
+    - label: Sell the violin
+      when: "table.gen_heirloom.violin_held == 1"
+      outcomes:
+        - weight: 1
+          text: A music shop owner plays one scale, nods, and writes a check that is more than you expected.
+          effects:
+            - "money += table.gen_heirloom.violin_value"
+            - "table.gen_heirloom.violin_held = 0"
+            - "table.gen_heirloom.violin_value = 0"
+            - "table.gen_heirloom.violin_sold = 1"
+    - label: Sell the letters
+      when: "table.gen_heirloom.letters_held == 1"
+      outcomes:
+        - weight: 1
+          text: A dealer in old paper gives you a modest sum and does not ask what the letters say.
+          effects:
+            - "money += table.gen_heirloom.letters_value"
+            - "table.gen_heirloom.letters_held = 0"
+            - "table.gen_heirloom.letters_value = 0"
+            - "table.gen_heirloom.letters_sold = 1"

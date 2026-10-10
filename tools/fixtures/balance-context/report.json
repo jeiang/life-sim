@@ -1,0 +1,495 @@
+{
+  "lives": 300,
+  "run": {
+    "seed": 1,
+    "profiles": ["random", "studious", "spender", "idle", "gambler"]
+  },
+  "faults": {
+    "total": 0,
+    "byKind": {},
+    "first": []
+  },
+  "storylets": {
+    "total": 270,
+    "fired": {
+      "core-loop/flu-season": 1990,
+      "core-loop/roll-family-wealth": 300,
+      "dating/roll-attraction": 300,
+      "core-loop/first-words": 300,
+      "core-loop/first-steps": 300,
+      "core-loop/spend-time-with-loved-ones": 1181,
+      "core-loop/imaginary-friend": 299,
+      "core-loop/have-a-conversation": 982,
+      "core-loop/tooth-fairy-doubt": 181,
+      "core-loop/loose-tooth": 784,
+      "core-loop/pet-goldfish": 287,
+      "core-loop/everyday-stress": 9637,
+      "core-loop/start-elementary-school": 298,
+      "core-loop/corner-lemonade-stall": 235,
+      "core-loop/school-play": 906,
+      "core-loop/new-kid-in-class": 190,
+      "core-loop/learned-to-ride-a-bike": 297,
+      "core-loop/person-new-job": 1167,
+      "core-loop/piano-ask": 129,
+      "core-loop/lemonade-stand": 689,
+      "core-loop/sibling-graduates": 272,
+      "core-loop/school-play-audition": 173,
+      "core-loop/sleepover": 777,
+      "core-loop/friend-from-nowhere": 522,
+      "core-loop/befriend": 500,
+      "vacations/family-trip": 188,
+      "core-loop/toy-swap": 157,
+      "core-loop/grandparent-story": 186,
+      "vacations/family-trip-bond": 186,
+      "core-loop/meditate": 95,
+      "core-loop/start-high-school": 298,
+      "core-loop/treehouse-plans": 111,
+      "core-loop/secret-diary": 130,
+      "core-loop/sports-trial": 196,
+      "core-loop/growth-spurt": 226,
+      "core-loop/study-night": 125,
+      "core-loop/sleepover-invite": 200,
+      "core-loop/cheat-on-test": 141,
+      "core-loop/acne-flare": 322,
+      "core-loop/science-fair": 361
+    },
+    "top10": [
+      {
+        "id": "core-loop/everyday-stress",
+        "count": 9637
+      },
+      {
+        "id": "core-loop/mind-wanders",
+        "count": 4965
+      },
+      {
+        "id": "core-loop/visit-library",
+        "count": 4107
+      },
+      {
+        "id": "gambling/year-at-the-tables",
+        "count": 3513
+      },
+      {
+        "id": "core-loop/lost-keys",
+        "count": 3270
+      },
+      {
+        "id": "core-loop/good-hair-day",
+        "count": 3098
+      },
+      {
+        "id": "core-loop/lucky-parking",
+        "count": 3083
+      },
+      {
+        "id": "core-loop/old-friend-reunion",
+        "count": 2835
+      },
+      {
+        "id": "core-loop/new-hobby",
+        "count": 2410
+      },
+      {
+        "id": "core-loop/cooking-streak",
+        "count": 2393
+      }
+    ],
+    "neverFired": [],
+    "chainStepsNeverFired": []
+  },
+  "eventsPerYear": {
+    "mean": 4.98,
+    "years": 21381,
+    "distribution": {}
+  },
+  "decisions": {
+    "years": 20182,
+    "atLeast1": 90.2,
+    "atLeast2": 49.4,
+    "atLeast3": 28.6,
+    "noEligible": 14,
+    "noEligibleYearShare": 0,
+    "byProfile": {
+      "gambler": {
+        "atLeast1": 90.5,
+        "atLeast2": 49.7,
+        "atLeast3": 27.3
+      },
+      "idle": {
+        "atLeast1": 90.3,
+        "atLeast2": 51,
+        "atLeast3": 30.2
+      },
+      "random": {
+        "atLeast1": 89.9,
+        "atLeast2": 49.1,
+        "atLeast3": 29
+      },
+      "spender": {
+        "atLeast1": 89.2,
+        "atLeast2": 48,
+        "atLeast3": 27.7
+      },
+      "studious": {
+        "atLeast1": 91.1,
+        "atLeast2": 49.2,
+        "atLeast3": 28.8
+      }
+    }
+  },
+  "capDrops": {
+    "gambling": 12
+  },
+  "death": {
+    "ended": 300,
+    "unfinished": 0,
+    "age": {
+      "n": 300,
+      "mean": 71.27,
+      "min": 3,
+      "p10": 52,
+      "p50": 71,
+      "p90": 91,
+      "p99": 102,
+      "max": 105
+    },
+    "ageHistogram": {},
+    "causes": {}
+  },
+  "netWorth": {
+    "18": {
+      "n": 294,
+      "mean": 1127519.01,
+      "min": -10000,
+      "p10": 0,
+      "p50": 29300,
+      "p90": 3209500,
+      "p99": 4589600,
+      "max": 4768300
+    },
+    "40": {
+      "n": 289,
+      "mean": 32864607.48,
+      "min": -8008269,
+      "p10": 0,
+      "p50": 26770700,
+      "p90": 78070947,
+      "p99": 149025871,
+      "max": 159510924
+    },
+    "65": {
+      "n": 207,
+      "mean": 131103075,
+      "min": -19459436,
+      "p10": 0,
+      "p50": 127063381,
+      "p90": 276735928,
+      "p99": 390167368,
+      "max": 538019256
+    }
+  },
+  "rates": {
+    "degree": 27.2,
+    "employment": 71.5,
+    "everEmployed": 78.9,
+    "retirement": 27.9
+  },
+  "loans": {
+    "opened": 1216,
+    "defaulted": 264,
+    "defaultRate": 21.7,
+    "repossessions": 44
+  },
+  "housing": {
+    "moveOutAge": {
+      "n": 290,
+      "mean": 31.93,
+      "min": 18,
+      "p10": 19,
+      "p50": 33,
+      "p90": 41,
+      "p99": 59,
+      "max": 60
+    },
+    "movedOut": 98.6,
+    "kickedOut": 90.8,
+    "withParents30": 60.5,
+    "withParents40": 11.8,
+    "byProfile": {
+      "gambler": {
+        "movedOut": 96.7,
+        "kickedOut": 93.3,
+        "withParents30": 66.7,
+        "withParents40": 22
+      },
+      "idle": {
+        "movedOut": 98.3,
+        "kickedOut": 94.9,
+        "withParents30": 67.8,
+        "withParents40": 7
+      },
+      "random": {
+        "movedOut": 100,
+        "kickedOut": 71.2,
+        "withParents30": 39,
+        "withParents40": 12.3
+      },
+      "spender": {
+        "movedOut": 98.2,
+        "kickedOut": 96.5,
+        "withParents30": 64.9,
+        "withParents40": 8.8
+      },
+      "studious": {
+        "movedOut": 100,
+        "kickedOut": 98.3,
+        "withParents30": 64.4,
+        "withParents40": 8.5
+      }
+    }
+  },
+  "living": {
+    "standards": [
+      "core-loop/homeless",
+      "core-loop/thrifty",
+      "core-loop/average",
+      "core-loop/above-average",
+      "core-loop/wealthy",
+      "core-loop/rich",
+      "core-loop/ultra-rich"
+    ],
+    "byAge": {
+      "10": {
+        "parents": 100
+      },
+      "20": {
+        "core-loop/average": 2.4,
+        "core-loop/homeless": 9.9,
+        "core-loop/thrifty": 0.3,
+        "parents": 87.4
+      },
+      "30": {
+        "core-loop/above-average": 0.3,
+        "core-loop/average": 12.2,
+        "core-loop/homeless": 24.5,
+        "core-loop/thrifty": 2.4,
+        "parents": 60.5
+      },
+      "40": {
+        "core-loop/above-average": 0.3,
+        "core-loop/average": 44.3,
+        "core-loop/homeless": 38.1,
+        "core-loop/rich": 0.3,
+        "core-loop/thrifty": 5.2,
+        "parents": 11.8
+      },
+      "50": {
+        "core-loop/above-average": 0.7,
+        "core-loop/average": 51.4,
+        "core-loop/homeless": 40.9,
+        "core-loop/thrifty": 5.1,
+        "parents": 1.8
+      },
+      "60": {
+        "core-loop/average": 52.5,
+        "core-loop/homeless": 42.1,
+        "core-loop/thrifty": 4.1,
+        "core-loop/ultra-rich": 0.8,
+        "core-loop/wealthy": 0.4
+      },
+      "70": {
+        "core-loop/above-average": 1.2,
+        "core-loop/average": 53,
+        "core-loop/homeless": 40.4,
+        "core-loop/thrifty": 4.2,
+        "core-loop/wealthy": 1.2
+      },
+      "80": {
+        "core-loop/average": 48.8,
+        "core-loop/homeless": 41.5,
+        "core-loop/thrifty": 6.1,
+        "core-loop/wealthy": 3.7
+      },
+      "90": {
+        "core-loop/average": 43.8,
+        "core-loop/homeless": 43.8,
+        "core-loop/thrifty": 6.3,
+        "core-loop/ultra-rich": 3.1,
+        "core-loop/wealthy": 3.1
+      },
+      "100": {
+        "core-loop/above-average": 16.7,
+        "core-loop/average": 33.3,
+        "core-loop/homeless": 50
+      }
+    },
+    "homelessYearShare": 44.9,
+    "onOwnYearShare": 74.1,
+    "homelessByProfile": {
+      "gambler": 0.1,
+      "idle": 100,
+      "random": 60.1,
+      "spender": 20.2,
+      "studious": 36.5
+    },
+    "costShare": {
+      "alone": {
+        "n": 6236,
+        "mean": 27.02,
+        "min": 0,
+        "p10": 0,
+        "p50": 21.3,
+        "p90": 52.4,
+        "p99": 225,
+        "max": 1120
+      },
+      "1 child": {
+        "n": 6236,
+        "mean": 38.35,
+        "min": 3.4,
+        "p10": 6.4,
+        "p50": 28.6,
+        "p90": 64.9,
+        "p99": 275,
+        "max": 1134.9
+      },
+      "2 children": {
+        "n": 6236,
+        "mean": 49.67,
+        "min": 6.8,
+        "p10": 12.8,
+        "p50": 34,
+        "p90": 91,
+        "p99": 325,
+        "max": 1149.9
+      },
+      "partner shares": {
+        "n": 6236,
+        "mean": 13.51,
+        "min": 0,
+        "p10": 0,
+        "p50": 10.6,
+        "p90": 26.2,
+        "p99": 112.5,
+        "max": 560
+      },
+      "2 children + partner shares": {
+        "n": 6236,
+        "mean": 36.16,
+        "min": 6.8,
+        "p10": 12.8,
+        "p50": 23.8,
+        "p90": 73.7,
+        "p99": 212.5,
+        "max": 589.9
+      }
+    }
+  },
+  "packMetrics": {
+    "gambling": {
+      "title": "Gambling",
+      "blocks": [],
+      "stats": {
+        "gambled": {
+          "label": "staked anything",
+          "kind": "share",
+          "format": "percent",
+          "byProfile": true,
+          "ages": [],
+          "keyed": false,
+          "rows": [
+            {
+              "group": "all",
+              "value": 84.7
+            },
+            {
+              "group": "gambler",
+              "value": 100
+            },
+            {
+              "group": "idle",
+              "value": 50
+            },
+            {
+              "group": "random",
+              "value": 98.3
+            },
+            {
+              "group": "spender",
+              "value": 81.7
+            },
+            {
+              "group": "studious",
+              "value": 93.3
+            }
+          ]
+        },
+        "stakes_per_gambler": {
+          "label": "lifetime stakes per gambler (minor units)",
+          "kind": "dist",
+          "format": "number",
+          "byProfile": false,
+          "ages": [],
+          "keyed": false,
+          "rows": [
+            {
+              "value": {
+                "n": 254,
+                "mean": 9318743.6,
+                "min": 1000,
+                "p10": 15030,
+                "p50": 400000,
+                "p90": 38512000,
+                "p99": 57941200,
+                "max": 68004000
+              }
+            }
+          ]
+        },
+        "return": {
+          "label": "realised return",
+          "kind": "ratio",
+          "format": "percent",
+          "byProfile": false,
+          "ages": [],
+          "keyed": true,
+          "rows": [
+            {
+              "key": "gambling/bet-on-horse-races",
+              "value": 98.6
+            },
+            {
+              "key": "gambling/buy-lottery-ticket",
+              "value": 47.4
+            },
+            {
+              "key": "gambling/play-baccarat",
+              "value": 91.3
+            },
+            {
+              "key": "gambling/play-blackjack",
+              "value": 71.4
+            },
+            {
+              "key": "gambling/play-poker",
+              "value": 71.7
+            },
+            {
+              "key": "gambling/play-roulette",
+              "value": 104.8
+            },
+            {
+              "key": "gambling/play-slots",
+              "value": 96.1
+            },
+            {
+              "key": "gambling/roll-craps",
+              "value": 74.5
+            }
+          ]
+        }
+      }
+    }
+  }
+}

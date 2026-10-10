@@ -254,9 +254,7 @@ export function makeProfile(
         if (ageAtLeast !== undefined && (me?.age ?? 0) < ageAtLeast) continue;
         if (rule.shop) {
           const buyable = listShop(w, ctx.bundles).filter(
-            (r) =>
-              !r.locked &&
-              (rule.ids === null || anyOf(rule.ids, r.id)),
+            (r) => !r.locked && (rule.ids === null || anyOf(rule.ids, r.id)),
           );
           if (buyable.length === 0) continue;
           const row = pick(buyable, rng);

@@ -90,7 +90,10 @@ export interface ForceScript {
   readonly description: string;
   readonly profile?: string;
   /** Generations each life continues for (`generations`) and who inherits (`heir`); absent: one life. */
-  readonly lineage?: { readonly generations: number; readonly heir: HeirPolicy };
+  readonly lineage?: {
+    readonly generations: number;
+    readonly heir: HeirPolicy;
+  };
   readonly entries: readonly ForceEntry[];
 }
 
@@ -236,7 +239,13 @@ export function compileScript(
   registry: readonly ProfileSpec[],
 ): { script: ForceScript | null; diagnostics: Diagnostic[] } {
   const l = new Loader(src);
-  const top = l.obj([], src.value, ["description", "profile", "generations", "heir", "steps"]);
+  const top = l.obj([], src.value, [
+    "description",
+    "profile",
+    "generations",
+    "heir",
+    "steps",
+  ]);
   if (!top) return { script: null, diagnostics: l.diags };
   const description =
     top.description === undefined

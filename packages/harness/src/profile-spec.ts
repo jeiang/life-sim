@@ -161,7 +161,8 @@ function globList(
     const s = l.str([...path, i], g, "a pattern string");
     if (s === null) return;
     const re = globToRegExp(s, anyChar, flags);
-    if (known && !known(re)) l.err([...path, i], `'${s}' matches no action or item`);
+    if (known && !known(re))
+      l.err([...path, i], `'${s}' matches no action or item`);
     out.push(re);
   });
   return out;

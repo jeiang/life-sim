@@ -84,16 +84,21 @@ describe("repeatable actions", () => {
 
   test("a next: chain keeps the repeat factor, through a pending choice and a save", () => {
     const lastGain = (n: number) => {
+      const happiness = (x: World): number => {
+        const h = player(x).stats.happiness;
+        if (h === undefined) throw new Error("player has no happiness stat");
+        return h;
+      };
       let w = fresh();
       let before = 0;
       for (let i = 0; i < n; i++) {
-        before = player(w).stats.happiness;
+        before = happiness(w);
         w = use(w, "life/train-chain");
         expect(w.pending?.storyletId).toBe("life/chain-ask");
         w = deserializeWorld(serializeWorld(w));
         w = choose(w, bundles, 0).world;
       }
-      return player(w).stats.happiness - before;
+      return happiness(w) - before;
     };
     // the last use's three +10 steps: all kept, then half (5 each), then nothing
     expect(lastGain(1)).toBe(30);

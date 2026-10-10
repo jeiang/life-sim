@@ -96,9 +96,18 @@
             doCheck = true;
             checkPhase = ''
               pnpm exec vitest run
-              pnpm --filter @life/core exec tsc --noEmit
-              pnpm --filter @life/pack-tools exec tsc --noEmit
-              pnpm --filter @life/harness exec tsc --noEmit
+            '';
+            installPhase = "touch $out";
+          };
+          # Every workspace package's typecheck script, including core's test project.
+          typecheck = pkgs.stdenvNoCC.mkDerivation {
+            name = "life-sim-check-typecheck";
+            inherit src pnpmDeps;
+            nativeBuildInputs = [ pkgs.nodejs_24 pkgs.pnpm_10 pkgs.pnpmConfigHook ];
+            dontBuild = true;
+            doCheck = true;
+            checkPhase = ''
+              pnpm -r typecheck
             '';
             installPhase = "touch $out";
           };

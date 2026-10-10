@@ -221,6 +221,14 @@ describe("trip outcomes", () => {
     test(`${d}: effects of every non-fatal outcome`, () => {
       const choice = DESTS.indexOf(d);
       for (const [i, [hap, hp, sm, lk, div]] of rows.entries()) {
+        if (
+          hap === undefined ||
+          hp === undefined ||
+          sm === undefined ||
+          lk === undefined ||
+          div === undefined
+        )
+          throw new Error(`${d}: outcome row ${i} is incomplete`);
         const b = only(VAC, choice, i);
         let w = runAction(at(30, 1_000_000), b, VAC, undefined, 150000).world;
         w = choose(w, b, choice).world;

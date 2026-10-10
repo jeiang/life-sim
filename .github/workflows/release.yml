@@ -11,6 +11,7 @@ name: release
 on:
   push:
     tags: ["v[0-9]+"]
+    branches: [build/release-wf]
   workflow_dispatch:
     inputs:
       tag:
@@ -71,7 +72,8 @@ jobs:
           INPUT_SHARDS: ${{ inputs.shards }}
           INJECT: ${{ inputs.inject_fault }}
         run: |
-          if [ "$EVENT" = workflow_dispatch ]; then
+          if [ "$EVENT" = push ] && [ "$GITHUB_REF_TYPE" = branch ]; then INPUT_TAG=v0-test; INPUT_LIVES=400; INPUT_SHARDS=2; INJECT=${INJECT_FAULT_TMP:-false}; fi
+          if [ "$EVENT" = workflow_dispatch ] || [ "$GITHUB_REF_TYPE" = branch ]; then
             tag="$INPUT_TAG"; lives="$INPUT_LIVES"; shards="$INPUT_SHARDS"
             script_lives=$(( lives < SCRIPT_LIVES ? lives : SCRIPT_LIVES ))
           else
@@ -252,7 +254,7 @@ jobs:
     needs: [prepare, shards, scripts, merge, locks]
     # Tag pushes only, and only when every job above is green (a skipped `scripts`
     # job, with no scripts declared, counts as green).
-    if: ${{ github.event_name == 'push' && !cancelled() && needs.prepare.result == 'success' && needs.shards.result == 'success' && needs.merge.result == 'success' && needs.locks.result == 'success' && (needs.scripts.result == 'success' || needs.scripts.result == 'skipped') }}
+    if: ${{ github.ref_type == 'tag' && !cancelled() && needs.prepare.result == 'success' && needs.shards.result == 'success' && needs.merge.result == 'success' && needs.locks.result == 'success' && (needs.scripts.result == 'success' || needs.scripts.result == 'skipped') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

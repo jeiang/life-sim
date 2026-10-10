@@ -1,0 +1,194 @@
+# Harness metrics for the Investing Pack; the schema is docs/spec/harness.md#pack-metrics.
+title: Investing
+intro: Market kinds are read from the price series the player's world saw, so the table is the same for every profile. Holdings come from tips only (the harness has no market-screen move), so participation reads low for `random`.
+measures:
+  holdings: { snapshot: holdings, ages: [40, 65] }
+  net_worth: { snapshot: net_worth, ages: [40, 65] }
+  investor: { quality: invest_portfolio, at: ever }
+  insider_offers: { fires: { storylet: investing/insider-tip } }
+  insider_ever: { quality: invest_insider_age, at: ever }
+  scam_offers: { fires: { tag: scam } }
+  scams_lost: { quality: invest_scams, at: end }
+  statements: { fires: { storylet: investing/portfolio-statement } }
+  years: { life: years }
+  r_total_market: { market: investing/total-market, take: annualized_return }
+  r_world_index: { market: investing/world-index, take: annualized_return }
+  r_income_bond_fund: { market: investing/income-bond-fund, take: annualized_return }
+  r_corporate_bond_fund: { market: investing/corporate-bond-fund, take: annualized_return }
+  r_acme_robotics: { market: investing/acme-robotics, take: annualized_return }
+  r_northwind_foods: { market: investing/northwind-foods, take: annualized_return }
+  r_lumen_energy: { market: investing/lumen-energy, take: annualized_return }
+  r_quark_coin: { market: investing/quark-coin, take: annualized_return }
+  r_pinecrest_mining: { market: investing/pinecrest-mining, take: annualized_return }
+  r_brightwave_labs: { market: investing/brightwave-labs, take: annualized_return }
+  r_gov_bond_5: { market: investing/gov-bond-5, take: annualized_return }
+  r_gov_bond_10: { market: investing/gov-bond-10, take: annualized_return }
+  crash_total_market: { market: investing/total-market, take: drop_years, drop_bp: 2000 }
+  crash_quark_coin: { market: investing/quark-coin, take: drop_years, drop_bp: 2000 }
+  delist_pinecrest: { market: investing/pinecrest-mining, take: delistings }
+  delist_brightwave: { market: investing/brightwave-labs, take: delistings }
+  default_gov_bond_5: { market: investing/gov-bond-5, take: defaults }
+  default_gov_bond_10: { market: investing/gov-bond-10, take: defaults }
+stats:
+  participation:
+    kind: share
+    when: investor
+    by: profile
+    label: held something at some age-up
+  holdings_median:
+    kind: median
+    value: holdings
+    ages: [40, 65]
+    label: median holdings (minor units)
+  net_worth_investors:
+    kind: median
+    value: net_worth
+    ages: [40, 65]
+    of: investor
+    label: net worth, investors
+  net_worth_others:
+    kind: median
+    value: net_worth
+    ages: [40, 65]
+    of: "not investor"
+    label: net worth, others
+  insider_offers_per_life:
+    kind: mean
+    value: insider_offers
+    by: profile
+    decimals: 3
+    label: insider tips offered per life
+  insider_acted:
+    kind: share
+    when: insider_ever
+    by: profile
+    label: acted on an insider tip
+  scam_offers_per_life:
+    kind: mean
+    value: scam_offers
+    by: profile
+    decimals: 3
+    label: scam offers per life
+  scams_lost_per_life:
+    kind: mean
+    value: scams_lost
+    by: profile
+    decimals: 3
+    label: scams lost to per life
+  return_total_market:
+    kind: median
+    value: r_total_market
+    label: total-market annualised (bp)
+  return_world_index:
+    kind: median
+    value: r_world_index
+    label: world-index annualised (bp)
+  return_income_bond_fund:
+    kind: median
+    value: r_income_bond_fund
+    label: income-bond-fund annualised (bp)
+  return_corporate_bond_fund:
+    kind: median
+    value: r_corporate_bond_fund
+    label: corporate-bond-fund annualised (bp)
+  return_acme_robotics:
+    kind: median
+    value: r_acme_robotics
+    label: acme-robotics annualised (bp)
+  return_northwind_foods:
+    kind: median
+    value: r_northwind_foods
+    label: northwind-foods annualised (bp)
+  return_lumen_energy:
+    kind: median
+    value: r_lumen_energy
+    label: lumen-energy annualised (bp)
+  return_quark_coin:
+    kind: median
+    value: r_quark_coin
+    label: quark-coin annualised (bp)
+  return_pinecrest_mining:
+    kind: median
+    value: r_pinecrest_mining
+    label: pinecrest-mining annualised (bp)
+  return_brightwave_labs:
+    kind: median
+    value: r_brightwave_labs
+    label: brightwave-labs annualised (bp)
+  return_gov_bond_5:
+    kind: median
+    value: r_gov_bond_5
+    label: gov-bond-5 annualised (bp)
+  return_gov_bond_10:
+    kind: median
+    value: r_gov_bond_10
+    label: gov-bond-10 annualised (bp)
+  crash_years_total_market:
+    kind: ratio
+    num: crash_total_market
+    den: years
+    scale: 100
+    label: total-market years down 20% or more (% of years)
+  crash_years_quark_coin:
+    kind: ratio
+    num: crash_quark_coin
+    den: years
+    scale: 100
+    label: quark-coin years down 20% or more (% of years)
+  delisted_pinecrest:
+    kind: share
+    when: "delist_pinecrest > 0"
+    label: pinecrest-mining delisted in the life
+  delisted_brightwave:
+    kind: share
+    when: "delist_brightwave > 0"
+    label: brightwave-labs delisted in the life
+  defaults_gov_bond_5:
+    kind: ratio
+    num: default_gov_bond_5
+    den: years
+    scale: 100
+    decimals: 3
+    label: gov-bond-5 issuer defaults (% of years)
+  defaults_gov_bond_10:
+    kind: ratio
+    num: default_gov_bond_10
+    den: years
+    scale: 100
+    decimals: 3
+    label: gov-bond-10 issuer defaults (% of years)
+blocks:
+  - text: Investors are the lives that held something after any age-up. Holdings come from tips and the news only.
+  - stats:
+      - participation
+  - stats:
+      - holdings_median
+      - net_worth_investors
+      - net_worth_others
+  - text: Annualised return is in basis points a year, compounded over the world years the life saw (median over lives).
+  - stats:
+      - return_total_market
+      - return_world_index
+      - return_income_bond_fund
+      - return_corporate_bond_fund
+      - return_acme_robotics
+      - return_northwind_foods
+      - return_lumen_energy
+      - return_quark_coin
+      - return_pinecrest_mining
+      - return_brightwave_labs
+      - return_gov_bond_5
+      - return_gov_bond_10
+  - stats:
+      - crash_years_total_market
+      - crash_years_quark_coin
+      - delisted_pinecrest
+      - delisted_brightwave
+      - defaults_gov_bond_5
+      - defaults_gov_bond_10
+  - stats:
+      - insider_offers_per_life
+      - insider_acted
+      - scam_offers_per_life
+      - scams_lost_per_life
+    key: tips and scams

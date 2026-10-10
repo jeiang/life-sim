@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Penny stock headlines".
+
+- id: penny-surge-pinecrest-mining
+  icon: 🚀
+  trigger: event
+  tags: [investing, news]
+  chance: 100%
+  when: age >= 18 and change(investing/pinecrest-mining) >= 40000
+  text: "You skim the business pages and there it is: Pinecrest Mining, the penny stock you forgot existed, has soared."
+  outcomes:
+    - weight: 1
+      text: "You skim the business pages and there it is: Pinecrest Mining, the penny stock nobody talked about last week, has soared. Someone says they found gold. You are not sure which rock."
+    - weight: 1
+      text: Your phone lights up with alerts. Pinecrest Mining shares went vertical this year, and the stock that got laughed at over dinner is suddenly the one everyone wants to talk about.
+
+- id: penny-surge-brightwave-labs
+  icon: 🚀
+  trigger: event
+  tags: [investing, news]
+  chance: 100%
+  when: age >= 18 and change(investing/brightwave-labs) >= 40000
+  text: Brightwave Labs makes the business pages for once. You forgot you owned a piece of it, and now it has shot up.
+  outcomes:
+    - weight: 1
+      text: You forgot you owned a few shares of Brightwave Labs. Now it has shot up, and the investor forums are full of exclamation marks.
+    - weight: 1
+      text: A press release from Brightwave Labs finally turns out to matter. You watch its shares surge, and you quietly check your brokerage app to be sure.
+
+- id: penny-delisted-pinecrest-mining
+  icon: 🪦
+  trigger: event
+  tags: [investing, news]
+  chance: 100%
+  when: age >= 18 and price(investing/pinecrest-mining) == 0 and change(investing/pinecrest-mining) == -10000
+  text: You see a short notice about Pinecrest Mining in the business pages.
+  outcomes:
+    - weight: 1
+      text: The exchange pulls Pinecrest Mining from the board. You read the company's last press release, which thanks shareholders for their patience.
+    - weight: 1
+      text: Pinecrest Mining has been delisted. If you are still holding shares, you are now holding a very expensive souvenir.
+
+- id: penny-delisted-brightwave-labs
+  icon: 🪦
+  trigger: event
+  tags: [investing, news]
+  chance: 100%
+  when: age >= 18 and price(investing/brightwave-labs) == 0 and change(investing/brightwave-labs) == -10000
+  text: Brightwave Labs has a notice in the business pages, and it is not about a launch.
+  outcomes:
+    - weight: 1
+      text: "The exchange has delisted Brightwave Labs. Its CEO calls it a \"strategic pause,\" which is what people say right before they stop. You are not fooled."
+    - weight: 1
+      text: "The launch that was \"next quarter\" for years will now never happen. You read that Brightwave Labs is off the board."

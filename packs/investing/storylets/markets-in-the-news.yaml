@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Markets in the news".
+
+- id: market-headline
+  icon: 📰
+  trigger: event
+  tags: [investing, money]
+  weight: 100
+  when: age >= 18 and portfolio > 0
+  text: The evening news leads with the markets, and for once the story is about your money.
+  outcomes:
+    - weight: 1
+      when: change(investing/total-market) + 2500 <= 0 and (not (change(investing/quark-coin) >= 5000 or change(investing/quark-coin) + 4000 <= 0) or change(investing/total-market) * change(investing/total-market) >= change(investing/quark-coin) * change(investing/quark-coin))
+      text: Markets crash. The broad index loses a quarter of its value, and your brokerage app turns the color of a bruise.
+      effects:
+        - stat.happiness -= 3
+        - "journal(\"Markets crashed at age {age}.\")"
+    - weight: 1
+      when: change(investing/total-market) >= 3000 and (not (change(investing/quark-coin) >= 5000 or change(investing/quark-coin) + 4000 <= 0) or change(investing/total-market) * change(investing/total-market) >= change(investing/quark-coin) * change(investing/quark-coin))
+      text: A market rally. The broad index gains 30% or more, and suddenly everyone at work is a stock picker.
+      effects:
+        - stat.happiness += 2
+    - weight: 1
+      when: change(investing/quark-coin) >= 5000 and (not (change(investing/total-market) + 2500 <= 0 or change(investing/total-market) >= 3000) or change(investing/quark-coin) * change(investing/quark-coin) > change(investing/total-market) * change(investing/total-market))
+      text: Quark Coin is the story of the year, up at least half in twelve months. The group chat talks about nothing else.
+      effects:
+        - stat.happiness += 1
+    - weight: 1
+      when: change(investing/quark-coin) + 4000 <= 0 and (not (change(investing/total-market) + 2500 <= 0 or change(investing/total-market) >= 3000) or change(investing/quark-coin) * change(investing/quark-coin) > change(investing/total-market) * change(investing/total-market))
+      text: Quark Coin loses 40% of its value in a year, and the message boards go quiet. Somebody is calling it a learning experience.
+      effects:
+        - stat.happiness -= 2
+    - weight: 1
+      when: not ((change(investing/total-market) + 2500 <= 0 or change(investing/total-market) >= 3000) or (change(investing/quark-coin) >= 5000 or change(investing/quark-coin) + 4000 <= 0))
+      text: Markets drift sideways. The business section has nothing to say that anyone reads.
+
+- id: portfolio-statement
+  icon: 🧾
+  trigger: event
+  tags: [investing, money]
+  weight: 100
+  when: age >= 18 and portfolio > 0
+  text: Your annual statement arrives. You open it on the stairs, which is where the important letters get opened.
+  outcomes:
+    - weight: 1
+      when: portfolio >= money * 2
+      text: "Your holdings are worth {portfolio}, more than twice your cash. The brokerage sends a cheerful letter about it."
+    - weight: 1
+      when: portfolio >= money and portfolio < money * 2
+      text: "Your holdings are worth {portfolio}, at least as much as the cash you have. A fair split, you decide."
+    - weight: 1
+      when: portfolio < money
+      text: "Your holdings are worth {portfolio}, less than the cash in your account. The statement is polite about it."

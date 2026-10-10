@@ -1,0 +1,167 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Investment scams".
+
+- id: ponzi-scheme
+  icon: 🕴️
+  trigger: event
+  tags: [investing, scam, wager]
+  weight: "max(1, 2 + (100 - stat.smarts) / 15 - quality.invest_scams)"
+  when: age >= 18 and money >= 50000
+  cooldown: 4
+  text: An acquaintance pitches you a members-only fund that pays 20% a month. Everyone in the room is investing.
+  choices:
+    - label: Put in 10% of your savings
+      outcomes:
+        - weight: 85 + (100 - stat.smarts) / 10
+          text: The fund collapses. The organisers are gone and so is the money.
+          effects:
+            - money -= money / 10
+            - "quality.invest_scams += 1"
+            - stat.happiness -= 6
+            - "journal(\"Lost money to a Ponzi scheme at age {age}.\")"
+        - weight: 15 - (100 - stat.smarts) / 10
+          text: The first payouts arrive on time and you pull out early with a profit. Later the scheme collapses around everyone else.
+          effects:
+            - money += money / 50
+            - "journal(\"Got out of a Ponzi scheme in time at age {age}.\")"
+    - label: Go all in with 40% of your savings
+      outcomes:
+        - weight: 85 + (100 - stat.smarts) / 10
+          text: The fund collapses. The organisers are gone and so is the money.
+          effects:
+            - money -= money * 2 / 5
+            - "quality.invest_scams += 1"
+            - stat.happiness -= 10
+            - "journal(\"Lost money to a Ponzi scheme at age {age}.\")"
+        - weight: 15 - (100 - stat.smarts) / 10
+          text: The first payouts arrive on time and you pull out early with a profit. Later the scheme collapses around everyone else.
+          effects:
+            - money += money * 2 / 25
+            - "journal(\"Got out of a Ponzi scheme in time at age {age}.\")"
+    - label: Look into it first
+      outcomes:
+        - weight: stat.smarts
+          text: You ask for the licence and the audited accounts. There are none, and you walk away.
+          effects:
+            - stat.smarts += 1
+        - weight: 100 - stat.smarts
+          text: You cannot find anything wrong, and the glossy brochure wins you over. You lose a tenth of your savings before you realise.
+          effects:
+            - money -= money / 10
+            - "quality.invest_scams += 1"
+            - stat.happiness -= 6
+            - "journal(\"Lost money to a Ponzi scheme at age {age}.\")"
+    - label: Walk away
+      outcomes:
+        - weight: 1
+          text: You decline, and the offer goes to someone else.
+
+- id: fake-coin
+  icon: 🪙
+  trigger: event
+  tags: [investing, scam, wager]
+  weight: "max(1, 2 + (100 - stat.smarts) / 15 - quality.invest_scams)"
+  when: age >= 18 and money >= 50000
+  cooldown: 4
+  text: A stranger online tells you a brand-new coin, MoonPaw, will be worth a hundred times more by spring.
+  choices:
+    - label: Put in 10% of your savings
+      outcomes:
+        - weight: 85 + (100 - stat.smarts) / 10
+          text: The coin's makers drain the pool overnight. The coin is worth nothing.
+          effects:
+            - money -= money / 10
+            - "quality.invest_scams += 1"
+            - stat.happiness -= 6
+            - "journal(\"Lost money to a fake coin at age {age}.\")"
+        - weight: 15 - (100 - stat.smarts) / 10
+          text: The coin spikes the same week and you sell near the top before it collapses.
+          effects:
+            - money += money / 50
+            - "journal(\"Sold a fake coin before it collapsed at age {age}.\")"
+    - label: Go all in with 40% of your savings
+      outcomes:
+        - weight: 85 + (100 - stat.smarts) / 10
+          text: The coin's makers drain the pool overnight. The coin is worth nothing.
+          effects:
+            - money -= money * 2 / 5
+            - "quality.invest_scams += 1"
+            - stat.happiness -= 10
+            - "journal(\"Lost money to a fake coin at age {age}.\")"
+        - weight: 15 - (100 - stat.smarts) / 10
+          text: The coin spikes the same week and you sell near the top before it collapses.
+          effects:
+            - money += money * 2 / 25
+            - "journal(\"Sold a fake coin before it collapsed at age {age}.\")"
+    - label: Look into it first
+      outcomes:
+        - weight: stat.smarts
+          text: The token contract is a copy of a scam you read about last year. You skip it.
+          effects:
+            - stat.smarts += 1
+        - weight: 100 - stat.smarts
+          text: The website looks professional and the chat is full of happy investors. You lose a tenth of your savings before you realise.
+          effects:
+            - money -= money / 10
+            - "quality.invest_scams += 1"
+            - stat.happiness -= 6
+            - "journal(\"Lost money to a fake coin at age {age}.\")"
+    - label: Walk away
+      outcomes:
+        - weight: 1
+          text: You decline, and the offer goes to someone else.
+
+- id: guaranteed-returns
+  icon: ☎️
+  trigger: event
+  tags: [investing, scam, wager]
+  weight: "max(1, 2 + (100 - stat.smarts) / 15 - quality.invest_scams)"
+  when: age >= 18 and money >= 50000
+  cooldown: 4
+  text: "A caller from an \"investment bureau\" offers you guaranteed 15% returns, but only if you decide today."
+  choices:
+    - label: Put in 10% of your savings
+      outcomes:
+        - weight: 85 + (100 - stat.smarts) / 10
+          text: The bureau stops answering the phone. The money is gone.
+          effects:
+            - money -= money / 10
+            - "quality.invest_scams += 1"
+            - stat.happiness -= 6
+            - "journal(\"Lost money to a boiler-room caller at age {age}.\")"
+        - weight: 15 - (100 - stat.smarts) / 10
+          text: A first statement arrives showing a gain, and you withdraw some profit before the line goes dead.
+          effects:
+            - money += money / 50
+            - "journal(\"Took profit from a boiler-room scheme just in time at age {age}.\")"
+    - label: Go all in with 40% of your savings
+      outcomes:
+        - weight: 85 + (100 - stat.smarts) / 10
+          text: The bureau stops answering the phone. The money is gone.
+          effects:
+            - money -= money * 2 / 5
+            - "quality.invest_scams += 1"
+            - stat.happiness -= 10
+            - "journal(\"Lost money to a boiler-room caller at age {age}.\")"
+        - weight: 15 - (100 - stat.smarts) / 10
+          text: A first statement arrives showing a gain, and you withdraw some profit before the line goes dead.
+          effects:
+            - money += money * 2 / 25
+            - "journal(\"Took profit from a boiler-room scheme just in time at age {age}.\")"
+    - label: Look into it first
+      outcomes:
+        - weight: stat.smarts
+          text: A guaranteed return is not a thing. You hang up and report the number.
+          effects:
+            - stat.smarts += 1
+        - weight: 100 - stat.smarts
+          text: The caller knows your name and your bank, and sounds so sure that you are convinced. You lose a tenth of your savings before you realise.
+          effects:
+            - money -= money / 10
+            - "quality.invest_scams += 1"
+            - stat.happiness -= 6
+            - "journal(\"Lost money to a boiler-room caller at age {age}.\")"
+    - label: Walk away
+      outcomes:
+        - weight: 1
+          text: You decline, and the offer goes to someone else.

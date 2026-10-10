@@ -57,6 +57,7 @@ import {
   type PeopleSrc,
   type Quality,
   QualitySchema,
+  SINGLETONS,
   StandardSchema,
   type StandardSrc,
   StoryletSchema,
@@ -81,7 +82,7 @@ function signedPercentBp(text: string): number {
   return text.startsWith("-") ? -percentBp(text.slice(1)) : percentBp(text);
 }
 
-/** The one Pack allowed to declare the singleton `year`, `family` and `npc_careers` blocks. */
+/** The base Pack: exempt from the `namespace` id prefix rule. */
 const CORE_LOOP = "core-loop";
 
 export type Kind =
@@ -291,6 +292,8 @@ class Compiler {
     this.restrict();
     this.checkCapabilities();
     this.checkCrossPackDeclarations();
+    this.checkNamespaces();
+    this.checkSingletons();
     const order = this.order();
     const bundles: PackBundle[] = [];
     for (const id of order) {
@@ -688,6 +691,10 @@ class Compiler {
       return pack.qualities.some((q) => q.decl.id === name);
     if (key === "groups")
       return (pack.manifest.exclusivity ?? []).includes(name);
+    if (key === "singletons")
+      return (SINGLETONS as readonly string[]).includes(name)
+        ? (pack.manifest as Record<string, unknown>)[name] !== undefined
+        : false;
     const kind = this.index.get(pack.id)?.get(`${pack.id}/${name}`);
     return kind !== undefined && (PROVIDES_KINDS[key] ?? []).includes(kind);
   }
@@ -734,6 +741,74 @@ class Compiler {
               `${kind} '${d.id}' is declared by both Pack '${first}' and Pack '${id}'; prefix Pack-specific ids with the Pack name`,
             );
         }
+      }
+    }
+  }
+
+  /** A Pack with a `namespace` prefixes every stat and quality id it declares; namespaces are unique. */
+  private checkNamespaces(): void {
+    const owner = new Map<string, string>();
+    for (const id of [...this.packs.keys()].sort()) {
+      const pack = this.packs.get(id) as LoadedPack;
+      const ns = pack.manifest.namespace;
+      if (ns === undefined || id === CORE_LOOP) continue;
+      const first = owner.get(ns);
+      if (first !== undefined)
+        this.diag(
+          pack.manifestSrc,
+          ["namespace"],
+          `namespace '${ns}' is used by both Pack '${first}' and Pack '${id}'`,
+        );
+      else owner.set(ns, id);
+      const prefix = `${ns}_`;
+      const bad = (what: string, name: string, src: Source, at: Path) => {
+        if (!name.startsWith(prefix))
+          this.diag(
+            src,
+            at,
+            `${what} '${name}' of Pack '${id}' must start with its namespace '${prefix}'`,
+          );
+      };
+      for (const [i, s] of (pack.manifest.stats ?? []).entries())
+        bad("stat", s.id, pack.manifestSrc, ["stats", i, "id"]);
+      for (const q of pack.qualities)
+        bad("quality", q.decl.id, q.src, [q.index, "id"]);
+    }
+  }
+
+  /**
+   * A singleton manifest block may be declared by one Pack only, and that Pack must own it
+   * through a capability `provides: singletons`; there is no implicit first-wins owner.
+   */
+  private checkSingletons(): void {
+    const ids = [...this.packs.keys()].sort();
+    for (const name of SINGLETONS) {
+      const declarers = ids.filter(
+        (id) =>
+          (
+            (this.packs.get(id) as LoadedPack).manifest as Record<
+              string,
+              unknown
+            >
+          )[name] !== undefined,
+      );
+      for (const [n, id] of declarers.entries()) {
+        const pack = this.packs.get(id) as LoadedPack;
+        if (n > 0)
+          this.diag(
+            pack.manifestSrc,
+            [name],
+            `singleton '${name}' is declared by both Pack '${declarers[0]}' and Pack '${id}'; only one Pack may declare it`,
+          );
+        const owns = pack.capabilities.some((cap) =>
+          (cap.provides.singletons ?? []).includes(name),
+        );
+        if (!owns)
+          this.diag(
+            pack.manifestSrc,
+            [name],
+            `Pack '${id}' declares singleton '${name}' but no capability of it provides it; add 'singletons: [${name}]' under provides in a capability file`,
+          );
       }
     }
   }
@@ -1030,13 +1105,6 @@ class PackCompiler {
       if (s.start[0] > s.start[1])
         this.err(["stats", i, "start"], "start range minimum exceeds maximum");
     }
-    if (this.pack.id !== CORE_LOOP)
-      for (const key of ["year", "family", "npc_careers"] as const)
-        if (m[key])
-          this.err(
-            [key],
-            `only Pack '${CORE_LOOP}' may declare '${key}' (the first declaration would silently replace its own)`,
-          );
     if (m.year && m.year.slots[0] > m.year.slots[1])
       this.err(["year", "slots"], "slot range minimum exceeds maximum");
     if (m.year?.decisions) {

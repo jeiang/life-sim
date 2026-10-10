@@ -9,6 +9,11 @@
       "pattern": "^[a-z][a-z0-9-]*$",
       "type": "string"
     },
+    "namespace": {
+      "pattern": "^[a-z][a-z0-9]*$",
+      "description": "Id prefix: every stat and quality this Pack declares starts with `<namespace>_`. Unique across Packs; not enforced for core-loop",
+      "type": "string"
+    },
     "currency": {
       "additionalProperties": false,
       "type": "object",

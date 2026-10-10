@@ -9,3 +9,6 @@ provides:
     - cashier
   items:
     - phone
+  singletons:
+    - currency
+    - exclusivity

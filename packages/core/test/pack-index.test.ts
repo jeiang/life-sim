@@ -10,8 +10,19 @@ if (!compiled.ok)
   throw new Error(compiled.diagnostics.map((d) => d.message).join("\n"));
 const base = compiled.bundles[0] as PackBundle;
 
+/** `base` without its singleton blocks, which only one Pack may declare. */
+const {
+  currency: _c,
+  year: _y,
+  family: _f,
+  living: _l,
+  npcCareers: _n,
+  repeat: _r,
+  ...shared
+} = base;
+
 const withQuality = (id: string, quality: string): PackBundle => ({
-  ...base,
+  ...shared,
   id,
   storylets: [],
   occupations: [],
@@ -20,6 +31,7 @@ const withQuality = (id: string, quality: string): PackBundle => ({
   cities: [],
   people: [],
   stats: [],
+  exclusivity: [],
   qualities: [{ id: quality, type: "flag", default: false }] as never,
 });
 

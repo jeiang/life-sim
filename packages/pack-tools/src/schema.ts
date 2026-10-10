@@ -91,6 +91,17 @@ const repeatCurve = (what: string) =>
     what,
   );
 
+/** Manifest blocks that only one loaded Pack may declare; the owner provides it as a capability `singletons` entry. */
+export const SINGLETONS = [
+  "year",
+  "family",
+  "npc_careers",
+  "living",
+  "repeat",
+  "currency",
+  "exclusivity",
+] as const;
+
 /** A capability id: `<pack>/<feature>`, the feature being the file stem in `capabilities/`. */
 export const CAPABILITY_PATTERN = "^[a-z][a-z0-9-]*/[a-z][a-z0-9_-]*$";
 
@@ -123,6 +134,13 @@ export const CapabilitySchema = obj(
         loans: provided("loan kinds", ID_PATTERN),
         standards: provided("standards of living", ID_PATTERN),
         storylets: provided("storylets", ID_PATTERN),
+        singletons: Type.Optional(
+          Type.Array(Type.Union(SINGLETONS.map((n) => Type.Literal(n))), {
+            uniqueItems: true,
+            description:
+              "Singleton manifest blocks this Pack owns (block list); exactly one Pack declares and provides each",
+          }),
+        ),
       }),
     ),
     requires: Type.Optional(
@@ -139,6 +157,13 @@ export const CapabilitySchema = obj(
 export const ManifestSchema = obj(
   {
     id: Type.String({ pattern: PACK_ID_PATTERN }),
+    namespace: Type.Optional(
+      Type.String({
+        pattern: "^[a-z][a-z0-9]*$",
+        description:
+          "Id prefix: every stat and quality this Pack declares starts with `<namespace>_`. Unique across Packs; not enforced for core-loop",
+      }),
+    ),
     currency: Type.Optional(
       obj({
         symbol: Type.String({ minLength: 1 }),

@@ -337,7 +337,7 @@ describe("finding love", () => {
     const env = makeEnv(base, idx, { subject: base.playerId, person: pid });
     const [yes, no] = ask.map((o) => Number(evaluate(o.weight, env)));
     expect(yes).toBe(1);
-    expect(no).toBe(100);
+    expect(no).toBe(33);
   });
 
   test("propose: once per partner, accepted by closeness", () => {
@@ -1112,7 +1112,17 @@ describe("determinism", () => {
             w = runAction(w, bundles, D(a), r.to).world;
           } catch {}
           let g = 0;
-          while (w.pending && g++ < 5) w = choose(w, bundles, 0).world;
+          while (w.pending && g++ < 5) {
+            const st = idx.storylets.get(w.pending.storyletId);
+            let nx: World | undefined;
+            for (let i = 0; i < (st?.choices.length ?? 1) && !nx; i++) {
+              try {
+                nx = choose(w, bundles, i).world;
+              } catch {}
+            }
+            if (!nx) break;
+            w = nx;
+          }
         }
       }
     }

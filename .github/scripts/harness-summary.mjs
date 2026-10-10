@@ -35,7 +35,7 @@ const ok = r.faults.total === 0 && status === "0";
 out.push(`### Harness, ${r.lives} lives: ${ok ? "pass" : "FAIL"}`);
 out.push("");
 out.push(
-  `Seed ${r.run.seed}, profiles ${r.run.profiles.join(", ")}. Run time ${seconds} s. [Run and full report artifact](${runUrl}).`,
+  `Seed ${r.run.seed}, profiles ${r.run.profiles.join(", ")}.${seconds ? ` Run time ${seconds} s.` : ""} [Run and full report artifact](${runUrl}).`,
 );
 out.push("");
 if (r.faults.total > 0) {

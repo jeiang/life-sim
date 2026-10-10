@@ -38,6 +38,19 @@ All checks are hermetic `checks.<system>.*` flake outputs, so `nix flake check` 
 - `harness-10k` is not (yet) a required status check on `main`: pull requests opened before the workflow landed have no run until they next push, so requiring it would block them. `workflow_dispatch` runs on a branch (and comments on its open PR) only if the branch already contains the workflow file.
 - Agents tune locally with `--lives 2000 --jobs 4`; the final 10,000-life numbers in `BALANCE.md` come from the CI report on the pull request.
 
+## GitHub Actions: release (`v<N>`)
+
+`.github/workflows/release.yml` runs when the user pushes a `v<N>` tag (decision 10), and on `workflow_dispatch` as a dry run (smaller sizes, a throwaway `tag` input only used for the seed, and it never pushes a branch or touches a release). Nobody else cuts releases.
+
+- `prepare` derives the seed from the tag (`20260101 + N`, so a re-run reproduces the report) and the lists of shards and forced scripts (`harness --list-scripts`).
+- `shards`: 8 shards of 12,500 lives (100,000 lives, `--profile all`, `--shard i/8`), one runner each. A shard fails on engine faults.
+- `scripts`: each forced script (`<pack>/<name>`) runs by itself, 1,000 lives, and fails on faults or a forced entry that never matched.
+- `merge`: `harness merge --fail-on faults,never-fired` over the shard artifacts, so content no life reached fails the release. It writes the job summary and uploads the `release-report` artifact (`report.md`, `report.json`, `summary.md`) even when it fails.
+- `locks`: `pack-tools lock packs` on a full clone, uploaded as the `ids-locks` artifact.
+- `publish` (tag pushes, all of the above green): commits the refreshed `ids.lock.json` files to the branch `release/v<N>-locks` (one commit on top of the tagged commit; a PR to `main` is opened when the repository lets Actions create PRs), and attaches the merged report, each script's report and the summary to the `v<N>` GitHub release (created if absent).
+- The tag is **not** moved. The compiler reads locks from `git show v<N>:packs/<id>/ids.lock.json`, so the locks take effect as the baseline only once the tag points at a commit that contains them; until then the check for a Pack with no lock at the tag compares nothing. To make `release/v<N>-locks` the baseline, move the tag to it (`git tag -f v<N> origin/release/v<N>-locks && git push -f origin v<N>`; the workflow runs again and finds the locks unchanged).
+- Dry run: `gh workflow run release.yml --ref <branch> -f tag=v0-test -f lives=400 -f shards=2`; add `-f inject_fault=true` to include `.github/release-fixtures/never-matched.yaml`, a forced script whose step never matches, which must turn the run red.
+
 ## Open risk
 
 Resolved (issue #30): Playwright Chromium and WebKit both run in the x86_64-linux Nix sandbox on buildbot. `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` was not needed. The `e2e` check (defined on x86_64-linux, aarch64-linux, and aarch64-darwin, where nixpkgs ships the browsers) sets:

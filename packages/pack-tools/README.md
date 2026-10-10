@@ -23,7 +23,7 @@ The spec lists `storylets/`, `occupations/`, `items/`, `people/`. The compiler a
 
 ## Permanent ids
 
-`packs/<id>/ids.lock.json` (`{ pack, ids[] }`) records the ids of a release: every content id plus `stat.<id>`, `quality.<id>`, `state.<id>`, `readable.<id>` and `kind.<id>`. **Pull requests never edit it.** Only the tag workflow rewrites it (`cli.ts lock packs`) and commits it with the `v<N>` tag.
+`packs/<id>/ids.lock.json` (`{ pack, ids[] }`) records the ids of a release: every content id plus `stat.<id>`, `quality.<id>`, `state.<id>`, `readable.<id>` and `kind.<id>`. **Pull requests never edit it.** Only the tag workflow rewrites it (`cli.ts lock packs`) and commits it to `release/v<N>-locks` (see [CI](../../docs/spec/ci.md#github-actions-release-vn)).
 
 The compiler reads the lock as committed at the last release tag (`git show <tag>:packs/<id>/ids.lock.json`; the tag with the highest `v<N>`), not from the working tree. If a locked id is gone, the build fails unless a `migrations/<name>.yaml` names it with `rename` (`from`, `to`) or `remove` (`id`, optional `fallback`). With no `v<N>` tag, outside a git checkout (the hermetic Nix checks), or for a Pack with no lock at the tag, nothing is compared; `validate` prints `note: ...` saying so. The `ids-lock` CI job runs `validate` on a full clone with tags, so removals fail on pull requests.
 

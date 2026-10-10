@@ -16,6 +16,7 @@ export {
 export {
   type DecisionDraw,
   makeEnv,
+  type OutcomeRef,
   setAssertSink,
   setChanceDropSink,
   setDecisionSink,

@@ -130,6 +130,7 @@ It **fails** on engine faults:
 It **reports** without failing, in `report.md` and `report.json` in the check output:
 
 - per-storylet fire counts, with storylets that never fired and the 10 most frequent;
+- per-storylet outcome counts (`report.json` `storylets.outcomes`): for each storylet, the times each outcome was picked, keyed `o<i>` (a storylet without choices) or `c<j>.o<i>` (outcome `i` of choice `j`), 0-based in YAML order. Counts add across shards, so a merged report has them too; ids and keys are sorted;
 - events per year (mean and distribution);
 - age at death (distribution) and causes of death;
 - net worth at ages 18, 40, and 65;

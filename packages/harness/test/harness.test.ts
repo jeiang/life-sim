@@ -90,6 +90,27 @@ describe("the core-loop Pack", () => {
     expect(JSON.stringify(b)).toBe(JSON.stringify(a));
   }, 60_000);
 
+  test("the report counts the outcome each storylet resolved, within its opens", () => {
+    const { report } = runHarness({
+      bundles,
+      profileSpecs,
+      lives: 10,
+      profiles: ["random"],
+      seed: 7,
+    });
+    const picked = Object.entries(report.storylets.outcomes);
+    expect(picked.length).toBeGreaterThan(0);
+    expect(picked.map(([id]) => id)).toEqual(picked.map(([id]) => id).sort());
+    for (const [id, keys] of picked) {
+      let total = 0;
+      for (const [key, n] of Object.entries(keys)) {
+        expect(key).toMatch(/^(c\d+\.)?o\d+$/);
+        total += n;
+      }
+      expect(total).toBeLessThanOrEqual(report.storylets.fired[id] ?? 0);
+    }
+  }, 60_000);
+
   test("--life-seed replays one life", () => {
     const { report } = runHarness({
       bundles,
@@ -118,6 +139,22 @@ describe("parallel runs", () => {
       const r = await runHarnessParallel({ ...opts, packsDir, jobs });
       expect(files(r.report)).toBe(single);
     }
+  }, 120_000);
+
+  test("a deadline stops handing out batches and reports the first lives", async () => {
+    const r = await runHarnessParallel({
+      ...opts,
+      packsDir,
+      jobs: 3,
+      batchSize: 4,
+      deadlineSeconds: 0,
+    });
+    expect(r.report.lives).toBeGreaterThanOrEqual(4);
+    expect(r.report.lives).toBeLessThan(70);
+    expect(r.report.lives % 4).toBe(0);
+    expect(files(r.report)).toBe(
+      files(runHarness({ ...opts, lives: r.report.lives }).report),
+    );
   }, 120_000);
 
   test("a fault found in a worker carries its life seed", async () => {

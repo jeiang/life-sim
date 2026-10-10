@@ -32,6 +32,12 @@ export interface Report {
   readonly storylets: {
     readonly total: number;
     readonly fired: Record<string, number>;
+    /**
+     * Resolved outcomes per storylet: `o<i>` (no choices) or `c<j>.o<i>` (outcome i of choice j),
+     * 0-based in YAML order, to the times it was picked. Sorted by id, then key; a storylet or
+     * outcome never picked is absent.
+     */
+    readonly outcomes: Record<string, Record<string, number>>;
     readonly top10: readonly { id: string; count: number }[];
     readonly neverFired: readonly string[];
     /** `chance: 0%` storylets reached only through `next`; never counted as dead content. */
@@ -187,8 +193,28 @@ export interface Report {
   readonly statsAt100: Record<string, Record<string, number>>;
 }
 
+const byKey = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+
+/** The outcome tallies with ids and keys sorted, so the report does not depend on the order lives were added. */
+function sortedOutcomes(
+  t: Record<string, Record<string, number>>,
+): Record<string, Record<string, number>> {
+  return Object.fromEntries(
+    Object.keys(t)
+      .sort(byKey)
+      .map((id) => [
+        id,
+        Object.fromEntries(
+          Object.entries(t[id] as Record<string, number>).sort((a, b) =>
+            byKey(a[0], b[0]),
+          ),
+        ),
+      ]),
+  );
+}
+
 /** Storylets reached only through `next` and never rolled themselves. */
-function chainSteps(bundles: readonly PackBundle[]): Set<string> {
+export function chainSteps(bundles: readonly PackBundle[]): Set<string> {
   const targets = new Set<string>();
   for (const b of bundles)
     for (const s of b.storylets) {
@@ -261,6 +287,7 @@ export class Aggregate {
   private faultTotal = 0;
   private readonly faultKinds: Record<string, number> = {};
   private readonly fires: Record<string, number> = {};
+  private readonly outcomes: Record<string, Record<string, number>> = {};
   private readonly eventHist: Record<string, number> = {};
   private eventSum = 0;
   private eventYears = 0;
@@ -332,6 +359,11 @@ export class Aggregate {
     }
     for (const [id, n] of Object.entries(r.fires))
       this.fires[id] = (this.fires[id] ?? 0) + n;
+    for (const [id, picks] of Object.entries(r.outcomes)) {
+      const t = this.outcomes[id] ?? {};
+      this.outcomes[id] = t;
+      for (const [k, n] of Object.entries(picks)) t[k] = (t[k] ?? 0) + n;
+    }
     {
       let all = 0;
       let from5 = 0;
@@ -558,6 +590,7 @@ export class Aggregate {
       storylets: {
         total: all.length,
         fired: this.fires,
+        outcomes: sortedOutcomes(this.outcomes),
         top10: sorted.slice(0, 10),
         neverFired: never.filter((id) => !chain.has(id)),
         chainStepsNeverFired: never.filter((id) => chain.has(id)),

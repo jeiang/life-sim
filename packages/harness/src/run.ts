@@ -99,6 +99,8 @@ export interface LifeResult {
   readonly death: { readonly age: number; readonly cause: string } | null;
   /** Storylet id -> times opened (scopes merged). */
   readonly fires: Readonly<Record<string, number>>;
+  /** Storylet id -> outcome key -> times resolved (see `outcomeKey`); every storylet that resolved an outcome. */
+  readonly outcomes: Readonly<Record<string, Readonly<Record<string, number>>>>;
   /** Events opened by each age-up (voluntary actions excluded). */
   readonly yearEvents: readonly number[];
   /** Choice events (event storylets that ask the player to pick) opened by each age-up, with the age reached. */
@@ -164,6 +166,14 @@ function firesIn(w: World, ids: ReadonlySet<string>): number {
   for (const [k, r] of Object.entries(w.storyletLog))
     if (ids.has(k.split("#")[0] as string)) n += r.count;
   return n;
+}
+
+/** Key of a resolved outcome: `o<i>` for a storylet without choices, `c<j>.o<i>` for outcome i of choice j (both 0-based, in YAML order). */
+export function outcomeKey(o: {
+  readonly choice: number | null;
+  readonly index: number;
+}): string {
+  return o.choice === null ? `o${o.index}` : `c${o.choice}.o${o.index}`;
 }
 
 function firesById(w: World): Record<string, number> {
@@ -265,7 +275,12 @@ export function runLife(
       if (st.tags.includes("wager")) wagerIds.add(st.id);
   const wagers: Record<string, { plays: number; net: number; worst: number }> =
     {};
-  setOutcomeSink((id, d) => {
+  const outcomes: Record<string, Record<string, number>> = {};
+  setOutcomeSink((id, d, o) => {
+    const tally = outcomes[id] ?? {};
+    outcomes[id] = tally;
+    const k = outcomeKey(o);
+    tally[k] = (tally[k] ?? 0) + 1;
     if (!wagerIds.has(id) || d === 0) return;
     const t = wagers[id] ?? { plays: 0, net: 0, worst: 0 };
     wagers[id] = {
@@ -526,6 +541,7 @@ export function runLife(
         ? { age: final.ended.age, cause: final.ended.cause }
         : null,
     fires,
+    outcomes,
     yearEvents,
     yearChoices,
     yearDecisions,

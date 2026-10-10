@@ -1,7 +1,10 @@
 import {
   type ActionRow,
+  evaluate,
+  indexBundles,
   listActions,
   listShop,
+  makeEnv,
   type PackBundle,
   type PendingView,
   type PersonId,
@@ -144,6 +147,71 @@ function candidates(
 }
 
 /**
+ * The candidate with the highest (`max`) or lowest (`min`) `by` value, the first in menu
+ * order on a tie; null when none is ranked. Draws no randomness.
+ */
+function ranked(
+  rule: RuleSpec,
+  found: readonly Row[],
+  w: World,
+  ctx: Context,
+): Row | null {
+  const by = rule.by;
+  if (by === null) return null;
+  const idx = indexBundles(ctx.bundles);
+  const sign = rule.pick === "max" ? 1 : -1;
+  let best: Row | null = null;
+  let bestScore = 0;
+  for (const r of found) {
+    const e =
+      "all" in by
+        ? { expr: by.all, usesPerson: by.usesPerson }
+        : by.each.find((x) => x.glob.test(r.id));
+    if (e === undefined) continue;
+    if (e.usesPerson && r.target === undefined) continue;
+    const env = makeEnv(w, idx, {
+      subject: w.playerId,
+      ...(r.target === undefined ? {} : { person: r.target }),
+    });
+    const v = evaluate(e.expr, env);
+    const score = sign * (typeof v === "boolean" ? Number(v) : Number(v));
+    if (best === null || score > bestScore) {
+      best = r;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+/**
+ * A `random` pick: uniform, unless the profile's `adjust` entries weigh some candidate
+ * differently from 1, then proportional to the product of the matching multipliers (in
+ * parts per 10,000, at least 1). When every candidate weighs 1 the uniform draw is used, so
+ * a profile nobody adjusts plays exactly as before.
+ */
+function randomPick(
+  spec: ProfileSpec,
+  found: readonly Row[],
+  tagsOf: ReadonlyMap<string, readonly string[]>,
+  rng: Rng,
+): Row {
+  if (spec.weights.length === 0) return pick(found, rng);
+  const factors = found.map((r) => {
+    let f = 1;
+    for (const a of spec.weights)
+      if (
+        anyOf(a.ids, r.id) ||
+        (tagsOf.get(r.id) ?? []).some((t) => a.tags.includes(t))
+      )
+        f *= a.weight;
+    return f;
+  });
+  if (factors.every((f) => f === 1)) return pick(found, rng);
+  const weights = factors.map((f) => Math.max(1, Math.round(f * 10000)));
+  return found[rng.weightedPick(weights)] as Row;
+}
+
+/**
  * The interpreter of a declared profile (`packs/<id>/harness/profiles.yaml`). It draws from
  * the life's `harness/<profile>` stream only, in a fixed order, so a profile's lives never
  * depend on which other profiles exist.
@@ -158,6 +226,15 @@ export function makeProfile(
           b.storylets.filter((s) => s.repeatable).map((s) => s.id),
         )
       : [],
+  );
+  const tagsOf = new Map(
+    spec.weights.length === 0
+      ? []
+      : bundles.flatMap((b) =>
+          b.storylets
+            .filter((s) => s.trigger === "action")
+            .map((s): [string, readonly string[]] => [s.id, s.tags]),
+        ),
   );
   return {
     maxMoves: (rng) =>
@@ -192,11 +269,14 @@ export function makeProfile(
         );
         const found = candidates(rule, rows, repeatable);
         if (found.length === 0) continue;
-        return asMove(
-          rule.pick === "first" ? (found[0] as Row) : pick(found, rng),
-          rng,
-          spec.amount,
-        );
+        const row =
+          rule.pick === "first"
+            ? (found[0] as Row)
+            : rule.pick === "random"
+              ? randomPick(spec, found, tagsOf, rng)
+              : ranked(rule, found, w, ctx);
+        if (row === null) continue;
+        return asMove(row, rng, spec.amount);
       }
       return null;
     },

@@ -285,3 +285,83 @@ describe("employment", () => {
     expect(employedAt(10)).toBe(true); // clerk
   });
 });
+
+describe("pack-contributed profile weights and ranked picks", () => {
+  const dir = fixture("adjust");
+  const bundles = bundlesOf(dir);
+  const profileSpecs = profileSpecsOf(dir);
+  const play = (specs: typeof profileSpecs, profile: string) =>
+    runHarness({
+      bundles,
+      profileSpecs: specs,
+      lives: 12,
+      profiles: [profile],
+      seed: 5,
+    }).report.storylets.fired;
+  const crime = (fired: Record<string, number>) =>
+    (fired["shady/mug"] ?? 0) + (fired["shady/pickpocket"] ?? 0);
+  const total = (fired: Record<string, number>) =>
+    crime(fired) + (fired["base/rest"] ?? 0) + (fired["base/tidy"] ?? 0);
+
+  test("a Pack down-weights its tagged actions in another Pack's profile", () => {
+    const random = profileSpecs.find((p) => p.id === "random");
+    expect(random?.weights.map((w) => [w.pack, w.tags, w.weight])).toEqual([
+      ["shady", ["crime"], 0.05],
+    ]);
+    const plain = play(
+      profileSpecs.map((p) => ({ ...p, weights: [] })),
+      "random",
+    );
+    const adjusted = play(profileSpecs, "random");
+    // Two of four actions are crimes: about half of the picks, and about 2.5% once adjusted.
+    expect(crime(plain) / total(plain)).toBeGreaterThan(0.4);
+    expect(crime(adjusted) / total(adjusted)).toBeLessThan(0.1);
+    expect(total(adjusted)).toBeGreaterThan(500);
+  });
+
+  test("pick max / min rank candidates by their expression, first in menu order on a tie", () => {
+    const ranker = play(profileSpecs, "ranker");
+    expect(ranker["base/rest"]).toBeGreaterThan(500);
+    expect(total(ranker)).toBe(ranker["base/rest"]);
+    const cheapest = play(profileSpecs, "cheapest");
+    expect(total(cheapest)).toBe(cheapest["base/tidy"]);
+    const tied = play(profileSpecs, "tied");
+    expect(total(tied)).toBe(tied["shady/mug"]);
+  });
+
+  test("bad adjust and by entries are reported with their paths", () => {
+    const bad = mkdtempSync(join(tmpdir(), "harness-bad-adjust-"));
+    cpSync(dir, bad, { recursive: true });
+    writeFileSync(
+      join(bad, "shady/harness/profiles.yaml"),
+      `adjust:
+  - { profile: nobody, tags: [crime], weight: 0.5 }
+  - { profile: random, tags: [no_such_tag], weight: 0 }
+  - { profile: random, ids: ["*/no-such-action"], weight: 2 }
+  - { profile: random, weight: 2 }
+profiles:
+  broken:
+    moves: 1
+    rules:
+      - pick: max
+      - pick: first
+        by: age
+      - pick: max
+        by: "stat.nope"
+      - pick: min
+        by: "has_occupation(job)"
+`,
+    );
+    const messages = loadProfiles(bad, bundlesOf(bad))
+      .diagnostics.map((d) => `${d.path}: ${d.message}`)
+      .join("\n");
+    expect(messages).toContain("adjust[0].profile: unknown profile 'nobody'");
+    expect(messages).toContain("no action carries the tag 'no_such_tag'");
+    expect(messages).toContain("expected a number above 0");
+    expect(messages).toContain("matches no action");
+    expect(messages).toContain("expected `tags` or `ids`");
+    expect(messages).toContain("required with `pick: max`");
+    expect(messages).toContain("`by` needs `pick: max` or `pick: min`");
+    expect(messages).toContain("stat.nope");
+  });
+});

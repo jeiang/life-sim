@@ -34,6 +34,7 @@ export const SCRIPTED_PROFILE: ProfileSpec = {
   quit: null,
   choice: { prefer: [], avoid: [] },
   rules: [],
+  weights: [],
 };
 
 /** How a forced action picks its amount on the action's grid. */

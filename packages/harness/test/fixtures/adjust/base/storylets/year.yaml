@@ -1,0 +1,25 @@
+- id: calm-year
+  trigger: event
+  weight: 10
+  text: A quiet year.
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+- id: rest
+  label: Rest
+  trigger: action
+  menu: activities/rest
+  repeatable: true
+  text: You rest.
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+- id: tidy
+  label: Tidy up
+  trigger: action
+  menu: activities/rest
+  repeatable: true
+  text: You tidy.
+  outcomes:
+    - effects:
+        - stat.happiness += 1

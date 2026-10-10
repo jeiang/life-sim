@@ -470,7 +470,7 @@ function pronounNames(prefix: string): Record<string, ExprType> {
   );
 }
 
-const PLAYER_NAMES: Record<string, ExprType> = {
+export const PLAYER_NAMES: Record<string, ExprType> = {
   age: "int",
   money: "int",
   "city.cost_index": "int",

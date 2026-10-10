@@ -7,7 +7,8 @@
  * `group` is an exclusivity group declared in a manifest (a bare word or a string literal);
  * `milestone` is a milestone id, Core or `provides: milestones` (a bare word or a string literal);
  * `person` is a person name in scope (`person`, or one bound by `spawn_person ... as`);
- * `kinship` is a Core kinship id (a bare word or a string literal).
+ * `kinship` is a Core kinship id (a bare word or a string literal);
+ * `will` is a will mode for `set_will` (`even`, `spouse`, `charity` or `none`).
  */
 export type Type =
   | "int"
@@ -17,7 +18,8 @@ export type Type =
   | "group"
   | "milestone"
   | "person"
-  | "kinship";
+  | "kinship"
+  | "will";
 
 export interface Signature {
   readonly params: readonly Type[];
@@ -43,6 +45,8 @@ export const FUNCTIONS = {
   years_in_group: { params: ["group"], returns: "int" },
   /** True once the player's life has reached the milestone (it fires once per life). */
   milestone_reached: { params: ["milestone"], returns: "bool" },
+  /** True while the player has a will (`set_will` / `will_heir`); succession reads it and then clears it. */
+  has_will: { params: [], returns: "bool" },
   count_role: { params: ["id", "int", "int"], returns: "int" },
   /** The kinship id of a person to the subject (`grandparent`, `cousin`, ...); "" for no kin. */
   kin: { params: ["person"], returns: "id" },
@@ -106,6 +110,10 @@ export const EFFECTS = {
   trade: { params: ["id", "int"], returns: "bool" },
   /** Reach a Pack-declared milestone now, once per life: runs its `on_milestone` hooks and opens its milestone storylets. */
   reach_milestone: { params: ["milestone"], returns: "bool" },
+  /** Set the will: `even` (cash split among the children), `spouse` (all cash to the spouse), `charity`; `none` removes it. */
+  set_will: { params: ["will"], returns: "bool" },
+  /** Set the will to leave all cash to one named person: `person`, or one bound by `spawn_person(...) as <name>`. */
+  will_heir: { params: ["person"], returns: "bool" },
   /** Cancel every queued `schedule(...)` of a storylet, for any person. `schedule` has its own syntax. */
   unschedule: { params: ["id"], returns: "bool" },
 } as const satisfies Record<string, Signature>;

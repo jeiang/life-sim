@@ -13,7 +13,7 @@ Each life is autosaved to IndexedDB after every action and age-up as a World sna
 
 - Streams are derived from (life seed, **generation**, age, purpose key, counter). Generation 0 uses the original input string, so existing lives replay unchanged; generation `n > 0` inserts `g<n>` after the seed, so an heir never replays the founder's draws at the same ages.
 - `World.generation` (0 for the founder, +1 per succession) and `World.worldYear` (+1 per age-up, never reset) are saved and hashed. Price series read `worldYear`, not the player's age, so markets do not restart when an heir takes over. Saves without the fields load as generation 0 with `worldYear` equal to the player's age (schema version 4 restamps them).
-- `succeed(world, heir)` moves the player pointer, bumps the generation, and resets `storyletLog`, the roll-site counters and the repeatable-action counters. It is logged as a `succeed` choice entry so replay reproduces it. Clearing `ended` and archiving the obituary stay with the dynasty flow.
+- `succeed` moves the player pointer to an heir and bumps the generation; it is logged as a `succeed` choice entry so replay reproduces it. Its full contract (estate, resets, hooks, trigger) is the world-continuation amendment below (#219).
 
 ## Note (2026-10-06): NPC career rolls (#131)
 
@@ -50,3 +50,13 @@ Age-up order becomes: age every person, the NPC career pass, settlement, events,
 - Reaching a milestone is recorded once per life in the reserved world state container `_milestones` (`{ <id>: true }`), absent until the first, dropped at succession. It is saved and hashed as state; the save schema stays 6.
 - A milestone runs the `on_milestone/<id>` hooks (purpose keys `pack/<id>/on_milestone/<milestone>/<n>`, unchanged) at the moment it is reached, inside whatever step reached it (a storylet effect, settlement, a hook), then queues its `trigger: milestone` storylets in the `_schedule` queue with a one-age-up window. They open at the next age-up's scheduled step, each with one roll under the existing purpose key `schedule/<storylet>` (chance 100%). No new purpose key and no change to the age-up order.
 - A world that never reaches a milestone replays as before: no record, no queue entry, no roll.
+
+## Amendment 2026-10-10: world continuation across generations (#219)
+
+This replaces the `succeed` bullet of the 2026-10-06 amendment. `succeed(world, bundles, heirId)` needs the finished life (`world.ended`) and a living child of the dead player (`heirsOf`), settles the estate, and returns the heir's world; the whole step is one logged `succeed` choice, so replay reproduces it.
+
+- **World continues.** The persons, market, relationships, world state and world clock carry over; the dead player stays in the world, dead. `World.deceased?: { person, cause, money }` (absent for a founder, replaced at each succession) records the dead player for the heir; it is saved, hashed and read as `deceased.*`. The save schema stays 6: the field is additive.
+- **Resets.** The generation index rises by one (the heir's streams differ from every earlier generation's), and `ended`, `pending`, the will (`_will`), the milestone record, `storyletLog`, `uses`, the roll-site counters and the journal start empty. A scheduled consequence survives only with `lineage: true`, and not when bound to the dead player or the heir. `once` storylets therefore fire once per generation.
+- **Estate.** Unsecured debts are paid from cash, a shortfall is written off; a secured loan goes with its asset to an adult heir (a minor heir's secured asset is sold and the loan repaid from it); other assets and holdings pass whole; cash is divided by the will, or spouse-half and children-evenly. The estate rolls nothing, so it moves no stream.
+- **Hooks and trigger.** `on_succession` runs for the heir (purpose keys `pack/<id>/on_succession/<n>`), then each `trigger: succession` storylet is queued through the `_schedule` container with a one-age-up window, like a milestone storylet (one `schedule/<storylet>` roll per storylet at the next age-up). A life that never succeeds has no new state, entries or rolls.
+- **No relabelling.** Names follow from kinship derived at the heir's position ([ADR 0006](0006-parent-links-derived-kinship.md)); the Core only seats the heir with role rows in the family roles.

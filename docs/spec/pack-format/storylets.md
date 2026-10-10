@@ -8,7 +8,7 @@ Storylets, repeatable actions and the yearly event draw. Part of the [Pack forma
 # packs/core-loop/storylets/work.yaml
 - id: first-job-offer
   icon: 💼
-  trigger: event              # event | action | milestone
+  trigger: event              # event | action | milestone | succession
   chance: 4%                  # life event: absolute yearly roll
   when: age >= 16 and not has_occupation(job) and stat.smarts >= 30
   once: true
@@ -30,7 +30,7 @@ Storylets, repeatable actions and the yearly event draw. Part of the [Pack forma
 | Field | Meaning |
 |---|---|
 | `id`, `icon`, `tags` | Identity; optional icon (see Icons); free tags for grouping. `custody-ok` is a Core-owned tag: see [Confinement](content-kinds.md#confinement). `wager` marks a storylet in which the player risks money; the balance harness reports its realised return. |
-| `trigger` | `event` (drawn at age-up), `action` (offered in a menu) or `milestone` (opened when the life reaches a milestone, see [Milestone storylets](#milestone-storylets)). |
+| `trigger` | `event` (drawn at age-up), `action` (offered in a menu), `milestone` (opened when the life reaches a milestone, see [Milestone storylets](#milestone-storylets)) or `succession` (opened for the heir when the game continues as them, see [Succession storylets](#succession-storylets)). |
 | `milestone` | `trigger: milestone` only, required: the milestone id (Core, or `provides: milestones`). |
 | `menu` | For actions: the menu path, `<top>` or `<top>/<submenu>`, where the top is one of `occupation`, `assets`, `relationships`, `activities` (see [screens](screens.md#menu-ids)). |
 | `scope` | Optional binding, evaluated once per bound item. `loan` (events only): once per loan the player holds, with `loan` bound (for example a missed-payment event). `person`: once per non-player person during the NPC yearly pass, with `person` bound (NPC storylets); an event with `choices` is instead a decision the player faces (see [Person decisions](#person-decisions)); on an action, the UI offers it for a chosen person. `die(...)` kills the bound person, and `relationship(person).closeness += n` changes the tie to them. Without `scope`, only the player and storylet-local names are in scope. |
@@ -100,7 +100,7 @@ At each age-up, after settlement (ADR 0003), first the [scheduled consequences](
 - **Re-check.** At each roll the storylet's `when`, `once`, `cooldown`, `max_per_life` and `target` are checked. If they fail, nothing is rolled and the entry waits. The last year of the window drops it whether or not it fired. A person who died drops their entry at once.
 - **Person.** A `scope: person` storylet needs a person (`person` or a name bound by `spawn_person ... as <name>`), who is the one it opens for; any other storylet takes none. The build checks both. With no such person in scope the effect does nothing.
 - **Duplicates.** Scheduling a storylet already queued for the same person keeps the earlier window.
-- **Lineage.** The queue is dropped when the player dies (and at succession), except entries marked `lineage: true`. The dynasty hand-off of those entries to the heir is #219.
+- **Lineage.** The queue is dropped when the player dies, except entries marked `lineage: true`; those pass to the heir at succession (entries bound to the dead player or to the heir are dropped), and the heir's `trigger: succession` storylets join the queue behind them ([Succession storylets](#succession-storylets)).
 - **Order.** Consequences that came due open first in the year's event queue, outside the decision slots, the flavour slots and the cap, then the chance events, decisions and flavour events. Purpose key `schedule/<storylet>[#<person id>]`, one roll per eligible entry per age-up, drawn after `on_age_up_post` and before the year draw.
 - **Storage.** The queue is a Core-owned world state container under the reserved id `_schedule` (see [State containers](state.md#the-schedule-queue)), so saves, hash and replay need nothing more.
 
@@ -147,6 +147,26 @@ A decision tree needs no new primitive: a milestone storylet opens the first nod
   outcomes:
     - effects:
         - money += 50000
+```
+
+### Succession storylets
+
+A storylet with `trigger: succession` opens for the heir when the game continues as them ([Succession](../core-loop.md#succession), [hooks](hooks.md#succession)). It has no `chance`, `weight`, `menu`, `scope`, `target` or `milestone`; `when`, `once`, `cooldown`, `max_per_life`, `text`, `choices` and `outcomes` work as on any storylet. The read-only `deceased.*` names read the dead player in its `when`, text and effects ([Expressions](expressions.md#the-deceased)).
+
+- **When.** `succeed` queues every succession storylet (id order) as a scheduled consequence with a one-age-up window, behind the heir's handed-off `lineage` entries. They open in the heir's first age-up event queue, on top of the decision slots and outside the cap. Their `when` is checked then: if it fails, the storylet is dropped and never offered, so gate on facts that hold at the first age-up (`deceased.*`, the heir's qualities).
+- **Once per generation.** The heir's `storyletLog` is empty, so a `once` storylet fires again for each generation, and `max_per_life` and `cooldown` count within a generation.
+- **Choices.** A succession storylet with `choices` is a decision the player answers; the year stops for it like any other.
+- **Rolls.** The age-up spends one roll under the purpose key `schedule/<storylet>` per queued succession storylet (chance 100%).
+
+```yaml
+# An inheritance for an adult heir; the estate itself is already settled by the Core.
+- id: reading-of-the-will
+  trigger: succession
+  when: age >= 18
+  text: "{deceased.first_name} {deceased.last_name} died at {deceased.age} ({deceased.cause}). The estate came to {deceased.money}; {deceased.Subject} was your {deceased.kin}."
+  outcomes:
+    - effects:
+        - stat.happiness -= 10
 ```
 
 ### Decision slots

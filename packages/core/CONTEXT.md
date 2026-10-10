@@ -39,7 +39,7 @@ The person the user currently controls; a pointer into the world, which can move
 _Avoid_: Self, protagonist, hero
 
 **Generation**:
-The index of the player's line: 0 for the founder, +1 each time the player pointer moves to an heir (succession). Part of every RNG stream derivation, so an heir never replays the founder's draws; succession also resets the storylet firing log and repeatable-action counters.
+The index of the player's line: 0 for the founder, +1 each time the player pointer moves to an heir (succession). Part of every RNG stream derivation, so an heir never replays the founder's draws; succession also resets the storylet firing log and repeatable-action counters, so `once` storylets fire once per generation.
 _Avoid_: Life number, dynasty depth
 
 **World year**:
@@ -183,6 +183,22 @@ _Avoid_: Timer, delayed event
 **Milestone**:
 A moment of a life, named by an id: the Core emits `graduated`, `first_job`, `married`, `first_child` and `retired`, and a Pack declares others (`provides: milestones`) and fires them with `reach_milestone`. It fires once per life: it sets the readable flag `milestone_reached(id)`, runs the Packs' `on_milestone` hooks and opens its `trigger: milestone` storylets at the next age-up. The record is the Core-owned world state container `_milestones`.
 _Avoid_: Achievement, trigger, unlock
+
+**Succession**:
+Continuing the game as one of the dead player's living children (`heirsOf`, `succeed(world, bundles, heirId)`), in the same world. It settles the **estate**, moves the player pointer, bumps the generation, starts the heir's per-life state empty, runs the `on_succession` hooks and queues the `trigger: succession` storylets. No living child ends the lineage. Logged as a `succeed` choice.
+_Avoid_: Reincarnation, new game, dynasty flow (the web flow around it is #220)
+
+**Estate**:
+What the dead player leaves, settled by succession: unsecured debts are paid from cash (a shortfall is written off); a secured loan goes with its asset to an adult heir; other assets and holdings pass whole to the heir; the cash left goes by the **will**, or half to a living spouse and the rest evenly to the children. No estate tax.
+_Avoid_: Inheritance (that is what the heir receives), legacy
+
+**Will**:
+The player's choice for the cash estate: all to one named person, an even split among the children, all to the spouse, or charity (`set_will`, `will_heir`). The Core-owned world state container `_will`, cleared at succession.
+_Avoid_: Testament
+
+**Deceased**:
+The dead player the heir succeeded: the world field `World.deceased` (`{ person, cause, money }`), read-only as `deceased.*` in expressions and text, which a `trigger: succession` storylet uses to write inheritance and mourning.
+_Avoid_: Previous player, ancestor (an ancestor is any forebear)
 
 **Repeatable action**:
 An action that can be done many times a year with diminishing returns: uses up to the manifest curve's `full` give the whole effect, uses up to `reduced` give a share (default a quarter) of every gain, later uses give none. Only gains shrink (positive stats and closeness); money, costs and harms never do. Counted per action (and per target person) per year, reset at age-up, held in life state as the **uses** counters.

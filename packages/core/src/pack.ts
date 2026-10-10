@@ -196,7 +196,7 @@ export interface CompiledStorylet {
   readonly label?: string;
   readonly icon?: IconRef;
   readonly tags: readonly string[];
-  readonly trigger: "event" | "action" | "milestone";
+  readonly trigger: "event" | "action" | "milestone" | "succession";
   /** Actions only: `<top>` or `<top>/<submenu>`. */
   readonly menu?: string;
   /** Milestones only: the milestone id that opens it (docs/spec/pack-format/hooks.md#milestones). */
@@ -496,6 +496,7 @@ export const HOOK_PHASES = [
   "on_age_up_pre",
   "on_age_up_post",
   "on_death",
+  "on_succession",
 ] as const;
 export type HookPhase = (typeof HOOK_PHASES)[number];
 
@@ -509,6 +510,7 @@ export interface HooksDecl {
   readonly on_age_up_pre?: readonly (readonly Effect[])[];
   readonly on_age_up_post?: readonly (readonly Effect[])[];
   readonly on_death?: readonly (readonly Effect[])[];
+  readonly on_succession?: readonly (readonly Effect[])[];
   /** By milestone id. */
   readonly on_milestone?: Readonly<
     Record<string, readonly (readonly Effect[])[]>

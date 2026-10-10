@@ -41,6 +41,10 @@
           {
             "const": "milestone",
             "type": "string"
+          },
+          {
+            "const": "succession",
+            "type": "string"
           }
         ]
       },

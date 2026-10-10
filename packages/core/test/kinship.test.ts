@@ -21,6 +21,7 @@ import {
   createWorld,
   describePending,
   deserializeWorld,
+  endLife,
   getPerson,
   indexBundles,
   isKinshipId,
@@ -262,7 +263,7 @@ describe("heir re-derivation", () => {
   test("names are recomputed from the new player's position", () => {
     const t = tree(FAMILY, [["me", "spouse"]]);
     const heir = t.ids.child as number;
-    const w = succeed(t.w, heir);
+    const w = succeed(endLife(t.w, t.w.playerId, "test"), bundles, heir).world;
     expect(w.playerId).toBe(heir);
     const kin = (n: string) => kinshipOf(w, heir, t.ids[n] as number);
     expect(kin("me")).toBe("parent");

@@ -135,12 +135,34 @@ About 60, plus NPC and mortality storylets:
 ## Death and the end of a life
 
 - A mortality storylet whose yearly chance rises with age and falls with health, plus a few accident and illness deaths among the chance events.
-- Death shows an obituary (age, cause, net worth, career, education), then the life moves to the graveyard. There is no heir and no continue-as-child.
+- Death shows an obituary (age, cause, net worth, career, education). With a living child the player may continue as them ([Succession](#succession)); otherwise, or when the player chooses to finish, the life moves to the graveyard. The Core does not pick: it offers `heirsOf` and `succeed`, and the web flow (#220) asks.
 
 ## Generations and the world clock
 
 - Core carries a generation index (0 for the founder) in every RNG stream derivation, and a world-year counter that advances once per age-up and keeps running across generations. Series read the world year, not the player's age.
-- `succeed(world, heirId)` is the Core primitive that moves the player pointer to a living heir: generation +1, and the storylet firing log, roll-site counters and repeatable-action counters reset. The core-loop Pack does not use it yet (no heir above).
+- `succeed(world, bundles, heirId)` moves the player pointer to a living child of the dead player: generation +1, and the storylet firing log, roll-site counters and repeatable-action counters reset. See [Succession](#succession).
+
+## Succession
+
+The dead player's life continues as one of their living children, in the same world (same persons, same market and world clock). `heirsOf(world)` lists who may inherit: the player's living children by birth, adoption or marriage (kinship `child` and `step-child`), in person id order; none ends the lineage (`canSucceed` is false). `succeed(world, bundles, heirId)` needs the life ended and returns `{ world, lines }` (the heir's first journal lines). It runs, in order:
+
+1. **The estate** (below).
+2. `World.deceased` records the dead player: `{ person, cause, money }` (the cash held at death, before debts). The person stays in the world, dead, with name, stats and qualities.
+3. The player pointer moves to the heir and `generation` rises by one; `worldYear` is untouched. `ended`, the open storylet, the will, the reached milestones, `storyletLog`, `uses` and the roll-site counters are cleared, so `once` storylets fire once per generation. The journal restarts with the heir's life; the caller keeps the finished life's obituary and journal before calling.
+4. Scheduled consequences: entries without `lineage: true` were dropped at death; the `lineage: true` ones are handed to the heir, except entries bound to the dead player or to the heir.
+5. The heir is seated in the family: for each relative, a role row from the heir in the family role their kinship names (`parent`, `sibling`, ...; only roles the Packs declare). Nothing is relabelled: every name is derived from the heir's position ([ADR 0006](../adr/0006-parent-links-derived-kinship.md)), so the dead player is now the heir's parent, the other parent a parent, the other children siblings.
+6. The `on_succession` hooks run for the heir (effects act on the heir), then every `trigger: succession` storylet is queued to open at the next age-up, with read-only `deceased.*` bound ([hooks](pack-format/hooks.md#succession), [storylets](pack-format/storylets.md#succession-storylets)).
+7. The choice log gets a `succeed` entry, so replay reproduces it (the heir's draws use generation `n + 1`, [ADR 0003](../adr/0003-saves-derived-rng-stable-ids.md)).
+
+### The estate
+
+Settled in `succeed`, before the heir takes over. No estate tax (a Pack may add one later, with its own settlement line).
+
+- **Unsecured debts** (loans that secure no asset the dead player owns) are paid from the cash, in loan id order; a shortfall is written off.
+- **Secured loans** (a mortgage, a car loan) travel with their asset to an adult (18+) heir, keeping their balance and missed payments. For a minor heir the asset is sold at its value instead: the loan is repaid from the proceeds, a surplus joins the cash, a shortfall is written off.
+- **Other assets and investment holdings** pass whole to the heir, with no forced sale and whatever the will says; an asset keeps its age (`asset.years`) and a holding its start (`holding_years`), and a holding of a kind the heir already has merges with it. The dead player keeps nothing.
+- **Cash** left after debts is divided by the **will** (`set_will` / `will_heir`, [state](pack-format/state.md#the-will)): leave all to one named person (`heir`), split evenly among the children (`even`), all to the living spouse (`spouse`) or to charity (`charity`, the cash goes to nobody). With no will, or one that cannot be carried out (the named person is dead, no living spouse to leave it to), the no-will rule applies: a living spouse gets half and the children split the rest evenly; with no living spouse the children get it all. An uneven division gives the remainder to the succeeding heir. The spouse is a living person the dead player has a `spouse` role toward; their share is added to their own money (NPC money, #131).
+- A minor heir's money and assets sit in trust under the guardian rules (above). Choosing the guardian is #222; trust release at 18 and the other minor-heir rules are #221.
 
 ## Market and holdings
 

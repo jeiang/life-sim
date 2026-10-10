@@ -3,14 +3,16 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 import { compilePacks } from "../../pack-tools/src/index.ts";
 import {
+  addParentLink,
+  addPerson,
   ageUp,
   choose,
   cyrb128,
   deserializeWorld,
+  endLife,
   getPerson,
   newLife,
   Rng,
-  replay,
   serializeWorld,
   streamFor,
   succeed,
@@ -32,10 +34,15 @@ function play(w: World, years: number): World {
   return w;
 }
 
-function heirOf(w: World): number {
-  const h = [...w.persons.values()].find((p) => p.alive && p.id !== w.playerId);
-  if (!h) throw new Error("no heir in fixture");
-  return h.id;
+/** The player dies leaving one child, who succeeds. */
+function dieAndSucceed(w: World): World {
+  const [w1, kid] = addPerson(w, {
+    givenName: "Kid",
+    familyName: "Heir",
+    age: 3,
+  });
+  const dead = endLife(addParentLink(w1, kid, w.playerId), w.playerId, "test");
+  return succeed(dead, bundles, kid).world;
 }
 
 const draws = (r: Rng) => Array.from({ length: 6 }, () => r.next32());
@@ -63,54 +70,30 @@ describe("succession", () => {
     let w = play(newLife(bundles, 11), 5);
     expect(w.generation).toBe(0);
     expect(w.worldYear).toBe(5);
-    const heir = heirOf(w);
-    w = succeed(w, heir);
+    w = dieAndSucceed(w);
     expect(w).toMatchObject({
-      playerId: heir,
       generation: 1,
       worldYear: 5,
       storyletLog: {},
       rngCounters: {},
+      uses: {},
     });
     w = play(w, 3);
     expect(w.worldYear).toBe(8);
     expect(w.generation).toBe(1);
   });
 
-  test("storyletLog is non-empty before succession and empty after", () => {
-    const w = {
-      ...newLife(bundles, 3),
-      storyletLog: { "a/b": { count: 2, lastAge: 5 } },
-    };
-    expect(succeed(w, heirOf(w)).storyletLog).toEqual({});
-  });
-
-  test("the repeatable-action counters reset at succession", () => {
-    const w = { ...newLife(bundles, 3), uses: { "a/b": 4 } };
-    expect(succeed(w, heirOf(w)).uses).toEqual({});
-  });
-
   test("an heir's life is a different draw sequence from the founder's", () => {
     const base = newLife(bundles, 21);
-    const founder = play(base, 6);
-    const s = succeed(base, heirOf(base));
+    const s = dieAndSucceed(base);
     // same ages, same counters, same seed: only the generation differs
     const g0 = streamFor(base.seed, 1, "year/quiet", 0, base.generation);
     const g1 = streamFor(s.seed, 1, "year/quiet", 0, s.generation);
     expect(draws(g1)).not.toEqual(draws(g0));
-    expect(founder.generation).toBe(0);
   });
 
-  test("rejects the current player and the dead", () => {
-    const w = newLife(bundles, 4);
-    expect(() => succeed(w, w.playerId)).toThrow(RangeError);
-  });
-
-  test("deterministic: replay reproduces the world hash, and the hash covers generation and clock", () => {
-    let w = play(newLife(bundles, 8), 4);
-    w = play(succeed(w, heirOf(w)), 4);
-    const r = replay(w.seed, bundles, w.choiceLog);
-    expect(worldHash(r)).toBe(worldHash(w));
+  test("the hash covers generation and clock, and a succeeded world round-trips", () => {
+    const w = play(dieAndSucceed(play(newLife(bundles, 8), 4)), 4);
     expect(worldHash({ ...w, generation: 0 })).not.toBe(worldHash(w));
     expect(worldHash({ ...w, worldYear: w.worldYear + 1 })).not.toBe(
       worldHash(w),

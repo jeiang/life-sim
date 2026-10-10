@@ -406,6 +406,7 @@ const TOP_RESERVED = new Set([
   "city",
   "living",
   "player",
+  "deceased",
   "person",
   "asset",
   "portfolio",
@@ -489,6 +490,13 @@ export const PLAYER_NAMES: Record<string, ExprType> = {
   "player.first_name": "string",
   "player.last_name": "string",
   ...pronounNames("player"),
+  "deceased.first_name": "string",
+  "deceased.last_name": "string",
+  ...pronounNames("deceased"),
+  "deceased.age": "int",
+  "deceased.money": "int",
+  "deceased.cause": "string",
+  "deceased.kin": "string",
 };
 
 export interface CompileOptions {
@@ -1609,6 +1617,7 @@ class PackCompiler {
     for (const s of m.stats ?? []) {
       if (!has("stats", s.id)) continue;
       this.baseNames[`stat.${s.id}`] = "int";
+      this.baseNames[`deceased.stat.${s.id}`] = "int";
       this.declared.add(`stat.${s.id}`);
       this.statIds.add(s.id);
     }
@@ -1616,6 +1625,7 @@ class PackCompiler {
       if (!has("qualities", q.id)) continue;
       const type = q.type === "flag" ? "bool" : "int";
       this.baseNames[`quality.${q.id}`] = type;
+      this.baseNames[`deceased.quality.${q.id}`] = type;
       this.declared.add(`quality.${q.id}`);
       if (q.scope === "person") {
         this.personQualities.set(q.id, type);
@@ -1636,6 +1646,7 @@ class PackCompiler {
         for (const k of s.keys) {
           this.aggregates[`people.table.${s.id}.${k}`] = "int";
           this.baseNames[`table.${s.id}.${k}`] = "int";
+          this.baseNames[`deceased.table.${s.id}.${k}`] = "int";
           this.declared.add(`table.${s.id}.${k}`);
         }
       } else {
@@ -2578,6 +2589,10 @@ class PackCompiler {
       for (const k of ["menu", "chance", "weight", "scope", "target"] as const)
         if (s[k] !== undefined)
           this.err([k], `'${k}' is not valid on milestone storylets`);
+    } else if (s.trigger === "succession") {
+      for (const k of ["menu", "chance", "weight", "scope", "target"] as const)
+        if (s[k] !== undefined)
+          this.err([k], `'${k}' is not valid on succession storylets`);
     } else {
       if (s.menu === undefined)
         this.err([], "an action storylet needs a 'menu'");

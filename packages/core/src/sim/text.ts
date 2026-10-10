@@ -43,6 +43,7 @@ const MONEY_NAMES = new Set([
   "living.cost",
   "asset.value",
   "asset.purchase_price",
+  "deceased.money",
 ]);
 
 /**

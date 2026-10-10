@@ -3,8 +3,10 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 import { compilePacks } from "../../pack-tools/src/index.ts";
 import {
+  addParentLink,
   addPerson,
   ageUp,
+  endLife,
   getPerson,
   godSetMoney,
   indexBundles,
@@ -102,7 +104,12 @@ describe("market series", () => {
       familyName: "Eir",
       age: 3,
     });
-    const heirWorld = succeed(withHeir, heir);
+    const linked = addParentLink(withHeir, heir, base.playerId);
+    const heirWorld = succeed(
+      endLife(linked, base.playerId, "test"),
+      bundles,
+      heir,
+    ).world;
     expect(heirWorld.worldYear).toBe(base.worldYear);
     const a = ageUp(base, bundles).world;
     const b = ageUp(heirWorld, bundles).world;

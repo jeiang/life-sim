@@ -1,0 +1,15 @@
+provides:
+  qualities:
+    - hook_ran
+    - opened
+    - mourned
+    - seen_age
+    - seen_smarts
+    - seen_hook_ran
+    - blocked_fired
+    - will_seen
+requires:
+  - core-loop/careers
+  - core-loop/education
+  - core-loop/family
+  - core-loop/stats

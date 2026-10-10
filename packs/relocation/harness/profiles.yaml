@@ -34,6 +34,7 @@ profiles:
       - ids: ["*/apply-*"]
       - {}
   stayer:
+    default: false
     description: Never touches an emigration action, so it is the net-worth baseline for the movers
     moves: { below: 4 }
     once_per_year: true

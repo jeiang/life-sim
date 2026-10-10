@@ -12,10 +12,10 @@
 ## relatives-drift
 - trigger: event
 - icon: 📭
-- chance: 75%
+- chance: 40%
 - scope: person
 - target: core-loop/parent, core-loop/sibling, core-loop/friend
-- when: quality.reloc_abroad
+- when: quality.reloc_abroad and person.closeness > 20
 - needs: quality reloc_abroad: flag = false: the player currently lives abroad (set when the player emigrates, cleared by move-back-home)
 - text: Back home, {person.first_name} is getting on with life, and the news from you has dried up.
 - opens: 5..14 per life
@@ -23,15 +23,15 @@
 ### outcomes
 - outcome: 50
   - text: Another month goes by and the messages stop coming.
-  - effect: relationship(person).closeness += -6
+  - effect: relationship(person).closeness += -4
   - rate: 45..55%
 - outcome: 30
   - text: {person.first_name} hears about your news from a cousin, and it stings.
-  - effect: relationship(person).closeness += -6
+  - effect: relationship(person).closeness += -4
   - rate: 25..35%
 - outcome: 20
   - text: A birthday card arrives a week late, with a short note that says only "Hope you're well."
-  - effect: relationship(person).closeness += -6
+  - effect: relationship(person).closeness += -4
   - rate: 15..25%
 
 ## call-home

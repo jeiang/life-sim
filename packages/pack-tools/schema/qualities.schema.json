@@ -30,6 +30,11 @@
             "description": "`person`: also readable and assignable on a bound person (`person.quality.<id>`); the player's own value is always `quality.<id>`",
             "const": "person",
             "type": "string"
+          },
+          "format": {
+            "description": "`money`: `{quality.<id>}` in text prints as currency (the value is in minor units)",
+            "const": "money",
+            "type": "string"
           }
         }
       },

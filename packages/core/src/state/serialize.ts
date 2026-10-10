@@ -212,6 +212,9 @@ function person(v: unknown, p: string): Person {
     ...(o.gender === undefined
       ? {}
       : { gender: gender(o.gender, `${p}.gender`) }),
+    ...(o.canCarry === undefined
+      ? {}
+      : { canCarry: bool(o.canCarry, `${p}.canCarry`) }),
     age: int(o.age, `${p}.age`),
     alive: bool(o.alive, `${p}.alive`),
     stats: intRecord(o.stats, `${p}.stats`),

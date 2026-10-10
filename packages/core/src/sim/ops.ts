@@ -1,6 +1,7 @@
 import { type Expr, evaluate } from "../expr/index.ts";
 import type { CompiledGenerator } from "../pack.ts";
 import type { Rng } from "../rng.ts";
+import { clampDecl } from "../state/containers.ts";
 import { dropMortalSchedule } from "../state/schedule.ts";
 import {
   type Asset,
@@ -13,6 +14,7 @@ import {
   type Occupation,
   type Person,
   type PersonId,
+  type QualityValue,
   type World,
 } from "../state/types.ts";
 import {
@@ -26,6 +28,7 @@ import {
   putLoan,
   putRelationship,
   removeAsset,
+  setQuality,
   updatePerson,
 } from "../state/world.ts";
 import { makeEnv, type Scope } from "./env.ts";
@@ -293,12 +296,16 @@ export function spawnPerson(
   const gender = drawGender(rng, gen);
   // Drawn last, and only by generators that declare jobs, so no other draw moves.
   const job = gen.jobs?.length ? gen.jobs[rng.int(gen.jobs.length)] : undefined;
+  const qualities = drawGeneratorQualities(rng, gen, idx);
+  const canCarry = drawCanCarry(rng, gen, gender);
   const [w1, id] = addPerson(w0, {
     ...(job ? { job: { label: job.label, tier: job.tier } } : {}),
     givenName: pickFirstName(gen, gender, nameRoll),
     familyName: opts.familyName ?? drawn,
     age: personAge,
     gender,
+    canCarry,
+    qualities,
     stats,
   });
   const linked = putRelationship(w1, {
@@ -307,7 +314,84 @@ export function spawnPerson(
     role: roleId,
     closeness: opts.closeness ?? 50,
   });
-  return [linkFamilyRole(linked, from, id, roleId), id];
+  const family = linkFamilyRole(linked, from, id, roleId);
+  return [
+    idx.roles.get(roleId)?.animal
+      ? family
+      : rollSpawnQualities(family, idx, id),
+    id,
+  ];
+}
+
+/**
+ * Draw the generator's person qualities: a fixed value draws nothing, a `[min, max]` range one
+ * `rng.int`, in quality id order, after every other spawn draw so no existing stream moves.
+ */
+export function drawGeneratorQualities(
+  rng: Rng,
+  gen: CompiledGenerator | undefined,
+  idx: PackIndex,
+): Record<string, QualityValue> {
+  const out: Record<string, QualityValue> = {};
+  const decls = gen?.qualities;
+  if (!decls) return out;
+  for (const id of Object.keys(decls).sort()) {
+    const v = decls[id] as number | boolean | readonly [number, number];
+    const decl = idx.qualities.get(id);
+    if (typeof v === "boolean") out[id] = v;
+    else {
+      const n = typeof v === "number" ? v : v[0] + rng.int(v[1] - v[0] + 1);
+      out[id] = decl?.type === "int" ? clampDecl(decl, n) : n;
+    }
+  }
+  return out;
+}
+
+/**
+ * The stored `can_carry` of a body: the generator's fixed value, else from the gender (female
+ * yes, male no). Only a nonbinary person draws (one bit, drawn last), so the other streams stay put.
+ */
+export function drawCanCarry(
+  rng: Rng,
+  gen: CompiledGenerator | undefined,
+  gender: Gender,
+): boolean {
+  if (gen?.canCarry !== undefined) return gen.canCarry;
+  if (gender === "nonbinary") return rng.int(2) === 0;
+  return gender === "female";
+}
+
+/**
+ * Run every Pack's `spawn_qualities` entries for a person just spawned: entry `n` of Pack
+ * `<id>` picks one outcome whose gender filter matches, under its own stream
+ * `pack/<id>/spawn/<n>`, and writes its qualities.
+ */
+function rollSpawnQualities(world: World, idx: PackIndex, id: PersonId): World {
+  let w = world;
+  for (const b of idx.bundles) {
+    for (const [n, entry] of (b.spawnQualities ?? []).entries()) {
+      const gender = getPerson(w, id).gender;
+      const live = entry.outcomes.filter(
+        (o) => !o.gender || (gender !== undefined && o.gender.includes(gender)),
+      );
+      if (live.length === 0) continue;
+      const [w2, rng] = nextStream(w, clockAge(w), `pack/${b.id}/spawn/${n}`);
+      const pick = live[rng.weightedPick(live.map((o) => o.weight))];
+      w = w2;
+      for (const [q, v] of Object.entries(pick?.qualities ?? {})) {
+        const decl = idx.qualities.get(q);
+        w = setQuality(
+          w,
+          id,
+          q,
+          typeof v === "number" && decl?.type === "int"
+            ? clampDecl(decl, v)
+            : v,
+        );
+      }
+    }
+  }
+  return w;
 }
 
 function obitOccupation(o: Occupation, age: number): ObituaryOccupation {

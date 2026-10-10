@@ -1,3 +1,22 @@
 # yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
 id: dating
 namespace: dating
+# NPC attraction: every generated person (family, friends, partners; not animals, not the player) rolls
+# the same table as the player's `roll-attraction`, by their own gender. Values are hidden.
+spawn_qualities:
+  - outcomes:
+      - { weight: 78, gender: [male], qualities: { dating_attracted_men: 4, dating_attracted_women: 92, dating_attracted_nonbinary: 12 } }
+      - { weight: 8, gender: [male], qualities: { dating_attracted_men: 90, dating_attracted_women: 6, dating_attracted_nonbinary: 15 } }
+      - { weight: 10, gender: [male], qualities: { dating_attracted_men: 60, dating_attracted_women: 65, dating_attracted_nonbinary: 20 } }
+      - { weight: 2, gender: [male], qualities: { dating_attracted_men: 8, dating_attracted_women: 10, dating_attracted_nonbinary: 70 } }
+      - { weight: 2, gender: [male], qualities: { dating_attracted_men: 3, dating_attracted_women: 3, dating_attracted_nonbinary: 3 } }
+      - { weight: 78, gender: [female], qualities: { dating_attracted_men: 92, dating_attracted_women: 4, dating_attracted_nonbinary: 12 } }
+      - { weight: 8, gender: [female], qualities: { dating_attracted_men: 6, dating_attracted_women: 90, dating_attracted_nonbinary: 15 } }
+      - { weight: 10, gender: [female], qualities: { dating_attracted_men: 65, dating_attracted_women: 60, dating_attracted_nonbinary: 20 } }
+      - { weight: 2, gender: [female], qualities: { dating_attracted_men: 10, dating_attracted_women: 8, dating_attracted_nonbinary: 70 } }
+      - { weight: 2, gender: [female], qualities: { dating_attracted_men: 3, dating_attracted_women: 3, dating_attracted_nonbinary: 3 } }
+      - { weight: 30, gender: [nonbinary], qualities: { dating_attracted_men: 85, dating_attracted_women: 15, dating_attracted_nonbinary: 20 } }
+      - { weight: 30, gender: [nonbinary], qualities: { dating_attracted_men: 15, dating_attracted_women: 85, dating_attracted_nonbinary: 20 } }
+      - { weight: 28, gender: [nonbinary], qualities: { dating_attracted_men: 60, dating_attracted_women: 60, dating_attracted_nonbinary: 25 } }
+      - { weight: 6, gender: [nonbinary], qualities: { dating_attracted_men: 20, dating_attracted_women: 20, dating_attracted_nonbinary: 85 } }
+      - { weight: 6, gender: [nonbinary], qualities: { dating_attracted_men: 3, dating_attracted_women: 3, dating_attracted_nonbinary: 3 } }

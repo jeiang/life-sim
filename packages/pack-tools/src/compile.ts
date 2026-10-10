@@ -30,6 +30,7 @@ import type {
   ReadableDecl,
   RepeatCurve,
   SettlementLine,
+  SpawnQualities,
   StatDecl,
   StateDecl,
 } from "@life/core";
@@ -451,6 +452,7 @@ const CALL_KINDS: Record<string, Kind[][] | undefined> = {
   holding_years: [["market"]],
   forecast: [["market"]],
   spawn_person: [["role"], ["generator"]],
+  rename: [[], ["generator"]],
   schedule: [["storylet"]],
   unschedule: [["storylet"]],
 };
@@ -461,14 +463,17 @@ const MILESTONE_FUNCTIONS = new Set(["milestone_reached", "reach_milestone"]);
 /** Functions whose one argument names an exclusivity group, not a content id. */
 const GROUP_FUNCTIONS = new Set(["in_group", "years_in_group"]);
 
-/** `<prefix>.subject`, `<prefix>.Subject`, ... as string names. */
+/** `<prefix>.subject`, `<prefix>.Subject`, ... as string names, and the `can_carry` body flag. */
 function pronounNames(prefix: string): Record<string, ExprType> {
-  return Object.fromEntries(
-    [...PRONOUN_FIELDS, "gender"].map((f) => [
-      `${prefix}.${f}`,
-      "string" as const,
-    ]),
-  );
+  return {
+    ...Object.fromEntries(
+      [...PRONOUN_FIELDS, "gender"].map((f) => [
+        `${prefix}.${f}`,
+        "string" as const,
+      ]),
+    ),
+    [`${prefix}.can_carry`]: "bool",
+  };
 }
 
 export const PLAYER_NAMES: Record<string, ExprType> = {
@@ -1812,6 +1817,9 @@ class PackCompiler {
       ...(m.living ? { living: this.living(m.living) } : {}),
       ...(m.npc_careers ? { npcCareers: this.npcCareers(m.npc_careers) } : {}),
       ...(m.hooks ? { hooks: this.hooks(m.hooks) } : {}),
+      ...(m.spawn_qualities
+        ? { spawnQualities: this.spawnQualities(m.spawn_qualities) }
+        : {}),
       ...(m.settlement ? { settlement: this.settlement(m.settlement) } : {}),
       migrations,
       ...bundle,
@@ -2902,6 +2910,39 @@ class PackCompiler {
     return out;
   }
 
+  /** `spawn_qualities` of the manifest (docs/spec/pack-format/manifest.md): weighted person-quality draws run for every generated person. */
+  private spawnQualities(
+    list: NonNullable<Manifest["spawn_qualities"]>,
+  ): SpawnQualities[] {
+    return list.map((entry, n) => ({
+      outcomes: entry.outcomes.map((o, i) => {
+        const qualities: Record<string, number | boolean> = {};
+        for (const [k, v] of Object.entries(o.qualities)) {
+          const type = this.personQualities.get(k);
+          const at = ["spawn_qualities", n, "outcomes", i, "qualities", k];
+          if (type === undefined)
+            this.err(
+              at,
+              `'${k}' is not a person-scoped quality visible to this Pack (declare it with 'scope: person'); visible: ${[...this.personQualities.keys()].sort().join(", ") || "none"}`,
+            );
+          else if ((typeof v === "boolean") !== (type === "bool"))
+            this.err(
+              at,
+              type === "bool"
+                ? `'${k}' is a flag: use true or false`
+                : `'${k}' is an int quality, not a flag`,
+            );
+          qualities[k] = v;
+        }
+        return {
+          weight: o.weight,
+          ...(o.gender ? { gender: [...o.gender] } : {}),
+          qualities,
+        };
+      }),
+    }));
+  }
+
   /** Settlement lines of the manifest (docs/spec/pack-format/settlement.md): player-scope amounts and conditions. */
   private settlement(
     lines: NonNullable<Manifest["settlement"]>,
@@ -3257,6 +3298,26 @@ class PackCompiler {
         );
       stats[k] = [v[0], v[1]];
     }
+    const qualities: Record<string, number | boolean | [number, number]> = {};
+    for (const [k, v] of Object.entries(p.qualities ?? {})) {
+      const type = this.personQualities.get(k);
+      if (type === undefined) {
+        this.err(
+          ["qualities", k],
+          `'${k}' is not a person-scoped quality visible to this Pack (declare it with 'scope: person'); visible: ${[...this.personQualities.keys()].sort().join(", ") || "none"}`,
+        );
+        continue;
+      }
+      if (typeof v === "boolean") {
+        if (type !== "bool")
+          this.err(["qualities", k], `'${k}' is an int quality, not a flag`);
+      } else if (type !== "int") {
+        this.err(["qualities", k], `'${k}' is a flag: use true or false`);
+      } else if (Array.isArray(v) && v[0] > v[1]) {
+        this.err(["qualities", k], "range minimum exceeds maximum");
+      }
+      qualities[k] = Array.isArray(v) ? [v[0], v[1]] : v;
+    }
     return {
       type: "generator",
       id: this.owner,
@@ -3268,6 +3329,8 @@ class PackCompiler {
       ...(p.jobs
         ? { jobs: p.jobs.map((j) => ({ label: j.label, tier: j.tier })) }
         : {}),
+      ...(Object.keys(qualities).length > 0 ? { qualities } : {}),
+      ...(p.can_carry === undefined ? {} : { canCarry: p.can_carry }),
     } satisfies CompiledGenerator;
   }
 

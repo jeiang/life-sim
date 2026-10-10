@@ -16,7 +16,9 @@ import {
 import { runHook } from "./hooks.ts";
 import { updateMarket } from "./market.ts";
 import {
+  drawCanCarry,
   drawGender,
+  drawGeneratorQualities,
   NAME_ROLL_RANGE,
   pickFirstName,
   spawnPerson,
@@ -114,6 +116,9 @@ export function newLife(
   // Drawn last and always, so the other draws match a plain life.
   const drawnGender = drawGender(rng, gen);
   const gender = custom?.gender ?? drawnGender;
+  // The generator's own quality draws and the nonbinary can_carry bit come after every older draw.
+  Object.assign(qualities, drawGeneratorQualities(rng, gen, idx));
+  const canCarry = drawCanCarry(rng, gen, gender);
   const givenName =
     custom?.givenName ??
     opts.givenName ??
@@ -123,6 +128,7 @@ export function newLife(
     givenName,
     familyName,
     gender,
+    canCarry,
     stats,
     qualities,
   }));

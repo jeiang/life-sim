@@ -18,3 +18,5 @@ provides:
   loans:
     - auto-loan
     - mortgage
+  qualities:
+    - kickout_pct

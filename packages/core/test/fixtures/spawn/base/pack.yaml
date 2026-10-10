@@ -1,0 +1,15 @@
+id: base
+currency:
+  symbol: "$"
+  digits: 2
+stats:
+  - { id: happiness, label: Happiness, start: [50, 100] }
+# Entry 0 picks a mood by the person's gender (one outcome matches, so it is deterministic);
+# entry 1 flags everyone. Neither runs for the player or for animals.
+spawn_qualities:
+  - outcomes:
+      - { weight: 1, gender: [male], qualities: { mood: 1 } }
+      - { weight: 1, gender: [female], qualities: { mood: 2 } }
+      - { weight: 1, gender: [nonbinary], qualities: { mood: 3 } }
+  - outcomes:
+      - { weight: 1, qualities: { tagged: true } }

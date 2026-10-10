@@ -143,6 +143,7 @@ function personField(
   if (field === "first_name") return p.givenName;
   if (field === "last_name") return p.familyName;
   if (field === "gender") return p.gender ?? "";
+  if (field === "can_carry") return p.canCarry ?? p.gender === "female";
   const pronoun = pronounOf(p.gender, field);
   if (pronoun !== undefined) return pronoun;
   if (field === "age") return p.age;
@@ -199,6 +200,7 @@ function deceasedField(
     if (!q) throw new RangeError(`unknown name '${path}'`);
     return q.default as Value;
   }
+  if (field === "can_carry") return false;
   return pronounOf(undefined, field) ?? "";
 }
 

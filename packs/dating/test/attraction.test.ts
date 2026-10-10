@@ -50,3 +50,35 @@ test("attraction values lean towards the opposite gender for most and vary by ge
   expect(straightMen / men).toBeGreaterThan(0.65);
   expect(anyHigh / seeds.length).toBeGreaterThan(0.9);
 });
+
+test("generated people carry their own attraction, rolled by their own gender, at spawn", () => {
+  let men = 0;
+  let straightMen = 0;
+  let nonbinary = 0;
+  for (let seed = 1; seed <= 600; seed++) {
+    const w = newLife(bundles, seed);
+    for (const p of w.persons.values()) {
+      if (p.id === w.playerId) continue;
+      const a = ["men", "women", "nonbinary"].map(
+        (g) => p.qualities[`dating_attracted_${g}`],
+      ) as number[];
+      // Set at spawn: never the default 0/0/0.
+      expect(a.every((x) => typeof x === "number")).toBe(true);
+      expect(a.some((x) => x > 0)).toBe(true);
+      if (p.gender === "male") {
+        men++;
+        if ((a[1] as number) >= 60 && (a[0] as number) < 20) straightMen++;
+      }
+      if (p.gender === "nonbinary") nonbinary++;
+    }
+  }
+  expect(straightMen / men).toBeGreaterThan(0.65);
+  expect(nonbinary).toBe(0);
+});
+
+test("the player's own roll is unchanged: the player is not spawned", () => {
+  const w = newLife(bundles, 3);
+  const p = getPerson(w, w.playerId);
+  expect(p.qualities.dating_attracted_men).toBe(0);
+  expect(p.qualities.dating_attracted_women).toBe(0);
+});

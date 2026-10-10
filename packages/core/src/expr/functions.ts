@@ -8,7 +8,9 @@
  * `milestone` is a milestone id, Core or `provides: milestones` (a bare word or a string literal);
  * `person` is a person name in scope (`person`, or one bound by `spawn_person ... as`);
  * `kinship` is a Core kinship id (a bare word or a string literal);
- * `will` is a will mode for `set_will` (`even`, `spouse`, `charity` or `none`).
+ * `will` is a will mode for `set_will` (`even`, `spouse`, `charity` or `none`);
+ * `gender` is `male`, `female` or `nonbinary` (a bare word or a string literal);
+ * `target` is a person name like `person`, or `player` for the subject.
  */
 export type Type =
   | "int"
@@ -19,7 +21,9 @@ export type Type =
   | "milestone"
   | "person"
   | "kinship"
-  | "will";
+  | "will"
+  | "gender"
+  | "target";
 
 export interface Signature {
   readonly params: readonly Type[];
@@ -119,6 +123,17 @@ export const EFFECTS = {
    * or lost pet. They stay in the world but leave the player's lists and no storylet binds them.
    */
   unlist: { params: ["person"], returns: "bool" },
+  /**
+   * Set the gender (`male`, `female` or `nonbinary`) of the player (`player`) or of one named
+   * person (`person`, or one bound by `spawn_person(...) as <name>`). Identity only: the stored
+   * `can_carry` body flag and the name do not change.
+   */
+  set_gender: { params: ["target", "gender"], returns: "bool" },
+  /**
+   * Give the player (`player`) or one named person a new first name drawn from a generator's
+   * pool for their current gender (the family name stays).
+   */
+  rename: { params: ["target", "id"], returns: "bool" },
   /** Cancel every queued `schedule(...)` of a storylet, for any person. `schedule` has its own syntax. */
   unschedule: { params: ["id"], returns: "bool" },
 } as const satisfies Record<string, Signature>;

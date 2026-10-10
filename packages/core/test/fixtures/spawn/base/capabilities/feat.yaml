@@ -1,0 +1,19 @@
+provides:
+  stats:
+    - happiness
+  qualities:
+    - culture
+    - mood
+    - tagged
+    - pocket
+    - plain
+  roles:
+    - neighbour
+    - pet
+  generators:
+    - citizen
+    - elder
+    - nb
+    - pup
+  singletons:
+    - currency

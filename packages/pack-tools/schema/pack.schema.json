@@ -475,6 +475,71 @@
         }
       }
     },
+    "spawn_qualities": {
+      "description": "Entry `n` draws once for every person a generator spawns (not animals, not the player) and sets person-scoped qualities; rolls under the purpose key `pack/<id>/spawn/<n>`",
+      "type": "array",
+      "items": {
+        "additionalProperties": false,
+        "title": "Spawn-time person qualities: one weighted draw per entry for every generated person",
+        "type": "object",
+        "required": ["outcomes"],
+        "properties": {
+          "outcomes": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": ["weight", "qualities"],
+              "properties": {
+                "weight": {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "gender": {
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "description": "Only for generated people of these genders; omitted: any",
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "const": "male",
+                        "type": "string"
+                      },
+                      {
+                        "const": "female",
+                        "type": "string"
+                      },
+                      {
+                        "const": "nonbinary",
+                        "type": "string"
+                      }
+                    ]
+                  }
+                },
+                "qualities": {
+                  "minProperties": 1,
+                  "type": "object",
+                  "patternProperties": {
+                    "^[a-z][a-z0-9_]*$": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "boolean"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "settlement": {
       "minItems": 1,
       "description": "Yearly income and cost lines, applied in order after the Core lines (docs/spec/pack-format/settlement.md)",

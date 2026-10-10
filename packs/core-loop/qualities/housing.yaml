@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
+# Percent multiplier on the yearly chance parents ask the player to leave (`parents-ask-you-to-leave`):
+# 100 is the base rate, 0 never, 200 doubles it. A cultural Pack raises or lowers it.
+- { id: kickout_pct, type: int, min: 0, default: 100 }

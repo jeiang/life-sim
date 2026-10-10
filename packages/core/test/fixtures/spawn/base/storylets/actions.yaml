@@ -1,0 +1,26 @@
+- id: transition
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - set_gender(player, nonbinary)
+        - rename(player, base/nb)
+
+- id: make-over
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - spawn_person(base/neighbour, base/citizen) as pal
+        - set_gender(pal, nonbinary)
+        - rename(pal, base/nb)
+
+- id: neighbour-transition
+  trigger: action
+  scope: person
+  target: [base/neighbour]
+  menu: relationships
+  outcomes:
+    - effects:
+        - set_gender(person, female)
+        - rename(person, base/citizen)

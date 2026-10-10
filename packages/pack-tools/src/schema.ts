@@ -34,6 +34,11 @@ const HookEffects = Type.Array(Type.String({ minLength: 1 }), {
   description:
     "Effect statements run in order for a lifecycle phase; effect macro calls are allowed",
 });
+const GenderName = Type.Union([
+  Type.Literal("male"),
+  Type.Literal("female"),
+  Type.Literal("nonbinary"),
+]);
 const Label = Type.String({ minLength: 1 });
 
 const obj = <T extends Record<string, TSchema>>(p: T, title?: string) =>
@@ -74,6 +79,12 @@ export const QualitySchema = Type.Union([
     max: Type.Optional(Type.Integer()),
     default: Type.Integer(),
     scope: QualityScope,
+    format: Type.Optional(
+      Type.Literal("money", {
+        description:
+          "`money`: `{quality.<id>}` in text prints as currency (the value is in minor units)",
+      }),
+    ),
   }),
   obj({
     id: Name,
@@ -514,6 +525,38 @@ export const ManifestSchema = obj(
         "Lifecycle hooks (docs/spec/pack-format/hooks.md)",
       ),
     ),
+    spawn_qualities: Type.Optional(
+      Type.Array(
+        obj(
+          {
+            outcomes: Type.Array(
+              obj({
+                weight: Type.Integer({ minimum: 1 }),
+                gender: Type.Optional(
+                  Type.Array(GenderName, {
+                    minItems: 1,
+                    uniqueItems: true,
+                    description:
+                      "Only for generated people of these genders; omitted: any",
+                  }),
+                ),
+                qualities: Type.Record(
+                  Name,
+                  Type.Union([Type.Integer(), Type.Boolean()]),
+                  { minProperties: 1 },
+                ),
+              }),
+              { minItems: 1 },
+            ),
+          },
+          "Spawn-time person qualities: one weighted draw per entry for every generated person",
+        ),
+        {
+          description:
+            "Entry `n` draws once for every person a generator spawns (not animals, not the player) and sets person-scoped qualities; rolls under the purpose key `pack/<id>/spawn/<n>`",
+        },
+      ),
+    ),
     settlement: Type.Optional(
       Type.Array(
         obj(
@@ -890,11 +933,6 @@ export const StandardSchema = obj(
 );
 
 const NameList = Type.Array(Type.String({ minLength: 1 }), { minItems: 1 });
-const GenderName = Type.Union([
-  Type.Literal("male"),
-  Type.Literal("female"),
-  Type.Literal("nonbinary"),
-]);
 
 export const PeopleSchema = Type.Union(
   [
@@ -943,6 +981,18 @@ export const PeopleSchema = Type.Union(
         }),
       ),
       age: Range,
+      qualities: Type.Optional(
+        Type.Record(Name, Type.Union([Type.Integer(), Type.Boolean(), Range]), {
+          description:
+            "Person-scoped qualities set on the spawned person: a fixed value, or an inclusive `[min, max]` range drawn at spawn. Must be `scope: person` qualities visible to this Pack",
+        }),
+      ),
+      can_carry: Type.Optional(
+        Type.Boolean({
+          description:
+            "Fixed `can_carry` body flag for every person of this generator; omitted: from the gender (female yes, male no, nonbinary drawn). Independent of gender identity: `set_gender` never changes it",
+        }),
+      ),
       stats: Type.Optional(Type.Record(Name, Range)),
       jobs: Type.Optional(
         Type.Array(

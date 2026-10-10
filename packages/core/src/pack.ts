@@ -35,6 +35,8 @@ export type QualityDecl =
       readonly default: number;
       /** `person`: also readable and assignable on a bound person (`person.quality.<id>`). */
       readonly scope?: "person";
+      /** `money`: `{quality.<id>}` in text prints as currency (minor units), like `{money}`. */
+      readonly format?: "money";
     }
   | {
       readonly id: string;
@@ -443,6 +445,15 @@ export interface CompiledGenerator {
   readonly stats: Readonly<Record<string, readonly [number, number]>>;
   /** Static job labels with income tiers; a spawned person gets one drawn uniformly. Absent: none. */
   readonly jobs?: readonly StaticJob[];
+  /**
+   * Person-scoped qualities set on the spawned person: a fixed value, or an inclusive
+   * `[min, max]` range drawn at spawn. Bare quality ids. Absent: none.
+   */
+  readonly qualities?: Readonly<
+    Record<string, number | boolean | readonly [number, number]>
+  >;
+  /** Fixed body flag (`can_carry`); absent: from the gender (female yes, male no, nonbinary drawn). */
+  readonly canCarry?: boolean;
 }
 
 /** The job label and income tier of a person without a simulated career. */
@@ -537,6 +548,21 @@ export interface HooksDecl {
 }
 
 /**
+ * One `spawn_qualities` entry of a Pack: a weighted draw run for every person a generator
+ * spawns (animals and the player excepted), which writes person-scoped qualities. Entry `n`
+ * rolls under the purpose key `pack/<id>/spawn/<n>`, a stream of its own.
+ */
+export interface SpawnQualities {
+  readonly outcomes: readonly {
+    readonly weight: number;
+    /** Only for these genders; absent: any. */
+    readonly gender?: readonly Gender[];
+    /** Quality id (bare) -> value. */
+    readonly qualities: Readonly<Record<string, number | boolean>>;
+  }[];
+}
+
+/**
  * One yearly income or cost line a Pack adds to settlement (docs/spec/pack-format/settlement.md).
  * Acts on the player; `amount` is in minor units, evaluated in the player's scope.
  */
@@ -588,6 +614,8 @@ export interface PackBundle {
   };
   /** Lifecycle hooks (phase effects); run in bundle order. */
   readonly hooks?: HooksDecl;
+  /** Qualities this Pack sets on every generated person (not animals, not the player) at spawn, in source order. */
+  readonly spawnQualities?: readonly SpawnQualities[];
   /** Yearly settlement lines, in source order; run after the Core lines, in bundle order. */
   readonly settlement?: readonly SettlementLine[];
   /** Living costs; needs `standards`. */

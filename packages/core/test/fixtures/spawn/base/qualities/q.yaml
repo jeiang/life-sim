@@ -1,0 +1,5 @@
+- { id: culture, type: int, min: 0, max: 9, default: 0, scope: person }
+- { id: mood, type: int, min: 0, max: 10, default: 0, scope: person }
+- { id: tagged, type: flag, default: false, scope: person }
+- { id: pocket, type: int, min: 0, default: 0, scope: person, format: money }
+- { id: plain, type: int, default: 0 }

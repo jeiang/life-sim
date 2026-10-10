@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from "vitest";
 import {
   listActions,
+  type PersonId,
   runAction,
   startStorylet,
   type World,
@@ -13,6 +14,7 @@ import {
   me,
   R,
   rows,
+  stat,
   story,
   unforce,
   withCloseness,
@@ -29,7 +31,7 @@ const abroad = (extra: Record<string, number | boolean> = {}) =>
   });
 
 /** First relative with `role`, set to closeness 50. */
-function relative(w: World, role: string): { w: World; id: string } {
+function relative(w: World, role: string): { w: World; id: PersonId } {
   const r = rows(w, role)[0];
   if (!r) throw new Error(`no ${role}`);
   return { w: withCloseness(w, r.to, 50), id: r.to };
@@ -82,7 +84,7 @@ describe("call home", () => {
       const after = runAction(w, bundles, ID, id).world;
       unforce();
       expect(closeness(after, id)).toBe(50 + c);
-      expect(me(after).stats.happiness).toBe(me(w).stats.happiness + h);
+      expect(stat(after, "happiness")).toBe(stat(w, "happiness") + h);
     }
   });
 });
@@ -116,7 +118,7 @@ describe("visit home", () => {
       unforce();
       expect(closeness(after, id)).toBe(50 + c);
       expect(me(after).money).toBe(me(w).money - 120000);
-      expect(me(after).stats.happiness).toBe(me(w).stats.happiness + h);
+      expect(stat(after, "happiness")).toBe(stat(w, "happiness") + h);
     }
   });
 
@@ -144,7 +146,7 @@ describe("reunion", () => {
     const later = relative(back(41, 40), "parent");
     const after = startStorylet(later.w, bundles, ID, later.id).world;
     expect(closeness(after, later.id)).toBe(60);
-    expect(me(after).stats.happiness).toBe(me(later.w).stats.happiness + 3);
+    expect(stat(after, "happiness")).toBe(stat(later.w, "happiness") + 3);
     // Once: a second opening for the same person does nothing.
     expect(startStorylet(after, bundles, ID, later.id).world).toBe(after);
   });

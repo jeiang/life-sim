@@ -4,7 +4,7 @@ import {
   startStorylet,
   type World,
 } from "../../../packages/core/src/index.ts";
-import { bundles, eligible, life, me, qn, R, story } from "./helpers.ts";
+import { bundles, eligible, life, qn, R, stat, story } from "./helpers.ts";
 
 const GROW = R("abroad-language-growth");
 const BARRIER = R("abroad-language-barrier");
@@ -50,7 +50,7 @@ describe("barrier", () => {
     for (const [city, lang] of Object.entries(LANG)) {
       const w0 = at(city, { [`reloc_lang_${lang}`]: 39 });
       const w = startStorylet(w0, bundles, BARRIER).world;
-      expect(me(w).stats.happiness).toBe(me(w0).stats.happiness - 1);
+      expect(stat(w, "happiness")).toBe(stat(w0, "happiness") - 1);
     }
   });
 

@@ -17,6 +17,7 @@ import {
   q,
   qn,
   R,
+  stat,
   unforce,
 } from "./helpers.ts";
 
@@ -109,7 +110,7 @@ describe("denial", () => {
     expect(q(w, "reloc_pending")).toBe(false);
     expect(q(w, "reloc_abroad")).toBe(false);
     expect(me(w).cityId).toBe(me(w0).cityId);
-    expect(me(w).stats.happiness).toBe(me(w0).stats.happiness - 4);
+    expect(stat(w, "happiness")).toBe(stat(w0, "happiness") - 4);
     expect(locked(w)).toBe(true);
   });
 

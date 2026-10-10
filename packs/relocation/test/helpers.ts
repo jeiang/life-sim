@@ -4,6 +4,7 @@ import {
   getPerson,
   indexBundles,
   newLife,
+  type PersonId,
   ScriptedRng,
   setQuality,
   setStreamOverride,
@@ -69,7 +70,7 @@ export function eligible(
   w: World,
   id: string,
   choice?: number,
-  person?: string,
+  person?: PersonId,
 ) {
   const s = story(id);
   const scope = scopeFor(
@@ -104,14 +105,14 @@ export function rows(w: World, role: string) {
     (r) => r.from === w.playerId && r.role.endsWith(`/${role}`),
   );
 }
-export const closeness = (w: World, person: string): number =>
+export const closeness = (w: World, person: PersonId): number =>
   Math.max(
     ...w.relationships
       .filter((r) => r.from === w.playerId && r.to === person)
       .map((r) => r.closeness),
   );
 /** Set the closeness of every row toward `person`. */
-export function withCloseness(w: World, person: string, n: number): World {
+export function withCloseness(w: World, person: PersonId, n: number): World {
   return {
     ...w,
     relationships: w.relationships.map((r) =>
@@ -119,3 +120,4 @@ export function withCloseness(w: World, person: string, n: number): World {
     ),
   };
 }
+export const stat = (w: World, id: string): number => me(w).stats[id] ?? 0;

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from "vitest";
 import {
+  type PersonId,
   startStorylet,
   updatePerson,
   type World,
@@ -15,6 +16,7 @@ import {
   qn,
   R,
   rows,
+  stat,
   story,
   unforce,
 } from "./helpers.ts";
@@ -82,8 +84,8 @@ describe("domestic move", () => {
     forcePick(DOMESTIC, first?.text as string);
     const w = open(w0, DOMESTIC);
     expect(me(w).cityId).toBe("core-loop/dustwater");
-    expect(me(w).stats.happiness).toBe(me(w0).stats.happiness - 3);
-    expect(me(w).stats.smarts).toBe(me(w0).stats.smarts - 1);
+    expect(stat(w, "happiness")).toBe(stat(w0, "happiness") - 3);
+    expect(stat(w, "smarts")).toBe(stat(w0, "smarts") - 1);
     expect(qn(w, "reloc_child_move_age")).toBe(10);
     expect(q(w, "reloc_abroad")).toBe(false);
   });
@@ -139,8 +141,8 @@ describe("abroad move", () => {
       unforce();
       expect(me(w).cityId).toBe(R(city));
       expect(q(w, "reloc_abroad")).toBe(true);
-      expect(me(w).stats.happiness).toBe(me(w0).stats.happiness - 5);
-      expect(me(w).stats.smarts).toBe(me(w0).stats.smarts - 2);
+      expect(stat(w, "happiness")).toBe(stat(w0, "happiness") - 5);
+      expect(stat(w, "smarts")).toBe(stat(w0, "smarts") - 2);
       expect(qn(w, "reloc_child_move_age")).toBe(10);
       expect(qn(w, "reloc_home_city")).toBe(5);
       expect(qn(w, "reloc_home_country")).toBe(1);
@@ -153,7 +155,7 @@ describe("abroad move", () => {
 describe("friends lose touch", () => {
   const ID = R("childhood-friends-lose-touch");
   /** Make the first sibling a friend aged `age`. */
-  function withFriend(w: World, age: number): { w: World; id: string } {
+  function withFriend(w: World, age: number): { w: World; id: PersonId } {
     const r = rows(w, "sibling")[0];
     if (!r) throw new Error("no sibling");
     const w2 = {

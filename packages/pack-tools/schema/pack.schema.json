@@ -66,55 +66,6 @@
         }
       }
     },
-    "qualities": {
-      "type": "array",
-      "items": {
-        "anyOf": [
-          {
-            "additionalProperties": false,
-            "type": "object",
-            "required": ["id", "type", "default"],
-            "properties": {
-              "id": {
-                "pattern": "^[a-z][a-z0-9_]*$",
-                "type": "string"
-              },
-              "type": {
-                "const": "int",
-                "type": "string"
-              },
-              "min": {
-                "type": "integer"
-              },
-              "max": {
-                "type": "integer"
-              },
-              "default": {
-                "type": "integer"
-              }
-            }
-          },
-          {
-            "additionalProperties": false,
-            "type": "object",
-            "required": ["id", "type", "default"],
-            "properties": {
-              "id": {
-                "pattern": "^[a-z][a-z0-9_]*$",
-                "type": "string"
-              },
-              "type": {
-                "const": "flag",
-                "type": "string"
-              },
-              "default": {
-                "type": "boolean"
-              }
-            }
-          }
-        ]
-      }
-    },
     "exclusivity": {
       "type": "array",
       "items": {

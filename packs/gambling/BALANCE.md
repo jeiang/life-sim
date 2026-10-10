@@ -48,3 +48,8 @@ Repeatable (default curve): payouts and stakes never scale, only happiness gains
 ## Habit and addiction
 
 `gambling_heat` rises by 8 + 2 x bets in a year with four or more casino bets, falls by 5 with one to three and by 20 with none. Above 20 each year can tip into addiction with a chance of (heat - 20) x 0.4%. Addicted: -3 happiness in years still betting, -4 in a year away (progress +1), a 25% yearly urge (resist -2 happiness; give in loses up to $500 and resets progress). Three progress ends it; a free support meeting (once a year) adds one.
+
+## Harness
+
+- Profile `gambler`: four voluntary moves a year, all on the casino games and lottery (random game, amount uniform over the allowed grid); applies for work only when nothing is left to bet on. Answers events at random, never goes to support meetings (once addicted it goes to support meetings and work, relapsing one move in five).
+- Report section (when this Pack is loaded): share of lives that staked anything and share ever addicted, per profile; addiction and recovery rates, bans and VIP rooms; lifetime stakes per gambler; and per game the bets, stakes, net change of cash and realised return (stakes plus net, over stakes). A gambling action that leaves cash below zero is an assertion fault.

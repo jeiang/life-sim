@@ -29,3 +29,7 @@ Tuned with the [harness](../../docs/spec/harness.md): `pnpm harness --jobs 4 --l
 - `random` (2,500 lives): 72% take at least one trip, 1.64 trips per life (vacations 0.15-0.17 per life per tier, cruises 0.15-0.19), no tier more than 1.3 times another. Spending $4,043 per life, **0.28% of gross earnings** (all profiles: 0.06%). The other profiles never open the travel menu.
 - Travel deaths: none in about 4,100 trips (expected 0.4). The 1-in-10,000 rate is fixed by the weights, which a unit test checks at every tier.
 - Net worth, `random` travellers against non-travellers: median $96k against $5k at 40 and $435k against $171k at 65. Trips do not cost wealth at the scale `random` plays them; the gap is selection (non-travellers die young, or never had $500).
+
+## Harness
+
+- Report section (only when this Pack is loaded): trips per life by price tier, trip spending as a share of gross earnings, travel deaths per 10,000 trips, and median net worth of travellers against non-travellers within each profile.

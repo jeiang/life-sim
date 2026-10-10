@@ -1,6 +1,6 @@
 # Balance harness
 
-Decided in [Balance harness scope](https://github.com/jeiang/life-sim/issues/20). It relies on the seeded streams and choice log (ADR 0003), the runtime assertions in the [Pack format](pack-format.md#expressions), and the [CI](ci.md) checks.
+Decided in [Balance harness scope](https://github.com/jeiang/life-sim/issues/20). It relies on the seeded streams and choice log (ADR 0003), the runtime assertions in the [Pack format](pack-format/expressions.md#expressions), and the [CI](ci.md) checks.
 
 ## Runner
 
@@ -15,7 +15,7 @@ Pull requests and pushes to `main` also run 10,000 lives (seed 20260101, all pro
 
 ## Simulated player profiles
 
-Every choice comes from the seeded RNG, so a run is reproducible from its seed.
+Every choice comes from the seeded RNG, so a run is reproducible from its seed. Profiles and report sections that exist for one Pack are described in that Pack's `BALANCE.md`.
 
 | Profile | Behaviour |
 |---|---|
@@ -24,7 +24,6 @@ Every choice comes from the seeded RNG, so a run is reproducible from its seed.
 | `spender` | Buys whenever affordable, takes loans when offered |
 | `idle` | Takes no voluntary actions; answers events at random |
 | `grinder` | 12 random repeatable actions a year, to stress diminishing returns; opt-in (`--profile grinder`), not part of `all` |
-| `gambler` | Four voluntary moves a year, all on the Gambling Pack's casino games and lottery (random game, amount uniform over the allowed grid); applies for work only when nothing is left to bet on. Answers events at random, never goes to support meetings |
 
 ## CI check `harness`
 
@@ -49,9 +48,7 @@ It **reports** without failing, in `report.md` and `report.json` in the check ou
 - invariant (fault `minor-living-cost`): no living cost is charged while the player is under 18;
 - housing: age at moving out, share moved out and kicked out (of lives reaching 18), and share still living with their parents at 30 and 40, overall and per profile;
 - repeated activities: per repeatable action, uses per year lived, mean and maximum uses in a year it was used, and the share of those years past the full-effect and reduced ranges;
-- Vacations (only when Pack `vacations` is loaded): trips per life by price tier, trip spending as a share of gross earnings, travel deaths per 10,000 trips, and median net worth of travellers against non-travellers within each profile;
 - stats at 100: share of living lives at the cap, per stat, by decade of age;
-- gambling (when the Gambling Pack is loaded): share of lives that staked anything and share ever addicted, per profile; addiction and recovery rates, bans and VIP rooms; lifetime stakes per gambler; and per game the bets, stakes, net change of cash and realised return (stakes plus net, over stakes). A gambling action that leaves cash below zero is an assertion fault;
 - wagers: for storylets tagged `wager`, plays (outcomes that changed money), net money, the stake (worst single loss) and the realised return (below 100% loses money on average);
 - stat distributions by age.
 

@@ -1,6 +1,4 @@
 id: dec
 stats:
   - { id: happiness, label: Happiness, start: [50, 100] }
-qualities:
-  - { id: dry, type: flag, default: false }
 migrations: {}

@@ -341,9 +341,8 @@ describe("build checks fail", () => {
     // extra requires a capability of base.
     expectError(
       {
-        "extra/pack.yaml": dup(
-          "qualities:\n  - { id: has_diploma, type: flag, default: false }\n",
-        ),
+        "extra/qualities/dup.yaml":
+          "- { id: has_diploma, type: flag, default: false }\n",
       },
       "quality 'has_diploma' is declared by both Pack 'base' and Pack 'extra'",
     );
@@ -359,8 +358,9 @@ describe("build checks fail", () => {
     expectError(
       {
         "extra/capabilities/bonus.yaml": "provides: {}\n",
-        "extra/pack.yaml":
-          "id: extra\nqualities:\n  - { id: has_diploma, type: flag, default: false }\n",
+        "extra/pack.yaml": "id: extra\n",
+        "extra/qualities/dup.yaml":
+          "- { id: has_diploma, type: flag, default: false }\n",
       },
       "quality 'has_diploma' is declared by both Pack 'base' and Pack 'extra'",
     );
@@ -368,10 +368,51 @@ describe("build checks fail", () => {
 
   test("distinct prefixed quality ids across Packs compile", () => {
     const dir = fixture({
-      "extra/pack.yaml": (t) =>
-        `${t}qualities:\n  - { id: extra_flag, type: flag, default: false }\n`,
+      "extra/qualities/flags.yaml":
+        "- { id: extra_flag, type: flag, default: false }\n",
     });
     expect(compilePacks(dir).diagnostics.map(formatDiagnostic)).toEqual([]);
+  });
+
+  test("qualities/*.yaml merge, and pack.yaml qualities are rejected with a migration message", () => {
+    const dir = fixture({
+      "extra/qualities/a.yaml":
+        "- { id: extra_a, type: flag, default: false }\n",
+      "extra/qualities/b.yaml":
+        "- { id: extra_b, type: int, min: 0, default: 0 }\n",
+    });
+    const r = compilePacks(dir);
+    expect(r.diagnostics.map(formatDiagnostic)).toEqual([]);
+    const extra = r.bundles.find((b) => b.id === "extra");
+    expect(extra?.qualities.map((q) => q.id)).toEqual(["extra_a", "extra_b"]);
+    expectError(
+      {
+        "extra/pack.yaml": (t) =>
+          `${t}qualities:\n  - { id: extra_c, type: flag, default: false }\n`,
+      },
+      "move the list into extra/qualities/<topic>.yaml",
+    );
+    expectError(
+      {
+        "extra/qualities/a.yaml":
+          "- { id: extra_a, type: flag, default: false }\n",
+        "extra/qualities/b.yaml":
+          "- { id: extra_a, type: flag, default: false }\n",
+      },
+      "duplicate quality 'extra_a'",
+    );
+  });
+
+  test("`only` compiles the selected Pack and its required closure", () => {
+    const dir = fixture();
+    const all = compilePacks(dir).bundles.map((b) => b.id);
+    expect(all).toContain("extra");
+    const r = compilePacks(dir, { only: ["base"] });
+    expect(r.diagnostics.map(formatDiagnostic)).toEqual([]);
+    expect(r.bundles.map((b) => b.id)).toEqual(["base"]);
+    const e = compilePacks(dir, { only: ["extra"] });
+    expect(e.bundles.map((b) => b.id)).toEqual(["base", "extra"]);
+    expect(compilePacks(dir, { only: ["nope"] }).ok).toBe(false);
   });
 
   test("dangling `next`", () => {

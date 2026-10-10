@@ -1,6 +1,6 @@
 # @life/pack-tools
 
-Build-time Pack compiler (Node). Source format: [docs/spec/pack-format.md](../../docs/spec/pack-format.md).
+Build-time Pack compiler (Node). Source format: [docs/spec/pack-format/index.md](../../docs/spec/pack-format/index.md).
 
 ```
 node --experimental-strip-types packages/pack-tools/src/cli.ts validate packs
@@ -12,6 +12,8 @@ node --experimental-strip-types packages/pack-tools/src/cli.ts schema          #
 `validate` exits non-zero and prints `file:line:col (item.path): message` per error. A directory under `packs/` without a `pack.yaml` and without content directories is skipped.
 
 ## Source layout additions
+
+`qualities/<topic>.yaml` holds quality declarations (a list, merged across files); `qualities` in `pack.yaml` is an error. `compilePacks(dir, { only: ["gambling"] })` compiles the named Packs and the Packs their capabilities require; `packs/<id>/test/*.test.ts` are collected by the root vitest config.
 
 The spec lists `storylets/`, `occupations/`, `items/`, `people/`. The compiler adds `loans/<topic>.yaml` (loan kinds: `id`, `label`, `rate` such as `6.5%`, `term_years`, `secured`). `cities/<topic>.yaml` holds cities (`id`, `label`, `cost_index` such as `130%`, `weight` for the birth draw, optional `wage_index` and `country`). `standards/<topic>.yaml` holds standards of living (`cost`, `happiness`, `health`, `cap`, `risk`); the manifest's `living` block names the default standard, housing share and home category; an occupation may set `provides_housing: true` or `confines: { menus, events }` (see the pack-format spec). Files in `people/` hold `kind: role` or `kind: generator` items. Editors pick up the JSON Schemas in `schema/*.schema.json` through a `# yaml-language-server: $schema=...` header.
 

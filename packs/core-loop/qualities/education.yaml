@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
+- { id: has_drivers_license, type: flag, default: false }
+- { id: has_degree_business, type: flag, default: false }
+- { id: has_degree_engineering, type: flag, default: false }
+- { id: has_degree_nursing, type: flag, default: false }
+- { id: has_degree_arts, type: flag, default: false }
+- { id: graduated_high_school, type: flag, default: false }
+- { id: tuition_by_loan, type: flag, default: false }

@@ -74,7 +74,7 @@ export const EFFECTS = {
 
 export type AssignOp = "=" | "+=" | "-=";
 
-/** Assignable roots and the operators each allows (pack-format.md#effect-statements). */
+/** Assignable roots and the operators each allows (pack-format/expressions.md#effect-statements). */
 export const ASSIGNABLE: Readonly<Record<string, readonly AssignOp[]>> = {
   stat: ["+=", "-=", "="],
   quality: ["+=", "="],

@@ -1,6 +1,6 @@
 # Core loop content (`core-loop` Pack)
 
-Decided in [Core loop content scope](https://github.com/jeiang/life-sim/issues/13). This is the content of the first playable, written as one Pack in the [Pack format](pack-format.md) and shown through the [screens](screens.md). Numbers marked "about" are targets for authoring; the balance harness tunes values such as salaries, prices, and chances.
+Decided in [Core loop content scope](https://github.com/jeiang/life-sim/issues/13). This is the content of the first playable, written as one Pack in the [Pack format](pack-format/index.md) and shown through the [screens](screens.md). Numbers marked "about" are targets for authoring; the balance harness tunes values such as salaries, prices, and chances.
 
 ## Setting
 
@@ -110,7 +110,7 @@ About 10 item kinds, bought through the purchase dialog:
 
 ## Confinement
 
-Core-loop ships no confining occupation (prison and hospital come with later Packs), but its content is ready: mortality, illness, loan (missed payment), graduation and NPC events carry the Core tag `custody-ok` and keep running while the player is confined. Everything else (activities, jobs, relationships, housing, the shop) locks by default. See [pack-format](pack-format.md#confinement).
+Core-loop ships no confining occupation (prison and hospital come with later Packs), but its content is ready: mortality, illness, loan (missed payment), graduation and NPC events carry the Core tag `custody-ok` and keep running while the player is confined. Everything else (activities, jobs, relationships, housing, the shop) locks by default. See [pack-format](pack-format/content-kinds.md#confinement).
 
 ## Activities (`activities`)
 
@@ -144,7 +144,7 @@ About 60, plus NPC and mortality storylets:
 
 ## Market and holdings
 
-The Assets menu has an **Investments** screen (`assets/investments`, age 18+, shown when a loaded Pack has market kinds): per kind the price, one-year change and holding. A row opens the price chart (by world year) with Buy, Sell and Sell all; Buy and Sell use the shared amount picker (whole currency units). Each trade is a `trade` choice-log entry and a journal line. Trading is locked while confined. Holdings count in net worth. Shortfall at settlement does not sell holdings (epic #57); `tradeHolding` lets later Core code do it. See [pack-format](pack-format.md#market-kinds).
+The Assets menu has an **Investments** screen (`assets/investments`, age 18+, shown when a loaded Pack has market kinds): per kind the price, one-year change and holding. A row opens the price chart (by world year) with Buy, Sell and Sell all; Buy and Sell use the shared amount picker (whole currency units). Each trade is a `trade` choice-log entry and a journal line. Trading is locked while confined. Holdings count in net worth. Shortfall at settlement does not sell holdings (epic #57); `tradeHolding` lets later Core code do it. See [pack-format](pack-format/content-kinds.md#market-kinds).
 
 ## Chart
 

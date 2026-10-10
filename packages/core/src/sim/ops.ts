@@ -275,7 +275,7 @@ export function spawnPerson(
     familyName?: string;
     closeness?: number;
     purpose?: string;
-    /** A child's other parent, linked instead of the spouses of `from`. */
+    /** A child's other parent, linked instead of the spouses of `from`; a grandchild's only parent. */
     parent?: PersonId;
     /** The kind of a child's parent links (default birth). */
     kind?: ParentKind;

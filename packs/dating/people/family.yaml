@@ -1,0 +1,3 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/people.schema.json
+# A grandchild is born to one of the player's adult children (`spawn_person(..., parent: person)`); kinship derives `grandchild` from the tree. The newborn uses `baby-gen`.
+- { kind: role, id: grandchild, label: Grandchild }

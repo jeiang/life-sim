@@ -517,6 +517,47 @@ describe("spawn_person parent and link", () => {
     expect(kinshipOf(w, w.playerId, kidOf(w))).toBe("child");
   });
 
+  test("a grandchild spawned with parent: the child resolves as grandchild, and saves and replays", () => {
+    const w0 = newLife(bundles, 5);
+    const w = runAction(w0, bundles, "kx/grandchild-born").world;
+    const row = w.relationships.find(
+      (r) => r.from === w.playerId && r.role === "kx/grandchild",
+    );
+    const grandkid = row?.to as number;
+    const son = w.relationships.find(
+      (r) => r.from === w.playerId && r.role === "core-loop/child",
+    )?.to as number;
+    expect(parentLinks(w, grandkid)).toEqual([{ id: son, kind: "birth" }]);
+    expect(kinshipOf(w, w.playerId, grandkid)).toBe("grandchild");
+    expect(countKin(w, w.playerId, "grandchild", 0, 120)).toBe(1);
+    expect(getPerson(w, w.playerId).qualities.kin_hits).toBe(7);
+    expect(deserializeWorld(serializeWorld(w))).toEqual(w);
+    const again = replay(w.seed, bundles, w.choiceLog);
+    expect(worldHash(again)).toBe(worldHash(w));
+  });
+
+  test("a grandchild spawn without parent: is a build error", () => {
+    const bad = mkdtempSync(join(tmpdir(), "kinship-gc-"));
+    try {
+      copyPacks(bad);
+      const file = join(bad, "kx", "storylets", "kin.yaml");
+      writeFileSync(
+        file,
+        readFileSync(file, "utf8").replace(
+          "grandchild, core-loop/sibling-gen, parent: son) as grandkid",
+          "grandchild, core-loop/sibling-gen, link: step) as grandkid",
+        ),
+      );
+      const r = compilePacks(bad);
+      expect(r.ok).toBe(false);
+      expect(r.diagnostics.map((d) => d.message).join("\n")).toMatch(
+        /grandchild role needs 'parent/,
+      );
+    } finally {
+      rmSync(bad, { recursive: true, force: true });
+    }
+  });
+
   test("link without parent keeps the default parents with that kind", () => {
     const w = runAction(newLife(bundles, 5), bundles, "kx/adopt-alone").world;
     expect(parentLinks(w, kidOf(w))).toEqual([
@@ -547,7 +588,7 @@ describe("spawn_person parent and link", () => {
           "spawn_person(core-loop/child, core-loop/sibling-gen, link: step)",
           "spawn_person(core-loop/partner, core-loop/coworker-gen, link: step)",
         ),
-      ).toMatch(/need a child role/);
+      ).toMatch(/need a child or grandchild role/);
     } finally {
       rmSync(bad, { recursive: true, force: true });
     }

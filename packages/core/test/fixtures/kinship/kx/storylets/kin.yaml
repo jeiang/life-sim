@@ -57,3 +57,12 @@
   outcomes:
     - effects:
         - "spawn_person(core-loop/child, core-loop/sibling-gen, link: step) as kid"
+
+- id: grandchild-born
+  trigger: action
+  menu: activities
+  outcomes:
+    - effects:
+        - spawn_person(core-loop/child, core-loop/sibling-gen) as son
+        - "spawn_person(kx/grandchild, core-loop/sibling-gen, parent: son) as grandkid"
+        - "quality.kin_hits += is_kin(grandkid, grandchild) ? 7 : 0"

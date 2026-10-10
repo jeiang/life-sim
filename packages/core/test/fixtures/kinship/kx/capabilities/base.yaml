@@ -1,4 +1,6 @@
 provides:
+  roles:
+    - grandchild
   qualities:
     - kin_hits
 requires:

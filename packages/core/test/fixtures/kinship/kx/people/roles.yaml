@@ -1,0 +1,2 @@
+# yaml-language-server: $schema=../../../../../../pack-tools/schema/people.schema.json
+- { kind: role, id: grandchild, label: Grandchild }

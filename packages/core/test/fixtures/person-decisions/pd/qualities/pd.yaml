@@ -1,0 +1,3 @@
+- { id: gate, type: flag, default: false }
+- { id: mood, type: int, min: 0, max: 5, default: 0, scope: person }
+- { id: sulking, type: flag, default: false, scope: person }

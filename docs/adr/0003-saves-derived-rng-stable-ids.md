@@ -33,3 +33,10 @@ Age-up order becomes: age every person, the NPC career pass, settlement, events,
 
 - Age-up order becomes: age every person, reset roll counters, `on_age_up_pre` hooks, living with parents, the NPC career pass, settlement, `on_age_up_post` hooks, events, NPC yearly pass. `on_birth` runs at the end of `newLife`, `on_death` right after the obituary is written, `on_milestone` through `fireMilestone`. Packs run in bundle order (dependencies first, then id). Details: `docs/spec/pack-format/hooks.md`.
 - A hook's `spawn_person` statement `n` draws under `pack/<id>/<hook>/<n>` (`pack/<id>/on_milestone/<milestone>/<n>` for a milestone). Adding a hook subscriber adds keys of its own and moves no existing counter; adding a hook never changes an existing purpose key. Packs that declare no hooks replay exactly as before.
+
+## Amendment 2026-10-10: person-scoped decisions (#214)
+
+- A `scope: person` event with `choices` is a player decision, not an NPC-pass event. Without a `chance` it joins the slot pool (`decision-pick/<n>`, or `year/flavour/<i>` without `year.decisions`) as one candidate per storylet, weighted by the highest weight among its eligible people, and the person is chosen afterwards with the new purpose key `person-pick/<storylet>` (one draw per queued person decision, uniform over eligible people in id order, after the cap). With a `chance` it keeps rolling per person under `<storylet>@person:<id>`, but now in the player's chance pass, before the decisions, instead of in the NPC pass.
+- `npcPass` no longer draws these events, so the `npc/<person>` flavour draw and the NPC chance rolls no longer see them: a world with a person-scoped choice event replays differently from before. Worlds without one draw exactly as before (the new `person-pick/...` key only exists when such a storylet is queued, and no counter of another key moves).
+- Age-up order is unchanged; person decisions are part of the player's events step.
+

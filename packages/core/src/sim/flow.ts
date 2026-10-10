@@ -83,18 +83,39 @@ const cmp = (a: number, b: number): number => a - b;
 interface Candidate {
   readonly storylet: CompiledStorylet;
   readonly scope?: ScopeRef;
+  /**
+   * A weighted `scope: person` choice event competes once as a storylet, not once per person:
+   * these are the people it could open for (id order). One is picked only if it is drawn.
+   */
+  readonly persons?: readonly PersonId[];
 }
 
+/**
+ * `person`: every eligible person per storylet (the NPC pass keeps its non-choice events).
+ * `person-decision`: the person-scoped choice events the player faces, drawn like any decision.
+ */
 function candidates(
   world: World,
   idx: PackIndex,
-  kind: "none" | "loan" | "person",
+  kind: "none" | "loan" | "person" | "person-decision",
 ): Candidate[] {
   const out: Candidate[] = [];
   const player = getPerson(world, world.playerId);
   for (const s of idx.events) {
-    if ((s.scope ?? "none") !== kind) continue;
-    if (kind === "none") {
+    if ((s.scope ?? "none") !== (kind === "person-decision" ? "person" : kind))
+      continue;
+    if (kind === "person-decision") {
+      if (s.choices.length === 0) continue;
+      const people: PersonId[] = [];
+      for (const p of personsInIdOrder(world)) {
+        if (p.id === world.playerId) continue;
+        const scope: ScopeRef = { kind: "person", id: p.id };
+        if (!isEligible(world, idx, s, scope)) continue;
+        if (s.chance !== undefined) out.push({ storylet: s, scope });
+        else people.push(p.id);
+      }
+      if (people.length > 0) out.push({ storylet: s, persons: people });
+    } else if (kind === "none") {
       if (isEligible(world, idx, s, undefined)) out.push({ storylet: s });
     } else if (kind === "loan") {
       for (const l of [...player.loans].sort((a, b) => cmp(a.id, b.id))) {
@@ -102,6 +123,7 @@ function candidates(
         if (isEligible(world, idx, s, scope)) out.push({ storylet: s, scope });
       }
     } else {
+      if (s.choices.length > 0) continue;
       for (const p of personsInIdOrder(world)) {
         if (p.id === world.playerId) continue;
         const scope: ScopeRef = { kind: "person", id: p.id };
@@ -160,6 +182,17 @@ function capChance(
   return [w, hits.filter((_, i) => kept.has(i))];
 }
 
+/** A candidate's draw weight; a storylet open to several people weighs its highest weight among them. */
+function weightOf(world: World, idx: PackIndex, c: Candidate): number {
+  const expr = c.storylet.weight as never;
+  if (!c.persons) return evalInt(expr, world, idx, scopeFor(world, c.scope));
+  return Math.max(
+    ...c.persons.map((id) =>
+      evalInt(expr, world, idx, scopeFor(world, { kind: "person", id })),
+    ),
+  );
+}
+
 /** Draw up to `slots` candidates by weight, without replacement. */
 function drawWeighted(
   world: World,
@@ -172,12 +205,7 @@ function drawWeighted(
   const pool = cands.filter((c) => c.storylet.weight !== undefined);
   const picked: Candidate[] = [];
   for (let i = 0; i < slots; i++) {
-    const weights = pool.map((c) =>
-      Math.max(
-        0,
-        evalInt(c.storylet.weight as never, w, idx, scopeFor(w, c.scope)),
-      ),
-    );
+    const weights = pool.map((c) => Math.max(0, weightOf(w, idx, c)));
     if (!weights.some((x) => x > 0)) break;
     const [w2, rng] = nextStream(w, clockAge(w), `${purpose}/${i}`);
     w = w2;
@@ -190,6 +218,38 @@ function drawWeighted(
 
 function asEvent(c: Candidate): QueuedEvent {
   return { storyletId: c.storylet.id, ...(c.scope ? { scope: c.scope } : {}) };
+}
+
+/**
+ * The drawn candidates as events; each person-choice storylet gets one of its people
+ * uniformly at random (`person-pick/<storylet>`), after it won its slot.
+ */
+function toEvents(
+  world: World,
+  drawn: readonly Candidate[],
+): [World, QueuedEvent[]] {
+  let w = world;
+  const out: QueuedEvent[] = [];
+  for (const c of drawn) {
+    if (!c.persons) {
+      out.push(asEvent(c));
+      continue;
+    }
+    const [w2, rng] = nextStream(
+      w,
+      clockAge(w),
+      `person-pick/${c.storylet.id}`,
+    );
+    w = w2;
+    out.push({
+      storyletId: c.storylet.id,
+      scope: {
+        kind: "person",
+        id: c.persons[rng.int(c.persons.length)] as number,
+      },
+    });
+  }
+  return [w, out];
 }
 
 /** A year with nothing journaled still gets its group: a Pack `quiet` line, else an empty group. */
@@ -279,7 +339,7 @@ function drawWithDecisions(
     queued: all.filter(isDecision).length,
     empty: need - decisions.length,
   });
-  return [w4, all.map(asEvent)];
+  return toEvents(w4, all);
 }
 
 /** The player's events for this age-up: chance events first, then flavour slots, under the cap. */
@@ -287,6 +347,7 @@ function drawEvents(world: World, idx: PackIndex): [World, QueuedEvent[]] {
   const cands = [
     ...candidates(world, idx, "none"),
     ...candidates(world, idx, "loan"),
+    ...candidates(world, idx, "person-decision"),
   ];
   const [w1, chance] = rollChance(world, idx, cands);
   if (idx.year.decisions) return drawWithDecisions(w1, idx, cands, chance);
@@ -308,7 +369,7 @@ function drawEvents(world: World, idx: PackIndex): [World, QueuedEvent[]] {
   );
   const [w4, kept] = capChance(w3, chance, idx.year.cap);
   const all = [...kept, ...flavour].slice(0, Math.max(0, idx.year.cap));
-  return [w4, all.map(asEvent)];
+  return toEvents(w4, all);
 }
 
 /** NPC yearly pass: `scope: person` events, chance events rolled per person, one flavour slot each. */
@@ -333,7 +394,7 @@ function npcPass(world: World, idx: PackIndex): World {
     w = w2;
     for (const c of [...chance, ...flavour]) {
       if (!isEligible(w, idx, c.storylet, c.scope)) continue;
-      w = open(w, idx, asEvent(c));
+      w = open(w, idx, asEvent(c), 0, 10000, true);
     }
   }
   return w.ended ? w : endLivingWithParents(w, idx);

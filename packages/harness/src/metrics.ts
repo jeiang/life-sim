@@ -144,6 +144,21 @@ export function evalExpr(
   }
 }
 
+/** What a `generation:` measure reads from a generation of the lineage (docs/spec/harness.md#pack-metrics). */
+export const GENERATION_TAKES = [
+  "reached",
+  "died",
+  "heir_available",
+  "heirs",
+  "death_age",
+  "net_worth",
+  "inheritance",
+  "heir_age",
+  "minor_heir",
+  "insolvent_estate",
+  "repeated_once",
+] as const;
+
 // ---------------------------------------------------------------------------------------
 // Compiled form
 // ---------------------------------------------------------------------------------------
@@ -198,6 +213,14 @@ export type Measure =
       readonly storylet: string;
       /** `o<i>` or `c<j>.o<i>`, as in `report.json` storylets.outcomes. */
       readonly key: string;
+    }
+  | {
+      readonly id: string;
+      readonly kind: "generation";
+      /** What to read from the generation's record (`GENERATION_TAKES`). */
+      readonly generation: string;
+      /** Generation index: 0 is the founder; a generation the lineage never reached reads 0. */
+      readonly n: number;
     }
   | { readonly id: string; readonly kind: "when"; readonly when: Expr };
 
@@ -277,13 +300,17 @@ export interface Stat {
   readonly table?: string;
 }
 
-export type Block =
+export type Block = (
   | { readonly text: string }
   | {
       readonly stats: readonly string[];
       /** Heading of the per-action column (default `action`). */
       readonly key: string;
-    };
+    }
+) & {
+  /** The block appears only when some life has this measure above 0. */
+  readonly visibleIfMeasure?: string;
+};
 
 export interface PackMetrics {
   readonly pack: string;
@@ -556,12 +583,13 @@ export function compileMetrics(
       "snapshot",
       "market",
       "outcome",
+      "generation",
       "when",
     ].filter((k) => k in raw);
     if (kinds.length !== 1) {
       l.err(
         p,
-        "declare exactly one of: quality, life, death, fires, table, snapshot, market, outcome, when",
+        "declare exactly one of: quality, life, death, fires, table, snapshot, market, outcome, generation, when",
       );
       continue;
     }
@@ -740,6 +768,22 @@ export function compileMetrics(
             );
           else m = { id, kind: "outcome", storylet: sid, key };
         }
+        break;
+      }
+      case "generation": {
+        const o = l.obj(p, raw, ["generation", "n"]);
+        const name = l.str([...p, "generation"], raw.generation, "a name");
+        const n = o?.n === undefined ? 0 : l.int([...p, "n"], o.n, 0, 1000);
+        if (
+          name !== null &&
+          !(GENERATION_TAKES as readonly string[]).includes(name)
+        )
+          l.err(
+            [...p, "generation"],
+            `expected one of: ${GENERATION_TAKES.join(", ")}`,
+          );
+        else if (name !== null && n !== null)
+          m = { id, kind: "generation", generation: name, n };
         break;
       }
       case "when": {
@@ -968,15 +1012,31 @@ export function compileMetrics(
   else
     blocksRaw.forEach((raw, i) => {
       const p = ["blocks", i];
-      const b = l.obj(p, raw, ["text", "stats", "key"]);
+      const b = l.obj(p, raw, ["text", "stats", "key", "visible_if_measure"]);
       if (!b) return;
+      let visibleIfMeasure: string | undefined;
+      if (b.visible_if_measure !== undefined) {
+        const t = l.str(
+          [...p, "visible_if_measure"],
+          b.visible_if_measure,
+          "a measure id",
+        );
+        const ref = t === null ? undefined : measureIds.get(t);
+        if (t !== null && (!ref || ref.kind === "snapshot"))
+          l.err(
+            [...p, "visible_if_measure"],
+            `'${t}' is not a measure without ages`,
+          );
+        else if (t !== null) visibleIfMeasure = t;
+      }
+      const show = visibleIfMeasure ? { visibleIfMeasure } : {};
       if ((b.text === undefined) === (b.stats === undefined)) {
         l.err(p, "declare exactly one of text, stats");
         return;
       }
       if (b.text !== undefined) {
         const t = l.str([...p, "text"], b.text);
-        if (t !== null) blocks.push({ text: t });
+        if (t !== null) blocks.push({ text: t, ...show });
         return;
       }
       if (!Array.isArray(b.stats) || b.stats.length === 0) {
@@ -1021,7 +1081,7 @@ export function compileMetrics(
             `'${s.id}' has a split the other statistics of the block lack`,
           );
       const key = b.key === undefined ? "action" : l.str([...p, "key"], b.key);
-      if (key !== null && !unknown) blocks.push({ stats: ids, key });
+      if (key !== null && !unknown) blocks.push({ stats: ids, key, ...show });
     });
 
   let visibleIfTable: string | undefined;

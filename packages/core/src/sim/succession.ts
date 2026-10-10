@@ -20,7 +20,8 @@ import {
   putRelationship,
   updatePerson,
 } from "../state/world.ts";
-import { appendChoice, type SimResult } from "./flow.ts";
+import { appendChoice, endLivingWithParents, type SimResult } from "./flow.ts";
+import { inheritStats } from "./genetics.ts";
 import { runHook } from "./hooks.ts";
 import { kinOf, spousesOf } from "./kinship.ts";
 import { ADULT_AGE } from "./living.ts";
@@ -341,7 +342,7 @@ export function succeed(
     uses: {},
     deceased: { person: dead, cause: ended.cause, money: settled.cash },
   };
-  w = seatHeir(w, idx, heirId);
+  w = inheritStats(seatHeir(w, idx, heirId), idx, heirId);
   const heir = getPerson(w, heirId);
   w = addJournalLine(
     w,
@@ -349,6 +350,8 @@ export function succeed(
     `${heir.givenName} ${heir.familyName} carries on after ${deadPerson.givenName} ${deadPerson.familyName} died at ${deadPerson.age}: ${ended.cause}.`,
   );
   for (const line of settled.lines) w = addJournalLine(w, heir.age, line);
+  // A minor with no parent left goes to a guardian, their inheritance in trust until 18.
+  w = endLivingWithParents(w, idx);
   w = appendChoice(w, { t: "succeed", heir: heirId });
   w = queueSuccessionStorylets(runHook(w, idx, "on_succession"), idx);
   return { world: w, lines: w.journal.flatMap((e) => e.lines) };

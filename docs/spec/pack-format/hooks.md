@@ -26,7 +26,7 @@ hooks:
 | `on_age_up_pre` | Once per age-up, after everyone has aged a year and the per-age roll counters are reset, before the NPC careers, living-with-parents and settlement run. |
 | `on_age_up_post` | Once per age-up, after settlement, before the year's events are drawn. A storylet that stops the year for a choice does not move it: the hook has already run. |
 | `on_death` | Once, when the player dies (the `die` effect with no person in scope), right after the obituary is written. |
-| `on_succession` | Once, when the game continues as an heir (`succeed`, see [Succession](#succession)): the estate is settled, the heir is the player and their per-life state is empty. Effects act on the heir. |
+| `on_succession` | Once, when the game continues as an heir (`succeed`, see [Succession](#succession)): the estate is settled, the heir's genetic stats are drawn (`inherit`, [manifest](manifest.md)), a minor heir is with a guardian with their assets in trust, the heir is the player and their per-life state is empty. Effects act on the heir. |
 | `on_milestone: <id>` | Once per life, when the life reaches milestone `<id>` (see [Milestones](#milestones)). Keyed by milestone id. |
 
 Each phase is optional and non-empty. Milestone hooks are keyed by id under `on_milestone`. Yearly income and cost lines are in [Settlement line items](settlement.md).

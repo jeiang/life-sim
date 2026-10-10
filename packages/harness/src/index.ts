@@ -1,4 +1,8 @@
-export { type LifeMetrics, MetricCollector } from "./collect.ts";
+export {
+  type GenerationRecord,
+  type LifeMetrics,
+  MetricCollector,
+} from "./collect.ts";
 export {
   compileScript,
   type ForcedReport,
@@ -43,7 +47,10 @@ export {
   AGE_CAP,
   type Fault,
   type FaultKind,
+  HEIR_POLICIES,
+  type HeirPolicy,
   type LifeResult,
+  type Lineage,
   runLife,
 } from "./run.ts";
 export {

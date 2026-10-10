@@ -61,6 +61,8 @@ const byName = (x: string, y: string): number => (x < y ? -1 : x > y ? 1 : 0);
 export class PackMetricsAggregate {
   /** `pack:stat` -> `group\0age` -> accumulator. */
   private readonly acc = new Map<string, Map<string, Entry>>();
+  /** `pack:measure` of every measure above 0 in some life that a block's `visible_if_measure` names. */
+  private readonly shown = new Set<string>();
   /** `pack:table` -> every action id any life did in it. */
   private readonly keys = new Map<string, Set<string>>();
   private readonly profiles = new Set<string>();
@@ -78,6 +80,9 @@ export class PackMetricsAggregate {
     for (const p of this.packs) {
       const lm = r.metrics[p.pack];
       if (!lm) continue;
+      for (const b of p.blocks)
+        if (b.visibleIfMeasure && (lm.measures[b.visibleIfMeasure] ?? 0) > 0)
+          this.shown.add(`${p.pack}:${b.visibleIfMeasure}`);
       for (const [tid, cells] of Object.entries(lm.tables)) {
         const seen = this.keys.get(`${p.pack}:${tid}`) ?? new Set<string>();
         this.keys.set(`${p.pack}:${tid}`, seen);
@@ -187,12 +192,25 @@ export class PackMetricsAggregate {
     if (this.lives === 0) return out;
     for (const p of this.packs) {
       if (
-        p.visibleIfTable &&
-        (this.keys.get(`${p.pack}:${p.visibleIfTable}`)?.size ?? 0) === 0
+        (p.visibleIfTable &&
+          (this.keys.get(`${p.pack}:${p.visibleIfTable}`)?.size ?? 0) === 0)
       )
         continue;
+      const blocks = p.blocks.filter(
+        (b) =>
+          !b.visibleIfMeasure ||
+          this.shown.has(`${p.pack}:${b.visibleIfMeasure}`),
+      );
+      // A statistic that only hidden blocks lay out is left out, so a run that never reaches it has no empty rows.
+      const hidden = new Set<string>();
+      for (const b of p.blocks)
+        if (!blocks.includes(b) && "stats" in b)
+          for (const id of b.stats) hidden.add(id);
+      for (const b of blocks)
+        if ("stats" in b) for (const id of b.stats) hidden.delete(id);
       const stats: Record<string, StatResult> = {};
       for (const s of p.stats) {
+        if (hidden.has(s.id)) continue;
         const groups = s.byProfile
           ? [...this.profiles, ALL].sort(byName)
           : [ALL];
@@ -225,7 +243,7 @@ export class PackMetricsAggregate {
       out[p.pack] = {
         title: p.title,
         ...(p.intro ? { intro: p.intro } : {}),
-        blocks: p.blocks,
+        blocks,
         stats,
       };
     }

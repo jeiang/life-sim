@@ -9,7 +9,7 @@ import {
 import type { PackMetrics } from "./metrics.ts";
 import { type ProfileSpec, selectProfiles } from "./profile-spec.ts";
 import { Aggregate, type Report } from "./report.ts";
-import { type LifeResult, runLife } from "./run.ts";
+import { type LifeResult, type Lineage, runLife } from "./run.ts";
 
 /** Shard `index` (0-based) of `count`: lives `i` with `i % count === index`. */
 export interface Shard {
@@ -32,6 +32,8 @@ export interface HarnessOptions {
   readonly lifeSeed?: number;
   /** Forced rolls, choices and actions (`--force`, forced scripts); absent: an unforced run. */
   readonly force?: ForceSet;
+  /** Continue each life as an heir for up to `generations` (`--generations`, `--heir`); absent: one life. */
+  readonly lineage?: Lineage;
   /** Play only the lives whose index is `shard.index` modulo `shard.count`; seeds are unchanged. */
   readonly shard?: Shard;
 }
@@ -60,6 +62,7 @@ export function runLives(
     | "lifeSeed"
     | "metrics"
     | "force"
+    | "lineage"
     | "shard"
   >,
   from: number,
@@ -81,6 +84,7 @@ export function runLives(
       profile,
       opts.metrics,
       opts.force?.entries,
+      opts.lineage,
     );
     out.push(r);
     onLife?.(r);

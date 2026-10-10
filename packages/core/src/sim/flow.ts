@@ -406,7 +406,7 @@ function npcPass(world: World, idx: PackIndex): World {
  * Living with parents ends when no parent is left alive: an adult is on their own, a minor
  * goes to a guardian, and a guardian's care ends at 18.
  */
-function endLivingWithParents(world: World, idx: PackIndex): World {
+export function endLivingWithParents(world: World, idx: PackIndex): World {
   const player = getPerson(world, world.playerId);
   if (livesWithGuardian(player))
     return player.age < ADULT_AGE

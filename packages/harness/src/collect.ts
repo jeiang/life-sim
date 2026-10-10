@@ -23,6 +23,60 @@ export interface LifeMetrics {
   readonly tables: Record<string, Record<string, TableCell>>;
 }
 
+/**
+ * One generation of a lineage, numbers only so `generation:` measures can read them. The
+ * entry fields (`inheritance` onward) are the succession into this generation; 0 for the founder.
+ */
+export interface GenerationRecord {
+  readonly generation: number;
+  /** 1 when this generation's life ended (0: faulted or cut off). */
+  readonly died: number;
+  readonly deathAge: number;
+  /** Net worth at death, minor units. */
+  readonly netWorth: number;
+  /** Living children when the life ended: the heirs available. */
+  readonly heirs: number;
+  /** Cash the heir received, minor units. */
+  readonly inheritance: number;
+  readonly heirAge: number;
+  /** 1 when the heir was under 18. */
+  readonly minorHeir: number;
+  /** 1 when the dead player's net worth was negative. */
+  readonly insolvent: number;
+  /** `once` storylets opened twice in this generation (an engine fault). */
+  readonly repeatedOnce: number;
+}
+
+/** A generation record's number by `generation:` measure name. */
+export function generationValue(g: GenerationRecord, name: string): number {
+  switch (name) {
+    case "reached":
+      return 1;
+    case "died":
+      return g.died;
+    case "heir_available":
+      return g.heirs > 0 ? 1 : 0;
+    case "heirs":
+      return g.heirs;
+    case "death_age":
+      return g.deathAge;
+    case "net_worth":
+      return g.netWorth;
+    case "inheritance":
+      return g.inheritance;
+    case "heir_age":
+      return g.heirAge;
+    case "minor_heir":
+      return g.minorHeir;
+    case "insolvent_estate":
+      return g.insolvent;
+    case "repeated_once":
+      return g.repeatedOnce;
+    default:
+      return 0;
+  }
+}
+
 /** The part of the player the collector reads. */
 export interface Player {
   readonly age: number;
@@ -33,6 +87,8 @@ export interface Player {
 
 export interface LifeEnd {
   readonly me: Player | null;
+  /** The generations played from this life (`--generations`); a life without succession has the founder's record only. */
+  readonly lineage?: readonly GenerationRecord[];
   readonly years: number;
   readonly earnings: number;
   readonly death: { readonly cause: string } | null;
@@ -372,6 +428,11 @@ export class MetricCollector {
           case "outcome":
             measures[m.id] = end.outcomes[m.storylet]?.[m.key] ?? 0;
             break;
+          case "generation": {
+            const g = end.lineage?.[m.n];
+            measures[m.id] = g ? generationValue(g, m.generation) : 0;
+            break;
+          }
           case "when":
             measures[m.id] = evalExpr(m.when, (id) => measures[id]);
             break;

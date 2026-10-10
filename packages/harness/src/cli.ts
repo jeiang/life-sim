@@ -22,7 +22,12 @@ import {
   selectProfiles,
 } from "./profile-spec.ts";
 import { type Report, renderMarkdown } from "./report.ts";
-import type { LifeResult } from "./run.ts";
+import {
+  HEIR_POLICIES,
+  type HeirPolicy,
+  type LifeResult,
+  type Lineage,
+} from "./run.ts";
 import {
   failures,
   findShardFiles,
@@ -38,7 +43,7 @@ import {
 let known: readonly ProfileSpec[] = [];
 
 const usage =
-  (): string => `usage: pnpm harness --lives N [--profile ${known.length > 0 ? `${known.map((p) => p.id).join("|")}|` : ""}all|a,b] [--seed S] [--out dir] [--packs a,b] [--packs-dir dir] [--life-seed X] [--jobs N] [--force [age:]key=value,...] [--script name|file] [--shard i/n] [--fail-on faults,never-fired]
+  (): string => `usage: pnpm harness --lives N [--profile ${known.length > 0 ? `${known.map((p) => p.id).join("|")}|` : ""}all|a,b] [--seed S] [--out dir] [--packs a,b] [--packs-dir dir] [--life-seed X] [--jobs N] [--force [age:]key=value,...] [--script name|file] [--generations N] [--heir eldest|richest|random] [--shard i/n] [--fail-on faults,never-fired]
        pnpm harness --check-packs [--packs a,b] [--packs-dir dir]
        pnpm harness --list-profiles [--packs a,b] [--packs-dir dir]
        pnpm harness --list-scripts [--packs a,b] [--packs-dir dir]
@@ -52,6 +57,8 @@ const usage =
   --jobs       worker threads (default: available cores); the report is identical for any N
   --force      force roll sites by purpose key: \`gambling/play-slots=hit\`, \`outcome/gambling/play-slots=2\`, \`outcome/x=Outcome text\`, \`int:N\`; \`30:key=value\` limits it to one age. Values: hit | miss | pick index | int:N | outcome text (no commas)
   --script     run a forced script (\`<pack>/<name>\` from packs/<id>/harness/force/*.yaml, or a file): per-age forced rolls, choices and actions, by the scripted profile (or the script's own \`profile\`)
+  --generations  continue each life as an heir for up to N generations (default 1: one life); the report keeps the founder's life and adds the lineage measures Packs declare
+  --heir       who inherits when several children survive: eldest (default), richest or random
   --list-scripts  print the forced scripts the Packs declare, then exit
   --check-packs  validate every Pack's harness/metrics.yaml, harness/profiles.yaml and harness/force/*.yaml against the compiled Packs, then exit (0 valid, 2 not)
   --list-profiles  print the profiles the Packs declare (id, Pack, whether in \`all\`), then exit
@@ -83,15 +90,21 @@ function finish(
   profiles: readonly string[],
   seconds: number | null,
   outDir: string | undefined,
+  lineage?: Lineage,
 ): never {
   const md = renderMarkdown(report, { seed, profiles, forced });
+  const gens = lineage && lineage.generations > 1 ? { lineage } : {};
   if (outDir) {
     mkdirSync(outDir, { recursive: true });
     writeFileSync(join(outDir, "report.md"), md);
     writeFileSync(
       join(outDir, "report.json"),
       `${JSON.stringify(
-        { run: { seed, profiles }, ...report, ...(forced ? { forced } : {}) },
+        {
+          run: { seed, profiles, ...gens },
+          ...report,
+          ...(forced ? { forced } : {}),
+        },
         null,
         2,
       )}\n`,
@@ -137,6 +150,8 @@ const { values: a, positionals } = parseArgs({
     "list-scripts": { type: "boolean" },
     force: { type: "string" },
     script: { type: "string" },
+    generations: { type: "string" },
+    heir: { type: "string" },
     help: { type: "boolean" },
     shard: { type: "string" },
     "fail-on": { type: "string" },
@@ -224,6 +239,7 @@ if (positionals[0] === "merge") {
     merged.run.profiles,
     null,
     a.out ?? dir,
+    merged.run.lineage,
   );
 }
 if (positionals.length > 0) fail(`unexpected argument '${positionals[0]}'`);
@@ -279,6 +295,16 @@ if (a.shard !== undefined && !shard)
 if (shard && lifeSeed !== undefined)
   fail("--shard cannot be combined with --life-seed");
 
+const generations = int("generations", a.generations, 1);
+if (generations < 1) fail("--generations must be at least 1");
+const heir = a.heir ?? "eldest";
+if (!HEIR_POLICIES.includes(heir as HeirPolicy))
+  fail(`--heir must be one of ${HEIR_POLICIES.join(", ")}`);
+if (generations > 1 && force)
+  fail("--generations cannot be combined with --force or --script");
+const lineage: Lineage | undefined =
+  generations > 1 ? { generations, heir: heir as HeirPolicy } : undefined;
+
 const run = {
   bundles: compiled.bundles,
   metrics: loaded.metrics,
@@ -288,6 +314,7 @@ const run = {
   seed,
   ...(lifeSeed === undefined ? {} : { lifeSeed }),
   ...(force ? { force } : {}),
+  ...(lineage ? { lineage } : {}),
   ...(shard ? { shard } : {}),
 };
 const shardLives: LifeResult[] = [];
@@ -306,9 +333,9 @@ if (shard) {
   if (!a.out) fail("--shard needs --out: the shard's lives are written there");
   writeShard(
     a.out,
-    shardRunOf(seed, lives, profiles, force),
+    shardRunOf(seed, lives, profiles, force, lineage),
     shard,
     shardLives,
   );
 }
-finish(report, forced, seed, profiles, seconds, a.out);
+finish(report, forced, seed, profiles, seconds, a.out, lineage);

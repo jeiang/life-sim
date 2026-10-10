@@ -1,12 +1,14 @@
 import {
   ageUp,
   canAgeUp,
+  canSucceed,
   choose,
   costIndexOf,
   describePending,
   familyRoleOf,
   getPerson,
   hasTargetRole,
+  heirsOf,
   holdingValue,
   indexBundles,
   isAnimal,
@@ -39,10 +41,16 @@ import {
   settleLiving,
   standardOf,
   streamFor,
+  succeed,
   type World,
   worldHash,
 } from "@life/core";
-import { type LifeMetrics, MetricCollector } from "./collect.ts";
+import {
+  type GenerationRecord,
+  type LifeEnd,
+  type LifeMetrics,
+  MetricCollector,
+} from "./collect.ts";
 import { chooseIndex, type ForceEntry, installRollOverride } from "./force.ts";
 import type { PackMetrics } from "./metrics.ts";
 import type { ProfileSpec } from "./profile-spec.ts";
@@ -75,7 +83,8 @@ export type FaultKind =
   | "save-mismatch"
   | "minor-living-cost"
   | "unresolved-family"
-  | "animal-bound";
+  | "animal-bound"
+  | "once-repeated";
 
 export interface Fault {
   readonly kind: FaultKind;
@@ -181,6 +190,11 @@ export interface LifeResult {
   readonly metrics: Readonly<Record<string, LifeMetrics>>;
   /** Times each forced entry fired in this life (by index); absent when nothing is forced. */
   readonly forced?: readonly number[];
+  /**
+   * With `--generations` above 1: one record per generation played, the founder's first. The
+   * fields above describe the founder's life only; later generations add their faults to it.
+   */
+  readonly lineage?: readonly GenerationRecord[];
 }
 
 const playerOf = (w: World) => {
@@ -261,17 +275,31 @@ function checkSave(w: World, bundles: readonly PackBundle[]): string | null {
   return null;
 }
 
+/** One life played by `playLife`: its result, final world and the metrics left to finish. */
+interface Played {
+  /** `metrics` is empty: `finish` fills it once the lineage is known. */
+  readonly result: LifeResult;
+  readonly world: World | null;
+  readonly finish: (
+    lineage: readonly GenerationRecord[],
+  ) => Record<string, LifeMetrics>;
+}
+
 /**
- * Play one life to its end (or a fault) as `profile`. Every choice the profile makes comes
- * from a harness stream seeded by the life seed, never from the game's own streams.
+ * Play one life to its end (or a fault) as `profile`, from a new life or, for generation
+ * `generation` above 0, from `start` (an heir's world after `succeed`). Every choice the
+ * profile makes comes from a harness stream seeded by the life seed, never from the game's
+ * own streams.
  */
-export function runLife(
+function playLife(
   bundles: readonly PackBundle[],
   seed: number,
   spec: ProfileSpec,
-  packMetrics: readonly PackMetrics[] = [],
-  force: readonly ForceEntry[] = [],
-): LifeResult {
+  packMetrics: readonly PackMetrics[],
+  force: readonly ForceEntry[],
+  start: World | null,
+  generation: number,
+): Played {
   const fired: number[] = force.map(() => 0);
   const overridden = installRollOverride(force, fired);
   const profile = makeProfile(spec, bundles);
@@ -283,7 +311,7 @@ export function runLife(
       for (const st of b.storylets) if (st.tags.includes(tag)) ids.add(st.id);
     return ids;
   });
-  const rng = streamFor(seed, 0, `harness/${profileName}`, 0);
+  const rng = streamFor(seed, 0, `harness/${profileName}`, 0, generation);
   const faults: Fault[] = [];
   const seen = new Set<string>();
   let age = 0;
@@ -423,7 +451,7 @@ export function runLife(
   };
 
   try {
-    w = newLife(bundles, seed);
+    w = start ?? newLife(bundles, seed);
     collector.market(w.market);
     while (w && !w.ended) {
       age = playerOf(w).age;
@@ -624,7 +652,21 @@ export function runLife(
   const me = final ? playerOf(final) : null;
   const fires = final ? firesById(final) : {};
   const all = me ? [...me.occupationHistory, ...me.occupations] : [];
-  return {
+  if (final)
+    for (const id of onceRepeated(final, bundles))
+      fault(
+        "once-repeated",
+        `once storylet ${id} opened twice in a generation`,
+      );
+  const lifeEnd: Omit<LifeEnd, "lineage"> = {
+    me,
+    years: samples.length,
+    earnings,
+    death: final?.ended && me ? { cause: final.ended.cause } : null,
+    fires,
+    outcomes,
+  };
+  const result: LifeResult = {
     seed,
     profile: profileName,
     faults,
@@ -667,14 +709,7 @@ export function runLife(
         )
       : false,
     everEmployed,
-    metrics: collector.finish({
-      me,
-      years: samples.length,
-      earnings,
-      death: final?.ended && me ? { cause: final.ended.cause } : null,
-      fires,
-      outcomes,
-    }),
+    metrics: {},
     retired: retired || all.some((o) => isRetired(o.kindId)),
     moveOutAge,
     putOut:
@@ -685,5 +720,154 @@ export function runLife(
       0,
     earnings,
     ...(force.length > 0 ? { forced: fired } : {}),
+  };
+  return {
+    result,
+    world: final,
+    finish: (lineage) => collector.finish({ ...lifeEnd, lineage }),
+  };
+}
+
+/** Who inherits when several children survive. */
+export type HeirPolicy = "eldest" | "richest" | "random";
+export const HEIR_POLICIES: readonly HeirPolicy[] = [
+  "eldest",
+  "richest",
+  "random",
+];
+
+/** How many generations a life continues for (`--generations`) and who inherits (`--heir`). */
+export interface Lineage {
+  readonly generations: number;
+  readonly heir: HeirPolicy;
+}
+
+/** Ids of `once` storylets the world's log shows opened more than once under one key. */
+function onceRepeated(w: World, bundles: readonly PackBundle[]): string[] {
+  const once = new Set(
+    bundles.flatMap((b) => b.storylets.filter((s) => s.once).map((s) => s.id)),
+  );
+  return Object.entries(w.storyletLog)
+    .filter(([k, r]) => r.count > 1 && once.has(k.split("#")[0] as string))
+    .map(([k]) => k);
+}
+
+/** The heir `policy` picks among `heirs` (living children, in person id order). */
+function pickHeir(
+  w: World,
+  heirs: readonly number[],
+  policy: HeirPolicy,
+  rng: { int(n: number): number },
+): number {
+  if (policy === "random") return heirs[rng.int(heirs.length)] as number;
+  let best = heirs[0] as number;
+  for (const id of heirs) {
+    const a = getPerson(w, id);
+    const b = getPerson(w, best);
+    if (policy === "eldest" ? a.age > b.age : a.money > b.money) best = id;
+  }
+  return best;
+}
+
+/** What a generation shows the lineage metrics: its death, and for an heir the succession into it. */
+function recordOf(
+  played: Played,
+  generation: number,
+  entry: Pick<
+    GenerationRecord,
+    "inheritance" | "heirAge" | "minorHeir" | "insolvent"
+  >,
+  repeatedOnce: number,
+): GenerationRecord {
+  const w = played.world;
+  const ended = w?.ended ?? null;
+  return {
+    generation,
+    died: ended ? 1 : 0,
+    deathAge: ended ? ended.age : 0,
+    netWorth: w && ended ? netWorth(w, playerOf(w)) : 0,
+    heirs: w && ended ? heirsOf(w).length : 0,
+    ...entry,
+    repeatedOnce,
+  };
+}
+
+const NO_ENTRY = { inheritance: 0, heirAge: 0, minorHeir: 0, insolvent: 0 };
+
+/**
+ * Play one life to its end (or a fault) as `profile`; with `lineage.generations` above 1 the
+ * life continues as an heir (chosen by `lineage.heir`) until the line ends, a fault stops it
+ * or that many generations were played. The result is the founder's; heirs' faults join it
+ * and `lineage` has one record per generation. Forcing applies to the founder only.
+ */
+export function runLife(
+  bundles: readonly PackBundle[],
+  seed: number,
+  spec: ProfileSpec,
+  packMetrics: readonly PackMetrics[] = [],
+  force: readonly ForceEntry[] = [],
+  lineage?: Lineage,
+): LifeResult {
+  const first = playLife(bundles, seed, spec, packMetrics, force, null, 0);
+  const records: GenerationRecord[] = [
+    recordOf(
+      first,
+      0,
+      NO_ENTRY,
+      first.world ? onceRepeated(first.world, bundles).length : 0,
+    ),
+  ];
+  const faults = [...first.result.faults];
+  let cur = first;
+  const rng = streamFor(seed, 0, `harness/${spec.id}/heir`, 0);
+  for (let g = 1; g < (lineage?.generations ?? 1); g++) {
+    const w = cur.world;
+    if (!w || !w.ended || cur.result.faults.length > 0 || !canSucceed(w)) break;
+    const heirId = pickHeir(w, heirsOf(w), lineage?.heir ?? "eldest", rng);
+    const before = getPerson(w, heirId);
+    const insolvent = netWorth(w, playerOf(w)) < 0 ? 1 : 0;
+    let next: World;
+    try {
+      next = succeed(w, bundles, heirId).world;
+    } catch (e) {
+      faults.push({
+        kind: "exception",
+        profile: spec.id,
+        seed,
+        age: before.age,
+        message: `succeed: ${describeError(e)}`,
+      });
+      break;
+    }
+    const bad = checkSave(next, bundles);
+    if (bad)
+      faults.push({
+        kind: "save-mismatch",
+        profile: spec.id,
+        seed,
+        age: before.age,
+        message: `after succession: ${bad}`,
+      });
+    cur = playLife(bundles, seed, spec, packMetrics, [], next, g);
+    faults.push(...cur.result.faults);
+    records.push(
+      recordOf(
+        cur,
+        g,
+        {
+          inheritance: getPerson(next, heirId).money - before.money,
+          heirAge: before.age,
+          minorHeir: before.age < 18 ? 1 : 0,
+          insolvent,
+        },
+        cur.world ? onceRepeated(cur.world, bundles).length : 0,
+      ),
+    );
+  }
+  return {
+    ...first.result,
+    faults,
+    metrics: first.finish(records),
+    ...(lineage && lineage.generations > 1 ? { lineage: records } : {}),
   };
 }

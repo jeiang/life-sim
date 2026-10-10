@@ -1,8 +1,44 @@
 # Harness metrics for the core-loop Pack; the schema is docs/spec/harness.md#pack-metrics.
 title: Core loop
-intro: Looks by age (the `looks-fade` and `looks-decline` events pull looks down after 30 and 40; the gym is the offset).
+intro: Looks by age (the `looks-fade` and `looks-decline` events pull looks down after 30 and 40; the gym is the offset). With `--generations` above 1 the lives continue as heirs (generation 0 is the founder, generation n the heir of generation n-1) and tables of the first four generations follow; money there is in minor units.
 measures:
   looks: { snapshot: { stat: looks }, ages: [18, 40, 65] }
+  died_0: { generation: died, n: 0 }
+  heir_0: { generation: heir_available, n: 0 }
+  nw_0: { generation: net_worth, n: 0 }
+  age_0: { generation: death_age, n: 0 }
+  died_1: { generation: died, n: 1 }
+  heir_1: { generation: heir_available, n: 1 }
+  nw_1: { generation: net_worth, n: 1 }
+  age_1: { generation: death_age, n: 1 }
+  died_2: { generation: died, n: 2 }
+  heir_2: { generation: heir_available, n: 2 }
+  nw_2: { generation: net_worth, n: 2 }
+  age_2: { generation: death_age, n: 2 }
+  died_3: { generation: died, n: 3 }
+  heir_3: { generation: heir_available, n: 3 }
+  nw_3: { generation: net_worth, n: 3 }
+  age_3: { generation: death_age, n: 3 }
+  reached_1: { generation: reached, n: 1 }
+  reached_2: { generation: reached, n: 2 }
+  reached_3: { generation: reached, n: 3 }
+  inherit_1: { generation: inheritance, n: 1 }
+  heir_age_1: { generation: heir_age, n: 1 }
+  minor_1: { generation: minor_heir, n: 1 }
+  insolvent_1: { generation: insolvent_estate, n: 1 }
+  inherit_2: { generation: inheritance, n: 2 }
+  heir_age_2: { generation: heir_age, n: 2 }
+  minor_2: { generation: minor_heir, n: 2 }
+  insolvent_2: { generation: insolvent_estate, n: 2 }
+  inherit_3: { generation: inheritance, n: 3 }
+  heir_age_3: { generation: heir_age, n: 3 }
+  minor_3: { generation: minor_heir, n: 3 }
+  insolvent_3: { generation: insolvent_estate, n: 3 }
+  once_0: { generation: repeated_once, n: 0 }
+  once_1: { generation: repeated_once, n: 1 }
+  once_2: { generation: repeated_once, n: 2 }
+  once_3: { generation: repeated_once, n: 3 }
+  once_twice: { when: "once_0 > 0 or once_1 > 0 or once_2 > 0 or once_3 > 0" }
 stats:
   looks_median:
     kind: median
@@ -15,6 +51,130 @@ stats:
     value: looks
     ages: [18, 40, 65]
     label: looks
+  heir_available_0:
+    kind: share
+    when: heir_0
+    of: died_0
+    by: profile
+    label: generation 0 deaths with a living child
+  heir_available_1:
+    kind: share
+    when: heir_1
+    of: died_1
+    by: profile
+    label: generation 1 deaths with a living child
+  heir_available_2:
+    kind: share
+    when: heir_2
+    of: died_2
+    by: profile
+    label: generation 2 deaths with a living child
+  heir_available_3:
+    kind: share
+    when: heir_3
+    of: died_3
+    by: profile
+    label: generation 3 deaths with a living child
+  reached_1:
+    kind: share
+    when: reached_1
+    by: profile
+    label: lives reaching generation 1
+  reached_2:
+    kind: share
+    when: reached_2
+    by: profile
+    label: lives reaching generation 2
+  reached_3:
+    kind: share
+    when: reached_3
+    by: profile
+    label: lives reaching generation 3
+  inheritance_1:
+    kind: dist
+    value: inherit_1
+    of: reached_1
+    label: cash inherited (minor units) into generation 1
+  inheritance_2:
+    kind: dist
+    value: inherit_2
+    of: reached_2
+    label: cash inherited (minor units) into generation 2
+  inheritance_3:
+    kind: dist
+    value: inherit_3
+    of: reached_3
+    label: cash inherited (minor units) into generation 3
+  heir_age_1:
+    kind: dist
+    value: heir_age_1
+    of: reached_1
+    label: heir age at succession into generation 1
+  heir_age_2:
+    kind: dist
+    value: heir_age_2
+    of: reached_2
+    label: heir age at succession into generation 2
+  heir_age_3:
+    kind: dist
+    value: heir_age_3
+    of: reached_3
+    label: heir age at succession into generation 3
+  minor_heir_1:
+    kind: share
+    when: minor_1
+    of: reached_1
+    label: successions into generation 1 with a minor heir
+  minor_heir_2:
+    kind: share
+    when: minor_2
+    of: reached_2
+    label: successions into generation 2 with a minor heir
+  minor_heir_3:
+    kind: share
+    when: minor_3
+    of: reached_3
+    label: successions into generation 3 with a minor heir
+  insolvent_estate_1:
+    kind: share
+    when: insolvent_1
+    of: reached_1
+    label: successions into generation 1 from an insolvent estate
+  insolvent_estate_2:
+    kind: share
+    when: insolvent_2
+    of: reached_2
+    label: successions into generation 2 from an insolvent estate
+  insolvent_estate_3:
+    kind: share
+    when: insolvent_3
+    of: reached_3
+    label: successions into generation 3 from an insolvent estate
+  net_worth_0:
+    kind: dist
+    value: nw_0
+    of: died_0
+    label: net worth at death (minor units), generation 0
+  net_worth_1:
+    kind: dist
+    value: nw_1
+    of: died_1
+    label: net worth at death (minor units), generation 1
+  net_worth_2:
+    kind: dist
+    value: nw_2
+    of: died_2
+    label: net worth at death (minor units), generation 2
+  net_worth_3:
+    kind: dist
+    value: nw_3
+    of: died_3
+    label: net worth at death (minor units), generation 3
+  once_repeated:
+    kind: share
+    when: once_twice
+    of: reached_1
+    label: lineages where a once storylet opened twice in one generation (must be 0)
 blocks:
   - text: "Looks at 18, 40 and 65 by profile:"
   - stats:
@@ -22,3 +182,23 @@ blocks:
   - text: "Distribution of looks by age:"
   - stats:
       - looks_dist
+  - visible_if_measure: reached_1
+    text: Availability and succession. Each row is a share of the lives it counts, by profile.
+  - visible_if_measure: reached_1
+    stats: [heir_available_0, heir_available_1, heir_available_2, heir_available_3]
+  - visible_if_measure: reached_1
+    stats: [reached_1, reached_2, reached_3]
+  - visible_if_measure: reached_1
+    stats: [minor_heir_1, minor_heir_2, minor_heir_3]
+  - visible_if_measure: reached_1
+    stats: [insolvent_estate_1, insolvent_estate_2, insolvent_estate_3]
+  - visible_if_measure: reached_1
+    stats: [once_repeated]
+  - visible_if_measure: reached_1
+    text: Cash inherited, heir age and net worth at death (distributions).
+  - visible_if_measure: reached_1
+    stats: [inheritance_1, inheritance_2, inheritance_3]
+  - visible_if_measure: reached_1
+    stats: [heir_age_1, heir_age_2, heir_age_3]
+  - visible_if_measure: reached_1
+    stats: [net_worth_0, net_worth_1, net_worth_2, net_worth_3]

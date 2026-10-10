@@ -1,0 +1,26 @@
+# Children at fixed ages, so a life usually leaves heirs: one grown by the time the player
+# dies, and a late one who is often still a minor.
+- id: first-child
+  trigger: event
+  chance: 100%
+  when: age == 28
+  text: A child is born.
+  outcomes:
+    - effects:
+        - spawn_person(core-loop/child, core-loop/sibling-gen) as c
+- id: second-child
+  trigger: event
+  chance: 100%
+  when: age == 45
+  text: Another child is born.
+  outcomes:
+    - effects:
+        - spawn_person(core-loop/child, core-loop/sibling-gen) as c
+- id: late-child
+  trigger: event
+  chance: 100%
+  when: age == 62
+  text: A late child is born.
+  outcomes:
+    - effects:
+        - spawn_person(core-loop/child, core-loop/sibling-gen) as c

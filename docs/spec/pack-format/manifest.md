@@ -9,7 +9,7 @@ The `pack.yaml` manifest, how Packs compose, and capability files. Part of the [
 | `id` | Pack id; equals the directory name. A Pack has no integer version: what a Pack offers is its capabilities, and the Packs it uses are derived from their `requires`. |
 | `namespace` | Optional id prefix. Every stat and quality the Pack declares must start with `<namespace>_`; two Packs may not share a namespace. `core-loop` is exempt. |
 | `currency` | Symbol and minor-unit digits (singleton, see Singleton blocks). |
-| `stats` | Declared stats: id, label, icon, start range. Always 0 to 100. |
+| `stats` | Declared stats: id, label, icon, start range, optional `inherit`. Always 0 to 100. `inherit: 60%` is genetics: when an heir takes over ([Succession](../core-loop.md#genetics)) the stat is re-drawn as that share of a random blend of the heir's parents' values, plus the rest as a fresh draw from `start`; a stat without `inherit` keeps the heir's value. Up to 100%. |
 | `living` | Living costs: `default` (standard chosen on moving out), `housing_share` (percent of the cost an owned home removes) `home_category` (item kind category that counts as a home) and an optional `household` block (see Household costs). Needs `standards`. Singleton block. |
 | `exclusivity` | Occupation exclusivity groups (for example `school`, `full-time`). Singleton block. |
 | `repeat` | Default curve for repeatable actions: `{ full: 10, reduced: 20, factor: 25% }` (see Repeatable actions). Any field left out takes the value shown. Singleton block. |

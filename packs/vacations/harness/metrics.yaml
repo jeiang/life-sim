@@ -1,6 +1,6 @@
 # Harness metrics for the Vacations Pack; the schema is docs/spec/harness.md#pack-metrics.
 title: Vacations
-intro: Trips per life by price tier (tier 1 is the cheapest step of the amount picker), spending against gross earnings, and travel deaths. Only the `random` profile takes trips; the others never open the travel menu.
+intro: Trips per life by named tier (vacation Backpacking to Private jet, cruise Shared cabin to Royal suite), money spent on trips against gross earnings, and travel deaths. Only the `random` profile takes trips; the others never open the travel menu.
 visible_if_table: trips
 measures:
   trips: { table: trips, column: trips }
@@ -9,13 +9,22 @@ measures:
   traveller: { when: "trips > 0" }
   travel_death: { death: travel accident }
   net_worth: { snapshot: net_worth, ages: [40, 65] }
+  v1: { outcome: { storylet: vacations/vacation-tier, key: c0.o0 } }
+  v2: { outcome: { storylet: vacations/vacation-tier, key: c1.o0 } }
+  v3: { outcome: { storylet: vacations/vacation-tier, key: c2.o0 } }
+  v4: { outcome: { storylet: vacations/vacation-tier, key: c3.o0 } }
+  v5: { outcome: { storylet: vacations/vacation-tier, key: c4.o0 } }
+  c1: { outcome: { storylet: vacations/go-on-cruise, key: c0.o0 } }
+  c2: { outcome: { storylet: vacations/go-on-cruise, key: c1.o0 } }
+  c3: { outcome: { storylet: vacations/go-on-cruise, key: c2.o0 } }
+  c4: { outcome: { storylet: vacations/go-on-cruise, key: c3.o0 } }
+  c5: { outcome: { storylet: vacations/go-on-cruise, key: c4.o0 } }
 tables:
-  # A trip is an action of this Pack taken with an amount; the price tier is the amount's grid slot.
+  # A trip is a voluntary action of this Pack (vacation-tier or go-on-cruise). `spent` is the money change over the action and the destination or voyage it chained to: minus the price, minus any bad money event.
   trips:
-    with_amount: true
     columns:
       trips: count
-      spent: amount
+      spent: { delta: money }
 stats:
   lives:
     kind: count
@@ -30,50 +39,80 @@ stats:
     by: profile
     decimals: 3
     label: trips per life
-  tier_1:
+  vacation_tier_1:
     kind: mean
-    value: trips.@1
+    value: v1
     by: profile
     decimals: 3
-    label: tier 1
-  tier_2:
+    label: vacation tier 1
+  vacation_tier_2:
     kind: mean
-    value: trips.@2
+    value: v2
     by: profile
     decimals: 3
-    label: tier 2
-  tier_3:
+    label: vacation tier 2
+  vacation_tier_3:
     kind: mean
-    value: trips.@3
+    value: v3
     by: profile
     decimals: 3
-    label: tier 3
-  tier_4:
+    label: vacation tier 3
+  vacation_tier_4:
     kind: mean
-    value: trips.@4
+    value: v4
     by: profile
     decimals: 3
-    label: tier 4
-  tier_5:
+    label: vacation tier 4
+  vacation_tier_5:
     kind: mean
-    value: trips.@5
+    value: v5
     by: profile
     decimals: 3
-    label: tier 5
+    label: vacation tier 5
+  cruise_tier_1:
+    kind: mean
+    value: c1
+    by: profile
+    decimals: 3
+    label: cruise tier 1
+  cruise_tier_2:
+    kind: mean
+    value: c2
+    by: profile
+    decimals: 3
+    label: cruise tier 2
+  cruise_tier_3:
+    kind: mean
+    value: c3
+    by: profile
+    decimals: 3
+    label: cruise tier 3
+  cruise_tier_4:
+    kind: mean
+    value: c4
+    by: profile
+    decimals: 3
+    label: cruise tier 4
+  cruise_tier_5:
+    kind: mean
+    value: c5
+    by: profile
+    decimals: 3
+    label: cruise tier 5
   spend_per_life:
     kind: mean
     value: spent
     by: profile
     decimals: 0
     format: money
-    label: spend per life (major units)
+    label: money change per life from trips (major units, negative is spend)
   spend_share:
     kind: ratio
     num: spent
     den: earnings
     by: profile
     decimals: 2
-    label: spend share of earnings
+    label: money change from trips as a share of gross earnings (negative is spend)
   travel_deaths:
     kind: sum
     value: travel_death
@@ -109,12 +148,20 @@ blocks:
       - lives
       - travellers
       - trips_per_life
-      - tier_1
-      - tier_2
-      - tier_3
-      - tier_4
-      - tier_5
     key: action
+  - text: "Trips per life by named tier (tier 1 is the cheapest): Backpacking, Budget, Standard, Luxury, Private jet; Shared cabin, Inside cabin, Ocean view, Balcony suite, Royal suite."
+  - stats:
+      - vacation_tier_1
+      - vacation_tier_2
+      - vacation_tier_3
+      - vacation_tier_4
+      - vacation_tier_5
+      - cruise_tier_1
+      - cruise_tier_2
+      - cruise_tier_3
+      - cruise_tier_4
+      - cruise_tier_5
+    key: profile
   - stats:
       - spend_per_life
       - spend_share

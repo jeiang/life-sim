@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Cruises (vacations v2, C3 and C4)".
+
+- id: go-on-cruise
+  icon: 🚢
+  trigger: action
+  menu: activities/travel
+  label: Go on a cruise
+  tags: [activity, travel, spend-time, money]
+  when: age >= 18 and money >= 120000
+  repeatable: true
+  repeat:
+    full: 3
+    reduced: 8
+    factor: 25%
+  text: You pack for the open sea. Which berth?
+  choices:
+    - label: "Shared cabin ($1,200)"
+      when: money >= 120000
+      outcomes:
+        - weight: 1
+          text: You take the cheapest berth on board, next to the laundry chute.
+          effects:
+            - money -= 120000
+            - "quality.vac_tier = 1"
+          next: cruise-voyage
+    - label: "Inside cabin ($2,400)"
+      when: money >= 240000
+      outcomes:
+        - weight: 1
+          text: A windowless box with a bunk, a fan and a very good view of the corridor.
+          effects:
+            - money -= 240000
+            - "quality.vac_tier = 2"
+          next: cruise-voyage
+    - label: "Ocean view ($3,600)"
+      when: money >= 360000
+      outcomes:
+        - weight: 1
+          text: A porthole with a view. You spend most of the trip staring out of it.
+          effects:
+            - money -= 360000
+            - "quality.vac_tier = 3"
+          next: cruise-voyage
+    - label: "Balcony suite ($4,800)"
+      when: money >= 480000
+      outcomes:
+        - weight: 1
+          text: A suite with a balcony, and a waiter who knows your name by lunch.
+          effects:
+            - money -= 480000
+            - "quality.vac_tier = 4"
+          next: cruise-voyage
+    - label: "Royal suite ($6,000)"
+      when: money >= 600000
+      outcomes:
+        - weight: 1
+          text: The best suite on the ship, with a butler who asks what you need before you do.
+          effects:
+            - money -= 600000
+            - "quality.vac_tier = 5"
+          next: cruise-voyage
+
+- id: cruise-voyage
+  icon: 🌊
+  trigger: event
+  chance: 0%
+  text: The horn sounds and the ship slides out past the breakwater.
+  outcomes:
+    - weight: "1500 + 500 * quality.vac_tier"
+      text: Warm decks, new ports and nothing to do but enjoy it. The best week of the year.
+      effects:
+        - "stat.happiness += 8 + 3 * quality.vac_tier"
+        - stat.health += 2
+        - "journal(\"Enjoyed a cruise at age {age}.\")"
+    - weight: 4000
+      text: A smooth crossing with good food and better company.
+      effects:
+        - "stat.happiness += 4 + quality.vac_tier"
+    - weight: 1499
+      text: The cabin is small and the entertainment is dull, but the sea air helps.
+      effects:
+        - stat.happiness += 1
+    - weight: "150 * (6 - quality.vac_tier)"
+      text: Rough seas leave you queasy for days, and the buffet never quite recovers.
+      effects:
+        - stat.health -= 4
+        - stat.happiness -= 2
+    - weight: "100 * (6 - quality.vac_tier)"
+      text: A stomach bug sweeps the ship, and you are first in line to catch it.
+      effects:
+        - stat.health -= 6
+        - "journal(\"Caught a stomach bug on a cruise at age {age}.\")"
+    - weight: "150 * (6 - quality.vac_tier)"
+      text: Shore excursions and onboard extras cost far more than the brochure said.
+      effects:
+        - "money -= min(money, quality.vac_tier * 120000 / 3)"
+        - stat.happiness -= 2
+    - weight: "100 * (6 - quality.vac_tier)"
+      text: Bad weather cancels every port, and the ship just circles for a week.
+      effects:
+        - stat.happiness -= 5
+    - weight: 1
+      text: You go overboard in the night and are not found in time.
+      effects:
+        - "journal(\"Was lost at sea on a cruise at age {age}.\")"
+        - "die(\"travel accident\")"

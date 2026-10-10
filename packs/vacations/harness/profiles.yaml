@@ -1,0 +1,8 @@
+# Simulated player profiles of the Vacations Pack; the schema is docs/spec/harness.md#simulated-player-profiles.
+profiles:
+  traveller:
+    description: Takes a trip most years (vacation or cruise, any affordable tier, uniform pick); every other move is a trip too, so a focused run sees every tier
+    default: false
+    moves: 2
+    rules:
+      - ids: [vacations/*]

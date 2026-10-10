@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Family trip and bond".
+
+- id: family-trip
+  icon: 🚗
+  trigger: event
+  weight: 6
+  when: "age >= 6 and age <= 17 and living.with_parents and count_role(core-loop/parent, 0, 100) >= 1"
+  cooldown: 2
+  text: The family is planning a trip away this year.
+  choices:
+    - label: Go along
+      outcomes:
+        - weight: 3500
+          text: "A great trip: games in the car, ice cream and plenty of laughs."
+          effects:
+            - "quality.vac_family_trip_age = age"
+            - stat.happiness += 8
+            - "journal(\"Went on a family trip at age {age}.\")"
+        - weight: 4500
+          text: A nice few days away together.
+          effects:
+            - "quality.vac_family_trip_age = age"
+            - stat.happiness += 4
+        - weight: 800
+          text: Car sickness and a stomach bug ruin half the trip.
+          effects:
+            - "quality.vac_family_trip_age = age"
+            - stat.health -= 3
+            - stat.happiness -= 1
+        - weight: 700
+          text: Everyone is tired and cranky, and the trip ends in arguments.
+          effects:
+            - "quality.vac_family_trip_age = age"
+            - stat.happiness -= 4
+        - weight: 499
+          text: A bag with your pocket money goes missing on the way.
+          effects:
+            - "quality.vac_family_trip_age = age"
+            - money -= min(money, 3000)
+            - stat.happiness -= 1
+        - weight: 1
+          text: An accident on the road ends the trip.
+          effects:
+            - "journal(\"Died in a road accident on a family trip at age {age}.\")"
+            - "die(\"travel accident\")"
+    - label: Stay home
+      outcomes:
+        - weight: 1
+          text: You stay home while everyone else goes. The house is quiet.
+          effects:
+            - stat.happiness -= 1
+
+- id: family-trip-bond
+  icon: 👨‍👩‍👧
+  trigger: event
+  scope: person
+  target: [core-loop/parent]
+  chance: 100%
+  when: "quality.vac_family_trip_age == age and age >= 6 and age <= 17"
+  text: "The trip with {person.first_name} {person.last_name} brings you closer."
+  outcomes:
+    - weight: 1
+      text: You come home from the trip feeling closer.
+      effects:
+        - relationship(person).closeness += 8
+        - "journal(\"Grew closer to {person.first_name} {person.last_name} on a family trip at age {age}.\")"

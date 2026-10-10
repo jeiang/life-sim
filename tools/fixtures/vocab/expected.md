@@ -90,7 +90,7 @@ Expression functions.
 - `forecast(id) -> int`
 
 ## Effects
-Effect calls. Assign roots: `stat += -= =`, `quality += =`, `money += -=`, `person += -= =`, `world += -= =`, `table += -= =`. Aggregators over containers: `sum`, `count`, `max`, `min`.
+Effect calls. Assign targets (a bound person's name works like `person`): `stat += -= =`, `quality += =`, `money += -=`, `person.money += -=`, `person.quality.<id> += =`, `person.table.<id>.<key> += -= =`, `world += -= =`, `table += -= =`. Aggregators over containers: `sum`, `count`, `max`, `min`.
 - `take_loan(id, int) -> bool`
 - `grant_asset(id) -> bool`
 - `remove_asset(id) -> bool`
@@ -109,3 +109,5 @@ Effect calls. Assign roots: `stat += -= =`, `quality += =`, `money += -=`, `pers
 - `reach_milestone(milestone) -> bool`
 - `unschedule(id) -> bool`
 - `schedule(id, after: <a>-<b> years[, person][, lineage: true]) -> bool`
+- `relationship(<person>).closeness += <int>`
+- `relationship(<person>).role = <id>`

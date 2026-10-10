@@ -57,6 +57,26 @@ describe("vocab", () => {
     expect(alone.macros.map((m) => m.call)).toEqual(["core_loop.cheer"]);
   });
 
+  it("lists every effect form the compiler accepts", () => {
+    const v = vocabOf(FIXTURES);
+    expect(v.effects).toContain("relationship(<person>).closeness += <int>");
+    expect(v.effects).toContain("relationship(<person>).role = <id>");
+    expect(v.effects.some((e) => e.startsWith("schedule("))).toBe(true);
+    expect(v.assignable).toEqual(
+      expect.arrayContaining([
+        "stat += -= =",
+        "quality += =",
+        "money += -=",
+        "world += -= =",
+        "table += -= =",
+        "person.money += -=",
+        "person.quality.<id> += =",
+        "person.table.<id>.<key> += -= =",
+      ]),
+    );
+    expect(v.assignable).not.toContain("person += -= =");
+  });
+
   it("is deterministic", () => {
     const a = renderMarkdown(vocabOf(FIXTURES));
     expect(renderMarkdown(vocabOf(FIXTURES))).toBe(a);

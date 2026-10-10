@@ -55,7 +55,8 @@ interface Names {
   readonly counters: ReadonlySet<string>;
   /** Table id to its keys (empty: any key). */
   readonly tables: ReadonlyMap<string, readonly string[]>;
-  readonly calls: ReadonlySet<string>;
+  readonly functions: ReadonlySet<string>;
+  readonly effects: ReadonlySet<string>;
   readonly macros: ReadonlySet<string>;
 }
 
@@ -71,7 +72,8 @@ function namesOf(v: Vocab): Names {
         .filter((s) => s.kind === "table")
         .map((s) => [s.id, s.keys ?? []]),
     ),
-    calls: new Set([...v.functions, ...v.effects].map(callName)),
+    functions: new Set(v.functions.map(callName)),
+    effects: new Set(v.effects.map(callName)),
     macros: new Set(v.macros.map((m) => m.call)),
   };
 }
@@ -86,6 +88,7 @@ export function unknownNames(
   expr: string,
   names: Names,
   needed: Needed,
+  effect = false,
 ): string[] {
   const code = expr.replace(/"(?:[^"\\]|\\.)*"/g, '""');
   const out: string[] = [];
@@ -100,7 +103,9 @@ export function unknownNames(
     const segs = tok.split(".");
     if (code[at + tok.length] === "(") {
       if (segs.length === 1) {
-        if (!names.calls.has(tok)) bad("function or effect", tok, tok);
+        // Effect calls (`take_loan(...)`, `relationship(p).closeness += n`) only start an effect statement.
+        if (!names.functions.has(tok) && !(effect && names.effects.has(tok)))
+          bad(effect ? "function or effect" : "function", tok, tok);
       } else if (!names.macros.has(tok)) {
         bad("effect macro", tok, segs[segs.length - 1] as string);
       }
@@ -143,9 +148,13 @@ export function checkSheet(
   const needed: Needed = new Set(
     sheet.storylets.flatMap((s) => s.needs.map((n) => n.name)),
   );
-  const expr = (what: string, at: Located | undefined): void => {
+  const expr = (
+    what: string,
+    at: Located | undefined,
+    effect = false,
+  ): void => {
     if (!at) return;
-    for (const message of unknownNames(at.value, names, needed)) {
+    for (const message of unknownNames(at.value, names, needed, effect)) {
       errors.push({
         line: at.line,
         message: `${message} in ${what}; it is not in the vocabulary of ${sheet.packs.join(", ")} (add a \`needs\` line to declare it)`,
@@ -161,7 +170,7 @@ export function checkSheet(
   const outcomeChecks = (o: SheetOutcome): void => {
     expr("outcome weight", o.weight);
     expr("outcome when", o.when);
-    for (const e of o.effects) expr("effect", e);
+    for (const e of o.effects) expr("effect", e, true);
     if (
       o.next &&
       !own.has(o.next.value) &&

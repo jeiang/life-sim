@@ -6,6 +6,7 @@ import {
   setStat,
   updatePerson,
 } from "../state/world.ts";
+import { isSpouseRole } from "./kinship.ts";
 import type { PackIndex } from "./pack-index.ts";
 
 /** Living costs and standard effects never apply below this age (a minor with no parent left). */
@@ -98,7 +99,7 @@ export function dependentsOf(world: World, idx: PackIndex, p: Person): number {
   }).length;
 }
 
-/** The living partner who moved in with the person and has not merged finances, if any. */
+/** The living partner or spouse who moved in with the person and has not merged finances, if any. */
 function sharingPartner(
   world: World,
   idx: PackIndex,
@@ -109,7 +110,7 @@ function sharingPartner(
   for (const r of world.relationships) {
     if (
       r.from !== p.id ||
-      r.role !== h.partnerRole ||
+      (r.role !== h.partnerRole && !isSpouseRole(r.role)) ||
       r.household !== "together"
     )
       continue;

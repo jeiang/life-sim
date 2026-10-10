@@ -43,7 +43,7 @@ The closed function list gains `kin(person)`, `is_kin(person, id)` and `count_ki
 
 ## Note (2026-10-10): milestones (#216)
 
-The closed effect and function lists gain `reach_milestone(id)` (fires a Pack-declared milestone once per life) and `milestone_reached(id)` (the readable flag), one Core release (ADR 0004), and storylets gain `trigger: milestone`. The Core emits `graduated`, `first_job`, `married`, `first_child` and `retired` from its own primitives (`start_occupation`, settlement, `merge_money`, `spawn_person` and role changes) and runs the Packs' `on_milestone` hooks; the once-per-life record is the Core-owned state container `_milestones`. Details: `docs/spec/pack-format/hooks.md#milestones`.
+The closed effect and function lists gain `reach_milestone(id)` (fires a Pack-declared milestone once per life) and `milestone_reached(id)` (the readable flag), one Core release (ADR 0004), and storylets gain `trigger: milestone`. The Core emits `graduated`, `first_job`, `married`, `first_child` and `retired` from its own primitives (`start_occupation`, settlement, a spouse role joining the player, `spawn_person` and role changes) and runs the Packs' `on_milestone` hooks; the once-per-life record is the Core-owned state container `_milestones`. Details: `docs/spec/pack-format/hooks.md#milestones`.
 
 ## Note (2026-10-10): succession and wills (#219)
 

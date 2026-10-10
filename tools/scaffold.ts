@@ -261,12 +261,16 @@ const AFTER_TRIGGER = [
   "max_per_life",
 ] as const;
 
+/** Boolean storylet fields: the sheet's `true` is written as a YAML boolean, not a string. */
+const BOOLEAN_FIELDS: Record<string, true> = { once: true, repeatable: true };
+
 function storyletYaml(s: SheetStorylet): string[] {
   const f = s.fields;
   const out = [`- id: ${s.id}`];
   const put = (key: string): void => {
     const v = f[key];
-    if (v) out.push(`  ${key}: ${scalar(v.value)}`);
+    if (!v) return;
+    out.push(`  ${key}: ${BOOLEAN_FIELDS[key] ? v.value : scalar(v.value)}`);
   };
   put("icon");
   for (const k of HEAD_FIELDS) put(k);

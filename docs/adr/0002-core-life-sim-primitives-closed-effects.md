@@ -23,7 +23,7 @@ Any person already carries `money`; it is now readable in `scope: person` storyl
 
 People the player holds a role in `npc_careers.roles` toward (core-loop: `partner`, `spouse`, `child`) work a real occupation, run by Core, not by storylets. Eligibility: age at least `start_age`; entry kinds are the kinds of `npc_careers.group` that nothing promotes to, whose `requires` the person meets, and that are not `npc: false`, confining, housing-providing, fixed-duration or loan-financed (so school, prison and custody kinds are never given). Education qualities are rolled once at the first start from the manifest's `education` list, so `requires` on degrees can hold. Each year, before settlement, in person id order: retire at `retire_age` (pension kind `retired`), else a worker loses the job by `job_loss`, else after `promotion_years` rolls `promotion` to take `promotes_to`; a person with no job is started at once the first time and hired by `hire` afterwards. Pay is the normal settlement pay into `person.money`. Leaving every career role (breakup, divorce) keeps occupations and history on record but stops all rolls and pay (the cheaper option: no per-person state to migrate). Everyone else keeps the static `Person.job` (label and tier from the generator) and nothing runs for them.
 
-Joint money reuses #148's `merge_money()`: once the player's link to a person is `household: merged` (marriage without a prenup; a prenup never calls it), that person's pay is added to the player's money at settlement instead of theirs. `relationship(p).role = ...` keeps the link's `household` value. #55 reuses `person.money` for estates.
+Joint money reuses #148's `merge_money()`: once the player's link to a person is `household: merged` (marriage without a prenup; a prenup never calls it), that person's pay is added to the player's money at settlement instead of theirs. `relationship(p).role = ...` keeps the link's `household` value only when the new role is the household partner role or a spouse role; any other role (ex, friend) clears it. #55 reuses `person.money` for estates.
 
 ## Note (2026-10-10): pack-declared state containers (#186)
 
@@ -43,7 +43,7 @@ The closed function list gains `kin(person)`, `is_kin(person, id)` and `count_ki
 
 ## Note (2026-10-10): milestones (#216)
 
-The closed effect and function lists gain `reach_milestone(id)` (fires a Pack-declared milestone once per life) and `milestone_reached(id)` (the readable flag), one Core release (ADR 0004), and storylets gain `trigger: milestone`. The Core emits `graduated`, `first_job`, `married`, `first_child` and `retired` from its own primitives (`start_occupation`, settlement, `merge_money`, `spawn_person` and role changes) and runs the Packs' `on_milestone` hooks; the once-per-life record is the Core-owned state container `_milestones`. Details: `docs/spec/pack-format/hooks.md#milestones`.
+The closed effect and function lists gain `reach_milestone(id)` (fires a Pack-declared milestone once per life) and `milestone_reached(id)` (the readable flag), one Core release (ADR 0004), and storylets gain `trigger: milestone`. The Core emits `graduated`, `first_job`, `married`, `first_child` and `retired` from its own primitives (`start_occupation`, settlement, a spouse role joining the player, `spawn_person` and role changes) and runs the Packs' `on_milestone` hooks; the once-per-life record is the Core-owned state container `_milestones`. Details: `docs/spec/pack-format/hooks.md#milestones`.
 
 ## Note (2026-10-10): succession and wills (#219)
 

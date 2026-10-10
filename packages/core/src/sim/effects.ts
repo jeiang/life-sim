@@ -23,7 +23,7 @@ import { enterRole } from "./careers.ts";
 import { makeEnv, qualityOf, type Scope, tableRef } from "./env.ts";
 import { moveOut } from "./guardian.ts";
 import { runHook } from "./hooks.ts";
-import { linkFamilyRole } from "./kinship.ts";
+import { isSpouseRole, linkFamilyRole } from "./kinship.ts";
 import { livesWithParents } from "./living.ts";
 import { grantUnit, removeHolding, tradeHolding } from "./market.ts";
 import { occupationStarted, reachMilestone } from "./milestones.ts";
@@ -86,10 +86,14 @@ function setRole(
   const rows = w.relationships.filter((r) => r.from === from && r.to === to);
   if (rows.length === 0) return w;
   const closeness = Math.max(...rows.map((r) => r.closeness));
-  // The household state (together, merged money) belongs to the pair, not to the role.
-  const household = rows.some((r) => r.household === "merged")
-    ? "merged"
-    : rows.find((r) => r.household)?.household;
+  // The household state (together, merged money) carries only between household roles
+  // (partner to spouse, a marriage); any other role (ex, friend, ...) ends it.
+  const household =
+    role === idx.living?.household?.partnerRole || isSpouseRole(role)
+      ? rows.some((r) => r.household === "merged")
+        ? "merged"
+        : rows.find((r) => r.household)?.household
+      : undefined;
   const next = linkFamilyRole(
     putRelationship(
       {
@@ -104,6 +108,7 @@ function setRole(
   );
   if (from !== w.playerId) return next;
   const entered = enterRole(next, idx, to, role);
+  if (isSpouseRole(role)) return reachMilestone(entered, idx, "married");
   return role === idx.living?.household?.dependentRole
     ? reachMilestone(entered, idx, "first_child")
     : entered;
@@ -186,6 +191,7 @@ function applyEffect(
       bound.set(e[3], pid);
       if (who !== w2.playerId) return w2;
       const entered = enterRole(w2, idx, pid, role);
+      if (isSpouseRole(role)) return reachMilestone(entered, idx, "married");
       return role === idx.living?.household?.dependentRole
         ? reachMilestone(entered, idx, "first_child")
         : entered;
@@ -261,7 +267,10 @@ function applyEffect(
           const pid = scope.person;
           const h = idx.living?.household;
           const rel = w.relationships.find(
-            (r) => r.from === who && r.to === pid && r.role === h?.partnerRole,
+            (r) =>
+              r.from === who &&
+              r.to === pid &&
+              (r.role === h?.partnerRole || isSpouseRole(r.role)),
           );
           if (!rel || !h) return w;
           if (e[1] === "move_in")
@@ -270,7 +279,7 @@ function applyEffect(
               : putRelationship(w, { ...rel, household: "together" });
           const partner = getPerson(w, rel.to);
           const moved = Math.max(0, partner.money);
-          const merged = putRelationship(
+          return putRelationship(
             updatePerson(
               updatePerson(w, rel.to, (x) => ({
                 ...x,
@@ -281,7 +290,6 @@ function applyEffect(
             ),
             { ...rel, household: "merged" },
           );
-          return reachMilestone(merged, idx, "married");
         }
         case "set_standard": {
           const id = str(args[0], w, idx, scope);

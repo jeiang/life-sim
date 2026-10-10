@@ -95,6 +95,61 @@ describe("scaffold", () => {
     ).toBe(1);
   });
 
+  it("emits once and repeatable as YAML booleans that compile", () => {
+    const f = sheetFile(
+      "bools.md",
+      `# Content sheet: Bool fields
+
+- pack: core-loop
+- packs: core-loop
+
+## bool-event
+- trigger: event
+- weight: 5
+- once: true
+- tags: custody-ok
+- cooldown: 3
+- text: Once only.
+
+### outcomes
+- outcome: 1
+  - text: Fine.
+
+## bool-action
+- trigger: action
+- menu: activities
+- label: Do it again
+- repeatable: true
+- tags: custody-ok
+- text: Again.
+
+### outcomes
+- outcome: 1
+  - text: Fine.
+`,
+    );
+    const r = capture([f, "--pack", "core-loop", "--packs-dir", packs]);
+    expect(r.stderr).toBe("");
+    expect(r.status).toBe(0);
+    const text = readFileSync(
+      join(packs, "core-loop", "storylets", "bool-fields.yaml"),
+      "utf8",
+    );
+    expect(text).toContain("  once: true\n");
+    expect(text).toContain("  repeatable: true\n");
+    expect(text).not.toMatch(/(once|repeatable): "/);
+    expect(text).toContain("  cooldown: 3\n");
+    expect(text).toContain("  tags: [custody-ok]\n");
+    const compiled = compilePacks(packs);
+    expect(compiled.diagnostics).toEqual([]);
+    expect(compiled.ok).toBe(true);
+    const all = compiled.bundles.flatMap((b) => b.storylets);
+    expect(all.find((s) => s.id === "core-loop/bool-event")?.once).toBe(true);
+    expect(all.find((s) => s.id === "core-loop/bool-action")?.repeatable).toBe(
+      true,
+    );
+  });
+
   it("matches the original bully entries structurally", () => {
     const parsed = parseSheet(exampleSheet());
     if (!parsed.ok) throw new Error("example must parse");

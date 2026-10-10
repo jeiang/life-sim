@@ -141,7 +141,7 @@ describe("milestones: Core emitters", () => {
     expect(q(w, "hooks_first_job")).toBe(0);
   });
 
-  test("married: a partner's money merging; once", () => {
+  test("married: gaining a spouse role, with or without merging money; once", () => {
     let w = act(at(5, 30), "meet-partner");
     const partner = w.relationships.find((r) => r.role === "core-loop/partner");
     expect(partner).toBeDefined();
@@ -149,6 +149,16 @@ describe("milestones: Core emitters", () => {
     expect(q(w, "hooks_married")).toBe(1);
     w = act(act(w, "meet-partner"), "wed", partner?.to);
     expect(q(w, "hooks_married")).toBe(1);
+  });
+
+  test("married: a prenup marriage (no merge_money) still fires it", () => {
+    let w = act(at(5, 30), "meet-partner");
+    const partner = w.relationships.find((r) => r.role === "core-loop/partner");
+    expect(partner).toBeDefined();
+    w = act(w, "wed-prenup", partner?.to);
+    expect(milestoneReached(w, "married")).toBe(true);
+    expect(q(w, "hooks_married")).toBe(1);
+    expect(w.relationships.some((r) => r.household === "merged")).toBe(false);
   });
 
   test("first_child: a dependent role joining; once", () => {

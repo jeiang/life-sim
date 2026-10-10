@@ -26,6 +26,7 @@ import {
   setChanceDropSink,
   setDecisionSink,
   setOutcomeSink,
+  setStreamOverride,
   settleLiving,
   standardOf,
   streamFor,
@@ -33,9 +34,16 @@ import {
   worldHash,
 } from "@life/core";
 import { type LifeMetrics, MetricCollector } from "./collect.ts";
+import { chooseIndex, type ForceEntry, installRollOverride } from "./force.ts";
 import type { PackMetrics } from "./metrics.ts";
 import type { ProfileSpec } from "./profile-spec.ts";
-import { type Context, type Move, makeProfile, menusOf } from "./profiles.ts";
+import {
+  type Context,
+  type Move,
+  makeProfile,
+  menusOf,
+  unlockedActions,
+} from "./profiles.ts";
 
 /** Lives still alive at this age are cut off and reported as stuck. */
 export const AGE_CAP = 130;
@@ -134,6 +142,8 @@ export interface LifeResult {
   readonly earnings: number;
   /** Declared Pack metrics of the life (`packs/<id>/harness/metrics.yaml`), by Pack id. */
   readonly metrics: Readonly<Record<string, LifeMetrics>>;
+  /** Times each forced entry fired in this life (by index); absent when nothing is forced. */
+  readonly forced?: readonly number[];
 }
 
 const playerOf = (w: World) => {
@@ -206,7 +216,10 @@ export function runLife(
   seed: number,
   spec: ProfileSpec,
   packMetrics: readonly PackMetrics[] = [],
+  force: readonly ForceEntry[] = [],
 ): LifeResult {
+  const fired: number[] = force.map(() => 0);
+  const overridden = installRollOverride(force, fired);
   const profile = makeProfile(spec, bundles);
   const profileName = spec.id;
   const ctx: Context = { bundles, menus: menusOf(bundles) };
@@ -295,7 +308,24 @@ export function runLife(
         );
         return false;
       }
-      w = choose(w, bundles, profile.pickChoice(view, enabled, rng)).world;
+      let pick = -1;
+      for (const [i, e] of force.entries()) {
+        if (e.kind !== "choose" || (e.age !== undefined && e.age !== age))
+          continue;
+        const at = chooseIndex(
+          e,
+          enabled.map((c) => c.label),
+        );
+        if (at < 0) continue;
+        fired[i] = (fired[i] ?? 0) + 1;
+        pick = (enabled[at] as { index: number }).index;
+        break;
+      }
+      w = choose(
+        w,
+        bundles,
+        pick >= 0 ? pick : profile.pickChoice(view, enabled, rng),
+      ).world;
     }
     return true;
   };
@@ -339,6 +369,45 @@ export function runLife(
         fault("stuck", `alive at the age cap of ${AGE_CAP}`);
         break;
       }
+      for (const [i, e] of force.entries()) {
+        if (e.kind !== "do" || e.age !== age || !w || w.pending) continue;
+        const row = unlockedActions(w, ctx).find(
+          (r) => r.id === e.action && r.target === undefined,
+        );
+        const range = row?.amount;
+        if (!row) continue;
+        let amount: number | undefined;
+        if (range) {
+          amount =
+            e.amount === "min"
+              ? range.min
+              : e.amount === "max"
+                ? range.max
+                : e.amount;
+          if (
+            amount < range.min ||
+            amount > range.max ||
+            (amount - range.min) % range.step !== 0
+          )
+            continue;
+        }
+        fired[i] = (fired[i] ?? 0) + 1;
+        apply({
+          t: "action",
+          id: e.action,
+          ...(range && amount !== undefined
+            ? {
+                amount,
+                slot: Math.round((amount - range.min) / range.step) + 1,
+              }
+            : {}),
+        });
+        if (!resolve()) break;
+        noteHome();
+        if (w) collector.observe(playerOf(w));
+      }
+      if (faults.some((f) => f.kind === "stuck")) break;
+      if (!w || w.ended) break;
       // Voluntary moves.
       const moves = profile.maxMoves(rng);
       for (let i = 0; i < moves && w && !w.ended && !w.pending; i++) {
@@ -441,6 +510,7 @@ export function runLife(
     setDecisionSink(null);
     setChanceDropSink(null);
     setOutcomeSink(null);
+    if (overridden) setStreamOverride(null);
   }
 
   const final = w;
@@ -494,5 +564,6 @@ export function runLife(
       (final?.storyletLog["core-loop/parents-ask-you-to-leave"]?.count ?? 0) >
       0,
     earnings,
+    ...(force.length > 0 ? { forced: fired } : {}),
   };
 }

@@ -1,8 +1,17 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { compilePacks, formatDiagnostic } from "@life/pack-tools";
+import {
+  type ForceEntry,
+  type ForceScript,
+  forceSetOf,
+  loadScriptFile,
+  loadScripts,
+  parseForceArg,
+  SCRIPTED_ID,
+} from "./force.ts";
 import { runHarness } from "./harness.ts";
 import { loadMetrics } from "./metrics.ts";
 import { resolveJobs, runHarnessParallel } from "./parallel.ts";
@@ -17,9 +26,10 @@ import { renderMarkdown } from "./report.ts";
 let known: readonly ProfileSpec[] = [];
 
 const usage =
-  (): string => `usage: pnpm harness --lives N [--profile ${known.length > 0 ? `${known.map((p) => p.id).join("|")}|` : ""}all|a,b] [--seed S] [--out dir] [--packs a,b] [--packs-dir dir] [--life-seed X] [--jobs N]
+  (): string => `usage: pnpm harness --lives N [--profile ${known.length > 0 ? `${known.map((p) => p.id).join("|")}|` : ""}all|a,b] [--seed S] [--out dir] [--packs a,b] [--packs-dir dir] [--life-seed X] [--jobs N] [--force [age:]key=value,...] [--script name|file]
        pnpm harness --check-packs [--packs a,b] [--packs-dir dir]
        pnpm harness --list-profiles [--packs a,b] [--packs-dir dir]
+       pnpm harness --list-scripts [--packs a,b] [--packs-dir dir]
   --lives      lives to simulate (default 100)
   --profile    simulated player profile(s), declared by Packs; several are dealt to lives in turn (default all: every profile not marked \`default: false\`)
   --seed       base seed, uint32 (default 1)
@@ -27,10 +37,13 @@ const usage =
   --packs      load only these Packs and the Packs they require (default: every Pack)
   --packs-dir  Packs directory (default: the repository's packs/)
   --jobs       worker threads (default: available cores); the report is identical for any N
-  --check-packs  validate every Pack's harness/metrics.yaml and harness/profiles.yaml against the compiled Packs, then exit (0 valid, 2 not)
+  --force      force roll sites by purpose key: \`gambling/play-slots=hit\`, \`outcome/gambling/play-slots=2\`, \`outcome/x=Outcome text\`, \`int:N\`; \`30:key=value\` limits it to one age. Values: hit | miss | pick index | int:N | outcome text (no commas)
+  --script     run a forced script (\`<pack>/<name>\` from packs/<id>/harness/force/*.yaml, or a file): per-age forced rolls, choices and actions, by the scripted profile (or the script's own \`profile\`)
+  --list-scripts  print the forced scripts the Packs declare, then exit
+  --check-packs  validate every Pack's harness/metrics.yaml, harness/profiles.yaml and harness/force/*.yaml against the compiled Packs, then exit (0 valid, 2 not)
   --list-profiles  print the profiles the Packs declare (id, Pack, whether in \`all\`), then exit
   --life-seed  run one life with exactly this life seed (to replay a reported fault)
-Exit status 1 when any engine fault is found.
+Exit status 1 when any engine fault is found or a forced entry never matched.
 `;
 
 function fail(msg: string): never {
@@ -58,6 +71,9 @@ const { values: a } = parseArgs({
     jobs: { type: "string" },
     "check-packs": { type: "boolean" },
     "list-profiles": { type: "boolean" },
+    "list-scripts": { type: "boolean" },
+    force: { type: "string" },
+    script: { type: "string" },
     help: { type: "boolean" },
   },
 });
@@ -96,9 +112,15 @@ if (registry.diagnostics.length > 0) {
   process.exit(2);
 }
 known = registry.profiles;
+const scriptSet = loadScripts(packsDir, compiled.bundles, known);
+if (scriptSet.diagnostics.length > 0) {
+  for (const d of scriptSet.diagnostics) console.error(formatDiagnostic(d));
+  console.error(`The forced scripts in ${packsDir} are invalid.`);
+  process.exit(2);
+}
 if (a["check-packs"]) {
   console.log(
-    `${compiled.bundles.length} Packs compile; metrics valid for ${loaded.metrics.length} (${loaded.metrics.map((m) => m.pack).join(", ")}); ${known.length} profiles valid (${known.map((p) => p.id).join(", ")})`,
+    `${compiled.bundles.length} Packs compile; metrics valid for ${loaded.metrics.length} (${loaded.metrics.map((m) => m.pack).join(", ")}); ${known.length} profiles valid (${known.map((p) => p.id).join(", ")}); ${scriptSet.scripts.length} forced scripts valid (${scriptSet.scripts.map((x) => x.name).join(", ")})`,
   );
   process.exit(0);
 }
@@ -109,6 +131,41 @@ if (a["list-profiles"]) {
     );
   process.exit(0);
 }
+
+if (a["list-scripts"]) {
+  for (const x of scriptSet.scripts)
+    console.log(`${x.name}\t${x.profile ?? SCRIPTED_ID}\t${x.description}`);
+  process.exit(0);
+}
+
+let script: ForceScript | undefined;
+if (a.script !== undefined) {
+  script = scriptSet.scripts.find((x) => x.name === a.script);
+  if (!script && existsSync(a.script)) {
+    const f = loadScriptFile(a.script, compiled.bundles, known);
+    if (f.diagnostics.length > 0) {
+      for (const d of f.diagnostics) console.error(formatDiagnostic(d));
+      console.error(`The forced script ${a.script} is invalid.`);
+      process.exit(2);
+    }
+    script = f.script ?? undefined;
+  }
+  if (!script) fail(`unknown script '${a.script}'`);
+  if (a.profile !== undefined)
+    fail("--script names its own profile; do not pass --profile");
+}
+let extra: ForceEntry[] = [];
+if (a.force !== undefined) {
+  const f = parseForceArg(a.force, compiled.bundles);
+  if (f.diagnostics.length > 0) {
+    for (const d of f.diagnostics) console.error(formatDiagnostic(d));
+    console.error("--force is invalid.");
+    process.exit(2);
+  }
+  extra = f.entries;
+}
+const force =
+  script || extra.length > 0 ? forceSetOf(script, extra) : undefined;
 
 const lives = int("lives", a.lives, 100);
 const seed = int("seed", a.seed, 1);
@@ -121,7 +178,9 @@ const requested =
   a.profile === undefined || a.profile === "all" ? [] : a.profile.split(",");
 for (const p of requested)
   if (!known.some((k) => k.id === p)) fail(`unknown profile '${p}'`);
-const profiles = selectProfiles(known, requested).map((p) => p.id);
+const profiles = script
+  ? [script.profile ?? SCRIPTED_ID]
+  : selectProfiles(known, requested).map((p) => p.id);
 if (profiles.length === 0)
   fail("no profiles: no Pack declares a default profile");
 
@@ -133,8 +192,9 @@ const run = {
   profiles,
   seed,
   ...(lifeSeed === undefined ? {} : { lifeSeed }),
+  ...(force ? { force } : {}),
 };
-const { report, seconds } =
+const { report, forced, seconds } =
   resolveJobs(jobs) === 1
     ? runHarness(run)
     : await runHarnessParallel({
@@ -143,13 +203,17 @@ const { report, seconds } =
         ...(only ? { only } : {}),
         jobs,
       });
-const md = renderMarkdown(report, { seed, profiles });
+const md = renderMarkdown(report, { seed, profiles, forced });
 if (a.out) {
   mkdirSync(a.out, { recursive: true });
   writeFileSync(join(a.out, "report.md"), md);
   writeFileSync(
     join(a.out, "report.json"),
-    `${JSON.stringify({ run: { seed, profiles }, ...report }, null, 2)}\n`,
+    `${JSON.stringify(
+      { run: { seed, profiles }, ...report, ...(forced ? { forced } : {}) },
+      null,
+      2,
+    )}\n`,
   );
 }
 
@@ -173,4 +237,10 @@ for (const f of report.faults.first.slice(0, 10))
   console.error(
     `FAULT ${f.kind} [${f.profile} life-seed ${f.seed} age ${f.age}]: ${f.message}`,
   );
-process.exit(report.faults.total > 0 ? 1 : 0);
+if (forced && forced.neverMatched.length > 0) {
+  for (const label of forced.neverMatched)
+    console.error(`FORCED never matched: ${label}`);
+}
+process.exit(
+  report.faults.total > 0 || (forced && forced.neverMatched.length > 0) ? 1 : 0,
+);

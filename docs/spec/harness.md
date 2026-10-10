@@ -87,6 +87,33 @@ profiles:
 | `grinder` | core-loop | 12 random repeatable actions a year, to stress diminishing returns; opt-in (`--profile grinder`), not part of `all` |
 | `gambler` | gambling | Bets all year at the casinos and the lottery; tries to quit once addicted |
 
+## Forced outcomes
+
+Rare branches are exercised by forcing them (decision 7), through Core's `setStreamOverride(age, purposeKey, counter)` seam. `apps/web` has no harness code, and the e2e production-bundle guard fails on `setStreamOverride`, `ScriptedRng`, `forceRolls` and `FORCED RUN`.
+
+A forced roll is keyed by purpose key: a chance storylet's id (`gambling/play-slots`; `id@scope:id` for a scoped one), `outcome/<storylet id>` for the weighted outcome pick of any storylet, or `pack/<id>/<hook>/<n>` for a hook spawn. The age is the player's age when the roll is made (a year's events roll at the age reached). Values: `hit` / `miss` (chance), a pick index, an outcome `text` (exact), `int:N`; a pick must name an outcome whose weight is positive at that moment (else the life faults with the engine's message). Counters advance as without forcing, so every unforced roll of the life is unchanged. Forced rolls are not logged: a forced life is not replayable from its choice log (its `--life-seed` still is, with the same `--force`/`--script`).
+
+- `--force [age:]key=value[,...]`: for the whole run, on any profile. `30:outcome/x=2` limits an entry to age 30. A text value cannot contain a comma here.
+- `--script <pack>/<name>` (or a file path): runs `packs/<pack>/harness/force/<name>.yaml` as the profile the script names, or as the built-in `scripted` profile, which makes no voluntary move of its own. `--script` and `--profile` exclude each other; `--force` entries are added to the script's. `--list-scripts` prints the scripts, and `--check-packs` validates them.
+
+```yaml
+description: ...
+profile: gambler          # optional registry profile making the voluntary moves
+steps:
+  - age: 1                # optional for roll and choose; required for do
+    roll: base/meteor     # a purpose key
+    value: hit            # hit | miss | index | int:N | outcome text | { chance, int, pick }
+  - age: 31
+    choose: "accept*"     # a case-insensitive glob over the labels of an open event's choices
+  - age: 25
+    do: gambling/play-slots   # take this action at the start of the year, when it is unlocked
+    amount: min               # min (default) | max | an amount on the action's grid
+```
+
+Keys are checked against the loaded Packs when a script or `--force` is read: an unknown storylet, action or profile exits with status 2 and a `file:line` diagnostic. A step applies to every roll or open event it matches, not once. The report and `report.json` (`forced`) list every entry with the rolls forced and the lives it fired in, under a `FORCED RUN` banner; **an entry that never fired in any life is a failure** (exit status 1). Workers apply the same entries as the single thread, so the report is identical for any `--jobs`.
+
+In vitest, `forceRolls({ "outcome/x": "hit", "30:y": 1 })` (from `@life/harness`) installs the same override while a test plays Core directly; `clear()` removes it. Packs ship examples: `packs/gambling/harness/force/bust.yaml` (every slots spin loses) and `packs/vacations/harness/force/accident.yaml` (a beach holiday ends in the travel accident).
+
 ## CI check `harness`
 
 A hermetic flake check runs 1,000 fixed seeds split across the profiles, with `--jobs` set to the cores the sandbox grants (`NIX_BUILD_CORES`).

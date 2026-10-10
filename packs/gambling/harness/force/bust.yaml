@@ -1,0 +1,6 @@
+# Forced script (docs/spec/harness.md#forced-outcomes): every slots spin the gambler plays stops on nothing, so the stake is lost every time.
+description: The gambler's slots spins always bust
+profile: gambler
+steps:
+  - roll: outcome/gambling/play-slots
+    value: "The reels stop on nothing in particular."

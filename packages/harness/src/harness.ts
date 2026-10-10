@@ -1,4 +1,11 @@
 import { type PackBundle, streamFor } from "@life/core";
+import {
+  type ForcedReport,
+  ForcedTally,
+  type ForceSet,
+  SCRIPTED_ID,
+  SCRIPTED_PROFILE,
+} from "./force.ts";
 import type { PackMetrics } from "./metrics.ts";
 import { type ProfileSpec, selectProfiles } from "./profile-spec.ts";
 import { Aggregate, type Report } from "./report.ts";
@@ -17,10 +24,14 @@ export interface HarnessOptions {
   readonly seed: number;
   /** Run exactly one life with this life seed (replays a reported fault). */
   readonly lifeSeed?: number;
+  /** Forced rolls, choices and actions (`--force`, forced scripts); absent: an unforced run. */
+  readonly force?: ForceSet;
 }
 
 export interface HarnessResult {
   readonly report: Report;
+  /** What the forcing did; present when the run forced anything. */
+  readonly forced?: ForcedReport;
   readonly seconds: number;
 }
 
@@ -34,18 +45,33 @@ export function runLives(
   bundles: readonly PackBundle[],
   opts: Pick<
     HarnessOptions,
-    "lives" | "profiles" | "profileSpecs" | "seed" | "lifeSeed" | "metrics"
+    | "lives"
+    | "profiles"
+    | "profileSpecs"
+    | "seed"
+    | "lifeSeed"
+    | "metrics"
+    | "force"
   >,
   from: number,
   to: number,
   onLife?: (r: LifeResult) => void,
 ): LifeResult[] {
-  const profiles = selectProfiles(opts.profileSpecs, opts.profiles);
+  const registry = opts.profiles.includes(SCRIPTED_ID)
+    ? [...opts.profileSpecs, SCRIPTED_PROFILE]
+    : opts.profileSpecs;
+  const profiles = selectProfiles(registry, opts.profiles);
   const out: LifeResult[] = [];
   for (let i = from; i < to; i++) {
     const seed = opts.lifeSeed ?? lifeSeedFor(opts.seed, i);
     const profile = profiles[i % profiles.length] as ProfileSpec;
-    const r = runLife(bundles, seed, profile, opts.metrics);
+    const r = runLife(
+      bundles,
+      seed,
+      profile,
+      opts.metrics,
+      opts.force?.entries,
+    );
     out.push(r);
     onLife?.(r);
   }
@@ -62,9 +88,15 @@ export function runHarness(
 ): HarnessResult {
   const start = performance.now();
   const agg = new Aggregate(opts.bundles, opts.metrics);
+  const tally = opts.force ? new ForcedTally(opts.force) : undefined;
   runLives(opts.bundles, opts, 0, lifeCount(opts), (r) => {
     agg.add(r);
+    tally?.add(r);
     onLife?.(r);
   });
-  return { report: agg.report(), seconds: (performance.now() - start) / 1000 };
+  return {
+    report: agg.report(),
+    ...(tally ? { forced: tally.report() } : {}),
+    seconds: (performance.now() - start) / 1000,
+  };
 }

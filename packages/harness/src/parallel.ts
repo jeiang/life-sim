@@ -1,5 +1,6 @@
 import { availableParallelism } from "node:os";
 import { Worker } from "node:worker_threads";
+import { ForcedTally } from "./force.ts";
 import {
   type HarnessOptions,
   type HarnessResult,
@@ -13,7 +14,10 @@ const BATCH = 32;
 
 /** Lives [from, to) of a run, with the options that fix their seeds and profiles. */
 export interface Job
-  extends Pick<HarnessOptions, "lives" | "profiles" | "seed" | "lifeSeed"> {
+  extends Pick<
+    HarnessOptions,
+    "lives" | "profiles" | "seed" | "lifeSeed" | "force"
+  > {
   readonly from: number;
   readonly to: number;
 }
@@ -53,8 +57,10 @@ export function runHarnessParallel(
   const batches = Math.ceil(total / BATCH);
   const jobs = Math.max(1, Math.min(resolveJobs(opts.jobs), batches));
   const agg = new Aggregate(opts.bundles, opts.metrics);
+  const tally = opts.force ? new ForcedTally(opts.force) : undefined;
   const finish = (): HarnessResult => ({
     report: agg.report(),
+    ...(tally ? { forced: tally.report() } : {}),
     seconds: (performance.now() - start) / 1000,
   });
   if (total === 0) return Promise.resolve(finish());
@@ -82,6 +88,7 @@ export function runHarnessParallel(
         profiles: opts.profiles,
         seed: opts.seed,
         ...(opts.lifeSeed === undefined ? {} : { lifeSeed: opts.lifeSeed }),
+        ...(opts.force ? { force: opts.force } : {}),
         from,
         to: Math.min(from + BATCH, total),
       };
@@ -106,7 +113,10 @@ export function runHarnessParallel(
             const r = pending.get(nextToAdd);
             if (!r) break;
             pending.delete(nextToAdd);
-            for (const life of r) agg.add(life);
+            for (const life of r) {
+              agg.add(life);
+              tally?.add(life);
+            }
             nextToAdd += BATCH;
           }
           if (nextToAdd >= total) return stop();

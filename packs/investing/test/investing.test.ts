@@ -84,7 +84,7 @@ function withPrices(w: World, kind: string, prev: number, cur: number): World {
   };
 }
 
-const weights = (w: World, id: string, person?: string) => {
+const weights = (w: World, id: string, person?: number) => {
   const scope = scopeFor(
     w,
     person ? { kind: "person", id: person } : undefined,
@@ -97,12 +97,12 @@ const weights = (w: World, id: string, person?: string) => {
   }));
 };
 /** Weight of the outcome leading to `next` (drawable now), 0 when excluded. */
-const weightTo = (w: World, id: string, next: string, person?: string) => {
+const weightTo = (w: World, id: string, next: string, person?: number) => {
   const r = weights(w, id, person).find((x) => x.o.next === I(next));
   if (!r) throw new Error(`no outcome to ${next}`);
   return r.ok ? r.weight : 0;
 };
-const apply = (w: World, o: CompiledOutcome, id: string, person?: string) =>
+const apply = (w: World, o: CompiledOutcome, id: string, person?: number) =>
   applyEffects(
     w,
     idx,
@@ -296,7 +296,14 @@ describe("tips: gating and cost", () => {
       true,
     ]);
     const sell = story("tip-total-market-sell");
-    expect(evalBool(sell.choices[0]?.when, ok, idx, scope2)).toBe(false);
+    expect(
+      evalBool(
+        sell.choices[0]?.when as NonNullable<typeof sell.when>,
+        ok,
+        idx,
+        scope2,
+      ),
+    ).toBe(false);
   });
 });
 
@@ -375,7 +382,12 @@ describe("trading from a tip", () => {
     const w = life(100_000_00);
     const sell = story("tip-total-market-sell");
     expect(
-      evalBool(sell.choices[0]?.when, w, idx, scopeFor(w, undefined, sell.id)),
+      evalBool(
+        sell.choices[0]?.when as NonNullable<typeof sell.when>,
+        w,
+        idx,
+        scopeFor(w, undefined, sell.id),
+      ),
     ).toBe(false);
   });
 });
@@ -390,7 +402,7 @@ describe("insider tips", () => {
     if (!p) throw new Error("no parent");
     return { p, w: updatePerson(w, p, (x) => ({ ...x, age: 60 })) };
   };
-  const eligible = (w: World, p: string) => {
+  const eligible = (w: World, p: number) => {
     const s = story("insider-tip");
     const scope = scopeFor(w, { kind: "person", id: p }, s.id);
     return evalBool(s.when, w, idx, scope);
@@ -466,11 +478,16 @@ describe("scams", () => {
     const wt = (smarts: number, lost: number) => {
       const w = setQuality(
         life(50_000, 30, smarts),
-        "player" in {} ? "" : life(0).playerId,
+        life(0).playerId,
         "invest_scams",
         lost,
       );
-      return evalInt(s.weight, w, idx, scopeFor(w, undefined, s.id));
+      return evalInt(
+        s.weight as NonNullable<typeof s.weight>,
+        w,
+        idx,
+        scopeFor(w, undefined, s.id),
+      );
     };
     expect(wt(0, 0)).toBe(2 + Math.trunc(100 / 15));
     expect(wt(100, 0)).toBe(2);

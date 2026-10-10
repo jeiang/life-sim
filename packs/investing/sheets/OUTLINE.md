@@ -20,7 +20,7 @@ Each chain is one content sheet, drafted fast and reviewed by smol. Frequencies 
 - Entry: age 18+, `kind` available with `market` block, per-source limit via `person.quality.invest_tip_age < age`.
 - Frequency: no archive count recorded for tips; rate set by the source parameter and measured in #233.
 - Decisions covered: 4 (also news/book storylets from #232 scope).
-- Engine needs: person-scope quality `invest_tip_age` (scope: person), `forecast(k)`, `price(k)`, `?:`, weighted outcomes, `scope: person` storylets. Status: `forecast`, `price`, `trade` present in vocab; `?:` and `scope: person` not yet verified. `forecast(k)` is the stored next-year return; tip direction = `forecast(k) > 0` flipped with chance (1 - source quality). Target (archive table): tips rise 65-80%.
+- Engine needs: person-scope quality `invest_tip_age` (scope: person), `forecast(k)`, `price(k)`, `?:`, weighted outcomes, `scope: person` storylets. Status: `forecast`, `price`, `trade` present in vocab; `?:` and `scope: person` not yet verified. `forecast(k)` is the stored next-year return; tip direction = `forecast(k) > 0` flipped with chance (1 - source quality). Target (#234): a modest edge, tips rise 52-55% (the archive table said 65-80%, which made tip-takers far richer).
 
 ### C2 `insider-tips` (rare, almost always right)
 - Summary: a relative or friend gives a rare tip on a named kind that will rise 20%+; acting on it records `invest_insider_age` (age). A later crime bridge (#58, #103) can use it; that bridge is not in this pack.

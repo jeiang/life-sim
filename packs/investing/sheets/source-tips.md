@@ -7,7 +7,8 @@
 
 > Chain C1 of the investing pack (issue #232, outline `source-tips`). Three sources give tips: an action to ask a relative or friend (`ask-for-tip`), the financial news (`read-the-news`), and an investing book (`read-investing-book`). Relatives and friends are gated per person by `person.quality.invest_tip_age` (the year they last gave you a tip), so each gives at most one tip a year, and every tip stamps it with the current age. News and book have no bound person, so each keeps `cooldown: 1` (one tip a year per source).
 > A source draws a kind from the 12 market kinds that are priced above 0 (the gate is `price(k) > 0` on each outcome), then a direction. Sell advice for a kind is only drawable while the player holds it (`units(k) > 0`), so a source never tips you to sell something unowned. The direction is "up" (buy advice, `tip-<kind>`) or "down" (sell advice, `tip-<kind>-sell`). The advice is right with chance Q: the outcome weight for up advice is Q when `forecast(k) > 0`, else 100 - Q; down advice is the mirror. With a holding, each kind's two outcomes sum to 100 per source.
-> Q: relatives and friends 65 + smarts / 10 (65 to 75); news 70; book 80. The target is a tipped kind rising 65 to 80 percent of the time.
+> Q (#234): relatives and friends 52 + smarts / 30 (52 to 55); news 53; book 55. Tips give a modest edge (design target: about +1.3 points of annual return for a player who takes them), not the 65 to 80 percent hit rate of the first draft, which made `tipstacker` end 55% richer than `investor` at 65. A tipped kind rises only a little more often than chance.
+> `ask-for-tip` is a player action, not a decision event, so the 3% decision-concentration cap does not apply to it. Its opens depend on the profile: `investor` and `tipstacker` ask every year (about 32 per life across all profiles), `random` far less. The band is 6..40 per life for `profile: all`.
 > Rates are not given: outcome weights depend on the forecast sign, so the share of each outcome is not a constant. `opens` is given for every storylet.
 > Gov bonds are included in the draw (the grilled decision names no exclusion). The archive excluded them; main should confirm.
 > Insider tips (C2) and scams (C3) are not in this sheet. The relatives target list omits `core-loop/child`, `core-loop/classmate` and `core-loop/coworker` (outline: relatives and friends).
@@ -22,126 +23,126 @@
 - when: age >= 18 and person.age >= 18 and person.quality.invest_tip_age < age
 - tags: relationship
 - text: You ask {person.first_name} whether they have heard anything about the markets.
-- opens: 6..12 per life
+- opens: 6..40 per life
 - needs: quality invest_tip_age: integer 0.., default 0: age of the last year this person gave you a market tip; gates one tip per person per year
 
 ### outcomes
-- outcome: (forecast(investing/total-market) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10
+- outcome: (forecast(investing/total-market) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30
   - when: price(investing/total-market) > 0
   - text: {person.first_name} swears the Total market fund is about to climb.
   - effect: person.quality.invest_tip_age = age
   - next: tip-total-market
-- outcome: (forecast(investing/total-market) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10
+- outcome: (forecast(investing/total-market) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30
   - when: price(investing/total-market) > 0
   - text: {person.first_name} says to get out of the Total market fund before it slides.
   - effect: person.quality.invest_tip_age = age
   - next: tip-total-market-sell
-- outcome: (forecast(investing/world-index) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10
+- outcome: (forecast(investing/world-index) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30
   - when: price(investing/world-index) > 0
   - text: {person.first_name} says the World index fund is due a good year.
   - effect: person.quality.invest_tip_age = age
   - next: tip-world-index
-- outcome: (forecast(investing/world-index) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10
+- outcome: (forecast(investing/world-index) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30
   - when: price(investing/world-index) > 0
   - text: {person.first_name} warns that the World index fund is heading for a rough one.
   - effect: person.quality.invest_tip_age = age
   - next: tip-world-index-sell
-- outcome: (forecast(investing/income-bond-fund) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10
+- outcome: (forecast(investing/income-bond-fund) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30
   - when: price(investing/income-bond-fund) > 0
   - text: {person.first_name} says the Income bond fund is about to pay off nicely.
   - effect: person.quality.invest_tip_age = age
   - next: tip-income-bond-fund
-- outcome: (forecast(investing/income-bond-fund) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10
+- outcome: (forecast(investing/income-bond-fund) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30
   - when: price(investing/income-bond-fund) > 0
   - text: {person.first_name} says the Income bond fund is about to wobble. Get out.
   - effect: person.quality.invest_tip_age = age
   - next: tip-income-bond-fund-sell
-- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10
+- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30
   - when: price(investing/corporate-bond-fund) > 0
   - text: {person.first_name} says the Corporate bond fund is quietly about to rise.
   - effect: person.quality.invest_tip_age = age
   - next: tip-corporate-bond-fund
-- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10
+- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30
   - when: price(investing/corporate-bond-fund) > 0
   - text: {person.first_name} says the Corporate bond fund is about to slip.
   - effect: person.quality.invest_tip_age = age
   - next: tip-corporate-bond-fund-sell
-- outcome: (forecast(investing/acme-robotics) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10
+- outcome: (forecast(investing/acme-robotics) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30
   - when: price(investing/acme-robotics) > 0
   - text: {person.first_name} has a friend who says Acme Robotics is about to take off.
   - effect: person.quality.invest_tip_age = age
   - next: tip-acme-robotics
-- outcome: (forecast(investing/acme-robotics) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10
+- outcome: (forecast(investing/acme-robotics) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30
   - when: price(investing/acme-robotics) > 0
   - text: {person.first_name} says Acme Robotics is about to crash, so sell.
   - effect: person.quality.invest_tip_age = age
   - next: tip-acme-robotics-sell
-- outcome: (forecast(investing/northwind-foods) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10
+- outcome: (forecast(investing/northwind-foods) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30
   - when: price(investing/northwind-foods) > 0
   - text: {person.first_name} says people always eat, so Northwind Foods is going up.
   - effect: person.quality.invest_tip_age = age
   - next: tip-northwind-foods
-- outcome: (forecast(investing/northwind-foods) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10
+- outcome: (forecast(investing/northwind-foods) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30
   - when: price(investing/northwind-foods) > 0
   - text: {person.first_name} says Northwind Foods has a bad year coming.
   - effect: person.quality.invest_tip_age = age
   - next: tip-northwind-foods-sell
-- outcome: (forecast(investing/lumen-energy) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10
+- outcome: (forecast(investing/lumen-energy) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30
   - when: price(investing/lumen-energy) > 0
   - text: {person.first_name} says Lumen Energy is about to light up the market.
   - effect: person.quality.invest_tip_age = age
   - next: tip-lumen-energy
-- outcome: (forecast(investing/lumen-energy) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10
+- outcome: (forecast(investing/lumen-energy) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30
   - when: price(investing/lumen-energy) > 0
   - text: {person.first_name} says Lumen Energy is about to go dark.
   - effect: person.quality.invest_tip_age = age
   - next: tip-lumen-energy-sell
-- outcome: (forecast(investing/quark-coin) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10
+- outcome: (forecast(investing/quark-coin) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30
   - when: price(investing/quark-coin) > 0
   - text: {person.first_name} says Quark Coin is about to moon. Trust the feeling.
   - effect: person.quality.invest_tip_age = age
   - next: tip-quark-coin
-- outcome: (forecast(investing/quark-coin) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10
+- outcome: (forecast(investing/quark-coin) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30
   - when: price(investing/quark-coin) > 0
   - text: {person.first_name} says Quark Coin is about to crash, so sell it.
   - effect: person.quality.invest_tip_age = age
   - next: tip-quark-coin-sell
-- outcome: (forecast(investing/pinecrest-mining) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10
+- outcome: (forecast(investing/pinecrest-mining) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30
   - when: price(investing/pinecrest-mining) > 0
   - text: {person.first_name} says Pinecrest Mining is about to strike gold.
   - effect: person.quality.invest_tip_age = age
   - next: tip-pinecrest-mining
-- outcome: (forecast(investing/pinecrest-mining) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10
+- outcome: (forecast(investing/pinecrest-mining) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30
   - when: price(investing/pinecrest-mining) > 0
   - text: {person.first_name} says Pinecrest Mining is about to dig itself into a hole.
   - effect: person.quality.invest_tip_age = age
   - next: tip-pinecrest-mining-sell
-- outcome: (forecast(investing/brightwave-labs) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10
+- outcome: (forecast(investing/brightwave-labs) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30
   - when: price(investing/brightwave-labs) > 0
   - text: {person.first_name} says Brightwave Labs is about to light up.
   - effect: person.quality.invest_tip_age = age
   - next: tip-brightwave-labs
-- outcome: (forecast(investing/brightwave-labs) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10
+- outcome: (forecast(investing/brightwave-labs) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30
   - when: price(investing/brightwave-labs) > 0
   - text: {person.first_name} says Brightwave Labs is about to fizzle.
   - effect: person.quality.invest_tip_age = age
   - next: tip-brightwave-labs-sell
-- outcome: (forecast(investing/gov-bond-5) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10
+- outcome: (forecast(investing/gov-bond-5) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30
   - when: price(investing/gov-bond-5) > 0
   - text: {person.first_name} says the 5-year government bond is about to tick up. Boring, but right.
   - effect: person.quality.invest_tip_age = age
   - next: tip-gov-bond-5
-- outcome: (forecast(investing/gov-bond-5) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10
+- outcome: (forecast(investing/gov-bond-5) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30
   - when: price(investing/gov-bond-5) > 0
   - text: {person.first_name} says the 5-year government bond is about to tick down. Cash out.
   - effect: person.quality.invest_tip_age = age
   - next: tip-gov-bond-5-sell
-- outcome: (forecast(investing/gov-bond-10) > 0) ? 65 + person.stat.smarts / 10 : 35 - person.stat.smarts / 10
+- outcome: (forecast(investing/gov-bond-10) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30
   - when: price(investing/gov-bond-10) > 0
   - text: {person.first_name} says the 10-year government bond is about to tick up.
   - effect: person.quality.invest_tip_age = age
   - next: tip-gov-bond-10
-- outcome: (forecast(investing/gov-bond-10) > 0) ? 35 - person.stat.smarts / 10 : 65 + person.stat.smarts / 10
+- outcome: (forecast(investing/gov-bond-10) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30
   - when: price(investing/gov-bond-10) > 0
   - text: {person.first_name} says the 10-year government bond is about to tick down.
   - effect: person.quality.invest_tip_age = age
@@ -158,99 +159,99 @@
 - opens: 5..12 per life
 
 ### outcomes
-- outcome: (forecast(investing/total-market) > 0) ? 70 : 30
+- outcome: (forecast(investing/total-market) > 0) ? 53 : 47
   - when: price(investing/total-market) > 0
   - text: A financial column says the Total market fund is set to climb.
   - next: tip-total-market
-- outcome: (forecast(investing/total-market) > 0) ? 30 : 70
+- outcome: (forecast(investing/total-market) > 0) ? 47 : 53
   - when: price(investing/total-market) > 0
   - text: A financial column says the Total market fund is set to slide.
   - next: tip-total-market-sell
-- outcome: (forecast(investing/world-index) > 0) ? 70 : 30
+- outcome: (forecast(investing/world-index) > 0) ? 53 : 47
   - when: price(investing/world-index) > 0
   - text: A market note expects the World index fund to have a good year.
   - next: tip-world-index
-- outcome: (forecast(investing/world-index) > 0) ? 30 : 70
+- outcome: (forecast(investing/world-index) > 0) ? 47 : 53
   - when: price(investing/world-index) > 0
   - text: A market note expects the World index fund to have a rough year.
   - next: tip-world-index-sell
-- outcome: (forecast(investing/income-bond-fund) > 0) ? 70 : 30
+- outcome: (forecast(investing/income-bond-fund) > 0) ? 53 : 47
   - when: price(investing/income-bond-fund) > 0
   - text: A bond column says the Income bond fund is about to pay off.
   - next: tip-income-bond-fund
-- outcome: (forecast(investing/income-bond-fund) > 0) ? 30 : 70
+- outcome: (forecast(investing/income-bond-fund) > 0) ? 47 : 53
   - when: price(investing/income-bond-fund) > 0
   - text: A bond column says the Income bond fund is about to wobble.
   - next: tip-income-bond-fund-sell
-- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 70 : 30
+- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 53 : 47
   - when: price(investing/corporate-bond-fund) > 0
   - text: A bond column says the Corporate bond fund is quietly about to rise.
   - next: tip-corporate-bond-fund
-- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 30 : 70
+- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 47 : 53
   - when: price(investing/corporate-bond-fund) > 0
   - text: A bond column says the Corporate bond fund is about to slip.
   - next: tip-corporate-bond-fund-sell
-- outcome: (forecast(investing/acme-robotics) > 0) ? 70 : 30
+- outcome: (forecast(investing/acme-robotics) > 0) ? 53 : 47
   - when: price(investing/acme-robotics) > 0
   - text: A business page says Acme Robotics is about to take off.
   - next: tip-acme-robotics
-- outcome: (forecast(investing/acme-robotics) > 0) ? 30 : 70
+- outcome: (forecast(investing/acme-robotics) > 0) ? 47 : 53
   - when: price(investing/acme-robotics) > 0
   - text: A business page says Acme Robotics is about to crash.
   - next: tip-acme-robotics-sell
-- outcome: (forecast(investing/northwind-foods) > 0) ? 70 : 30
+- outcome: (forecast(investing/northwind-foods) > 0) ? 53 : 47
   - when: price(investing/northwind-foods) > 0
   - text: A business page says Northwind Foods is about to climb.
   - next: tip-northwind-foods
-- outcome: (forecast(investing/northwind-foods) > 0) ? 30 : 70
+- outcome: (forecast(investing/northwind-foods) > 0) ? 47 : 53
   - when: price(investing/northwind-foods) > 0
   - text: A business page says Northwind Foods has a bad year coming.
   - next: tip-northwind-foods-sell
-- outcome: (forecast(investing/lumen-energy) > 0) ? 70 : 30
+- outcome: (forecast(investing/lumen-energy) > 0) ? 53 : 47
   - when: price(investing/lumen-energy) > 0
   - text: An energy column says Lumen Energy is about to light up.
   - next: tip-lumen-energy
-- outcome: (forecast(investing/lumen-energy) > 0) ? 30 : 70
+- outcome: (forecast(investing/lumen-energy) > 0) ? 47 : 53
   - when: price(investing/lumen-energy) > 0
   - text: An energy column says Lumen Energy is about to go dark.
   - next: tip-lumen-energy-sell
-- outcome: (forecast(investing/quark-coin) > 0) ? 70 : 30
+- outcome: (forecast(investing/quark-coin) > 0) ? 53 : 47
   - when: price(investing/quark-coin) > 0
   - text: A crypto blog says Quark Coin is about to moon.
   - next: tip-quark-coin
-- outcome: (forecast(investing/quark-coin) > 0) ? 30 : 70
+- outcome: (forecast(investing/quark-coin) > 0) ? 47 : 53
   - when: price(investing/quark-coin) > 0
   - text: A crypto blog says Quark Coin is about to crash.
   - next: tip-quark-coin-sell
-- outcome: (forecast(investing/pinecrest-mining) > 0) ? 70 : 30
+- outcome: (forecast(investing/pinecrest-mining) > 0) ? 53 : 47
   - when: price(investing/pinecrest-mining) > 0
   - text: A mining column says Pinecrest Mining is about to strike gold.
   - next: tip-pinecrest-mining
-- outcome: (forecast(investing/pinecrest-mining) > 0) ? 30 : 70
+- outcome: (forecast(investing/pinecrest-mining) > 0) ? 47 : 53
   - when: price(investing/pinecrest-mining) > 0
   - text: A mining column says Pinecrest Mining is about to dig itself into a hole.
   - next: tip-pinecrest-mining-sell
-- outcome: (forecast(investing/brightwave-labs) > 0) ? 70 : 30
+- outcome: (forecast(investing/brightwave-labs) > 0) ? 53 : 47
   - when: price(investing/brightwave-labs) > 0
   - text: A tech column says Brightwave Labs is about to light up.
   - next: tip-brightwave-labs
-- outcome: (forecast(investing/brightwave-labs) > 0) ? 30 : 70
+- outcome: (forecast(investing/brightwave-labs) > 0) ? 47 : 53
   - when: price(investing/brightwave-labs) > 0
   - text: A tech column says Brightwave Labs is about to fizzle.
   - next: tip-brightwave-labs-sell
-- outcome: (forecast(investing/gov-bond-5) > 0) ? 70 : 30
+- outcome: (forecast(investing/gov-bond-5) > 0) ? 53 : 47
   - when: price(investing/gov-bond-5) > 0
   - text: A bond column says the 5-year government bond is about to tick up.
   - next: tip-gov-bond-5
-- outcome: (forecast(investing/gov-bond-5) > 0) ? 30 : 70
+- outcome: (forecast(investing/gov-bond-5) > 0) ? 47 : 53
   - when: price(investing/gov-bond-5) > 0
   - text: A bond column says the 5-year government bond is about to tick down.
   - next: tip-gov-bond-5-sell
-- outcome: (forecast(investing/gov-bond-10) > 0) ? 70 : 30
+- outcome: (forecast(investing/gov-bond-10) > 0) ? 53 : 47
   - when: price(investing/gov-bond-10) > 0
   - text: A bond column says the 10-year government bond is about to tick up.
   - next: tip-gov-bond-10
-- outcome: (forecast(investing/gov-bond-10) > 0) ? 30 : 70
+- outcome: (forecast(investing/gov-bond-10) > 0) ? 47 : 53
   - when: price(investing/gov-bond-10) > 0
   - text: A bond column says the 10-year government bond is about to tick down.
   - next: tip-gov-bond-10-sell
@@ -267,145 +268,145 @@
 - opens: 0.5..6 per life
 
 ### outcomes
-- outcome: (forecast(investing/total-market) > 0) ? 80 : 20
+- outcome: (forecast(investing/total-market) > 0) ? 55 : 45
   - when: price(investing/total-market) > 0
   - text: The chapter on index funds makes sense. It says the Total market fund is set to climb, and you believe it.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-total-market
-- outcome: (forecast(investing/total-market) > 0) ? 20 : 80
+- outcome: (forecast(investing/total-market) > 0) ? 45 : 55
   - when: price(investing/total-market) > 0
   - text: The chapter on index funds makes sense. It says the Total market fund is set to slide, and you believe it.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-total-market-sell
-- outcome: (forecast(investing/world-index) > 0) ? 80 : 20
+- outcome: (forecast(investing/world-index) > 0) ? 55 : 45
   - when: price(investing/world-index) > 0
   - text: The book's example is a World index fund, and it is due a good year.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-world-index
-- outcome: (forecast(investing/world-index) > 0) ? 20 : 80
+- outcome: (forecast(investing/world-index) > 0) ? 45 : 55
   - when: price(investing/world-index) > 0
   - text: The book's example is a World index fund, and it is heading for a rough year.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-world-index-sell
-- outcome: (forecast(investing/income-bond-fund) > 0) ? 80 : 20
+- outcome: (forecast(investing/income-bond-fund) > 0) ? 55 : 45
   - when: price(investing/income-bond-fund) > 0
   - text: A section on bond funds says the Income bond fund is about to pay off.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-income-bond-fund
-- outcome: (forecast(investing/income-bond-fund) > 0) ? 20 : 80
+- outcome: (forecast(investing/income-bond-fund) > 0) ? 45 : 55
   - when: price(investing/income-bond-fund) > 0
   - text: A section on bond funds says the Income bond fund is about to wobble.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-income-bond-fund-sell
-- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 80 : 20
+- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 55 : 45
   - when: price(investing/corporate-bond-fund) > 0
   - text: A section on corporate bonds says the Corporate bond fund is quietly about to rise.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-corporate-bond-fund
-- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 20 : 80
+- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 45 : 55
   - when: price(investing/corporate-bond-fund) > 0
   - text: A section on corporate bonds says the Corporate bond fund is about to slip.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-corporate-bond-fund-sell
-- outcome: (forecast(investing/acme-robotics) > 0) ? 80 : 20
+- outcome: (forecast(investing/acme-robotics) > 0) ? 55 : 45
   - when: price(investing/acme-robotics) > 0
   - text: The stock-picking chapter is sure Acme Robotics is about to take off.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-acme-robotics
-- outcome: (forecast(investing/acme-robotics) > 0) ? 20 : 80
+- outcome: (forecast(investing/acme-robotics) > 0) ? 45 : 55
   - when: price(investing/acme-robotics) > 0
   - text: The stock-picking chapter is sure Acme Robotics is about to crash.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-acme-robotics-sell
-- outcome: (forecast(investing/northwind-foods) > 0) ? 80 : 20
+- outcome: (forecast(investing/northwind-foods) > 0) ? 55 : 45
   - when: price(investing/northwind-foods) > 0
   - text: The stock-picking chapter says Northwind Foods is about to climb.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-northwind-foods
-- outcome: (forecast(investing/northwind-foods) > 0) ? 20 : 80
+- outcome: (forecast(investing/northwind-foods) > 0) ? 45 : 55
   - when: price(investing/northwind-foods) > 0
   - text: The stock-picking chapter says Northwind Foods has a bad year coming.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-northwind-foods-sell
-- outcome: (forecast(investing/lumen-energy) > 0) ? 80 : 20
+- outcome: (forecast(investing/lumen-energy) > 0) ? 55 : 45
   - when: price(investing/lumen-energy) > 0
   - text: The stock-picking chapter says Lumen Energy is about to light up.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-lumen-energy
-- outcome: (forecast(investing/lumen-energy) > 0) ? 20 : 80
+- outcome: (forecast(investing/lumen-energy) > 0) ? 45 : 55
   - when: price(investing/lumen-energy) > 0
   - text: The stock-picking chapter says Lumen Energy is about to go dark.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-lumen-energy-sell
-- outcome: (forecast(investing/quark-coin) > 0) ? 80 : 20
+- outcome: (forecast(investing/quark-coin) > 0) ? 55 : 45
   - when: price(investing/quark-coin) > 0
   - text: A chapter on speculative coins says Quark Coin is about to moon.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-quark-coin
-- outcome: (forecast(investing/quark-coin) > 0) ? 20 : 80
+- outcome: (forecast(investing/quark-coin) > 0) ? 45 : 55
   - when: price(investing/quark-coin) > 0
   - text: A chapter on speculative coins says Quark Coin is about to crash.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-quark-coin-sell
-- outcome: (forecast(investing/pinecrest-mining) > 0) ? 80 : 20
+- outcome: (forecast(investing/pinecrest-mining) > 0) ? 55 : 45
   - when: price(investing/pinecrest-mining) > 0
   - text: A chapter on penny stocks says Pinecrest Mining is about to strike gold.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-pinecrest-mining
-- outcome: (forecast(investing/pinecrest-mining) > 0) ? 20 : 80
+- outcome: (forecast(investing/pinecrest-mining) > 0) ? 45 : 55
   - when: price(investing/pinecrest-mining) > 0
   - text: A chapter on penny stocks says Pinecrest Mining is about to dig itself into a hole.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-pinecrest-mining-sell
-- outcome: (forecast(investing/brightwave-labs) > 0) ? 80 : 20
+- outcome: (forecast(investing/brightwave-labs) > 0) ? 55 : 45
   - when: price(investing/brightwave-labs) > 0
   - text: A chapter on penny stocks says Brightwave Labs is about to light up.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-brightwave-labs
-- outcome: (forecast(investing/brightwave-labs) > 0) ? 20 : 80
+- outcome: (forecast(investing/brightwave-labs) > 0) ? 45 : 55
   - when: price(investing/brightwave-labs) > 0
   - text: A chapter on penny stocks says Brightwave Labs is about to fizzle.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-brightwave-labs-sell
-- outcome: (forecast(investing/gov-bond-5) > 0) ? 80 : 20
+- outcome: (forecast(investing/gov-bond-5) > 0) ? 55 : 45
   - when: price(investing/gov-bond-5) > 0
   - text: The bond chapter says the 5-year government bond is about to tick up.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-gov-bond-5
-- outcome: (forecast(investing/gov-bond-5) > 0) ? 20 : 80
+- outcome: (forecast(investing/gov-bond-5) > 0) ? 45 : 55
   - when: price(investing/gov-bond-5) > 0
   - text: The bond chapter says the 5-year government bond is about to tick down.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-gov-bond-5-sell
-- outcome: (forecast(investing/gov-bond-10) > 0) ? 80 : 20
+- outcome: (forecast(investing/gov-bond-10) > 0) ? 55 : 45
   - when: price(investing/gov-bond-10) > 0
   - text: The bond chapter says the 10-year government bond is about to tick up.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-gov-bond-10
-- outcome: (forecast(investing/gov-bond-10) > 0) ? 20 : 80
+- outcome: (forecast(investing/gov-bond-10) > 0) ? 45 : 55
   - when: price(investing/gov-bond-10) > 0
   - text: The bond chapter says the 10-year government bond is about to tick down.
   - effect: money -= 2500

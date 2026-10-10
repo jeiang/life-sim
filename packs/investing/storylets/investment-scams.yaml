@@ -5,7 +5,7 @@
   icon: 🕴️
   trigger: event
   tags: [investing, scam, wager]
-  weight: "max(1, 2 + (100 - stat.smarts) / 15 - quality.invest_scams)"
+  weight: "max(1, 1 + (100 - stat.smarts) / 25 - quality.invest_scams)"
   when: age >= 18 and money >= 50000
   cooldown: 4
   text: An acquaintance pitches you a members-only fund that pays 20% a month. Everyone in the room is investing.
@@ -60,7 +60,7 @@
   icon: 🪙
   trigger: event
   tags: [investing, scam, wager]
-  weight: "max(1, 2 + (100 - stat.smarts) / 15 - quality.invest_scams)"
+  weight: "max(1, 1 + (100 - stat.smarts) / 25 - quality.invest_scams)"
   when: age >= 18 and money >= 50000
   cooldown: 4
   text: A stranger online tells you a brand-new coin, MoonPaw, will be worth a hundred times more by spring.
@@ -115,7 +115,7 @@
   icon: ☎️
   trigger: event
   tags: [investing, scam, wager]
-  weight: "max(1, 2 + (100 - stat.smarts) / 15 - quality.invest_scams)"
+  weight: "max(1, 1 + (100 - stat.smarts) / 25 - quality.invest_scams)"
   when: age >= 18 and money >= 50000
   cooldown: 4
   text: "A caller from an \"investment bureau\" offers you guaranteed 15% returns, but only if you decide today."

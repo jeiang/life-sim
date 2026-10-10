@@ -7,22 +7,22 @@
 
 > Chain C3 `scams` (issue #232, decision 6). Three decision events that offer a fake investment and usually take money. They share one shape: a 10% stake, a 40% stake, "look into it", and "walk away".
 > Entry: age 18+, cash of $500 or more (50000 minor units). Weight `max(1, 2 + (100 - smarts) / 15 - invest_scams)` (archive v1, unchanged): likelier at low smarts, less likely after each loss. 4-year cooldown per storylet.
-> Frequency: archive v1 measured about 2.26 offers per life for all three together across all profiles, so about 0.75 each. The opens bands are that figure widened about 20%. Not measured for this pack yet (#233 and #234).
+> Frequency (#234): after the weight cut, about 1.18 offers per life for all three together across all profiles (1.15 for `random`, 1.81 for `investor`), so about 0.4 each. The opens bands are that widened.
 > Odds: a stake that is lost is lost in full. A stake that pays out returns 20% of the stake (`money / 50` for 10%, `money * 2 / 25` for 40%). "Look into it" spots the scam with weight `stat.smarts` and falls for it with weight `100 - stat.smarts`, losing a tenth.
 > Rate bands for the loss and win splits cover smarts 0 to 100 (the weights sum to 100 at every smarts value). The "look into it" split depends on smarts across its whole range, so it has no rate.
-> Balance note: at these settings a `random` player loses about 1.2 scams per life (archive v1: 1.18). That misses the archive target of under 1, which is not in the #232 acceptance. Decide in #234 whether to cut the weight or the stakes.
+> Balance note (#234): the weight was `max(1, 2 + (100 - smarts) / 15 - invest_scams)` and a `random` player lost 1.115 scams per life at 10k lives (target under 1). It is now `max(1, 1 + (100 - smarts) / 25 - invest_scams)`, which cuts offers, not stakes or odds. Stakes and loss odds stay at the archive values.
 > Tags: `wager` marks money at risk, so the harness reports the realised return of each scam.
 
 ## ponzi-scheme
 - trigger: event
 - icon: 🕴️
-- weight: max(1, 2 + (100 - stat.smarts) / 15 - quality.invest_scams)
+- weight: max(1, 1 + (100 - stat.smarts) / 25 - quality.invest_scams)
 - when: age >= 18 and money >= 50000
 - cooldown: 4
 - tags: investing, scam, wager
 - needs: quality invest_scams: integer 0.., default 0: scams the player has lost money to; each one lowers the weight of the next offer
 - text: An acquaintance pitches you a members-only fund that pays 20% a month. Everyone in the room is investing.
-- opens: 0.6..0.9 per life
+- opens: 0.3..0.7 per life
 
 ### choice: Put in 10% of your savings
 - outcome: 85 + (100 - stat.smarts) / 10
@@ -71,12 +71,12 @@
 ## fake-coin
 - trigger: event
 - icon: 🪙
-- weight: max(1, 2 + (100 - stat.smarts) / 15 - quality.invest_scams)
+- weight: max(1, 1 + (100 - stat.smarts) / 25 - quality.invest_scams)
 - when: age >= 18 and money >= 50000
 - cooldown: 4
 - tags: investing, scam, wager
 - text: A stranger online tells you a brand-new coin, MoonPaw, will be worth a hundred times more by spring.
-- opens: 0.6..0.9 per life
+- opens: 0.3..0.7 per life
 
 ### choice: Put in 10% of your savings
 - outcome: 85 + (100 - stat.smarts) / 10
@@ -125,12 +125,12 @@
 ## guaranteed-returns
 - trigger: event
 - icon: ☎️
-- weight: max(1, 2 + (100 - stat.smarts) / 15 - quality.invest_scams)
+- weight: max(1, 1 + (100 - stat.smarts) / 25 - quality.invest_scams)
 - when: age >= 18 and money >= 50000
 - cooldown: 4
 - tags: investing, scam, wager
 - text: A caller from an "investment bureau" offers you guaranteed 15% returns, but only if you decide today.
-- opens: 0.6..0.9 per life
+- opens: 0.3..0.7 per life
 
 ### choice: Put in 10% of your savings
 - outcome: 85 + (100 - stat.smarts) / 10

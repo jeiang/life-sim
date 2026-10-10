@@ -19,7 +19,7 @@ The `pack.yaml` manifest, how Packs compose, and capability files. Part of the [
 ## Composition
 
 - Add-only. A Pack can add content and reference ids that the Packs it requires export through capabilities. It cannot override or patch another Pack's content.
-- Stat and quality ids are bare and shared by every loaded Pack, so no two Packs may declare the same one. The compiler (and `indexBundles` at load) rejects a duplicate with an error naming both Packs and the id. Convention: a Pack prefixes its own qualities with its short name (`vac_`, `gambling_`, `moved_`). A quality several Packs need is declared once, in its owner Pack (for example `criminal_record` in `crime`), and other Packs require a capability of that Pack that provides it.
+- Stat and quality ids are bare and shared by every loaded Pack, so no two Packs may declare the same one. The compiler (and `indexBundles` at load) rejects a duplicate with an error naming both Packs and the id. Convention: a Pack prefixes its own qualities with its short name (`vac_`, `gambling_`, `moved_`). A quality several Packs need is declared once, in its owner Pack (for example `crime_record` in `crime`), and other Packs require a capability of that Pack that provides it.
 - Content ids are permanent. A shipped id that disappears without an entry in a `migrations/<name>.yaml` fails the build (compared against the previous release's id list). See [Saves and migrations](saves.md).
 
 ## Singleton blocks
@@ -47,8 +47,8 @@ The `pack.yaml` manifest, how Packs compose, and capability files. Part of the [
 ```yaml
 provides:
   qualities:
-    - criminal_record
-    - wanted
+    - crime_record
+    - crime_wanted
   roles:
     - parent
 requires:

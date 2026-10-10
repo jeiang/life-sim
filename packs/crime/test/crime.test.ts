@@ -41,16 +41,16 @@ const locked = (w: World, b: typeof bundles, id: string) =>
 describe("crime pack", () => {
   test("loads with core-loop and declares the shared qualities", () => {
     expect(bundles.map((b) => b.id)).toContain("core-loop");
-    expect(idx.qualities.get("criminal_record")?.default).toBe(false);
-    expect(idx.qualities.get("wanted")?.default).toBe(false);
-    expect(idx.qualities.get("pending_charge")?.default).toBe(0);
+    expect(idx.qualities.get("crime_record")?.default).toBe(false);
+    expect(idx.qualities.get("crime_wanted")?.default).toBe(false);
+    expect(idx.qualities.get("crime_pending_charge")?.default).toBe(0);
     const w = newLife(bundles, 1);
-    expect(getPerson(w, w.playerId).qualities.pending_charge).toBe(0);
+    expect(getPerson(w, w.playerId).qualities.crime_pending_charge).toBe(0);
   });
 
   test("core-loop alone has no crime ids", () => {
     const ids = indexBundles(compile(["core-loop"])).qualities;
-    for (const id of ["criminal_record", "wanted", "pending_charge"])
+    for (const id of ["crime_record", "crime_wanted", "crime_pending_charge"])
       expect(ids.has(id)).toBe(false);
   });
 
@@ -59,7 +59,7 @@ describe("crime pack", () => {
     expect(locked(w, bundles, "apply-staff-nurse")).toBe(false);
     const bad = updatePerson(w, w.playerId, (p) => ({
       ...p,
-      qualities: { ...p.qualities, criminal_record: true },
+      qualities: { ...p.qualities, crime_record: true },
     }));
     expect(locked(bad, bundles, "apply-staff-nurse")).toBe(true);
     expect(locked(bad, bundles, "apply-server")).toBe(false);

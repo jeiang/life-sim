@@ -84,9 +84,9 @@ describe("roles, qualities and defaults", () => {
 
   test("shared qualities start at their defaults", () => {
     const w = newLife(bundles, 1);
-    expect(idx.qualities.has("criminal_record")).toBe(false);
-    expect(idx.qualities.has("wanted")).toBe(false);
-    expect(idx.qualities.has("pending_charge")).toBe(false);
+    expect(idx.qualities.has("crime_record")).toBe(false);
+    expect(idx.qualities.has("crime_wanted")).toBe(false);
+    expect(idx.qualities.has("crime_pending_charge")).toBe(false);
     expect(quality(w, "karma")).toBe(50);
     expect(idx.qualities.get("karma")?.default).toBe(50);
     expect(idx.qualities.get("lang_english")?.default).toBe(100);

@@ -34,7 +34,7 @@ About 12 jobs in 4 ladders, each rung with pay, requirements, and a promotion ta
 | Professional | Junior analyst, Analyst, Senior analyst (or per major) | Matching degree |
 
 - Applying from the job board opens a two-question interview chain (`next:`), and the hire outcome is weighted by stats.
-- Yearly verbs: work harder, ask for a raise, quit. Work harder and ask for a raise are gated on the groups (`in_group("full-time")` without `Retired`, or `in_group("part-time")`), so any Pack's jobs get them; the `apply-*` jobs need `not in_group("full-time")` (part-time ones `not in_group("part-time")`), so applying never silently ends a job from another Pack, and the analyst, engineer and nurse applications also need no `criminal_record`. Quit still names core-loop jobs: other Packs ship their own quit action.
+- Yearly verbs: work harder, ask for a raise, quit. Work harder and ask for a raise are gated on the groups (`in_group("full-time")` without `Retired`, or `in_group("part-time")`), so any Pack's jobs get them; the `apply-*` jobs need `not in_group("full-time")` (part-time ones `not in_group("part-time")`), so applying never silently ends a job from another Pack, and the analyst, engineer and nurse applications also need no `crime_record`. Quit still names core-loop jobs: other Packs ship their own quit action.
 - Retirement at 60+: starts the `Retired` occupation (same `full-time` group, so it ends any full-time job) and ends the part-time core-loop jobs. The pension is based on `years_in_group("full-time") + years_in_group("part-time")`.
 
 ## People
@@ -55,8 +55,8 @@ Core-loop owns these qualities so no Pack edits core-loop content or rolls its o
 
 | Quality | Meaning |
 |---|---|
-| `criminal_record` (flag), `wanted` (flag) | Set by Crime. The professional `apply-*` jobs (analyst, engineer, nurse) need no `criminal_record`; entry jobs still hire. |
-| `pending_charge` (int, 0 = none) | A mailbox: any Pack sets it to a charge code, Crime arrests at the next age-up and resets it. |
+| `crime_record` (flag), `crime_wanted` (flag) | Set by Crime. The professional `apply-*` jobs (analyst, engineer, nurse) need no `crime_record`; entry jobs still hire. |
+| `crime_pending_charge` (int, 0 = none) | A mailbox: any Pack sets it to a charge code, Crime arrests at the next age-up and resets it. |
 | `family_wealth` (int 1-5) | Rolled once, hidden, by `roll-family-wealth` at the first age-up (a life has no events at age 0): 15 / 25 / 30 / 20 / 10% for poor, modest, middle, comfortable, wealthy (default 3 for a life that predates it). Parents' help, weddings, family standing and the parents' household read it. |
 | `attracted_men`, `attracted_women`, `attracted_nonbinary` (int 0-100) | The player's attraction, rolled once with the family wealth by `roll-attraction`, by the player's gender. Dating reads them for date offers. NPC attraction comes in a later release. |
 | `karma` (int 0-100, default 50) | Hidden. Non-repeatable content (Crime, Dating, Base, and core-loop's own wallet, volunteering, cheating and helping-a-stranger choices) raises or lowers it; a few events read it. Repeatable actions must not write it (a repeated compliment would max it). |

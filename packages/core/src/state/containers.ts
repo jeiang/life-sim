@@ -16,6 +16,7 @@ import type {
   StateValue,
   World,
 } from "./types.ts";
+import { checkWill, WILL_ID } from "./will.ts";
 import { getPerson, updatePerson } from "./world.ts";
 
 /** Where a container's values are stored. */
@@ -124,6 +125,10 @@ export function checkWorldState(
         out.push(...checkSchedule(`${where}.${id}`, v));
         continue;
       }
+      if (id === WILL_ID && scope === "world") {
+        out.push(...checkWill(`${where}.${id}`, v, world));
+        continue;
+      }
       if (id === MILESTONES_ID && scope === "world") {
         out.push(...checkMilestones(`${where}.${id}`, v));
         continue;
@@ -170,7 +175,12 @@ export function migrateState(
   if (!tree) return undefined;
   const out: Record<string, StateValue> = {};
   for (const [id, v] of Object.entries(tree)) {
-    if (id === SCHEDULE_ID || id === MILESTONES_ID || id === PARENTS_ID) {
+    if (
+      id === SCHEDULE_ID ||
+      id === MILESTONES_ID ||
+      id === PARENTS_ID ||
+      id === WILL_ID
+    ) {
       out[id] = v;
       continue;
     }

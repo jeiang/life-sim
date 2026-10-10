@@ -26,9 +26,10 @@ hooks:
 | `on_age_up_pre` | Once per age-up, after everyone has aged a year and the per-age roll counters are reset, before the NPC careers, living-with-parents and settlement run. |
 | `on_age_up_post` | Once per age-up, after settlement, before the year's events are drawn. A storylet that stops the year for a choice does not move it: the hook has already run. |
 | `on_death` | Once, when the player dies (the `die` effect with no person in scope), right after the obituary is written. |
+| `on_succession` | Once, when the game continues as an heir (`succeed`, see [Succession](#succession)): the estate is settled, the heir is the player and their per-life state is empty. Effects act on the heir. |
 | `on_milestone: <id>` | Once per life, when the life reaches milestone `<id>` (see [Milestones](#milestones)). Keyed by milestone id. |
 
-Each phase is optional and non-empty. Milestone hooks are keyed by id under `on_milestone`. `on_succession` is added by its own issue (#219). Yearly income and cost lines are in [Settlement line items](settlement.md).
+Each phase is optional and non-empty. Milestone hooks are keyed by id under `on_milestone`. Yearly income and cost lines are in [Settlement line items](settlement.md).
 
 ## Meaning
 
@@ -59,6 +60,10 @@ The Core emits five milestones itself, with no declaration needed. A milestone w
 A Pack declares its own milestone with `provides: milestones` in a capability file (the owner Pack; another Pack needs to require that capability to name it, like any content id; two Packs cannot provide one id) and fires it with the effect `reach_milestone(<id>)` from a storylet, macro or hook. `reach_milestone` cannot fire a Core milestone, and listing a Core id in `provides: milestones` only makes that Pack its owner for `vocab`. The build rejects an id nobody declares in `on_milestone`, `milestone_reached`, `reach_milestone` and `trigger: milestone`.
 
 Succession starts the heir's record empty, so the heir reaches each milestone again. The record is in saves and the world hash like any state; a world that never reaches one has no `_milestones` entry. `fireMilestone(world, bundles, id)` (`@life/core`) is the same operation as `reach_milestone` for a caller outside a logged action (a test or tool); it is not logged.
+
+## Succession
+
+`succeed(world, bundles, heirId)` ([core-loop](../core-loop.md#succession)) runs the `on_succession` statements of every Pack, in Pack order, once the estate is settled and the heir is the player (the generation is already the heir's, so the hook's rolls use the heir's streams). Inside the hook the heir is the subject, and the read-only `deceased.*` names read the dead player ([Expressions](expressions.md#the-deceased)): a hook can write down an inheritance (`quality.inherited = 1`, `journal("...")`) or give the heir a trait from the parent. `die` is allowed (it ends the heir's life as for any death, running `on_death`). After the hooks, every `trigger: succession` storylet is queued ([Succession storylets](storylets.md#succession-storylets)). The hook runs for each succession and never for a founder; a Pack with no `on_succession` is unaffected.
 
 ## Randomness
 

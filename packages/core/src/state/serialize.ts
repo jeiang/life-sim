@@ -1,5 +1,6 @@
 import {
   type ChoiceEntry,
+  type Deceased,
   GENDERS,
   type Gender,
   type Holding,
@@ -308,6 +309,14 @@ function obituaryOccupations(v: unknown, p: string): ObituaryOccupation[] {
     };
   });
 }
+function deceased(v: unknown, p: string): Deceased {
+  const o = obj(v, p);
+  return {
+    person: int(o.person, `${p}.person`),
+    cause: str(o.cause, `${p}.cause`),
+    money: int(o.money, `${p}.money`),
+  };
+}
 
 function obituary(v: unknown, p: string): Obituary {
   const o = obj(v, p);
@@ -454,6 +463,9 @@ export function deserializeWorld(text: string): World {
     rngCounters: intRecord(o.rngCounters, "$.rngCounters"),
     pending: o.pending === null ? null : pending(o.pending, "$.pending"),
     ended: o.ended === null ? null : obituary(o.ended, "$.ended"),
+    ...(o.deceased === undefined
+      ? {}
+      : { deceased: deceased(o.deceased, "$.deceased") }),
     storyletLog: storyletLog(o.storyletLog, "$.storyletLog"),
     uses: intRecord(o.uses, "$.uses"),
     choiceLog: choiceLog(o.choiceLog, "$.choiceLog"),

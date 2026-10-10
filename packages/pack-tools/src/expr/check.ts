@@ -14,6 +14,7 @@ import {
   type Signature,
   type Target,
   type Type,
+  WILL_SET_MODES,
 } from "@life/core";
 import type { ExprError } from "./errors.ts";
 import type { Node, Pos, Stmt } from "./parser.ts";
@@ -57,6 +58,7 @@ const TYPE_NAME: Record<Type, string> = {
   milestone: "a milestone id",
   person: "a person name",
   kinship: "a kinship id",
+  will: "a will mode",
 };
 
 const MAX_SUGGEST = 2;
@@ -132,6 +134,18 @@ export class Checker {
       return this.err(
         n,
         `expected a person name${suggest(n.k === "name" ? n.v : "", this.env.persons ?? [])}; person names are 'person' in a person-scoped storylet and names bound by spawn_person(...) as <name>`,
+      );
+    }
+    if (want === "will") {
+      const id = n.k === "str" || n.k === "name" ? n.v : undefined;
+      if (
+        id !== undefined &&
+        (WILL_SET_MODES as readonly string[]).includes(id)
+      )
+        return ["will", ["s", id]];
+      return this.err(
+        n,
+        `expected a will mode${id === undefined ? "" : suggest(id, WILL_SET_MODES)}; will modes: ${WILL_SET_MODES.join(", ")}`,
       );
     }
     if (want === "kinship") {

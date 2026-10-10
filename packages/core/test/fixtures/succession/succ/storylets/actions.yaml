@@ -1,0 +1,56 @@
+- id: will-even
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - set_will(even)
+- id: will-spouse
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - set_will(spouse)
+- id: will-charity
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - set_will(charity)
+- id: will-none
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - set_will(none)
+- id: will-to
+  trigger: action
+  menu: relationships
+  scope: person
+  outcomes:
+    - effects:
+        - will_heir(person)
+- id: will-check
+  trigger: action
+  menu: relationships
+  when: has_will()
+  outcomes:
+    - effects:
+        - quality.will_seen += 1
+- id: have-child
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - spawn_person(core-loop/child, core-loop/sibling-gen) as c
+- id: marry
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - spawn_person(core-loop/spouse, core-loop/coworker-gen) as s
+- id: pass-away
+  trigger: action
+  menu: occupation
+  outcomes:
+    - effects:
+        - die("old age")

@@ -4,4 +4,5 @@ export * from "./parents.ts";
 export * from "./schedule.ts";
 export * from "./serialize.ts";
 export * from "./types.ts";
+export * from "./will.ts";
 export * from "./world.ts";

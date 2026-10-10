@@ -9,6 +9,7 @@ import {
   checkWorldState,
   choose,
   deserializeWorld,
+  endLife,
   fireMilestone,
   getPerson,
   indexBundles,
@@ -193,7 +194,7 @@ describe("milestones: Pack-declared", () => {
     let w = act(act(at(10, 30), "baby"), "adopt-pet");
     const heir = w.relationships.find((r) => r.role === "core-loop/child")?.to;
     expect(heir).toBeDefined();
-    w = succeed(w, heir as number);
+    w = succeed(endLife(w, w.playerId, "test"), bundles, heir as number).world;
     expect(reachedMilestones(w)).toEqual([]);
     // The qualities are the heir's own (0 before); the hook runs for them.
     w = act(w, "adopt-pet");

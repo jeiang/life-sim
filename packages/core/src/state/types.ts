@@ -272,6 +272,18 @@ export interface Obituary {
   readonly education: readonly ObituaryOccupation[];
 }
 
+/**
+ * What the heir knows of the dead player (`World.deceased`, `deceased.*`): the person (who stays
+ * in the world, dead, with their name, stats and qualities), how they died, and the cash they
+ * held at death, before debts and the estate split (the person's own `money` is 0 after it).
+ */
+export interface Deceased {
+  readonly person: PersonId;
+  readonly cause: string;
+  /** Cash at death, minor units. */
+  readonly money: number;
+}
+
 /** The starting options a god-mode "custom life" fixes (the `start` log entry). */
 export interface CustomStart {
   readonly givenName: string;
@@ -346,6 +358,11 @@ export interface World {
   readonly pending: Pending | null;
   /** Set when the player died; the life is over. */
   readonly ended: Obituary | null;
+  /**
+   * Facts of the dead player the heir succeeded: set by `succeed`, replaced by the next
+   * succession, absent for a founder. Read-only `deceased.*` in expressions and text.
+   */
+  readonly deceased?: Deceased;
   /** Storylet firing counts, keyed by storylet id, plus `#<scope id>` when scoped. */
   readonly storyletLog: Readonly<Record<string, StoryletRecord>>;
   /**

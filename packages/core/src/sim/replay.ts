@@ -54,7 +54,7 @@ export function replay(
         w = trade(w, bundles, c.kind, c.amount).world;
         break;
       case "succeed":
-        w = succeed(w, c.heir);
+        w = succeed(w, bundles, c.heir).world;
         break;
       case "god-stat":
         w = godSetStat(w, c.stat, c.value);

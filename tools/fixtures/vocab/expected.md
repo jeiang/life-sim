@@ -77,6 +77,7 @@ Expression functions.
 - `in_group(group) -> bool`
 - `years_in_group(group) -> int`
 - `milestone_reached(milestone) -> bool`
+- `has_will() -> bool`
 - `count_role(id, int, int) -> int`
 - `kin(person) -> id`
 - `is_kin(person, kinship) -> bool`
@@ -106,5 +107,7 @@ Effect calls. Assign roots: `stat += -= =`, `quality += =`, `money += -=`, `pers
 - `set_standard(id) -> bool`
 - `trade(id, int) -> bool`
 - `reach_milestone(milestone) -> bool`
+- `set_will(will) -> bool`
+- `will_heir(person) -> bool`
 - `unschedule(id) -> bool`
 - `schedule(id, after: <a>-<b> years[, person][, lineage: true]) -> bool`

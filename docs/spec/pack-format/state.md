@@ -76,3 +76,9 @@ The milestones a life has reached ([Milestones](hooks.md#milestones)) are the se
 ## Parent links
 
 The family tree is the third container the Core declares itself: the reserved person state id `_parents` (`Person.state._parents`), shaped `{ "<parent person id>": <kind> }` with kind `1` birth, `2` adopted, `3` step. It is absent on a person with no recorded parent, is never dropped (succession keeps the tree), and the saves, canonical serializer and world hash carry it as state. A malformed table (a key that is not an existing person other than the owner, a kind outside 1-3) rejects the save. Kinship is derived from it, never stored ([Expressions](expressions.md#kinship), [ADR 0006](../../adr/0006-parent-links-derived-kinship.md)). A Pack cannot read or write it directly; `spawn_person` and `relationship(p).role` with a `parent`, `sibling`, `child` or `grandparent` role keep it in step.
+
+## The will
+
+The player's will ([Expressions](expressions.md#effect-statements): `set_will`, `will_heir`) is the fourth container the Core declares itself: the reserved world state id `_will`, shaped `{ mode: <code>, heir?: <person id> }` with mode `1` one named heir (`heir` is that person), `2` an even split among the children, `3` all to the spouse, `4` charity. It is absent until the player makes a will, and succession reads it for the estate ([core-loop](../core-loop.md#the-estate)) and then drops it, so the heir starts with none. Saves, the canonical serializer and the world hash carry it as state; a malformed will (an unknown mode code, a mode `1` without an existing person, or an `heir` on another mode) rejects the save with a message naming the path.
+
+The dead player the heir succeeded is not a container: it is the optional world field `World.deceased` (`{ person, cause, money }`), read as [`deceased.*`](expressions.md#the-deceased).

@@ -483,6 +483,7 @@ export const ManifestSchema = obj(
           on_age_up_pre: Type.Optional(HookEffects),
           on_age_up_post: Type.Optional(HookEffects),
           on_death: Type.Optional(HookEffects),
+          on_succession: Type.Optional(HookEffects),
           on_milestone: Type.Optional(
             Type.Record(Type.String({ pattern: ID_PATTERN }), HookEffects, {
               description: "Effect statements by milestone id",
@@ -592,6 +593,7 @@ export const StoryletSchema = obj(
       Type.Literal("event"),
       Type.Literal("action"),
       Type.Literal("milestone"),
+      Type.Literal("succession"),
     ]),
     milestone: Type.Optional(
       Type.String({

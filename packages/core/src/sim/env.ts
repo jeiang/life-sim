@@ -17,6 +17,7 @@ import {
   type QualityValue,
   type World,
 } from "../state/types.ts";
+import { willOf } from "../state/will.ts";
 import { getPerson } from "../state/world.ts";
 import { incomeTier } from "./careers.ts";
 import { KIND_CALL, kindValue } from "./kinds.ts";
@@ -162,6 +163,43 @@ function personField(
   throw new RangeError(`unknown name '${path}'`);
 }
 
+/**
+ * `deceased.<field>`: the dead player the heir succeeded (`World.deceased`). `cause` and `money`
+ * are the facts of the death, every other field reads the dead person like a bound person
+ * (`kin` is what they are to `viewer`). With no deceased (a founder) a field reads neutral: 0,
+ * the quality's default, or the empty string.
+ */
+function deceasedField(
+  world: World,
+  idx: PackIndex,
+  viewer: PersonId,
+  field: string,
+  path: string,
+): Value {
+  const d = world.deceased;
+  if (field === "cause") return d?.cause ?? "";
+  if (field === "money") return d?.money ?? 0;
+  if (field === "kin") {
+    const kin = d ? kinshipOf(world, viewer, d.person) : undefined;
+    return kin === undefined || !d
+      ? ""
+      : kinshipLabel(kin, getPerson(world, d.person).gender);
+  }
+  if (d) return personField(world, idx, d.person, field, path);
+  if (
+    field === "age" ||
+    field.startsWith("stat.") ||
+    field.startsWith("table.")
+  )
+    return 0;
+  if (field.startsWith("quality.")) {
+    const q = idx.qualities.get(field.slice(8));
+    if (!q) throw new RangeError(`unknown name '${path}'`);
+    return q.default as Value;
+  }
+  return pronounOf(undefined, field) ?? "";
+}
+
 const heldOf = (p: Person, kindId: string) =>
   p.holdings.find((h) => h.kindId === kindId);
 
@@ -302,6 +340,8 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
       }
       if (path.startsWith("player."))
         return personField(world, idx, scope.subject, path.slice(7), path);
+      if (path.startsWith("deceased."))
+        return deceasedField(world, idx, scope.subject, path.slice(9), path);
       if (path === "city.cost_index") return costIndexOf(subject, idx);
       if (path === "city.wage_index") return wageIndexOf(subject, idx);
       if (path === "portfolio") return portfolioValue(world, scope.subject);
@@ -393,6 +433,8 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
         }
         case "milestone_reached":
           return milestoneReached(world, id);
+        case "has_will":
+          return willOf(world) !== undefined;
         case "in_group":
           return subject.occupations.some((o) => o.group === id);
         case "years_in_group":

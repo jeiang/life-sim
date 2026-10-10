@@ -7,6 +7,7 @@ import {
   setCounter,
 } from "../state/containers.ts";
 import type { World } from "../state/types.ts";
+import { clearWill, setWill, type WillMode } from "../state/will.ts";
 import {
   addJournalLine,
   addMoney,
@@ -296,6 +297,19 @@ function applyEffect(
           );
         case "reach_milestone":
           return reachMilestone(w, idx, str(args[0], w, idx, scope));
+        case "set_will": {
+          const mode = str(args[0], w, idx, scope);
+          return mode === "none"
+            ? clearWill(w)
+            : setWill(w, { mode: mode as WillMode });
+        }
+        case "will_heir": {
+          const name = str(args[0], w, idx, scope);
+          const pid = name === "person" ? scope.person : bound.get(name);
+          return pid === undefined
+            ? w
+            : setWill(w, { mode: "heir", heir: pid });
+        }
         case "unschedule":
           return unschedule(w, str(args[0], w, idx, scope));
         case "journal":

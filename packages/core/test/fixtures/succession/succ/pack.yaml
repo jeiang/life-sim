@@ -1,0 +1,4 @@
+id: succ
+hooks:
+  on_succession:
+    - quality.hook_ran += 1

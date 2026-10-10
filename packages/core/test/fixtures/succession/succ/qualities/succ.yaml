@@ -1,0 +1,8 @@
+- { id: hook_ran, type: int, min: 0, max: 99, default: 0 }
+- { id: opened, type: int, min: 0, max: 99, default: 0 }
+- { id: mourned, type: int, min: 0, max: 99, default: 0 }
+- { id: seen_age, type: int, min: 0, max: 200, default: 0 }
+- { id: seen_smarts, type: int, min: 0, max: 100, default: 0 }
+- { id: seen_hook_ran, type: int, min: 0, max: 99, default: 0 }
+- { id: blocked_fired, type: int, min: 0, max: 99, default: 0 }
+- { id: will_seen, type: int, min: 0, max: 99, default: 0 }

@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 import { compilePacks } from "../../pack-tools/src/index.ts";
 import {
+  addParentLink,
+  addPerson,
   ageUp,
   applyPackMigrations,
   checkWorldState,
@@ -215,7 +217,16 @@ describe("schedule: person binding and lineage", () => {
       "sc/visit",
     ]);
     // Succession (without the dynasty flow's hand-off) drops what a hook queued after death.
-    const heirWorld = succeed(w, 1);
+    const [withKid, kid] = addPerson(dead, {
+      givenName: "Kid",
+      familyName: "Heir",
+      age: 4,
+    });
+    const heirWorld = succeed(
+      addParentLink(withKid, kid, w.playerId),
+      bundles,
+      kid,
+    ).world;
     expect(queue(heirWorld).map((e) => e.storyletId)).toEqual([
       "sc/legacy",
       "sc/visit",

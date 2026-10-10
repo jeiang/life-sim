@@ -1,0 +1,28 @@
+- id: inherit
+  trigger: succession
+  text: "{deceased.first_name} {deceased.last_name} has died."
+  outcomes:
+    - effects:
+        - quality.opened += 1
+        - quality.seen_age = deceased.age
+        - quality.seen_smarts = deceased.stat.smarts
+        - quality.seen_hook_ran = deceased.quality.hook_ran
+        - 'journal("Estate note: {deceased.first_name} died at {deceased.age} of {deceased.cause}, holding {deceased.money}. {deceased.Subject} was your {deceased.kin}.")'
+# A decision: it stops the age-up for a choice, like any storylet.
+- id: mourn
+  trigger: succession
+  once: true
+  text: You mourn.
+  choices:
+    - label: Grieve
+      outcomes:
+        - effects:
+            - quality.mourned += 1
+# Its `when` is false at the next age-up, so it is dropped and never offered again.
+- id: blocked
+  trigger: succession
+  when: deceased.age > 200
+  text: Never.
+  outcomes:
+    - effects:
+        - quality.blocked_fired += 1

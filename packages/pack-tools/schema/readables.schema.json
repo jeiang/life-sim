@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Readables (list)",
+  "type": "array",
+  "items": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["kind", "id", "type", "expr"],
+        "properties": {
+          "kind": {
+            "const": "readable",
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "const": "int",
+                "type": "string"
+              },
+              {
+                "const": "bool",
+                "type": "string"
+              }
+            ]
+          },
+          "expr": {
+            "description": "Expression in the Pack expression language (ADR 0004)",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["kind", "id", "type", "default"],
+        "properties": {
+          "kind": {
+            "const": "slot",
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "type": {
+            "const": "int",
+            "type": "string"
+          },
+          "combine": {
+            "description": "How the default and the terms combine: summed (default) or maxed",
+            "anyOf": [
+              {
+                "const": "sum",
+                "type": "string"
+              },
+              {
+                "const": "max",
+                "type": "string"
+              }
+            ]
+          },
+          "default": {
+            "description": "Value with no terms; part of the sum or max otherwise",
+            "type": "integer"
+          }
+        }
+      },
+      {
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["kind", "id", "type", "default"],
+        "properties": {
+          "kind": {
+            "const": "slot",
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "type": {
+            "const": "bool",
+            "type": "string"
+          },
+          "default": {
+            "description": "Value with no true term; true when any term is true",
+            "type": "boolean"
+          }
+        }
+      },
+      {
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["kind", "slot", "expr"],
+        "properties": {
+          "kind": {
+            "const": "contribute",
+            "type": "string"
+          },
+          "slot": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "expr": {
+            "description": "Expression in the Pack expression language (ADR 0004)",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

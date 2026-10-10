@@ -28,7 +28,7 @@ The `pack.yaml` manifest, how Packs compose, and capability files. Part of the [
 
 ## Id ownership
 
-- Stats, qualities and state containers (see [State containers](state.md)) are bare ids shared by all Packs. A Pack with a `namespace` must prefix all three with `<namespace>_` (`vac_`, `gambling_`); the compiler reports each id that does not. Without a `namespace` the prefix is not enforced, and the cross-Pack duplicate check (see Composition) still applies. Content ids are always `<pack>/<id>`.
+- Stats, qualities, state containers (see [State containers](state.md)) and readables (see [Readables](readables.md)) are bare ids shared by all Packs. A Pack with a `namespace` must prefix all four with `<namespace>_` (`vac_`, `gambling_`); the compiler reports each id that does not. Without a `namespace` the prefix is not enforced, and the cross-Pack duplicate check (see Composition) still applies. Content ids are always `<pack>/<id>`.
 - Reading another Pack's quality, stat or group needs a required capability that provides it (see Capabilities, Visibility).
 
 ## Qualities
@@ -55,7 +55,7 @@ requires:
   - core-loop/stats
 ```
 
-- `provides` lists the bare ids this feature exports, per category: `stats`, `qualities`, `state` (state containers), `groups` (exclusivity groups), `tags`, `milestones`, `roles`, `generators`, `cities`, `occupations`, `items` (item kinds and markets), `loans`, `standards`, `storylets`, `singletons` (see Singleton blocks). Every id except `tags` and `milestones` (opaque labels, not checked) must exist in the providing Pack. A feature of a Pack may not export an id another feature of that Pack already exports. Every key is optional; a file with neither key is valid.
+- `provides` lists the bare ids this feature exports, per category: `stats`, `qualities`, `state` (state containers), `readables` (readables and slots, see [Readables](readables.md)), `groups` (exclusivity groups), `tags`, `milestones`, `roles`, `generators`, `cities`, `occupations`, `items` (item kinds and markets), `loans`, `standards`, `storylets`, `singletons` (see Singleton blocks). Every id except `tags` and `milestones` (opaque labels, not checked) must exist in the providing Pack. A feature of a Pack may not export an id another feature of that Pack already exports. Every key is optional; a file with neither key is valid.
 - `requires` lists capability ids (`<pack>/<feature>`) of other Packs. Each must be provided by a loaded Pack. A missing one fails the build with the Pack and the capability named (`Pack 'x' requires capability 'y/z', but Pack 'y' has no capabilities/z.yaml`).
 - Lists are block lists only, one entry per line (a flow list `[a, b]` is an error), so that two branches adding a line merge cleanly. Adding a capability file, or a line to one, never edits another Pack's files.
 - Visibility: a Pack may use another Pack's stats, qualities and exclusivity groups (in expressions) and content ids (in references) only when a capability of that Pack, required by one of the using Pack's own capability files, provides them. Anything else is a compile error saying the id is not exported by a required capability. Own-Pack ids need no capability.

@@ -1,0 +1,42 @@
+- id: meet
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - spawn_person(neighbour, local) as n
+        - n.quality.grudge += 3
+        - n.quality.sulky = true
+        - n.table.favours.food += 2
+
+- id: visit
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - world.visits += 1
+        - table.favours.help += 4
+        - table.favours.food += 7
+
+- id: apply
+  trigger: action
+  menu: relationships
+  when: not hiring_blocked
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: boast
+  trigger: action
+  menu: relationships
+  when: pay_bonus >= 8 and perk_cap > 2
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: invite
+  trigger: action
+  menu: relationships
+  when: well_liked
+  outcomes:
+    - effects:
+        - stat.happiness += 1

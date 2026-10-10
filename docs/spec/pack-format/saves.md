@@ -25,7 +25,7 @@ remove:
   - { id: retired-event, fallback: first-job-offer }   # fallback optional: without it the content is dropped
 ```
 
-- Ids belong to the declaring Pack; `stat.<id>`, `quality.<id>` and `state.<id>` (a state container) names are allowed. Renaming or removing `state.<id>` moves or drops that container's value in the world and every person.
+- Ids belong to the declaring Pack; `stat.<id>`, `quality.<id>` and `state.<id>` (a state container) and `readable.<id>` (a readable or slot, which only keeps `ids.lock.json` honest: saves hold no readable value) names are allowed. Renaming or removing `state.<id>` moves or drops that container's value in the world and every person.
 - A rename's target must exist, and neither a renamed nor a removed id may still exist.
 - A fallback is a full or short content id, or a declared `stat.`/`quality.`/`state.` name.
 - On load, every installed migration whose id is not in the world's `appliedMigrations` is applied once (persons, relationships, the open storylet, storylet log, repeatable-action counters, the obituary), then its id is recorded. Applying is pure and idempotent.

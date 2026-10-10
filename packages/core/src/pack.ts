@@ -7,7 +7,7 @@ import type { Effect, Expr } from "./expr/index.ts";
 import type { Gender } from "./state/types.ts";
 
 /** Bundle format version; bump when the shape below changes incompatibly. */
-export const PACK_BUNDLE_FORMAT = 4;
+export const PACK_BUNDLE_FORMAT = 5;
 
 /** `twemoji:<codepoints>` (for example `twemoji:1f4bc`) or `gameicons:<author>/<name>`. */
 export type IconRef = string;
@@ -69,6 +69,47 @@ export interface TableDecl {
   readonly min?: number;
   readonly max?: number;
   readonly default: number;
+}
+
+/**
+ * A pack-declared readable (docs/spec/pack-format/readables.md): a named, read-only value the
+ * Core computes from the world each time an expression reads it. Always evaluated for the
+ * player; never stored.
+ */
+export type ReadableDecl = ExprReadableDecl | SlotDecl;
+
+/** `kind: readable`: a name for an expression over declared names and aggregators. */
+export interface ExprReadableDecl {
+  readonly kind: "readable";
+  readonly id: string;
+  readonly type: "int" | "bool";
+  readonly expr: Expr;
+}
+
+/**
+ * `kind: slot`: a readable other Packs add terms to (`ContributionDecl`). Its value is
+ * `default` combined with every term: summed or maxed for `int`, any-true for `bool`.
+ */
+export type SlotDecl =
+  | {
+      readonly kind: "slot";
+      readonly id: string;
+      readonly type: "int";
+      readonly combine: "sum" | "max";
+      readonly default: number;
+    }
+  | {
+      readonly kind: "slot";
+      readonly id: string;
+      readonly type: "bool";
+      readonly default: boolean;
+    };
+
+/** One term a Pack adds to a slot it requires; `expr` has the slot's type. */
+export interface ContributionDecl {
+  /** The slot's bare id. */
+  readonly slot: string;
+  readonly expr: Expr;
 }
 
 export interface CompiledOutcome {
@@ -422,6 +463,10 @@ export interface PackBundle {
   readonly qualities: readonly QualityDecl[];
   /** Declared state containers, sorted by id. */
   readonly state: readonly StateDecl[];
+  /** Declared readables and slots, sorted by id. */
+  readonly readables: readonly ReadableDecl[];
+  /** Terms this Pack adds to slots (its own or a required Pack's), in source order. */
+  readonly contributions: readonly ContributionDecl[];
   readonly exclusivity: readonly string[];
   readonly year?: {
     readonly slots: readonly [number, number];

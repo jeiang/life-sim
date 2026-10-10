@@ -58,6 +58,10 @@ _Avoid_: Variable, state flag
 Pack-declared persisted state beyond stats and qualities: a world **counter** (`world.<id>`) or a per-person integer **table** (`table.<id>.<key>`), declared in the owning Pack's `state/*.yaml`; a quality with `scope: person` is the third form. Values live in generic trees (`World.state`, `Person.state`) that the Core saves, hashes, replays and migrates without knowing any container, and an unwritten value reads as the declared default.
 _Avoid_: Custom field, variable, extension state
 
+**Readable**:
+A named, read-only `int` or `bool` the Core computes from the world each time an expression reads it: a Pack-declared expression over the names it can see (with the aggregators `sum`, `count`, `max`, `min` over containers), evaluated for the player and never stored. A **slot** is a readable with a default whose value also combines the terms other Packs contribute, so the owner gates on state it does not require. Declared in `readables/*.yaml`; shared through a capability's `provides: readables`.
+_Avoid_: Computed field, derived stat, hook, variable
+
 **Relationship**:
 A directed link from one person to another with a role (parent, sibling, partner, friend, classmate, coworker) and a closeness from 0 to 100. A person can hold several role rows toward another; setting a role replaces them all and keeps the highest closeness. Expressions read `person.closeness` (the highest across rows) and `count_role(role, min, max)` (living people only).
 _Avoid_: Connection, bond

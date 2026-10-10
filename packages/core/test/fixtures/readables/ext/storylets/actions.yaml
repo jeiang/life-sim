@@ -1,0 +1,6 @@
+- id: offend
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - quality.heat += 1

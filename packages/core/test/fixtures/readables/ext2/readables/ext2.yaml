@@ -1,0 +1,3 @@
+- { kind: contribute, slot: hiring_blocked, expr: world.visits >= 2 }
+- { kind: contribute, slot: pay_bonus, expr: 4 + favour_kinds }
+- { kind: contribute, slot: perk_cap, expr: 4 }

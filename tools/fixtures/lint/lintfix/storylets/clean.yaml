@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=../../../../../packages/pack-tools/schema/storylets.schema.json
+# Controls: each of these is fine and must produce no finding.
+
+- id: level-up
+  trigger: event
+  chance: 10%
+  when: quality.level >= 0 and quality.level < 10
+  text: "You learn something."
+  outcomes:
+    - weight: 1
+      effects:
+        - quality.level += 1
+
+- id: gated-on-level
+  trigger: event
+  chance: quality.level * 1000
+  when: quality.level > 2
+  text: "Experience pays off."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.smarts += 1
+
+- id: chain-start
+  trigger: event
+  chance: 5%
+  text: "Something starts."
+  outcomes:
+    - weight: 1
+      next: chain-end
+    - weight: 1
+
+- id: chain-end
+  trigger: event
+  chance: 0%
+  text: "Something ends."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.happiness += 1
+
+- id: fair-wager
+  trigger: action
+  menu: activities/gamble
+  tags: [wager]
+  amount: { min: 100, max: 1000, step: 100 }
+  text: "A fair bet."
+  outcomes:
+    - weight: 45
+      text: "Won."
+      effects:
+        - money += amount
+    - weight: 55
+      text: "Lost."
+      effects:
+        - money -= amount

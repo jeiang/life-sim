@@ -1,0 +1,5 @@
+allow:
+  - code: L002
+    subject: relocation/study-a-language
+    path: choices[0]
+    reason: English starts at 100 and never falls, so its study choice is never offered; the row keeps the choice list uniform across languages.

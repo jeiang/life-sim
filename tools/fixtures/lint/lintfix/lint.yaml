@@ -1,0 +1,7 @@
+allow:
+  - code: L001
+    subject: lintfix/allowed-dead
+    reason: A justified exception.
+  - code: L005
+    subject: lintfix/nothing-here
+    reason: Matches no finding, so it is reported as stale.

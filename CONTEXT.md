@@ -12,6 +12,7 @@ This file is a stable index of the glossaries. It is never edited when a pack is
 ## Related documents
 
 - [Architecture decisions](docs/adr/)
+- [Agent pipeline guide](docs/pipeline/README.md) and [content sheet format](docs/pipeline/content-sheet.md)
 - [Specifications](docs/spec/): [pack format](docs/spec/pack-format/index.md), [harness](docs/spec/harness.md), [CI](docs/spec/ci.md), [deploy](docs/spec/deploy.md), [screens](docs/spec/screens.md), [visual](docs/spec/visual.md), [core loop](docs/spec/core-loop.md), [pack roadmap](docs/spec/pack-roadmap.md)
 
 ## Pack layout

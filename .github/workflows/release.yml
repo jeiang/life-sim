@@ -72,7 +72,7 @@ jobs:
           INPUT_SHARDS: ${{ inputs.shards }}
           INJECT: ${{ inputs.inject_fault }}
         run: |
-          if [ "$EVENT" = push ] && [ "$GITHUB_REF_TYPE" = branch ]; then INPUT_TAG=v0-test; INPUT_LIVES=400; INPUT_SHARDS=2; INJECT=false; fi
+          if [ "$EVENT" = push ] && [ "$GITHUB_REF_TYPE" = branch ]; then INPUT_TAG=v0-test; INPUT_LIVES=400; INPUT_SHARDS=2; INJECT=true; fi
           if [ "$EVENT" = workflow_dispatch ] || [ "$GITHUB_REF_TYPE" = branch ]; then
             tag="$INPUT_TAG"; lives="$INPUT_LIVES"; shards="$INPUT_SHARDS"
             script_lives=$(( lives < SCRIPT_LIVES ? lives : SCRIPT_LIVES ))

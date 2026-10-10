@@ -106,12 +106,13 @@ for (const scheme of ["light", "dark"] as const) {
       await expectClean(page, "life list");
       await button(page, "Start a new life").click();
       await expect(button(page, "Age")).toBeVisible();
+      await call(page, "addChild", 10);
       await call(page, "die");
       await expect(
         page.getByRole("heading", { name: "Obituary" }),
       ).toBeVisible();
       await expectClean(page, "obituary");
-      await button(page, "Back to your lives").click();
+      await button(page, "Finish this life").click();
       await button(page, "Graveyard").click();
       await expect(page.getByRole("list").getByRole("button")).toHaveCount(1);
       await expectClean(page, "graveyard");

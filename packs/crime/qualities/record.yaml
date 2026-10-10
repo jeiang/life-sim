@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
-- { id: criminal_record, type: flag, default: false }
-- { id: wanted, type: flag, default: false }
+- { id: crime_record, type: flag, default: false }
+- { id: crime_wanted, type: flag, default: false }
 # Mailbox: producers write a charge code, crime reads and clears it.
-- { id: pending_charge, type: int, min: 0, default: 0 }
+- { id: crime_pending_charge, type: int, min: 0, default: 0 }

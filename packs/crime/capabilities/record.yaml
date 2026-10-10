@@ -1,8 +1,8 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
 provides:
   qualities:
-    - criminal_record
-    - wanted
-    - pending_charge
+    - crime_record
+    - crime_wanted
+    - crime_pending_charge
 requires:
   - core-loop/hiring

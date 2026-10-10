@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Date night and time with a child".
+
+- id: date-night
+  icon: 🍷
+  trigger: action
+  menu: relationships
+  label: Date night
+  tags: [relationship, spend-time]
+  scope: person
+  target: [core-loop/partner, core-loop/spouse]
+  repeatable: true
+  text: "You book a table for two with {person.first_name}."
+  outcomes:
+    - weight: 60
+      text: Candles, a good bottle of wine, and a conversation that runs long past dessert.
+      effects:
+        - stat.happiness += 4
+        - relationship(person).closeness += 6
+        - "journal(\"Date night with {person.first_name} at age {age}.\")"
+    - weight: 30
+      text: Dinner is fine and the film is worse. You still hold hands on the walk home.
+      effects:
+        - stat.happiness += 2
+        - relationship(person).closeness += 3
+    - weight: 10
+      text: You both spend most of the night glancing at your phones.
+      effects:
+        - stat.happiness -= 2
+        - relationship(person).closeness += -3
+
+- id: spend-time-with-child
+  icon: 🧸
+  trigger: action
+  menu: relationships
+  label: Spend time with your kid
+  tags: [family, relationship, spend-time]
+  scope: person
+  target: [core-loop/child]
+  repeatable: true
+  text: "You clear the evening for {person.first_name}."
+  outcomes:
+    - weight: 50
+      text: "You spend the afternoon at the park, and {person.first_name} talks nonstop the whole way home."
+      effects:
+        - stat.happiness += 4
+        - relationship(person).closeness += 6
+        - "journal(\"Spent the afternoon with {person.first_name} at age {age}.\")"
+    - weight: 30
+      text: A quiet night of board games, takeout, and one more chapter before bed.
+      effects:
+        - stat.happiness += 3
+        - relationship(person).closeness += 4
+    - weight: 20
+      text: It turns into an argument about bedtime, and you both go to sleep annoyed.
+      effects:
+        - stat.happiness -= 2
+        - relationship(person).closeness += -2

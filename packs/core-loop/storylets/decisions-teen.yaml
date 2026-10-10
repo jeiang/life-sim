@@ -290,38 +290,6 @@
           effects:
             - stat.happiness += 2
 
-- id: heartbreak
-  icon: 💔
-  trigger: event
-  weight: 9
-  when: age >= 14 and age <= 24 and count_role(core-loop/spouse, 0, 100) == 0
-  cooldown: 6
-  text: "A first romance ends badly, and {player.first_name} is miserable."
-  choices:
-    - label: "Talk to a friend"
-      outcomes:
-        - weight: 75
-          text: "A long talk over hot chocolate, and the clouds clear."
-          effects:
-            - stat.happiness += 2
-        - weight: 25
-          text: "The friend is busy, and it takes longer to heal."
-          effects:
-            - stat.happiness -= 2
-    - label: "Throw yourself into hobbies"
-      outcomes:
-        - weight: 1
-          text: "Busy hands mend a heavy heart, little by little."
-          effects:
-            - stat.smarts += 1
-            - stat.happiness += 1
-    - label: "Wallow"
-      outcomes:
-        - weight: 1
-          text: "A month of sad songs."
-          effects:
-            - stat.happiness -= 5
-
 - id: new-haircut
   icon: 💇
   trigger: event

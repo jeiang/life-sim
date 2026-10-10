@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Moving in and wedding".
+
+- id: move-in-together
+  icon: 🏠
+  trigger: action
+  menu: relationships
+  label: Ask them to move in
+  scope: person
+  target: [core-loop/partner]
+  when: person.closeness >= 50
+  once: true
+  text: "You ask {person.first_name} to move in and split the bills."
+  outcomes:
+    - weight: 75
+      text: "{person.first_name} packs a bag that weekend, and the place suddenly feels full."
+      effects:
+        - "move_in()"
+    - weight: 25
+      text: "{person.first_name} wants to keep their own place for a while longer."
+
+- id: plan-wedding
+  icon: 💍
+  trigger: action
+  menu: relationships
+  label: Plan a wedding
+  scope: person
+  target: [core-loop/partner]
+  when: "person.quality.dating_engaged and person.closeness >= 60 and age >= 18 and count_role(core-loop/spouse, 0, 100) == 0 and not milestone_reached(married) and money >= 80000"
+  once: true
+  text: "You start planning the big day with {person.first_name}."
+  choices:
+    - label: Elope
+      when: money >= 80000
+      outcomes:
+        - weight: 1
+          text: You slip off to the courthouse with two strangers as witnesses and a ring from the gas station.
+          effects:
+            - money -= 80000
+          next: wedding-prenup
+    - label: Small wedding
+      when: money >= 1200000
+      outcomes:
+        - weight: 1
+          text: Forty guests, a rented hall, and a cake that leans a little to the left.
+          effects:
+            - money -= 1200000
+          next: wedding-prenup
+    - label: Big wedding
+      when: money >= 4000000
+      outcomes:
+        - weight: 1
+          text: A venue with a view, a band that knows every song, and a speech from a cousin you barely know.
+          effects:
+            - money -= 4000000
+          next: wedding-prenup
+
+- id: wedding-prenup
+  trigger: event
+  scope: person
+  target: [core-loop/partner]
+  chance: 0%
+  text: "Before the vows, you and {person.first_name} sit down with a lawyer to talk about money."
+  choices:
+    - label: Sign a prenup
+      when: money >= 150000
+      outcomes:
+        - weight: 1
+          text: Your savings stay yours. The lawyer's bill is steep, but the papers are signed.
+          effects:
+            - money -= 150000
+            - "quality.dating_prenup = true"
+            - relationship(person).role = core-loop/spouse
+    - label: Skip the prenup
+      outcomes:
+        - weight: 1
+          text: You merge your accounts and your lives in one go. The paperwork is shorter than you expected.
+          effects:
+            - "merge_money()"
+            - relationship(person).role = core-loop/spouse
+          next: family-merge-money

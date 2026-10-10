@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
+# Romance, marriage and family state. Person-scoped flags live on the other person; player-scoped ones on the player.
+- { id: dating_proposed, type: flag, default: false, scope: person }   # the player has already proposed to this partner (asked once per partner)
+- { id: dating_engaged, type: flag, default: false, scope: person }    # the partner accepted a proposal; plan-wedding reads it
+- { id: dating_cheated, type: flag, default: false, scope: person }    # the partner has cheated and the player has not found out yet
+- { id: dating_affair, type: int, min: 0, max: 9, default: 0 }         # affairs the player has had this life
+- { id: dating_prenup, type: flag, default: false }                    # the player signed a prenup, so savings stay separate and a divorce takes a tenth of cash
+- { id: dating_pays_support, type: flag, default: false }              # the ex keeps the kids after a divorce: the player pays child support while a child is under 18
+- { id: dating_pregnant, type: int, min: 0, max: 1, default: 0, scope: person }  # 1 while the carrier has a pregnancy running (the player via quality, a partner via person.quality)
+- { id: dating_moved_out, type: flag, default: false, scope: person }  # the child has left home; set once so the move-out scene fires at most once per child

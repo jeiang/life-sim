@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/people.schema.json
+# The former partner or spouse after a break-up or divorce: no pay, no household. A role cannot be unset, so ending a tie moves it here.
+- { kind: role, id: ex, label: Ex }
+# Dates: one generator per gender, so the person's name, body and attraction (spawn_qualities) all come from the gender the player's own attraction picked.
+# The age band is the guard: a teen date is a classmate-aged person, an adult date is 18 to 30.
+- kind: generator
+  id: date-teen-gen-male
+  age: [14, 17]
+  gender: male
+  stats:
+    happiness: [60, 100]
+    health: [50, 100]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
+- kind: generator
+  id: date-teen-gen-female
+  age: [14, 17]
+  gender: female
+  stats:
+    happiness: [60, 100]
+    health: [50, 100]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
+- kind: generator
+  id: date-teen-gen-nonbinary
+  age: [14, 17]
+  gender: nonbinary
+  stats:
+    happiness: [60, 100]
+    health: [50, 100]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
+- kind: generator
+  id: date-gen-male
+  age: [18, 30]
+  gender: male
+  stats:
+    happiness: [60, 100]
+    health: [50, 100]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
+- kind: generator
+  id: date-gen-female
+  age: [18, 30]
+  gender: female
+  stats:
+    happiness: [60, 100]
+    health: [50, 100]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
+- kind: generator
+  id: date-gen-nonbinary
+  age: [18, 30]
+  gender: nonbinary
+  stats:
+    happiness: [60, 100]
+    health: [50, 100]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
+# Children of the player: a newborn (own pregnancy chain) and an adoptee (0 to 17). Stats are the core-loop child stats; genetics apply at succession only.
+- kind: generator
+  id: baby-gen
+  age: [0, 0]
+  gender: { male: 1, female: 1 }
+  stats:
+    happiness: [70, 100]
+    health: [60, 100]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
+- kind: generator
+  id: adoptee-gen
+  age: [0, 17]
+  gender: { male: 1, female: 1 }
+  stats:
+    happiness: [40, 90]
+    health: [50, 100]
+    smarts: [0, 100]
+    looks: [0, 100]
+  first_names:
+    male: [James, Robert, John, Michael, David, William, Richard, Joseph, Thomas, Charles, Daniel, Matthew, Anthony, Mark, Donald, Steven, Paul, Andrew, Joshua, Kenneth, Kevin, Brian, Edward, George, Ryan, Jacob, Nicholas, Eric, Tyler, Aaron]
+    female: [Mary, Patricia, Jennifer, Linda, Elizabeth, Barbara, Susan, Jessica, Sarah, Karen, Nancy, Lisa, Betty, Margaret, Sandra, Ashley, Kimberly, Emily, Donna, Michelle, Carol, Amanda, Melissa, Deborah, Stephanie, Rebecca, Laura, Cynthia, Hannah, Megan]
+  last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]

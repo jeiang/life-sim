@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Family money (child support and merge money)".
+
+- id: family-child-support-year
+  trigger: event
+  chance: 0%
+  when: "count_kin(child, 0, 17) > 0 and quality.dating_pays_support"
+  text: Another year, another child support payment. The ex's lawyer always remembers the due date.
+  outcomes:
+    - weight: 1
+      text: The payment clears. The kids are still under 18, so the next one is already on its way.
+      effects:
+        - "money -= min(max(0, money), 300000 * count_kin(child, 0, 17))"
+        - "schedule(dating/family-child-support-year, after: 1-1 years)"
+
+- id: family-merge-money
+  trigger: event
+  scope: person
+  target: [core-loop/spouse]
+  chance: 0%
+  once: true
+  text: "With no prenup, your bank accounts become one. {person.first_name}'s savings are now in yours too."
+  outcomes:
+    - weight: 1
+      text: "Joint money, joint problems. {person.first_name} is not thrilled about the paperwork, but the account is merged."

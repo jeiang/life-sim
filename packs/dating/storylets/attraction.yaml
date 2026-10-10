@@ -1,10 +1,11 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
-# Hidden birth roll: fires once at the first age-up. No text, nothing is journaled.
+# Hidden birth roll: queued by the `on_birth` hook in pack.yaml (`schedule(dating/roll-attraction, after: 1-1 years)`), so it opens at the first
+# age-up outside the decision slots and the yearly cap, never by a chance roll. No text, nothing is journaled.
 # Attraction (0-100 each) to men, women and nonbinary people. It drives who Dating offers the
 # player; NPCs roll the same table at spawn (`spawn_qualities` in pack.yaml, keep the two in step). Patterns by the player's gender (unset or nonbinary share one table).
 - id: roll-attraction
   trigger: event
-  chance: 100%
+  chance: 0%
   when: age >= 1
   once: true
   outcomes:

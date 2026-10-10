@@ -1,0 +1,108 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Children and adoption".
+
+- id: child-first-day-school
+  icon: 🎒
+  trigger: event
+  scope: person
+  target: [core-loop/child]
+  chance: 90%
+  when: person.age == 5
+  text: "It is {person.first_name}'s first day of school, and they are clinging to your leg at the gate."
+  outcomes:
+    - weight: 6
+      text: "You wave until the door closes. {person.first_name} waves back, a little teary."
+      effects:
+        - stat.happiness += 1
+        - relationship(person).closeness += 2
+    - weight: 3
+      text: "A teacher peels {person.first_name} off your leg, and the walk home feels strangely empty."
+      effects:
+        - stat.happiness -= 1
+    - weight: 1
+      text: "{person.first_name} takes one look at the classroom, decides it is great, and never looks back."
+      effects:
+        - stat.happiness += 2
+
+- id: child-school-trouble
+  icon: 🏫
+  trigger: event
+  scope: person
+  target: [core-loop/child]
+  chance: 6%
+  when: person.age >= 8 and person.age <= 17
+  text: "The school rings. {person.first_name} has been in trouble again."
+  outcomes:
+    - weight: 5
+      text: "A long talk in the head teacher's office, and a promise to behave. {person.first_name} mostly keeps it."
+      effects:
+        - stat.happiness -= 1
+    - weight: 3
+      text: "You spend the weekend grounding {person.first_name}, and you are both miserable about it."
+      effects:
+        - stat.happiness -= 3
+        - relationship(person).closeness += -2
+    - weight: 2
+      text: "The teacher says {person.first_name} stood up for a classmate. You are not sure whether to be proud or worried."
+      effects:
+        - stat.happiness += 2
+
+- id: child-sick-night
+  icon: 🤒
+  trigger: event
+  scope: person
+  target: [core-loop/child]
+  chance: 4%
+  when: person.age <= 17
+  text: "At 3 a.m. {person.first_name} wakes up with a fever and a very loud cough."
+  outcomes:
+    - weight: 7
+      text: You sit up with them until the fever breaks. Neither of you sleeps much.
+      effects:
+        - stat.health -= 1
+        - stat.happiness -= 1
+    - weight: 3
+      text: It is a rough night, but a doctor's visit in the morning sorts it out.
+      effects:
+        - stat.happiness -= 3
+
+- id: child-moves-out
+  icon: 🧳
+  trigger: event
+  scope: person
+  target: [core-loop/child]
+  chance: 25%
+  when: "person.age >= 18 and person.age <= 25 and not person.quality.dating_moved_out"
+  text: "{person.first_name} is packing a car with everything they own and asks if you can help carry the boxes."
+  outcomes:
+    - weight: 5
+      text: "You help carry the boxes. The new place is small, and {person.first_name} is over the moon."
+      effects:
+        - relationship(person).closeness += 1
+        - "person.quality.dating_moved_out = true"
+    - weight: 3
+      text: "You cry in the car park. {person.first_name} promises to call every Sunday."
+      effects:
+        - stat.happiness -= 3
+        - "person.quality.dating_moved_out = true"
+    - weight: 2
+      text: "{person.first_name} gets a job across town and rents a flat with friends. The house feels very quiet."
+      effects:
+        - stat.happiness -= 1
+        - "person.quality.dating_moved_out = true"
+
+- id: adopt-a-child
+  icon: 👶
+  trigger: action
+  menu: relationships
+  label: Adopt a child
+  when: "age >= 21 and not living.with_parents and living.standard != core-loop/homeless and money >= 500000"
+  max_per_life: 1
+  text: You fill out a stack of forms, pass the home visit, and bring home a child who has waited a long time for a family.
+  outcomes:
+    - weight: 1
+      text: The agency hands over the papers. A new child is sitting on your sofa with a small bag and a lot of questions.
+      effects:
+        - money -= 500000
+        - "spawn_person(core-loop/child, dating/adoptee-gen, link: adopted) as kid"
+        - "reach_milestone(adopted)"

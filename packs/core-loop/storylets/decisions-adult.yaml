@@ -171,32 +171,6 @@
             - money -= min(money, 20000)
             - stat.happiness += 2
 
-- id: dating-app
-  icon: 💞
-  trigger: event
-  weight: 10
-  when: age >= 20 and age <= 50 and count_role(core-loop/partner, 0, 100) == 0 and count_role(core-loop/spouse, 0, 100) == 0
-  cooldown: 6
-  text: "A friend nudges {player.first_name} to try a dating app."
-  choices:
-    - label: "Give it a go"
-      outcomes:
-        - weight: 40
-          text: "A lovely first date and a promising spark."
-          effects:
-            - stat.happiness += 5
-            - stat.looks += 1
-        - weight: 60
-          text: "A string of awkward chats and a ghost."
-          effects:
-            - stat.happiness -= 2
-    - label: "Meet people the old-fashioned way"
-      outcomes:
-        - weight: 1
-          text: "A nice evening with friends instead."
-          effects:
-            - stat.happiness += 2
-
 - id: wedding-invite
   icon: 💒
   trigger: event

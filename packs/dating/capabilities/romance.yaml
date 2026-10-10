@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# Finding love: dates, the dating app, asking out, proposing, date night, affairs, break-ups.
+provides:
+  roles:
+    - ex
+  generators:
+    - date-teen-gen-male
+    - date-teen-gen-female
+    - date-teen-gen-nonbinary
+    - date-gen-male
+    - date-gen-female
+    - date-gen-nonbinary
+  qualities:
+    - dating_proposed
+    - dating_engaged
+    - dating_cheated
+    - dating_affair
+requires:
+  - dating/attraction
+  - core-loop/family
+  - core-loop/stats

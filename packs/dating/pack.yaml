@@ -1,6 +1,9 @@
 # yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
 id: dating
 namespace: dating
+hooks:
+  on_birth:
+    - "schedule(dating/roll-attraction, after: 1-1 years)"
 # NPC attraction: every generated person (family, friends, partners; not animals, not the player) rolls
 # the same table as the player's `roll-attraction`, by their own gender. Values are hidden.
 spawn_qualities:

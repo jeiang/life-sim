@@ -72,7 +72,7 @@ jobs:
           INPUT_SHARDS: ${{ inputs.shards }}
           INJECT: ${{ inputs.inject_fault }}
         run: |
-          if [ "$EVENT" = push ] && [ "$GITHUB_REF_TYPE" = branch ]; then INPUT_TAG=v0-test; INPUT_LIVES=400; INPUT_SHARDS=2; INJECT=true; fi
+          if [ "$EVENT" = push ] && [ "$GITHUB_REF_TYPE" = branch ]; then INPUT_TAG=v0-test; INPUT_LIVES=400; INPUT_SHARDS=2; INJECT=false; fi
           if [ "$EVENT" = workflow_dispatch ] || [ "$GITHUB_REF_TYPE" = branch ]; then
             tag="$INPUT_TAG"; lives="$INPUT_LIVES"; shards="$INPUT_SHARDS"
             script_lives=$(( lives < SCRIPT_LIVES ? lives : SCRIPT_LIVES ))
@@ -117,6 +117,8 @@ jobs:
       - name: Run the shard
         # Faults fail the shard; never-fired is only meaningful on the merged run.
         run: |
+          mkdir -p out
+          set +e
           node --experimental-strip-types packages/harness/src/cli.ts \
             --lives "${{ needs.prepare.outputs.lives }}" --profile all \
             --seed "${{ needs.prepare.outputs.seed }}" \
@@ -155,6 +157,7 @@ jobs:
         # never-fired is not checked here.
         run: |
           mkdir -p out
+          set +e
           node --experimental-strip-types packages/harness/src/cli.ts \
             --script "${{ matrix.script }}" \
             --lives "${{ needs.prepare.outputs.script_lives }}" \

@@ -7,5 +7,5 @@
     "erasableSyntaxOnly": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["*.ts", "lint/*.ts"]
+  "include": ["*.ts", "lint/*.ts", "lib/*.ts"]
 }

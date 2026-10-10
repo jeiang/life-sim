@@ -72,3 +72,7 @@ For authors of the next extension points (readables, effect macros, lifecycle ho
 ## The milestone record
 
 The milestones a life has reached ([Milestones](hooks.md#milestones)) are the second container the Core declares itself: the reserved world state id `_milestones`, shaped `{ <milestone id>: true }`. It is absent until the first milestone, and succession drops it so the heir's life starts empty. Saves, the canonical serializer and the world hash carry it as state; a malformed record (an id that is not a milestone id, a value that is not `true`) rejects the save.
+
+## Parent links
+
+The family tree is the third container the Core declares itself: the reserved person state id `_parents` (`Person.state._parents`), shaped `{ "<parent person id>": <kind> }` with kind `1` birth, `2` adopted, `3` step. It is absent on a person with no recorded parent, is never dropped (succession keeps the tree), and the saves, canonical serializer and world hash carry it as state. A malformed table (a key that is not an existing person other than the owner, a kind outside 1-3) rejects the save. Kinship is derived from it, never stored ([Expressions](expressions.md#kinship), [ADR 0006](../../adr/0006-parent-links-derived-kinship.md)). A Pack cannot read or write it directly; `spawn_person` and `relationship(p).role` with a `parent`, `sibling`, `child` or `grandparent` role keep it in step.

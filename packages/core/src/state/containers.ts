@@ -7,6 +7,7 @@
  */
 import type { CounterDecl, StateDecl, TableDecl } from "../pack.ts";
 import { checkMilestones, MILESTONES_ID } from "./milestones.ts";
+import { checkParents, PARENTS_ID } from "./parents.ts";
 import { checkSchedule, SCHEDULE_ID } from "./schedule.ts";
 import type {
   Person,
@@ -108,8 +109,17 @@ export function checkWorldState(
   decls: ReadonlyMap<string, StateDecl>,
 ): string[] {
   const out: string[] = [];
-  const check = (where: string, tree: StateTree | undefined, scope: string) => {
+  const check = (
+    where: string,
+    tree: StateTree | undefined,
+    scope: string,
+    owner?: PersonId,
+  ) => {
     for (const [id, v] of Object.entries(tree ?? {})) {
+      if (id === PARENTS_ID && owner !== undefined) {
+        out.push(...checkParents(`${where}.${id}`, v, owner, world));
+        continue;
+      }
       if (id === SCHEDULE_ID && scope === "world") {
         out.push(...checkSchedule(`${where}.${id}`, v));
         continue;
@@ -144,7 +154,7 @@ export function checkWorldState(
   };
   check("state", world.state, "world");
   for (const p of world.persons.values())
-    check(`persons[${p.id}].state`, p.state, "person");
+    check(`persons[${p.id}].state`, p.state, "person", p.id);
   return out;
 }
 
@@ -160,7 +170,7 @@ export function migrateState(
   if (!tree) return undefined;
   const out: Record<string, StateValue> = {};
   for (const [id, v] of Object.entries(tree)) {
-    if (id === SCHEDULE_ID || id === MILESTONES_ID) {
+    if (id === SCHEDULE_ID || id === MILESTONES_ID || id === PARENTS_ID) {
       out[id] = v;
       continue;
     }

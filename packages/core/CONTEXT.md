@@ -74,6 +74,10 @@ _Avoid_: Function, script, hook, procedure
 A directed link from one person to another with a role (parent, sibling, partner, friend, classmate, coworker) and a closeness from 0 to 100. A person can hold several role rows toward another; setting a role replaces them all and keeps the highest closeness. Expressions read `person.closeness` (the highest across rows) and `count_role(role, min, max)` (living people only).
 _Avoid_: Connection, bond
 
+**Kinship**:
+What one person is to another in the family tree (`grandparent`, `half-sibling`, `cousin`, `child-in-law`, ...), derived by the Core from stored parent links up to great-grandparents, never stored. Expressions read `kin(person)`, `is_kin(person, id)` and `count_kin(id, min_age, max_age)`; it is relative to the subject, so succession re-derives it. See ADR 0006.
+_Avoid_: Family role, relation
+
 **Asset**:
 An owned instance of a Pack-defined item kind, with a purchase price, a current value, and its own qualities.
 _Avoid_: Item (for the owned thing), possession, inventory

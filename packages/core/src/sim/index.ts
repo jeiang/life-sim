@@ -35,6 +35,19 @@ export {
 export { godSetMoney, godSetStat, isGodLife } from "./god.ts";
 export { KIND_CALL, type KindIndexEntry } from "./kinds.ts";
 export {
+  countKin,
+  familyRoleOf,
+  isKinshipId,
+  KINSHIP_IDS,
+  type Kin,
+  type KinshipId,
+  kinOf,
+  kinshipLabel,
+  kinshipOf,
+  linkFamilyRole,
+  spousesOf,
+} from "./kinship.ts";
+export {
   assetCityId,
   chosenStandardOf,
   confinementOf,

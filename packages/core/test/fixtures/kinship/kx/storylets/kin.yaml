@@ -1,0 +1,24 @@
+- id: sibling-only
+  trigger: action
+  menu: relationships
+  scope: person
+  when: is_kin(person, sibling) and person.alive
+  outcomes:
+    - effects:
+        - quality.kin_hits += 1
+
+- id: parents-around
+  trigger: action
+  menu: activities
+  when: count_kin(parent, 20, 120) >= 2
+  outcomes:
+    - effects:
+        - quality.kin_hits += 10
+
+- id: adopt-parent
+  trigger: action
+  menu: activities
+  outcomes:
+    - effects:
+        - spawn_person(core-loop/parent, core-loop/parent-gen) as p
+        - "quality.kin_hits += is_kin(p, parent) ? 5 : 0"

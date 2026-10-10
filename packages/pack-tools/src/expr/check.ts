@@ -8,7 +8,9 @@ import {
   type Expr,
   evaluate,
   FUNCTIONS,
+  isKinshipId,
   KIND_CALL,
+  KINSHIP_IDS,
   type Signature,
   type Target,
   type Type,
@@ -53,6 +55,8 @@ const TYPE_NAME: Record<Type, string> = {
   id: "a content id",
   group: "an exclusivity group name",
   milestone: "a milestone id",
+  person: "a person name",
+  kinship: "a kinship id",
 };
 
 const MAX_SUGGEST = 2;
@@ -121,6 +125,22 @@ export class Checker {
       if (n.k === "name" && !n.v.includes(".") && !(n.v in this.env.names))
         return ["group", ["id", n.v]];
       return this.err(n, "expected an exclusivity group name, such as school");
+    }
+    if (want === "person") {
+      if (n.k === "name" && this.env.persons?.includes(n.v))
+        return ["person", ["s", n.v]];
+      return this.err(
+        n,
+        `expected a person name${suggest(n.k === "name" ? n.v : "", this.env.persons ?? [])}; person names are 'person' in a person-scoped storylet and names bound by spawn_person(...) as <name>`,
+      );
+    }
+    if (want === "kinship") {
+      const id = n.k === "str" || n.k === "name" ? n.v : undefined;
+      if (id !== undefined && isKinshipId(id)) return ["kinship", ["s", id]];
+      return this.err(
+        n,
+        `expected a kinship id${id === undefined ? "" : suggest(id, KINSHIP_IDS)}; kinship ids: ${KINSHIP_IDS.join(", ")}`,
+      );
     }
     if (want === "milestone") {
       if (n.k === "str") return ["milestone", ["id", n.v]];

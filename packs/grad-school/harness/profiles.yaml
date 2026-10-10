@@ -15,7 +15,7 @@ profiles:
       - ids: ["grad-school/sit-*", "grad-school/grad-exam-prep"]
       - ids: ["grad-school/apply-residency", "grad-school/apply-associate-lawyer", "grad-school/apply-business-manager", "grad-school/apply-postdoc"]
       - ids: ["grad-school/apply-medical-school", "grad-school/apply-law-school", "grad-school/apply-mba", "grad-school/apply-phd"]
-      - ids: ["grad-school/ask-parents-tuition", "grad-school/study-grad"]
+      - ids: ["grad-school/ask-parents-tuition", "grad-school/study-grad", "grad-school/pay-tuition-cash"]
       - ids: ["*/enrol-*", "*/study-harder"]
 # A studious player is not a grad student by default: 15-30% of studious lives enter grad school (#229).
 # Only the school applications are damped; the career applications (a career switch for degree holders) stay at full weight.

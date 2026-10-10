@@ -1,0 +1,11 @@
+# Forced script (docs/spec/harness.md#forced-outcomes): a scholar passes the medical boards by cheating and the dishonesty case follows.
+description: A scholar who gets into medical school cheats on the boards, passes undetected, and is later called before the dishonesty board
+profile: scholar
+steps:
+  - roll: outcome/grad-school/apply-medical-school
+    value: 0
+  - choose: "cheat*"
+  - roll: outcome/grad-school/sit-medical-boards
+    value: 0
+  - roll: outcome/grad-school/grad-dishonesty-case
+    value: 0

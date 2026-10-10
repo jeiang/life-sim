@@ -425,9 +425,13 @@ export function buildVocab(
     functions: Object.entries(FUNCTIONS as Record<string, Signature>).map(
       ([n, s]) => sig(n, s),
     ),
-    effects: Object.entries(EFFECTS as Record<string, Signature>).map(
-      ([n, s]) => sig(n, s),
-    ),
+    effects: [
+      ...Object.entries(EFFECTS as Record<string, Signature>).map(([n, s]) =>
+        sig(n, s),
+      ),
+      // Own syntax, so not in EFFECTS (docs/spec/pack-format/storylets.md#scheduled-consequences).
+      "schedule(id, after: <a>-<b> years[, person][, lineage: true]) -> bool",
+    ],
     assignable: Object.entries(ASSIGNABLE).map(
       ([root, ops]) => `${root} ${ops.join(" ")}`,
     ),

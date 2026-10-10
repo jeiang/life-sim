@@ -101,3 +101,5 @@ Effect calls. Assign roots: `stat += -= =`, `quality += =`, `money += -=`, `pers
 - `merge_money() -> bool`
 - `set_standard(id) -> bool`
 - `trade(id, int) -> bool`
+- `unschedule(id) -> bool`
+- `schedule(id, after: <a>-<b> years[, person][, lineage: true]) -> bool`

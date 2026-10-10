@@ -36,11 +36,10 @@ const tmp = mkdtempSync(join(tmpdir(), "household-"));
 cpSync(packsDir, tmp, { recursive: true });
 writeFileSync(
   join(tmp, "core-loop", "storylets", "zz-household-test.yaml"),
-  `- { id: t-wed, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "Wed.", outcomes: [{ weight: 1, effects: [relationship(person).role = spouse] }] }
+  `- { id: t-wed, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "Wed.", outcomes: [{ weight: 1, effects: [relationship(person).role = core-loop/spouse] }] }
 - { id: t-divorce, trigger: action, scope: person, target: [core-loop/spouse], menu: assets/housing, text: "Divorce.", outcomes: [{ weight: 1, effects: [relationship(person).role = friend] }] }
 - { id: t-move-in, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "In.", outcomes: [{ weight: 1, effects: [move_in()] }] }
 - { id: t-merge, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "Merge.", outcomes: [{ weight: 1, effects: [merge_money()] }] }
-- { id: t-wed, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "Wed.", outcomes: [{ weight: 1, effects: [relationship(person).role = core-loop/spouse] }] }
 - { id: t-wed-merge, trigger: action, scope: person, target: [core-loop/partner], menu: assets/housing, text: "Wed.", outcomes: [{ weight: 1, effects: [relationship(person).role = core-loop/spouse, merge_money()] }] }
 `,
 );

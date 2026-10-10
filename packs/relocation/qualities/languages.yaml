@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
+- { id: reloc_lang_english, type: int, min: 0, max: 100, default: 100 }
+- { id: reloc_lang_spanish, type: int, min: 0, max: 100, default: 0 }
+- { id: reloc_lang_french, type: int, min: 0, max: 100, default: 0 }
+- { id: reloc_lang_german, type: int, min: 0, max: 100, default: 0 }
+- { id: reloc_lang_italian, type: int, min: 0, max: 100, default: 0 }
+- { id: reloc_lang_japanese, type: int, min: 0, max: 100, default: 0 }
+- { id: reloc_lang_mandarin, type: int, min: 0, max: 100, default: 0 }
+- { id: reloc_lang_korean, type: int, min: 0, max: 100, default: 0 }

@@ -1,9 +1,0 @@
-# yaml-language-server: $schema=../../../packages/pack-tools/schema/qualities.schema.json
-- { id: lang_english, type: int, min: 0, max: 100, default: 100 }
-- { id: lang_spanish, type: int, min: 0, max: 100, default: 0 }
-- { id: lang_french, type: int, min: 0, max: 100, default: 0 }
-- { id: lang_german, type: int, min: 0, max: 100, default: 0 }
-- { id: lang_italian, type: int, min: 0, max: 100, default: 0 }
-- { id: lang_japanese, type: int, min: 0, max: 100, default: 0 }
-- { id: lang_mandarin, type: int, min: 0, max: 100, default: 0 }
-- { id: lang_korean, type: int, min: 0, max: 100, default: 0 }

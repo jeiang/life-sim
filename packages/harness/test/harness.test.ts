@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { compilePacks } from "@life/pack-tools";
 import { describe, expect, test } from "vitest";
-import { runHarness } from "../src/harness.ts";
+import { runHarness, runLives } from "../src/harness.ts";
 import { runHarnessParallel } from "../src/parallel.ts";
 import { loadProfiles, selectProfiles } from "../src/profile-spec.ts";
 import { renderMarkdown } from "../src/report.ts";
@@ -261,5 +261,27 @@ describe("declared profiles", () => {
     expect(messages.join("\n")).toContain("unknown key 'bogus'");
     expect(messages.join("\n")).toContain("unknown quality 'no_such_quality'");
     expect(messages.join("\n")).toContain("matches no action");
+  });
+});
+
+describe("employment", () => {
+  test("a confining occupation is not employment; a job is", () => {
+    const dir = fixture("confined");
+    const [r] = runLives(
+      bundlesOf(dir),
+      {
+        lives: 1,
+        profiles: ["idle"],
+        profileSpecs: profileSpecsOf(dir),
+        seed: 1,
+      },
+      0,
+      1,
+    );
+    const employedAt = (age: number) =>
+      r?.samples.find((s) => s.age === age)?.employed;
+    expect(employedAt(4)).toBe(false); // in jail (confines)
+    expect(employedAt(7)).toBe(false); // released
+    expect(employedAt(10)).toBe(true); // clerk
   });
 });

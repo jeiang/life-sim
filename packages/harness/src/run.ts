@@ -77,7 +77,7 @@ export interface YearSample {
   readonly age: number;
   readonly stats: Readonly<Record<string, number>>;
   readonly netWorth: number;
-  /** Holds a non-school, non-retired occupation. */
+  /** Holds a non-school, non-retired, non-confining occupation. */
   readonly employed: boolean;
   /** Lives with their parents. */
   readonly withParents: boolean;
@@ -483,12 +483,15 @@ export function runLife(
       if (w.ended) break;
       const me = playerOf(w);
       for (const o of me.occupations) if (o.pay > 0) earnings += o.pay;
+      const index = indexBundles(bundles);
       const employed = me.occupations.some(
-        (o) => o.group !== "school" && !isRetired(o.kindId),
+        (o) =>
+          o.group !== "school" &&
+          !isRetired(o.kindId) &&
+          !index.occupations.get(o.kindId)?.confines,
       );
       if (employed) everEmployed = true;
       if (me.occupations.some((o) => isRetired(o.kindId))) retired = true;
-      const index = indexBundles(bundles);
       if (me.age < 18) {
         // Invariant: no living cost is ever charged to a minor.
         const settled = getPerson(settleLiving(w, index), me.id);

@@ -1,0 +1,4 @@
+id: base
+stats:
+  - { id: happiness, label: Happiness, start: [50, 100] }
+exclusivity: [custody, work]

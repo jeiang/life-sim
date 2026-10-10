@@ -22,13 +22,18 @@
           "label": {
             "minLength": 1,
             "type": "string"
+          },
+          "animal": {
+            "description": "The people the player holds this role toward are animals: a `scope: person` storylet binds them only when its `target` names an animal role",
+            "const": true,
+            "type": "boolean"
           }
         }
       },
       {
         "additionalProperties": false,
         "type": "object",
-        "required": ["kind", "id", "first_names", "last_names", "age"],
+        "required": ["kind", "id", "first_names", "age"],
         "properties": {
           "kind": {
             "const": "generator",
@@ -116,6 +121,7 @@
           },
           "last_names": {
             "minItems": 1,
+            "description": "Family-name pool; omit it for people with no family name (animals)",
             "type": "array",
             "items": {
               "minLength": 1,

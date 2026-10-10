@@ -96,22 +96,34 @@ function bindingLive(world: World, scope: ScopeRef | undefined): boolean {
   if (!scope) return true;
   if (scope.kind === "person") {
     const p = world.persons.get(scope.id);
-    return !!p?.alive && scope.id !== world.playerId;
+    return !!p?.alive && p.listed !== false && scope.id !== world.playerId;
   }
   return getPerson(world, world.playerId).loans.some((l) => l.id === scope.id);
 }
 
+/** The player holds an `animal` role toward the person (a pet). */
+export function isAnimal(
+  world: World,
+  idx: PackIndex,
+  person: PersonId,
+): boolean {
+  return rolesOf(world, person).some((r) => idx.roles.get(r)?.animal);
+}
+
 /**
- * The person fits the storylet's `target` (no filter: any): a role id (holds a `/`) the person
- * holds toward the player, or a kinship id (no `/`) the person is to the player.
+ * The person fits the storylet's `target`: a role id (holds a `/`) the person holds toward the
+ * player, or a kinship id (no `/`) the person is to the player. No filter: any human; an animal
+ * (see `isAnimal`) fits only a target that names one of their roles.
  */
 export function hasTargetRole(
   world: World,
+  idx: PackIndex,
   s: CompiledStorylet,
   person: PersonId,
 ): boolean {
-  if (!s.target || s.target.length === 0) return true;
   const roles = rolesOf(world, person);
+  if (!s.target || s.target.length === 0)
+    return !roles.some((r) => idx.roles.get(r)?.animal);
   let kin: string | undefined;
   return s.target.some((t) => {
     if (t.includes("/")) return roles.includes(t);
@@ -132,7 +144,7 @@ export function ineligibility(
 ): string | null {
   if ((s.scope ?? undefined) !== scope?.kind) return "Not available";
   if (!bindingLive(world, scope)) return "Not available";
-  if (scope?.kind === "person" && !hasTargetRole(world, s, scope.id))
+  if (scope?.kind === "person" && !hasTargetRole(world, idx, s, scope.id))
     return "Not available";
   const lock = confinementOf(getPerson(world, world.playerId), idx);
   if (

@@ -189,9 +189,16 @@ function person(v: unknown, p: string): Person {
             tier: int(j.tier, `${p}.job.tier`),
           };
         })();
+  const listed =
+    o.listed === undefined
+      ? undefined
+      : o.listed === false
+        ? (false as const)
+        : fail(`${p}.listed`, "false");
   const state =
     o.state === undefined ? undefined : stateTree(o.state, `${p}.state`);
   return {
+    ...(listed === undefined ? {} : { listed }),
     ...(job === undefined ? {} : { job }),
     ...(cityId === undefined ? {} : { cityId }),
     ...(withParents === undefined ? {} : { withParents }),

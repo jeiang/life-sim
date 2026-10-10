@@ -6,8 +6,10 @@ import {
   describePending,
   familyRoleOf,
   getPerson,
+  hasTargetRole,
   holdingValue,
   indexBundles,
+  isAnimal,
   kinshipOf,
   type Loan,
   livesWithoutGuardian,
@@ -17,6 +19,7 @@ import {
   netWorth,
   newLife,
   type PackBundle,
+  type PackIndex,
   parseSave,
   purchase,
   REPOSSESSION_MISSES,
@@ -53,6 +56,13 @@ import {
 
 /** Lives still alive at this age are cut off and reported as stuck. */
 export const AGE_CAP = 130;
+/** Persons the player holds an animal role toward. */
+function countAnimals(w: World, idx: PackIndex): number {
+  let n = 0;
+  for (const p of w.persons.keys()) if (isAnimal(w, idx, p)) n++;
+  return n;
+}
+
 /** Most choices in one chain of events before the run calls it a loop. */
 const CHAIN_CAP = 64;
 /** Chance (1 in N) per year of a save round-trip check, besides the final world. */
@@ -64,7 +74,8 @@ export type FaultKind =
   | "stuck"
   | "save-mismatch"
   | "minor-living-cost"
-  | "unresolved-family";
+  | "unresolved-family"
+  | "animal-bound";
 
 export interface Fault {
   readonly kind: FaultKind;
@@ -143,7 +154,10 @@ export interface LifeResult {
     Record<string, { plays: number; net: number; worst: number }>
   >;
   /** Persons in the final world and how many of them (not the player) hold or held a job; null without a world. */
+  /** People in the world other than animals; null when the life did not finish. */
   readonly persons: number | null;
+  /** Animals (pets) in the world. */
+  readonly pets: number;
   readonly careers: number;
   /** Length of the serialized final world, bytes (UTF-8 for the ASCII-only canonical text). */
   readonly saveBytes: number;
@@ -323,6 +337,7 @@ export function runLife(
   const samples: YearSample[] = [];
   const loanIds = new Set<number>();
   const defaulted = new Set<number>();
+  const animalBound = new Set<string>();
   let repossessions = 0;
   let everEmployed = false;
   let retired = false;
@@ -527,6 +542,24 @@ export function runLife(
             "unresolved-family",
             `person ${r.to} holds '${r.role}' but has no kinship id at age ${me.age}`,
           );
+      // Invariant: a storylet binds an animal only when its `target` names an animal role.
+      for (const key of Object.keys(w.storyletLog)) {
+        const at = key.indexOf("#");
+        const s = at < 0 ? undefined : index.storylets.get(key.slice(0, at));
+        const pid = Number(key.slice(at + 1));
+        if (
+          s?.scope === "person" &&
+          !animalBound.has(key) &&
+          isAnimal(w, index, pid) &&
+          !hasTargetRole(w, index, s, pid)
+        ) {
+          animalBound.add(key);
+          fault(
+            "animal-bound",
+            `'${s.id}' opened for animal ${pid} at age ${me.age}`,
+          );
+        }
+      }
       const lived = standardOf(me, index);
       const hh = index.living?.household;
       const bill =
@@ -587,6 +620,7 @@ export function runLife(
   }
 
   const final = w;
+  const animals = final ? countAnimals(final, indexBundles(bundles)) : 0;
   const me = final ? playerOf(final) : null;
   const fires = final ? firesById(final) : {};
   const all = me ? [...me.occupationHistory, ...me.occupations] : [];
@@ -614,7 +648,8 @@ export function runLife(
       : { milestones: [], fired: 0, pending: 0 },
     samples,
     wagers,
-    persons: final ? final.persons.size : null,
+    persons: final ? final.persons.size - animals : null,
+    pets: animals,
     careers: final
       ? [...final.persons.values()].filter(
           (p) =>

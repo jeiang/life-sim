@@ -330,15 +330,17 @@
     - label: "Adopt the dog"
       outcomes:
         - weight: 80
-          text: "A loyal friend and two daily walks."
+          text: "{pet.first_name} is a loyal friend and two daily walks."
           effects:
+            - spawn_person(core-loop/dog, core-loop/senior-dog-gen) as pet
             - stat.happiness += 5
             - stat.health += 2
             - money -= min(money, 10000)
           next: dog-first-walk
         - weight: 20
-          text: "The dog has a few quirks, but a devoted bond forms."
+          text: "{pet.first_name} has a few quirks, but a devoted bond forms."
           effects:
+            - spawn_person(core-loop/dog, core-loop/senior-dog-gen) as pet
             - stat.happiness += 3
             - money -= min(money, 10000)
     - label: "Visit now and then"

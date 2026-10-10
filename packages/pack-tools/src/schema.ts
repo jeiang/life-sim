@@ -891,7 +891,17 @@ const GenderName = Type.Union([
 
 export const PeopleSchema = Type.Union(
   [
-    obj({ kind: Type.Literal("role"), id: Id, label: Label }),
+    obj({
+      kind: Type.Literal("role"),
+      id: Id,
+      label: Label,
+      animal: Type.Optional(
+        Type.Literal(true, {
+          description:
+            "The people the player holds this role toward are animals: a `scope: person` storylet binds them only when its `target` names an animal role",
+        }),
+      ),
+    }),
     obj({
       kind: Type.Literal("generator"),
       id: Id,
@@ -918,7 +928,13 @@ export const PeopleSchema = Type.Union(
           },
         ),
       ),
-      last_names: Type.Array(Type.String({ minLength: 1 }), { minItems: 1 }),
+      last_names: Type.Optional(
+        Type.Array(Type.String({ minLength: 1 }), {
+          minItems: 1,
+          description:
+            "Family-name pool; omit it for people with no family name (animals)",
+        }),
+      ),
       age: Range,
       stats: Type.Optional(Type.Record(Name, Range)),
       jobs: Type.Optional(

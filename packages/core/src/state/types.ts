@@ -192,6 +192,11 @@ export interface Person {
    * a generator that declares jobs). Absent: none.
    */
   readonly job?: { readonly label: string; readonly tier: number };
+  /**
+   * `false` once the person is unlisted (`unlist(person)`: a rehomed or lost pet, say): they stay
+   * in the world but are hidden from the player's lists, and no storylet binds them. Absent: listed.
+   */
+  readonly listed?: false;
 }
 
 export interface Relationship {

@@ -111,7 +111,7 @@ export function closenessOf(world: World, id: PersonId): number {
   return best;
 }
 
-/** Living people the player holds `role` toward with closeness in `[min, max]`. */
+/** Living, listed people the player holds `role` toward with closeness in `[min, max]`. */
 function countRole(
   world: World,
   role: string,
@@ -125,7 +125,8 @@ function countRole(
       r.role === role &&
       r.closeness >= min &&
       r.closeness <= max &&
-      getPerson(world, r.to).alive
+      getPerson(world, r.to).alive &&
+      getPerson(world, r.to).listed !== false
     )
       n++;
   return n;

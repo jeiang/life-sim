@@ -48,3 +48,8 @@ The closed effect and function lists gain `reach_milestone(id)` (fires a Pack-de
 ## Note (2026-10-10): succession and wills (#219)
 
 The player pointer moves to an heir by `succeed(world, bundles, heirId)` ([ADR 0003](0003-saves-derived-rng-stable-ids.md), world continuation). The closed effect and function lists gain `set_will(even | spouse | charity | none)`, `will_heir(person)` and `has_will()`, one Core release (ADR 0004): the will is the Core-owned world state container `_will`. Storylets gain `trigger: succession`, lifecycle hooks gain `on_succession`, and expressions gain the read-only `deceased.*` names; none of them can be assigned, and a world that never succeeds has none of them in its state.
+
+## Note (2026-10-10): animal roles and unlist (#224)
+
+`animal: true` on a `kind: role` marks a role as an animal role; a person the player holds one toward is never bound by a `scope: person` storylet with no `target` or a human one (`hasTargetRole` takes the `PackIndex` for it). The closed effect list gains `unlist(person)`, which sets the optional `Person.listed` to `false`: the person stays in the world and the save, leaves the relationship lists and `count_role`, and is never bound again. Core-loop uses both for pets. A generator may omit `last_names`; its people get an empty family name. `Person.listed` is optional, so the save schema is unchanged.
+

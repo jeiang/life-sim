@@ -92,13 +92,13 @@ function relationsOf(w: World) {
     .filter((r) => r.from === w.playerId)
     .flatMap((r) => {
       const person = w.persons.get(r.to);
-      return person ? [{ rel: r, person }] : [];
+      return person && person.listed !== false ? [{ rel: r, person }] : [];
     });
 }
 
 function personName(w: World, id: number): string {
   const p = w.persons.get(id);
-  return p ? `${p.givenName} ${p.familyName}` : "Unknown";
+  return p ? `${p.givenName} ${p.familyName}`.trim() : "Unknown";
 }
 
 /** A menu page (top-level or submenu) with Back; rows come from the Core's action listing. */

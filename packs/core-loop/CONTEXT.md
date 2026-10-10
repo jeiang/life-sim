@@ -10,3 +10,7 @@ A hidden quality (`family_wealth`, 1 to 5) rolled once at the first age-up and s
 
 **Fame**:
 A leaf capability (`core-loop/fame`): the quality `fame` (0-100) with `fame_age`, the age it was last set. Fame fades 5 points a year since `fame_age`; Packs read the readable `fame_value` (never `quality.fame`) and change it with `core_loop.add_fame(points)`.
+
+**Pet**:
+A person the player holds the animal role `dog` or `cat` toward (`people/pets.yaml`). The pet events spawn one when the player takes an animal in. It has a first name and no surname, ages and dies (`pet-mortality`), and can run off or be rehomed (`unlist`). Human storylets never bind it.
+_Avoid_: Animal companion

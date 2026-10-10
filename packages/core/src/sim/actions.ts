@@ -61,7 +61,7 @@ export function listActions(
   for (const s of all) {
     if (s.trigger !== "action" || s.menu !== menuPath) continue;
     if ((s.scope ?? undefined) !== scope?.kind) continue;
-    if (scope && !hasTargetRole(world, s, scope.id)) continue;
+    if (scope && !hasTargetRole(world, idx, s, scope.id)) continue;
     const reason = lockedReason(world, bundles, s, scope);
     const range = amountRange(world, idx, s, scope);
     rows.push({

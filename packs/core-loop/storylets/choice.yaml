@@ -222,8 +222,9 @@
     - label: Take it in
       outcomes:
         - weight: 1
-          text: A new best friend. The vet bills are another matter.
+          text: "{pet.first_name} is a new best friend. The vet bills are another matter."
           effects:
+            - spawn_person(core-loop/dog, core-loop/dog-gen) as pet
             - stat.happiness += 6
             - stat.health += 1
             - money -= min(money, 9000)

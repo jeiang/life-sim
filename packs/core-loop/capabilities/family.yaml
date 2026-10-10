@@ -9,10 +9,15 @@ provides:
     - partner
     - spouse
     - child
+    - dog
+    - cat
   generators:
     - parent-gen
     - sibling-gen
     - classmate-gen
     - coworker-gen
+    - dog-gen
+    - senior-dog-gen
+    - cat-gen
   qualities:
     - family_wealth

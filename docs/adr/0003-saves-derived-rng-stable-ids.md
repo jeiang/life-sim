@@ -40,3 +40,7 @@ Age-up order becomes: age every person, the NPC career pass, settlement, events,
 - `npcPass` no longer draws these events, so the `npc/<person>` flavour draw and the NPC chance rolls no longer see them: a world with a person-scoped choice event replays differently from before. Worlds without one draw exactly as before (the new `person-pick/...` key only exists when such a storylet is queued, and no counter of another key moves).
 - Age-up order is unchanged; person decisions are part of the player's events step.
 
+## Amendment 2026-10-10: scheduled consequences (#215)
+
+- Age-up order gains a step: after `on_age_up_post` and before the year draw, scheduled consequences are processed. Each entry whose window is open and whose storylet is eligible rolls once under the new purpose key `schedule/<storylet>` (`schedule/<storylet>#<person id>` for a person-bound entry), chance `floor(10000 / left)` basis points; an entry that is not eligible, still waiting, or whose person died draws nothing. Entries are visited in the order they were queued. Fired ones open first in the year's event queue, outside the decision slots, flavour slots and cap.
+- The queue is saved and hashed as the reserved world state container `_schedule`. It is absent until the first `schedule` and removed when empty, so a world that never schedules replays exactly as before and no other counter moves. The save schema stays 6.

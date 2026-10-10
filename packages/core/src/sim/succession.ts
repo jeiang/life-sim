@@ -1,3 +1,4 @@
+import { dropMortalSchedule } from "../state/schedule.ts";
 import type { PersonId, World } from "../state/types.ts";
 import { getPerson } from "../state/world.ts";
 import { appendChoice } from "./flow.ts";
@@ -16,7 +17,7 @@ export function succeed(world: World, heir: PersonId): World {
     throw new RangeError(`heir ${heir} is not alive`);
   return appendChoice(
     {
-      ...world,
+      ...dropMortalSchedule(world),
       playerId: heir,
       generation: world.generation + 1,
       storyletLog: {},

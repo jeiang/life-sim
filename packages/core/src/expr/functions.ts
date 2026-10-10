@@ -81,6 +81,8 @@ export const EFFECTS = {
   set_standard: { params: ["id"], returns: "bool" },
   /** Buy (positive) or sell (negative) that much cash worth of a market kind. */
   trade: { params: ["id", "int"], returns: "bool" },
+  /** Cancel every queued `schedule(...)` of a storylet, for any person. `schedule` has its own syntax. */
+  unschedule: { params: ["id"], returns: "bool" },
 } as const satisfies Record<string, Signature>;
 
 export type AssignOp = "=" | "+=" | "-=";

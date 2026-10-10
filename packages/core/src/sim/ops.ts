@@ -1,6 +1,7 @@
 import { type Expr, evaluate } from "../expr/index.ts";
 import type { CompiledGenerator } from "../pack.ts";
 import type { Rng } from "../rng.ts";
+import { dropMortalSchedule } from "../state/schedule.ts";
 import {
   type Asset,
   DEFAULT_GENDER_WEIGHTS,
@@ -345,7 +346,8 @@ export function endLife(
   };
   const w = updatePerson(world, personId, (x) => ({ ...x, alive: false }));
   return addJournalLine(
-    { ...w, pending: null, ended: obit },
+    // Scheduled consequences end with the life, except those marked `lineage`.
+    { ...dropMortalSchedule(w), pending: null, ended: obit },
     p.age,
     `${nameOf(w, personId)} died at ${p.age}: ${cause}.`,
   );

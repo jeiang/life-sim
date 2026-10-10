@@ -157,6 +157,15 @@ describe("effect statements", () => {
       ["spawn", ["id", "role/friend"], ["id", "gen/teen"], "pal"],
     ],
     [
+      "schedule(life/later, after: 2-4 years)",
+      ["do", "schedule", ["id", "life/later"], 2, 4, false, false],
+    ],
+    [
+      "schedule(life/later, after: 1-3 years, friend, lineage: true)",
+      ["do", "schedule", ["id", "life/later"], 1, 3, ["v", "friend"], true],
+    ],
+    ["unschedule(life/later)", ["do", "unschedule", ["id", "life/later"]]],
+    [
       "relationship(friend).closeness += 5",
       ["add", ["relationship", "friend", "closeness"], 5],
     ],
@@ -195,6 +204,22 @@ describe("effect statements", () => {
     ["relationship(friend).trust += 1", "only 'closeness'"],
     ["relationship(friend).role += partner", "only allows '='"],
     ["relationship(friend).role = 3", "expected a content id, got an integer"],
+    ["schedule(later, after: 0-2 years)", "must start at 1 year or more"],
+    ["schedule(later, after: 3-2 years)", "end no earlier than it starts"],
+    [
+      "schedule(later, after: 1-2 years, stranger)",
+      "unknown person 'stranger'",
+    ],
+    ["schedule(later, after: 1-2)", "expected 'years'"],
+    ["schedule(later, 1-2 years)", "expected 'after: <from>-<to> years'"],
+    [
+      "schedule(later, after: 1-2 years, lineage: yes)",
+      "expected true or false",
+    ],
+    [
+      "schedule(later, after: 1-2 years, lineage: true, friend)",
+      "the person comes once, before 'lineage'",
+    ],
     ["explode()", "unknown effect 'explode'"],
     ["take_loan(bank/auto-loan)", "takes 2 argument(s), got 1"],
     ["quality.title += 1", "needs an integer target"],

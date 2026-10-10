@@ -34,6 +34,7 @@ import {
   startOccupation,
 } from "./ops.ts";
 import type { PackIndex } from "./pack-index.ts";
+import { scheduleEffect, unschedule } from "./schedule.ts";
 import { renderText } from "./text.ts";
 
 /**
@@ -254,6 +255,20 @@ function applyEffect(
                 livedStandardId: id,
               }));
         }
+        case "schedule":
+          return scheduleEffect(
+            w,
+            idx,
+            scope,
+            bound,
+            args[0] as Expr,
+            args[1] as number,
+            args[2] as number,
+            args[3] as Expr | boolean,
+            args[4] as boolean,
+          );
+        case "unschedule":
+          return unschedule(w, str(args[0], w, idx, scope));
         case "journal":
           return addJournalLine(
             w,

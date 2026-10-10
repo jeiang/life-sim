@@ -55,6 +55,10 @@ An assignment to `person.*` or `<bound>.*` with no person in scope does nothing,
 - Declared names appear in `ids.lock.json` as `state.<id>`; renaming or removing one needs a migration entry (`rename`/`remove` with `state.<old>`, see [Saves](saves.md)). A removed container's values are dropped from saves.
 - Unknown ids, keys, scopes or operators fail the build with the usual "unknown name" or "cannot be assigned" diagnostics. `world`, `table` are reserved and cannot name a spawned person.
 
+## The schedule queue
+
+The `schedule(...)` queue ([Scheduled consequences](storylets.md#scheduled-consequences)) is the one container the Core declares itself. It lives in `World.state` under the reserved id `_schedule` (a pack state id matches `^[a-z]`, so none can collide), shaped `{ <storylet id>: { <person id or "-">: { seq, wait, left, lineage } } }`: `seq` is the queue order, `wait` the age-ups before the window opens, `left` the age-ups the window still has, `lineage` a flag. It is absent until the first `schedule` and removed again when it empties, so a world that never schedules (or cancelled everything) is byte-identical to one that never had it. `checkWorldState` validates its shape (an unreadable queue rejects the save) and Pack migrations rename or remove its storylet ids. Access: `scheduledEntries` / `setScheduled` (`state/schedule.ts`), never by hand.
+
 ## Engine contract
 
 For authors of the next extension points (readables, effect macros, lifecycle hooks, settlement line items, content kinds).

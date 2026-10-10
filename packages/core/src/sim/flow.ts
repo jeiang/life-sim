@@ -25,6 +25,7 @@ import {
 } from "./living.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import { indexBundles, type PackIndex } from "./pack-index.ts";
+import { dueScheduled } from "./schedule.ts";
 import { settle } from "./settle.ts";
 import {
   amountAllowed,
@@ -506,8 +507,15 @@ export function ageUp(world: World, bundles: readonly PackBundle[]): SimResult {
   w = settle(w, idx);
   w = runHook(w, idx, "on_age_up_post");
   if (w.ended) return result(world, ensureYearEntry(w, idx));
-  const [w2, events] = drawEvents(w, idx);
-  return result(world, ensureYearEntry(advance(w2, idx, events, true), idx));
+  // Scheduled consequences that came due open first, on top of the slots and the cap.
+  const [w1, due] = dueScheduled(w, idx, (x, s, scope) =>
+    isEligible(x, idx, s, scope),
+  );
+  const [w2, drawn] = drawEvents(w1, idx);
+  return result(
+    world,
+    ensureYearEntry(advance(w2, idx, [...due, ...drawn], true), idx),
+  );
 }
 
 /**

@@ -1,0 +1,84 @@
+# Actions that queue and cancel consequences.
+- id: plan
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - "schedule(sc/reunion, after: 2-4 years)"
+- id: plan-wide
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - "schedule(sc/reunion, after: 5-9 years)"
+- id: plan-lineage
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - "schedule(sc/legacy, after: 1-1 years, lineage: true)"
+- id: plan-gated
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - "schedule(sc/gated, after: 1-3 years)"
+- id: plan-macro
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - sc.plan_reunion()
+        - sc.plan_pal()
+        - sc.plan_pal()
+- id: cancel
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - unschedule(sc/reunion)
+- id: plan-visit
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [friend]
+  outcomes:
+    - effects:
+        - "schedule(sc/visit, after: 1-3 years, person)"
+- id: plan-visit-lineage
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [friend]
+  outcomes:
+    - effects:
+        - "schedule(sc/visit, after: 2-2 years, person, lineage: true)"
+- id: cancel-visit
+  trigger: action
+  menu: relationships
+  scope: person
+  target: [friend]
+  outcomes:
+    - effects:
+        - unschedule(sc/visit)
+- id: befriend
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - spawn_person(friend, local) as pal
+- id: open-gate
+  trigger: action
+  menu: relationships
+  outcomes:
+    - effects:
+        - quality.gate = true
+# A decision slot filler, so scheduled consequences are seen to arrive on top of it.
+- id: plain-decision
+  trigger: event
+  weight: 10
+  text: A plain decision.
+  choices:
+    - label: Ok
+      outcomes:
+        - text: Fine.

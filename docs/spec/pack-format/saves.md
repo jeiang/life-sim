@@ -12,6 +12,8 @@ Save schema version 6 was a one-time reset. **No save compatibility is promised 
 - `capabilities`: sorted capability ids (`<pack>/<feature>`) the life was made with. Importing a save that needs a capability the build does not include is refused.
 - `appliedMigrations`: sorted ids (`<pack>/<name>`) of the Pack migrations already applied to the world. A new life records every migration of the loaded Packs, since it never held an older id.
 
+The world also carries the scheduled-consequence queue as the reserved world state container `_schedule` ([State containers](state.md#the-schedule-queue)); a migration that renames or removes a storylet id rewrites the queue entries for it.
+
 Packs carry no integer version.
 
 ## Pack migrations

@@ -1,5 +1,6 @@
 import type { PackBundle, PackMigration } from "../pack.ts";
 import { migrateState } from "../state/containers.ts";
+import { migrateSchedule } from "../state/schedule.ts";
 import type {
   Asset,
   Loan,
@@ -188,7 +189,9 @@ export function applyPackMigrations(
   }
 
   const { state: worldState, ...restWorld } = world;
-  const worldMoved = migrateState(worldState, r);
+  const stateMoved = migrateState(worldState, r);
+  // The queue holds storylet ids, which migrations rename or remove like any other id.
+  const worldMoved = stateMoved && migrateSchedule(stateMoved, r);
   return {
     ...restWorld,
     ...(worldMoved === undefined ? {} : { state: worldMoved }),

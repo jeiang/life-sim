@@ -1,0 +1,32 @@
+# `chance: 0` events are only ever opened by `schedule`.
+- id: reunion
+  trigger: event
+  chance: 0
+  text: The reunion happens.
+  outcomes:
+    - effects:
+        - quality.reunions += 1
+- id: legacy
+  trigger: event
+  chance: 0
+  text: A legacy arrives.
+  outcomes:
+    - effects:
+        - quality.legacies += 1
+- id: gated
+  trigger: event
+  chance: 0
+  when: quality.gate
+  text: The gated one happens.
+  outcomes:
+    - effects:
+        - quality.gated_fired += 1
+- id: visit
+  trigger: event
+  chance: 0
+  scope: person
+  target: [friend]
+  text: "{person.first_name} visits."
+  outcomes:
+    - effects:
+        - person.quality.visits += 1

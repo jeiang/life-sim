@@ -1,0 +1,8 @@
+# `pal` is local to the macro; the schedule call names it, so the expansion must rename it too.
+- id: plan_pal
+  effects:
+    - spawn_person(friend, local) as pal
+    - "schedule(sc/visit, after: 1-1 years, pal)"
+- id: plan_reunion
+  effects:
+    - "schedule(sc/reunion, after: 2-4 years)"

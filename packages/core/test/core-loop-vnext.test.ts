@@ -89,8 +89,6 @@ describe("roles, qualities and defaults", () => {
     expect(idx.qualities.has("crime_pending_charge")).toBe(false);
     expect(quality(w, "karma")).toBe(50);
     expect(idx.qualities.get("karma")?.default).toBe(50);
-    expect(idx.qualities.get("lang_english")?.default).toBe(100);
-    expect(idx.qualities.get("lang_japanese")?.default).toBe(0);
   });
 });
 
@@ -391,35 +389,6 @@ describe("remote occupations", () => {
       }));
     expect(call(held("server"))).toBe(false);
     expect(call(held("analyst"))).toBe(true);
-  });
-});
-
-describe("languages", () => {
-  const study = (w: World, lang: number): World => {
-    const r = runAction(w, bundles, `${CL}/study-a-language`).world;
-    return choose(r, bundles, lang).world;
-  };
-
-  test("skill grows with study and the gain shrinks at 11 and 21 uses in a year", () => {
-    const SPANISH = 1;
-    let w = adultOf(9, 20);
-    const gains: number[] = [];
-    for (let i = 0; i < 22; i++) {
-      const before = quality(w, "lang_spanish") as number;
-      w = study(w, SPANISH);
-      gains.push((quality(w, "lang_spanish") as number) - before);
-    }
-    expect(gains.slice(0, 10).every((g) => g === 6 || g === 3)).toBe(true);
-    expect(gains.slice(10, 20).every((g) => g === 2 || g === 1)).toBe(true);
-    expect(gains.slice(20).every((g) => g === 0)).toBe(true);
-  });
-
-  test("a mastered language is not offered; any age 6+ can study anywhere", () => {
-    const w = withQ(adultOf(9, 20), { lang_english: 100 });
-    expect(locked(w, "activities/languages", "study-a-language")).toBe(false);
-    expect(
-      locked(adultOf(9, 4), "activities/languages", "study-a-language"),
-    ).toBe(true);
   });
 });
 

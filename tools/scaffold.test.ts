@@ -191,6 +191,88 @@ describe("scaffold", () => {
     );
   });
 
+  it("accepts every effect form the core-loop storylets use", () => {
+    const effects = [
+      "stat.happiness += 3",
+      "stat.health -= 2",
+      "stat.smarts = 50",
+      "money += 100",
+      "money -= min(money, 20)",
+      "quality.work_effort = 0",
+      "quality.times_promoted += 1",
+      "quality.has_drivers_license = true",
+      'journal("Met a friend at age {age}.")',
+      "spawn_person(core-loop/classmate, core-loop/classmate-gen) as c1",
+      "relationship(c1).closeness += 10",
+      "relationship(c1).closeness += -5",
+      "relationship(person).closeness += 2",
+      "relationship(c1).role = friend",
+      "person.money += 5",
+      "c1.money -= 5",
+      "stat.happiness -= 2 + person.closeness / 10",
+      "start_occupation(core-loop/cashier)",
+      "end_occupation(core-loop/cashier)",
+      "take_loan(core-loop/student-loan, 1000)",
+      'die("old age")',
+      "move_out()",
+    ];
+    const f = sheetFile(
+      "forms.md",
+      `# Content sheet: Forms
+
+- pack: core-loop
+- packs: core-loop
+
+## all-forms
+- trigger: event
+- weight: 5
+- text: Forms.
+
+### outcomes
+- outcome: 1
+  - text: Fine.
+${effects.map((e) => `  - effect: ${e}`).join("\n")}
+`,
+    );
+    const r = capture([
+      f,
+      "--pack",
+      "core-loop",
+      "--packs-dir",
+      packs,
+      "--stdout",
+    ]);
+    expect(r.stderr).toBe("");
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain("relationship(c1).closeness += 10");
+  });
+
+  it("accepts effect forms only in effects, not in a condition", () => {
+    const f = sheetFile(
+      "effonly.md",
+      `# Content sheet: Eff only
+
+- pack: core-loop
+- packs: core-loop
+
+## eff-only
+- trigger: event
+- weight: 5
+- when: relationship(c1).closeness > 3 and take_loan(core-loop/student-loan, 1)
+- text: Nope.
+
+### outcomes
+- outcome: 1
+  - text: Fine.
+  - effect: relationship(c1).closeness += 1
+`,
+    );
+    const r = capture([f, "--pack", "core-loop", "--packs-dir", packs]);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain("unknown function 'relationship'");
+    expect(r.stderr).toContain("unknown function 'take_loan'");
+  });
+
   it("usage errors", () => {
     expect(capture([]).status).toBe(2);
     const f = sheetFile("p.md", exampleSheet());

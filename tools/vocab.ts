@@ -12,6 +12,7 @@ import { isMap, isNode, isSeq, LineCounter, parseDocument } from "yaml";
 import {
   AGGREGATES,
   ASSIGNABLE,
+  assignOps,
   EFFECTS,
   FUNCTIONS,
   HOOK_PHASES,
@@ -431,9 +432,18 @@ export function buildVocab(
       ),
       // Own syntax, so not in EFFECTS (docs/spec/pack-format/storylets.md#scheduled-consequences).
       "schedule(id, after: <a>-<b> years[, person][, lineage: true]) -> bool",
+      // Own syntax too: a bound person's relationship (checkStmt `rel` in pack-tools expr/check.ts).
+      "relationship(<person>).closeness += <int>",
+      "relationship(<person>).role = <id>",
     ],
-    assignable: Object.entries(ASSIGNABLE).map(
-      ([root, ops]) => `${root} ${ops.join(" ")}`,
+    // `person` and a bound person's name (`<bound>.money`, ...) take only these (assignOps in core expr/functions.ts).
+    assignable: Object.entries(ASSIGNABLE).flatMap(([root, ops]) =>
+      root === "person"
+        ? ["money", "quality.<id>", "table.<id>.<key>"].map(
+            (t) =>
+              `person.${t} ${(assignOps(`person.${t.split(".")[0]}`) ?? []).join(" ")}`,
+          )
+        : [`${root} ${ops.join(" ")}`],
     ),
     aggregators: [...AGGREGATES],
   };
@@ -579,7 +589,7 @@ export function renderMarkdown(v: Vocab): string {
   section(
     out,
     "Effects",
-    `Effect calls. Assign roots: ${v.assignable.map((a) => `\`${a}\``).join(", ")}. Aggregators over containers: ${v.aggregators.map((a) => `\`${a}\``).join(", ")}.`,
+    `Effect calls. Assign targets (a bound person's name works like \`person\`): ${v.assignable.map((a) => `\`${a}\``).join(", ")}. Aggregators over containers: ${v.aggregators.map((a) => `\`${a}\``).join(", ")}.`,
     v.effects.map((f) => `- \`${f}\``),
   );
   return `${out.join("\n")}\n`;

@@ -357,6 +357,33 @@ export function checkStmt(c: Checker, env: CheckEnv, s: Stmt): Effect | null {
       v && [s.op === "=" ? "set" : s.op === "+=" ? "add" : "sub", target, v[1]]
     );
   }
+  if (s.k === "schedule") {
+    const storylet = c.param(s.storylet, "id");
+    if (s.from < 1 || s.to < s.from)
+      err(
+        c,
+        s,
+        `'after: ${s.from}-${s.to} years' must start at 1 year or more, and end no earlier than it starts`,
+      );
+    const persons = env.persons ?? [];
+    if (s.person && !persons.includes(s.person.name))
+      err(
+        c,
+        s.person,
+        `unknown person '${s.person.name}'${suggest(s.person.name, persons)}`,
+      );
+    return (
+      storylet && [
+        "do",
+        "schedule",
+        storylet[1],
+        s.from,
+        s.to,
+        s.person ? ["v", s.person.name] : false,
+        s.lineage,
+      ]
+    );
+  }
   if (s.k === "rel") {
     const persons = env.persons ?? [];
     if (!persons.includes(s.person.name)) {

@@ -6,6 +6,7 @@
  * so adding a container kind means a declaration type (`pack.ts`) and a branch here.
  */
 import type { CounterDecl, StateDecl, TableDecl } from "../pack.ts";
+import { checkSchedule, SCHEDULE_ID } from "./schedule.ts";
 import type {
   Person,
   PersonId,
@@ -108,6 +109,10 @@ export function checkWorldState(
   const out: string[] = [];
   const check = (where: string, tree: StateTree | undefined, scope: string) => {
     for (const [id, v] of Object.entries(tree ?? {})) {
+      if (id === SCHEDULE_ID && scope === "world") {
+        out.push(...checkSchedule(`${where}.${id}`, v));
+        continue;
+      }
       const d = decls.get(id);
       if (!d || stateScopeOf(d) !== scope) {
         out.push(
@@ -150,6 +155,10 @@ export function migrateState(
   if (!tree) return undefined;
   const out: Record<string, StateValue> = {};
   for (const [id, v] of Object.entries(tree)) {
+    if (id === SCHEDULE_ID) {
+      out[id] = v;
+      continue;
+    }
     const to = resolve(`state.${id}`);
     if (to?.startsWith("state.")) out[to.slice(6)] = v;
   }

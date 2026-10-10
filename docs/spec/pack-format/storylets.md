@@ -65,12 +65,43 @@ From use F+1 the Core adds "You are getting tired of this." to the outcome text;
 
 ## Year draw
 
-At each age-up, after settlement (ADR 0003):
+At each age-up, after settlement (ADR 0003), first the [scheduled consequences](#scheduled-consequences) that came due open, outside the slots and the cap. Then:
 
 1. Every eligible event with `chance` rolls independently.
 2. If the manifest declares `year.decisions`, the Core draws **decision slots** (below). Choice events (storylets with `choices`) then no longer compete for flavour slots; they come only from chance rolls and decision slots.
 3. The Core then draws flavour slots (count from the manifest range) by `weight` from the eligible weighted events.
 4. The yearly cap from the manifest limits the total. When the cap is reached, chance events are kept first, then decisions, then flavour events. If the chance hits alone exceed the cap, the survivors are a uniform random choice among the hits (purpose keys `year/chance-cap/<i>`), not id order, so no Pack is favoured; they are then delivered in id order. Nothing is drawn when the hits fit under the cap. The balance harness reports the chance events dropped by the cap per Pack.
+
+### Scheduled consequences
+
+`schedule(storylet, after: a-b years[, person][, lineage: true])` queues an event storylet (`trigger: event`, no `scope: loan`) to open later; `unschedule(storylet)` cancels it. Write a consequence with `chance: 0`, so only `schedule` (or `next`) opens it. Ids need their Pack prefix (`life/follow-up`), and the effect is quoted in YAML because of the colon.
+
+```yaml
+- id: lend-money
+  trigger: action
+  scope: person
+  menu: relationships
+  outcomes:
+    - effects:
+        - money -= 20000
+        - "schedule(core-loop/friend-repays, after: 1-3 years, person)"
+- id: friend-repays                # the consequence
+  trigger: event
+  scope: person
+  chance: 0
+  text: "{person.first_name} pays you back."
+  outcomes:
+    - effects:
+        - money += 20000
+```
+
+- **Window.** `a-b years` are years from now, `1 <= a <= b` (use `next:` for "now"). The entry waits `a - 1` age-ups, then rolls once per age-up with chance 1 / (age-ups left in the window, this one included): `2-4` rolls 1/3, then 1/2, then certain, so the fire year is uniform over the window. It fires at most once.
+- **Re-check.** At each roll the storylet's `when`, `once`, `cooldown`, `max_per_life` and `target` are checked. If they fail, nothing is rolled and the entry waits. The last year of the window drops it whether or not it fired. A person who died drops their entry at once.
+- **Person.** A `scope: person` storylet needs a person (`person` or a name bound by `spawn_person ... as <name>`), who is the one it opens for; any other storylet takes none. The build checks both. With no such person in scope the effect does nothing.
+- **Duplicates.** Scheduling a storylet already queued for the same person keeps the earlier window.
+- **Lineage.** The queue is dropped when the player dies (and at succession), except entries marked `lineage: true`. The dynasty hand-off of those entries to the heir is #219.
+- **Order.** Consequences that came due open first in the year's event queue, outside the decision slots, the flavour slots and the cap, then the chance events, decisions and flavour events. Purpose key `schedule/<storylet>[#<person id>]`, one roll per eligible entry per age-up, drawn after `on_age_up_post` and before the year draw.
+- **Storage.** The queue is a Core-owned world state container under the reserved id `_schedule` (see [State containers](state.md#the-schedule-queue)), so saves, hash and replay need nothing more.
 
 ### Decision slots
 

@@ -448,6 +448,8 @@ const CALL_KINDS: Record<string, Kind[][] | undefined> = {
   holding_years: [["market"]],
   forecast: [["market"]],
   spawn_person: [["role"], ["generator"]],
+  schedule: [["storylet"]],
+  unschedule: [["storylet"]],
 };
 
 /** Functions whose one argument names an exclusivity group, not a content id. */
@@ -531,6 +533,7 @@ class Compiler {
       bundles.push(pc.compile());
     }
     this.checkReadableCycle(bundles);
+    this.checkSchedules(bundles);
     let twemoji = 0;
     const authors = new Map<string, number>();
     for (const u of this.icons.values()) {
@@ -572,6 +575,54 @@ class Compiler {
           ["id"],
           `Packs '${first}' and '${id}' both call their effect macros '${prefix}.<macro>'`,
         );
+    }
+  }
+
+  /**
+   * `schedule(...)` binds a person exactly when its storylet is `scope: person`, and a `scope: loan`
+   * storylet cannot be scheduled. Storylets of other Packs are known only once all are compiled.
+   */
+  private checkSchedules(bundles: readonly PackBundle[]): void {
+    const scopes = new Map(
+      bundles.flatMap((b) => b.storylets.map((s) => [s.id, s.scope] as const)),
+    );
+    for (const b of bundles) {
+      const src = (this.packs.get(b.id) as LoadedPack).manifestSrc;
+      const owned: (readonly [string, readonly Effect[]])[] = b.storylets.map(
+        (s) =>
+          [
+            `storylet '${s.id}'`,
+            [...s.outcomes, ...s.choices.flatMap((c) => c.outcomes)].flatMap(
+              (o) => o.effects,
+            ),
+          ] as const,
+      );
+      for (const [phase, groups] of Object.entries(b.hooks ?? {}))
+        owned.push([
+          `hook '${phase}'`,
+          (Array.isArray(groups)
+            ? groups
+            : Object.values(groups).flat()
+          ).flat(),
+        ]);
+      for (const [owner, effects] of owned) {
+        for (const e of effects) {
+          if (e[0] !== "do" || e[1] !== "schedule") continue;
+          const target = (e[2] as readonly [string, string])[1];
+          const scope = scopes.get(target);
+          const person = e[5] !== false;
+          const where = `${owner} schedules '${target}'`;
+          const bad =
+            scope === "loan"
+              ? "which is scope: loan and cannot be scheduled"
+              : scope === "person" && !person
+                ? `which is scope: person: name the person, as in schedule(${target}, after: 1-2 years, person)`
+                : scope !== "person" && person
+                  ? "which has no scope: schedule takes a person only for a scope: person storylet"
+                  : undefined;
+          if (bad) this.diag(src, ["id"], `${where}, ${bad}`);
+        }
+      }
     }
   }
 

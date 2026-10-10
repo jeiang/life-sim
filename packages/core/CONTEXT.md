@@ -172,6 +172,10 @@ _Avoid_: Filler, random slot
 One of a Pack's per-year chances for the player to face a choice event, filled by drawing an eligible choice event by weight. Slots chain (slot 2 rolls only if slot 1 fired) so the odds of "at least 1, 2, 3 decisions" match the manifest's `year.decisions`; chance choice events count toward the slots.
 _Avoid_: Prompt slot, choice slot
 
+**Scheduled consequence**:
+A follow-up queued by the `schedule` effect: an event storylet that fires once in a window of years, with a rising chance, if its conditions hold when it is due; cancelled by `unschedule`; carried to the heir only with `lineage: true`. It fires on top of the decision slots. The queue is the Core-owned world state container `_schedule`.
+_Avoid_: Timer, delayed event
+
 **Repeatable action**:
 An action that can be done many times a year with diminishing returns: uses up to the manifest curve's `full` give the whole effect, uses up to `reduced` give a share (default a quarter) of every gain, later uses give none. Only gains shrink (positive stats and closeness); money, costs and harms never do. Counted per action (and per target person) per year, reset at age-up, held in life state as the **uses** counters.
 _Avoid_: Grind, spam, cooldown (the opposite rule)

@@ -1,0 +1,5 @@
+- { id: gate, type: flag, default: false }
+- { id: reunions, type: int, min: 0, max: 99, default: 0 }
+- { id: legacies, type: int, min: 0, max: 99, default: 0 }
+- { id: gated_fired, type: int, min: 0, max: 99, default: 0 }
+- { id: visits, type: int, min: 0, max: 99, default: 0, scope: person }

@@ -16,3 +16,10 @@ profiles:
         shop: true
         ids: [core-loop/house, core-loop/big-house]
       - ids: [dating/date-night, dating/spend-time-with-child]
+  heirloom-seller:
+    description: Sells a family heirloom as soon as it holds one and makes no other voluntary move. Meant for the `generations/heirloom-sell` forced script
+    default: false
+    moves: 1
+    once_per_year: true
+    rules:
+      - ids: [generations/heirloom-sell]

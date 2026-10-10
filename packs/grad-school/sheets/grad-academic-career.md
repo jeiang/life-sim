@@ -22,7 +22,7 @@
 - when: quality.grad_degree_phd and not in_group(school) and not in_group("full-time") and not hiring_blocked
 - cooldown: 1
 - text: A university lab has a two-year postdoc open and wants someone who can finish a project.
-- opens: 0.04..0.09 per life
+- opens: 0.04..0.2 per life
 
 ### outcomes
 - outcome: 1
@@ -34,7 +34,7 @@
 - trigger: event
 - chance: 0%
 - text: The lab's principal investigator skims your CV and asks what you would do with two years of funding.
-- opens: 0.04..0.09 per life
+- opens: 0.04..0.2 per life
 
 ### outcomes
 - outcome: 30 + stat.smarts / 2
@@ -43,11 +43,9 @@
   - effect: spawn_person(core-loop/coworker, core-loop/coworker-gen) as c1
   - effect: stat.happiness += 5
   - effect: journal("Started a postdoc position at age {age}.")
-  - rate: 55..75%
 - outcome: 50 - stat.smarts / 4
   - text: The committee goes with a candidate who already has more papers out.
   - effect: stat.happiness -= 3
-  - rate: 25..45%
 
 ## promote-assistant-professor
 - trigger: event
@@ -57,7 +55,7 @@
 - once: true
 - when: has_occupation(grad-school/postdoc) and years_in(grad-school/postdoc) >= 2
 - text: Your principal investigator wants to talk about your next step.
-- opens: 0.015..0.035 per life
+- opens: 0.02..0.1 per life
 
 ### outcomes
 - outcome: 1
@@ -78,7 +76,7 @@
 - once: true
 - when: has_occupation(grad-school/assistant-professor) and years_in(grad-school/assistant-professor) >= 4
 - text: The department chair asks whether you are ready to run a lab of your own.
-- opens: 0.012..0.03 per life
+- opens: 0.01..0.08 per life
 
 ### outcomes
 - outcome: 1
@@ -98,7 +96,7 @@
 - chance: 1%
 - when: has_occupation(grad-school/associate-professor) and years_in(grad-school/associate-professor) >= 5
 - text: The tenure committee meets again this spring, and your file is on the agenda.
-- opens: 0.005..0.02 per life
+- opens: 0..0.02 per life
 
 ### outcomes
 - outcome: 1 + stat.smarts / 30

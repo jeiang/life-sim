@@ -18,7 +18,7 @@
 - cooldown: 1
 - when: quality.grad_degree_mba and not in_group(school) and not in_group("full-time") and not hiring_blocked
 - text: You dust off the MBA, tailor your resume, and send it to every company with a corner office.
-- opens: 0.06..0.16 per life
+- opens: 0.003..0.05 per life
 
 ### outcomes
 - outcome: 1
@@ -31,36 +31,32 @@
 - trigger: event
 - chance: 0%
 - text: The hiring manager leans back. "Tell me about a time you made a call with incomplete numbers."
-- opens: 0.06..0.16 per life
+- opens: 0.003..0.05 per life
 
 ### choice: Walk them through the model you built
 - outcome: 60
   - text: You explain the model cleanly. They nod, and they write something down.
   - effect: quality.interview_score += 2
   - next: business-manager-result
-  - rate: 58..62%
 - outcome: 40
   - text: You explain it, but you skip the part where it nearly failed. They notice.
   - effect: quality.interview_score += 1
   - next: business-manager-result
-  - rate: 38..42%
 
 ### choice: Admit you have never run a team
 - outcome: 50
   - text: You say so plainly. They respect the honesty, and they write something down.
   - effect: quality.interview_score += 1
   - next: business-manager-result
-  - rate: 48..52%
 - outcome: 50
   - text: You ramble. The silence after your answer is very long.
   - next: business-manager-result
-  - rate: 48..52%
 
 ## business-manager-result
 - trigger: event
 - chance: 0%
 - text: A week later your phone rings.
-- opens: 0.06..0.16 per life
+- opens: 0.003..0.05 per life
 
 ### outcomes
 - outcome: 30 + quality.interview_score * 15 + stat.smarts / 4
@@ -85,7 +81,7 @@
 - tags: job, promotion
 - when: has_occupation(grad-school/business-manager) and years_in(grad-school/business-manager) >= 5
 - text: The board chair asks to see you. Her office smells like money and carpet cleaner.
-- opens: 0.005..0.012 per life
+- opens: 0..0.012 per life
 
 ### outcomes
 - outcome: 1

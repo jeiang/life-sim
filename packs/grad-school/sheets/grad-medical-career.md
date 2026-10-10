@@ -21,7 +21,7 @@
 - when: quality.grad_degree_medical and quality.grad_licensed_medical and not in_group(school) and not in_group("full-time") and not hiring_blocked
 - cooldown: 1
 - text: Residency programs take new doctors every spring. You send applications across the country and wait by the phone.
-- opens: 0.04..0.12 per life
+- opens: 0.03..0.12 per life
 
 ### outcomes
 - outcome: 20 + stat.smarts / 2 + quality.grad_gpa / 4
@@ -45,7 +45,7 @@
 - tags: job, promotion
 - when: has_occupation(grad-school/resident-doctor) and years_in(grad-school/resident-doctor) >= 3
 - text: Three years of thirty-hour weeks have left a mark. The chief of medicine calls you into the office.
-- opens: 0.02..0.04 per life
+- opens: 0.02..0.06 per life
 
 ### outcomes
 - outcome: 1
@@ -66,7 +66,7 @@
 - tags: job, promotion
 - when: has_occupation(grad-school/attending-doctor) and years_in(grad-school/attending-doctor) >= 6
 - text: The hospital board wants a new face at the top, and your name keeps coming up in the meetings.
-- opens: 0.005..0.012 per life
+- opens: 0..0.012 per life
 
 ### outcomes
 - outcome: 1
@@ -86,7 +86,7 @@
 - tags: job, health
 - when: has_occupation(grad-school/resident-doctor) or has_occupation(grad-school/attending-doctor)
 - text: The pager goes off at 3am, and the night shift has no end in sight.
-- opens: 0.06..0.15 per life
+- opens: 0.06..0.5 per life
 
 ### outcomes
 - outcome: 50

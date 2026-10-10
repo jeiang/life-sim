@@ -22,7 +22,7 @@
 - when: quality.grad_degree_law and quality.grad_licensed_law and not in_group(school) and not in_group("full-time") and not hiring_blocked
 - cooldown: 1
 - text: A mid-sized law firm is taking applications for associates.
-- opens: 0.03..0.06 per life
+- opens: 0.04..0.1 per life
 
 ### outcomes
 - outcome: 3
@@ -43,7 +43,7 @@
 - chance: 0%
 - when: has_occupation(grad-school/associate-lawyer) and years_in(grad-school/associate-lawyer) >= 4
 - text: The managing partner calls {player.first_name} into a corner office.
-- opens: 0.02..0.035 per life
+- opens: 0.03..0.09 per life
 
 ### outcomes
 - outcome: 1
@@ -61,7 +61,7 @@
 - chance: 0.4%
 - when: has_occupation(grad-school/partner-lawyer) and years_in(grad-school/partner-lawyer) >= 2 and not quality.grad_judge_offered
 - text: A state judicial nominating committee wants a word with {player.first_name}.
-- opens: 0.01..0.02 per life
+- opens: 0..0.02 per life
 
 ### outcomes
 - outcome: stat.smarts

@@ -284,7 +284,7 @@
 - target: crime/inmate
 - tags: custody-ok, npc
 - needs: role crime/inmate: person role, label Cellmate: a fellow inmate spawned once per sentence
-- chance: 40%
+- chance: 25%
 - when: confined and person.role == crime/inmate
 - text: {person.first_name} says you owe for a commissary favor you do not remember asking for.
 - opens: 0.06..0.22 per life

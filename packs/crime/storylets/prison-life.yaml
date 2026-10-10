@@ -239,7 +239,7 @@
   tags: [custody-ok, npc]
   scope: person
   target: [crime/inmate]
-  chance: 40%
+  chance: 25%
   when: confined and person.role == crime/inmate
   text: "{person.first_name} says you owe for a commissary favor you do not remember asking for."
   choices:

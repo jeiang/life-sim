@@ -24,3 +24,4 @@ profiles:
 adjust:
   - { profile: random, tags: [crime], weight: 0.004 }
   - { profile: random, ids: [crime/murder, crime/assault], weight: 0.1 }
+  - { profile: criminal, ids: [crime/escape-attempt], weight: 0.1 }

@@ -23,3 +23,10 @@ The `crime_jurisdiction` kind (`death_penalty` 0 or 1). One `default` entry with
 **Sentence macros**: `crime.serve_adult(term)`, `crime.serve_juvenile(term)` (release and parole ages capped at 18), `crime.serve(term, release_age, parole_age)` (life 999, death row), `crime.probation()`.
 
 **Clean years** (`crime_years_clean`): years with a record outside custody and parole, counted by the `on_age_up_post` hook and reset at sentencing; expungement needs 7.
+
+**Parole** (`crime_on_parole`):
+After `crime_parole_age` (half the term) a yearly `parole-review` (scheduled, so the year cap never drops it) grants or denies release by `crime_behaviour` and `crime_respect`. A grant ends `prison` and `prison_work`; `parole-check` and `parole-visit` can revoke it, which returns to `custody-intake` with the remaining term. At `crime_release_age` the review ends the sentence and fires the `released` milestone (once per life).
+
+**Escape**: one `escape-attempt` per sentence's break-out (`crime_escape_used`), yearly while it fails; success makes the player wanted and at large (`crime_escaped`) until the manhunt recaptures them (`crime-recaptured`, +2 years).
+
+**Juvenile detention**: held under 18; `juvie-release` is scheduled yearly by intake and releases at `crime_release_age` (capped at 18). School continues (core-loop's school actions are `custody-ok`).

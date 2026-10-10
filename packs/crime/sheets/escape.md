@@ -1,6 +1,7 @@
 # Content sheet: Prison escape
 
 - pack: crime
+- profile: criminal
 - packs: crime,core-loop,karma
 - lives: 3000
 

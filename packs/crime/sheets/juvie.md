@@ -1,6 +1,7 @@
 # Content sheet: Juvenile detention
 
 - pack: crime
+- profile: criminal
 - packs: crime,core-loop,karma
 - lives: 5000
 

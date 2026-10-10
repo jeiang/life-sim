@@ -44,6 +44,15 @@
             "type": "string"
           }
         },
+        "kinds": {
+          "uniqueItems": true,
+          "description": "Bare ids of content kinds this Pack declares or writes entries for (their entries it wrote are exported too) this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          }
+        },
         "effects": {
           "uniqueItems": true,
           "description": "Bare ids of effect macros this feature exports (block list, one id per line)",

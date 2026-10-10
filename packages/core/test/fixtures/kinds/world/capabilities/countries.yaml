@@ -1,0 +1,11 @@
+provides:
+  kinds:
+    - countries
+  cities:
+    - harbor
+  readables:
+    - home_tax
+  qualities:
+    - where
+  stats:
+    - happiness

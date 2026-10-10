@@ -1,0 +1,8 @@
+label: Country
+fields:
+  name: { type: string }
+  rank: { type: int }
+  tax: { type: expr, returns: int }
+  open: { type: expr, returns: bool }
+  capital: { type: ref, to: city }
+  friend: { type: ref, to: countries }

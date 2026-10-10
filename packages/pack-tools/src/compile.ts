@@ -19,6 +19,9 @@ import type {
   FamilyDecl,
   Gender,
   HooksDecl,
+  KindDecl,
+  KindEntry,
+  KindFieldDecl,
   LivingDecl,
   NpcCareersDecl,
   PackBundle,
@@ -35,6 +38,7 @@ import {
   DEFAULT_REPEAT,
   GENDERS,
   HOOK_PHASES,
+  KIND_CALL,
   PACK_BUNDLE_FORMAT,
   PRONOUN_FIELDS,
   readableCycle,
@@ -52,6 +56,10 @@ import {
   type CitySrc,
   ItemSchema,
   type ItemSrc,
+  KIND_RESERVED_FIELDS,
+  KindSchema,
+  type KindSrc,
+  kindEntrySchema,
   LoanSchema,
   type LoanSrc,
   type Macro,
@@ -107,7 +115,51 @@ export type Kind =
   | "city"
   | "standard"
   | "role"
-  | "generator";
+  | "generator"
+  /** An instance of the pack-declared kind `<id>` (docs/spec/pack-format/kinds.md). */
+  | `kind:${string}`;
+
+/** A content kind as authors say it: `kind:countries` is a `countries entry`. */
+const kindName = (k: Kind): string =>
+  k.startsWith("kind:") ? `${k.slice(5)} entry` : k;
+
+/** Content kinds a kind field's `ref` may point at, by the `to` name. */
+const REF_TARGETS: Record<string, readonly Kind[]> = {
+  storylet: ["storylet"],
+  occupation: ["occupation"],
+  item: ["item", "market"],
+  market: ["market"],
+  loan: ["loan"],
+  city: ["city"],
+  standard: ["standard"],
+  role: ["role"],
+  generator: ["generator"],
+};
+
+/**
+ * Directory names a Pack already uses; a declared kind's entries live in a directory named
+ * after the kind, so a kind may not take one of these ids.
+ */
+const RESERVED_KIND_IDS = new Set([
+  "storylets",
+  "occupations",
+  "items",
+  "loans",
+  "cities",
+  "standards",
+  "people",
+  "qualities",
+  "state",
+  "readables",
+  "effects",
+  "capabilities",
+  "migrations",
+  "kinds",
+  "hooks",
+  "harness",
+  "test",
+  "docs",
+]);
 
 /** Content directories inside a Pack and what each holds. */
 export const CONTENT_DIRS = {
@@ -154,6 +206,10 @@ interface LoadedPack {
   readables: LoadedReadable[];
   /** Declared by `effects/*.yaml`, in file order. */
   macros: LoadedMacro[];
+  /** Declared by `kinds/<kind>.yaml`, in file order. */
+  kinds: LoadedKind[];
+  /** Entries of visible kinds, from `<kind>/*.yaml`; filled once every Pack is loaded. */
+  kindEntries: LoadedKindEntry[];
   items: LoadedItem[];
   capabilities: LoadedCapability[];
   migrations: LoadedMigration[];
@@ -278,6 +334,24 @@ function instantiate(
         return ["spawn", subst(e[1]), subst(e[2]), rename.get(e[3]) as string];
     }
   });
+}
+
+/** One `kinds/<kind>.yaml`; the kind id is the file stem. */
+interface LoadedKind {
+  id: string;
+  decl: KindSrc;
+  src: Source;
+}
+
+/** One entry of a kind, and where it was written. */
+interface LoadedKindEntry {
+  /** Id of the kind. */
+  kind: string;
+  /** Bare id in the writing Pack. */
+  id: string;
+  data: Record<string, unknown>;
+  src: Source;
+  index: number;
 }
 
 /** A readable or slot declaration (not a contribution), narrowed. */
@@ -437,6 +511,8 @@ class Compiler {
 
   run(): CompileOutput {
     this.load();
+    this.indexCapabilities();
+    this.loadKindEntries();
     this.checkCapabilities();
     this.checkCrossPackDeclarations();
     this.checkNamespaces();
@@ -702,6 +778,7 @@ class Compiler {
     const state = this.loadState(d, dir);
     const readables = this.loadReadables(d, dir);
     const macros = this.loadMacros(d, dir);
+    const kinds = this.loadKinds(d, dir);
     const capabilities = this.loadCapabilities(d, dir);
     const migrations = this.loadMigrations(d, dir);
     // Stat and quality ids share the expression namespace `stat.<id>` / `quality.<id>`.
@@ -717,6 +794,8 @@ class Compiler {
       state,
       readables,
       macros,
+      kinds,
+      kindEntries: [],
       items,
       capabilities,
       migrations,
@@ -835,6 +914,145 @@ class Compiler {
         }
         out.push({ decl: s, src, index: i });
       });
+    }
+    return out;
+  }
+
+  /** `kinds/<kind>.yaml`: one declared content kind per file (docs/spec/pack-format/kinds.md). */
+  private loadKinds(d: string, dir: string): LoadedKind[] {
+    const out: LoadedKind[] = [];
+    const kDir = join(dir, "kinds");
+    for (const f of this.listYaml(kDir)) {
+      const file = this.rel(d, "kinds", f);
+      const id = f.replace(/\.ya?ml$/, "");
+      const src = parseYaml(
+        file,
+        readFileSync(join(kDir, f), "utf8"),
+        this.diags,
+      );
+      if (!src) continue;
+      if (!/^[a-z][a-z0-9_]*$/.test(id)) {
+        this.diag(
+          src,
+          [],
+          `kind file name '${id}' must match ^[a-z][a-z0-9_]*$`,
+        );
+        continue;
+      }
+      if (id in REF_TARGETS) {
+        this.diag(
+          src,
+          [],
+          `'${id}' is a built-in content kind and cannot name a declared kind`,
+        );
+        continue;
+      }
+      if (RESERVED_KIND_IDS.has(id)) {
+        this.diag(
+          src,
+          [],
+          `'${id}' names a Pack directory and cannot name a kind; its entries would live in ${d}/${id}/`,
+        );
+        continue;
+      }
+      if (!validate(src, KindSchema, src.value ?? {}, [], this.diags)) continue;
+      const decl = src.value as KindSrc;
+      const bad = Object.keys(decl.fields).filter((n) =>
+        (KIND_RESERVED_FIELDS as readonly string[]).includes(n),
+      );
+      for (const n of bad)
+        this.diag(
+          src,
+          ["fields", n],
+          `'${n}' is reserved and cannot name a field`,
+        );
+      if (bad.length === 0) out.push({ id, decl, src });
+    }
+    return out;
+  }
+
+  /**
+   * Entries of every kind a Pack sees: its own, and those a capability it requires exports
+   * (`provides: kinds`). Read from `<pack>/<kind>/*.yaml`, validated against a schema built
+   * from the kind's fields, and indexed so other Packs can reference them.
+   */
+  private loadKindEntries(): void {
+    for (const pack of this.packs.values()) {
+      const visible = this.visibleKinds(pack);
+      const seen = new Map<string, string>();
+      for (const [kindId, { decl }] of [...visible].sort(([a], [b]) =>
+        a < b ? -1 : 1,
+      )) {
+        const eDir = join(pack.dir, kindId);
+        for (const f of this.listYaml(eDir)) {
+          const file = this.rel(pack.id, kindId, f);
+          const src = parseYaml(
+            file,
+            readFileSync(join(eDir, f), "utf8"),
+            this.diags,
+          );
+          if (!src || src.value === null || src.value === undefined) continue;
+          if (!Array.isArray(src.value)) {
+            this.diag(src, [], `a ${kindId} file must be a list of entries`);
+            continue;
+          }
+          const schema = kindEntrySchema(decl.fields);
+          src.value.forEach((raw: unknown, i: number) => {
+            const id = (raw as { id?: unknown } | null)?.id;
+            const label = (p: Path): string =>
+              `${typeof id === "string" ? id : `[${i}]`}${p.length > 1 ? `.${formatPath(p.slice(1))}` : ""}`;
+            if (!validate(src, schema, raw, [i], this.diags, label)) return;
+            const data = raw as Record<string, unknown>;
+            const eid = data.id as string;
+            const prev = seen.get(`${kindId}/${eid}`);
+            if (prev) {
+              this.diag(
+                src,
+                [i, "id"],
+                `duplicate ${kindId} entry '${eid}' (already defined in ${prev})`,
+                eid,
+              );
+              return;
+            }
+            const clash = this.index.get(pack.id)?.get(`${pack.id}/${eid}`);
+            if (clash !== undefined && clash !== `kind:${kindId}`) {
+              this.diag(
+                src,
+                [i, "id"],
+                `id '${eid}' is already used by a ${clash} of Pack '${pack.id}'; ids are unique within a Pack`,
+                eid,
+              );
+              return;
+            }
+            seen.set(`${kindId}/${eid}`, file);
+            pack.kindEntries.push({
+              kind: kindId,
+              id: eid,
+              data,
+              src,
+              index: i,
+            });
+            this.index.get(pack.id)?.set(`${pack.id}/${eid}`, `kind:${kindId}`);
+          });
+        }
+      }
+    }
+  }
+
+  /** Kinds `pack` sees: those it declares, and those its required capabilities provide. */
+  visibleKinds(
+    pack: LoadedPack,
+  ): Map<string, { decl: KindSrc; owner: string }> {
+    const out = new Map<string, { decl: KindSrc; owner: string }>();
+    for (const k of pack.kinds) out.set(k.id, { decl: k.decl, owner: pack.id });
+    for (const req of pack.capabilities.flatMap((c) => c.requires)) {
+      const cap = this.capabilities.get(req);
+      const owner = cap && this.packs.get(cap.pack);
+      if (!cap || !owner || owner === pack) continue;
+      for (const id of cap.provides.kinds ?? []) {
+        const k = owner.kinds.find((x) => x.id === id);
+        if (k) out.set(id, { decl: k.decl, owner: owner.id });
+      }
     }
     return out;
   }
@@ -1017,9 +1235,12 @@ class Compiler {
    * Every `requires` names a capability some loaded Pack provides; every `provides` entry
    * names something that Pack declares; no two features of a Pack export the same id.
    */
-  private checkCapabilities(): void {
+  private indexCapabilities(): void {
     for (const pack of this.packs.values())
       for (const cap of pack.capabilities) this.capabilities.set(cap.id, cap);
+  }
+
+  private checkCapabilities(): void {
     for (const id of [...this.packs.keys()].sort()) {
       const pack = this.packs.get(id) as LoadedPack;
       const exported = new Map<string, string>();
@@ -1069,6 +1290,11 @@ class Compiler {
       return pack.readables.some(
         (r) => declaresReadable(r) && r.decl.id === name,
       );
+    if (key === "kinds")
+      return (
+        pack.kinds.some((k) => k.id === name) ||
+        pack.kindEntries.some((e) => e.kind === name)
+      );
     if (key === "effects") return pack.macros.some((m) => m.decl.id === name);
     if (key === "groups")
       return (pack.manifest.exclusivity ?? []).includes(name);
@@ -1101,6 +1327,7 @@ class Compiler {
         ["quality", "qualities"],
         ["state", "state"],
         ["readable", "readables"],
+        ["kind", "kinds"],
       ] as const) {
         const decls =
           key === "stats"
@@ -1109,19 +1336,25 @@ class Compiler {
                 src: pack.manifestSrc,
                 at: [key, i, "id"] as Path,
               }))
-            : key === "readables"
-              ? pack.readables.filter(declaresReadable).map((q) => ({
-                  d: q.decl,
-                  src: q.src,
-                  at: [q.index, "id"] as Path,
+            : key === "kinds"
+              ? pack.kinds.map((k) => ({
+                  d: { id: k.id },
+                  src: k.src,
+                  at: [] as Path,
                 }))
-              : (key === "qualities" ? pack.qualities : pack.state).map(
-                  (q) => ({
+              : key === "readables"
+                ? pack.readables.filter(declaresReadable).map((q) => ({
                     d: q.decl,
                     src: q.src,
                     at: [q.index, "id"] as Path,
-                  }),
-                );
+                  }))
+                : (key === "qualities" ? pack.qualities : pack.state).map(
+                    (q) => ({
+                      d: q.decl,
+                      src: q.src,
+                      at: [q.index, "id"] as Path,
+                    }),
+                  );
         for (const { d, src, at } of decls) {
           const first = owner.get(`${kind}.${d.id}`);
           if (first === undefined) owner.set(`${kind}.${d.id}`, id);
@@ -1168,6 +1401,7 @@ class Compiler {
         bad("state container", s.decl.id, s.src, [s.index, "id"]);
       for (const r of pack.readables.filter(declaresReadable))
         bad("readable", r.decl.id, r.src, [r.index, "id"]);
+      for (const k of pack.kinds) bad("kind", k.id, k.src, []);
     }
   }
 
@@ -1262,6 +1496,17 @@ class PackCompiler {
   >();
   /** This Pack's compiled macros by id; null: it failed (already reported). */
   private readonly macros = new Map<string, CompiledMacro | null>();
+  /** Kinds this Pack sees (its own and those required capabilities provide), by id. */
+  kinds = new Map<string, { decl: KindSrc; owner: string }>();
+  /** Field types of the visible kinds, for the expression checker. */
+  private kindFields: Record<string, Record<string, ExprType>> = {};
+  /** Readable ids visible to this Pack; kind entry expressions may not read them. */
+  private readonly readableIds = new Set<string>();
+  /**
+   * While true, expressions are those of kind entries: no readables and no `kind(...)` reads,
+   * so a kind read can never loop back to itself.
+   */
+  private entryMode = false;
   owner = "";
 
   readonly c: Compiler;
@@ -1308,6 +1553,7 @@ class PackCompiler {
     for (const r of pack.readables) {
       if (!declaresReadable(r) || !has("readables", r.decl.id)) continue;
       this.baseNames[r.decl.id] = r.decl.type;
+      this.readableIds.add(r.decl.id);
       if (r.decl.kind === "slot") this.slots.set(r.decl.id, r.decl.type);
     }
     for (const { decl: s } of pack.state) {
@@ -1342,6 +1588,24 @@ class PackCompiler {
   compile(): PackBundle {
     const { pack, c } = this;
     const m = pack.manifest;
+    this.kinds = c.visibleKinds(pack);
+    this.kindFields = Object.fromEntries(
+      [...this.kinds].map(([id, { decl }]) => [
+        id,
+        Object.fromEntries(
+          Object.entries(decl.fields).map(([name, f]) => [
+            name,
+            f.type === "ref"
+              ? "id"
+              : f.type === "expr"
+                ? f.returns
+                : f.type === "int"
+                  ? "int"
+                  : "string",
+          ]),
+        ),
+      ]),
+    ) as Record<string, Record<string, ExprType>>;
     // Declarations: own Pack, then what required capabilities export.
     this.addDecls(pack);
     this.checkDeclarations(m);
@@ -1425,6 +1689,7 @@ class PackCompiler {
       .map((s) => ({ ...s.decl }) as StateDecl)
       .sort((a, b) => (a.id < b.id ? -1 : 1));
     const { readables, contributions } = this.readables();
+    const { kinds, kindEntries } = this.compileKinds();
     const migrations = this.migrations(pack, m);
     this.idLock(m, migrations);
     return {
@@ -1439,6 +1704,8 @@ class PackCompiler {
       state,
       readables,
       contributions,
+      kinds,
+      kindEntries,
       exclusivity: [...(m.exclusivity ?? [])],
       ...(m.year
         ? {
@@ -1521,6 +1788,7 @@ class PackCompiler {
         {
           names: { ...this.baseNames, ...paramNames, ...bound },
           persons,
+          kinds: this.kindFields,
           macros: this.macroArity,
         },
         "effect",
@@ -1667,6 +1935,84 @@ class PackCompiler {
     this.owner = this.pack.id;
     readables.sort((a, b) => (a.id < b.id ? -1 : 1));
     return { readables, contributions };
+  }
+
+  // ---- content kinds ------------------------------------------------------
+
+  /** Compile the kinds this Pack declares and the entries it wrote for any visible kind. */
+  private compileKinds(): { kinds: KindDecl[]; kindEntries: KindEntry[] } {
+    const kinds: KindDecl[] = [];
+    for (const k of this.pack.kinds) {
+      this.src = k.src;
+      this.itemIndex = undefined;
+      this.owner = `${this.pack.id}/${k.id}`;
+      const fields: KindFieldDecl[] = [];
+      let ok = true;
+      for (const [name, f] of Object.entries(k.decl.fields)) {
+        if (
+          f.type === "ref" &&
+          !(f.to in REF_TARGETS) &&
+          !this.kinds.has(f.to)
+        ) {
+          this.err(
+            ["fields", name, "to"],
+            `unknown ref target '${f.to}': use a content kind (${Object.keys(REF_TARGETS).join(", ")}) or a kind this Pack can see (${[...this.kinds.keys()].sort().join(", ")})`,
+          );
+          ok = false;
+        } else fields.push({ name, ...f } as KindFieldDecl);
+      }
+      if (ok)
+        kinds.push({
+          id: k.id,
+          ...(k.decl.label === undefined ? {} : { label: k.decl.label }),
+          fields,
+        });
+    }
+    kinds.sort((a, b) => (a.id < b.id ? -1 : 1));
+
+    const kindEntries: KindEntry[] = [];
+    this.entryMode = true;
+    for (const e of this.pack.kindEntries) {
+      this.src = e.src;
+      this.itemIndex = e.index;
+      this.owner = `${this.pack.id}/${e.id}`;
+      const decl = (this.kinds.get(e.kind) as { decl: KindSrc }).decl;
+      const values: Record<string, number | string | Expr> = {};
+      let ok = true;
+      for (const [name, f] of Object.entries(decl.fields)) {
+        const raw = e.data[name];
+        if (f.type === "int" || f.type === "string") {
+          values[name] = raw as number | string;
+        } else if (f.type === "ref") {
+          const full = this.ref(
+            raw as string,
+            f.to in REF_TARGETS ? REF_TARGETS[f.to] : [`kind:${f.to}`],
+            [name],
+          );
+          if (full === undefined) ok = false;
+          else values[name] = full;
+        } else {
+          const x = this.expr(raw as string | number | boolean, f.returns, [
+            name,
+          ]);
+          if (x === undefined) ok = false;
+          else values[name] = x;
+        }
+      }
+      if (ok)
+        kindEntries.push({
+          kind: e.kind,
+          id: `${this.pack.id}/${e.id}`,
+          ...(typeof e.data.label === "string" ? { label: e.data.label } : {}),
+          values,
+        });
+    }
+    this.entryMode = false;
+    this.src = this.pack.manifestSrc;
+    this.itemIndex = undefined;
+    this.owner = this.pack.id;
+    kindEntries.sort((a, b) => (a.id < b.id ? -1 : 1));
+    return { kinds, kindEntries };
   }
 
   // ---- manifest -----------------------------------------------------------
@@ -1820,12 +2166,15 @@ class PackCompiler {
     }
     const kind = this.c.index.get(packId)?.get(full);
     if (!kind) {
-      const what = kinds ? kinds.join(" or ") : "content item";
+      const what = kinds ? kinds.map(kindName).join(" or ") : "content item";
       this.err(path, `dangling reference '${raw}': no ${what} with that id`);
       return undefined;
     }
     if (kinds && !kinds.includes(kind)) {
-      this.err(path, `'${raw}' is a ${kind}, expected ${kinds.join(" or ")}`);
+      this.err(
+        path,
+        `'${raw}' is a ${kindName(kind)}, expected ${kinds.map(kindName).join(" or ")}`,
+      );
       return undefined;
     }
     if (packId !== this.pack.id && !this.exported(packId, full, kind)) {
@@ -1844,6 +2193,10 @@ class PackCompiler {
     for (const req of this.required) {
       const cap = this.c.capabilities.get(req);
       if (!cap || cap.pack !== packId) continue;
+      if (kind.startsWith("kind:")) {
+        if ((cap.provides.kinds ?? []).includes(kind.slice(5))) return true;
+        continue;
+      }
       for (const [key, kinds] of Object.entries(PROVIDES_KINDS))
         if (
           kinds.includes(kind) &&
@@ -1895,9 +2248,14 @@ class PackCompiler {
     persons: readonly string[] = [],
   ): Expr | undefined {
     const text = String(srcValue);
+    const names = { ...this.baseNames, ...extra };
+    if (this.entryMode)
+      for (const id of this.readableIds)
+        if (names[id] === this.baseNames[id]) delete names[id];
     const env: CheckEnv = {
-      names: { ...this.baseNames, ...extra },
+      names,
       aggregates: this.aggregates,
+      ...(this.entryMode ? {} : { kinds: this.kindFields }),
       persons,
     };
     const r = compileExpr(text, env, kind);
@@ -1920,6 +2278,13 @@ class PackCompiler {
     if (tag === "id") {
       const full = this.ref(e[1] as string, kinds, path);
       return full ? ["id", full] : undefined;
+    }
+    if (tag === "call" && e[1] === KIND_CALL) {
+      const k = (e[2] as unknown as readonly [string, string])[1];
+      const id = this.resolveExpr(e[3] as Expr, [`kind:${k}`], path);
+      return id === undefined
+        ? undefined
+        : (["call", KIND_CALL, e[2], id, e[4]] as unknown as Expr);
     }
     if (tag === "call" && GROUP_FUNCTIONS.has(e[1] as string)) {
       const g = (e[2] as unknown as readonly string[])[1] as string;
@@ -2285,6 +2650,7 @@ class PackCompiler {
         {
           names: { ...this.baseNames, ...scopeNames, ...bound },
           persons,
+          kinds: this.kindFields,
           macros: this.macroArity,
         },
         "effect",
@@ -2698,7 +3064,7 @@ class PackCompiler {
 
   /** Normalise a migration id to a full id (`<pack>/<id>`) or a declared name (`stat.x`). */
   private migId(raw: string, path: Path): string | undefined {
-    if (/^(stat|quality|state|readable)\./.test(raw)) return raw;
+    if (/^(stat|quality|state|readable|kind)\./.test(raw)) return raw;
     const slash = raw.indexOf("/");
     if (slash >= 0 && raw.slice(0, slash) !== this.pack.id) {
       this.err(
@@ -2717,6 +3083,7 @@ class PackCompiler {
     for (const s of m.stats ?? []) ids.add(`stat.${s.id}`);
     for (const q of this.pack.qualities) ids.add(`quality.${q.decl.id}`);
     for (const s of this.pack.state) ids.add(`state.${s.decl.id}`);
+    for (const k of this.pack.kinds) ids.add(`kind.${k.id}`);
     for (const r of this.pack.readables)
       if (declaresReadable(r)) ids.add(`readable.${r.decl.id}`);
     return ids;
@@ -2760,7 +3127,7 @@ class PackCompiler {
         let fallback: string | null = null;
         if (r.fallback !== undefined) {
           fallback =
-            /^(stat|quality|state|readable)\./.test(r.fallback) &&
+            /^(stat|quality|state|readable|kind)\./.test(r.fallback) &&
             current.has(r.fallback)
               ? r.fallback
               : (this.ref(r.fallback, undefined, ["remove", i, "fallback"]) ??

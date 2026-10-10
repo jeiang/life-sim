@@ -18,6 +18,7 @@ import {
 } from "../state/types.ts";
 import { getPerson } from "../state/world.ts";
 import { incomeTier } from "./careers.ts";
+import { KIND_CALL, kindValue } from "./kinds.ts";
 import {
   confinementOf,
   costIndexOf,
@@ -326,6 +327,14 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
           subject,
           name.slice(AGGREGATE_PREFIX.length) as Aggregate,
           args[0] as string,
+        );
+      if (name === KIND_CALL)
+        return kindValue(
+          idx.kinds,
+          args[0] as string,
+          args[1] as string,
+          args[2] as string,
+          (e) => evaluate(e, makeEnv(world, idx, { subject: scope.subject })),
         );
       const id = args[0] as string;
       switch (name) {

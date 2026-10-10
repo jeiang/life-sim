@@ -18,7 +18,7 @@ export type Node = Pos &
     | { k: "bin"; op: string; l: Node; r: Node }
     | { k: "in"; l: Node; items: Node[] }
     | { k: "tern"; c: Node; a: Node; b: Node }
-    | { k: "call"; name: string; args: Node[] }
+    | { k: "call"; name: string; args: Node[]; field?: string }
   );
 
 export type Stmt = Pos &
@@ -168,10 +168,17 @@ class Parser {
       if (this.is("op", "(")) {
         if (String(t.value).includes("."))
           this.fail(`'${t.value}' is not a function`, t);
+        const args = this.args();
+        // `kind("<kind>", <id>).<field>`: the one call a field read follows.
+        const field =
+          t.value === "kind" && this.accept("op", ".")
+            ? (this.ident("a field name").value as string)
+            : undefined;
         return {
           k: "call",
           name: t.value as string,
-          args: this.args(),
+          args,
+          ...(field === undefined ? {} : { field }),
           ...pos,
         };
       }

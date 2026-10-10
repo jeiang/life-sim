@@ -17,6 +17,7 @@ import {
   type StatDecl,
   type StateDecl,
 } from "../pack.ts";
+import { indexKinds, type KindIndexEntry } from "./kinds.ts";
 import { indexReadables, type ReadableEntry } from "./readables.ts";
 
 /** Lookup tables over a set of bundles, built once per bundle array. */
@@ -44,6 +45,8 @@ export interface PackIndex {
   readonly state: ReadonlyMap<string, StateDecl>;
   /** Readables and slots by bare id, each slot with every term contributed to it. */
   readonly readables: ReadonlyMap<string, ReadableEntry>;
+  /** Pack-declared content kinds by id, each with every instance written for it. */
+  readonly kinds: ReadonlyMap<string, KindIndexEntry>;
   readonly currency: { readonly symbol: string; readonly digits: number };
   /** Starting family from the first manifest that declares one. */
   readonly family: FamilyDecl | undefined;
@@ -173,6 +176,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     qualities,
     state,
     readables: indexReadables(bundles, owners),
+    kinds: indexKinds(bundles),
     currency,
     family,
     npcCareers,

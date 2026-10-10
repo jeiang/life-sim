@@ -1,0 +1,5 @@
+requires:
+  - world/countries
+provides:
+  kinds:
+    - countries

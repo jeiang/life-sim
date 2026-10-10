@@ -29,6 +29,8 @@ const withQuality = (id: string, quality: string): PackBundle => ({
   storylets: [],
   readables: [],
   contributions: [],
+  kinds: [],
+  kindEntries: [],
   occupations: [],
   items: [],
   loans: [],

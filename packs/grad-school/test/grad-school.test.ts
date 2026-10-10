@@ -593,7 +593,7 @@ describe("programs end", () => {
     for (const [i, d] of [
       [0, 5],
       [1, 1],
-      [2, -4],
+      [2, -6],
     ] as const) {
       const r = fire(
         w,

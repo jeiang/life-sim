@@ -278,6 +278,17 @@
       effects:
         - stat.looks -= 1
 
+- id: looks-decline
+  icon: 🪞
+  trigger: event
+  chance: 40%
+  when: age >= 40 and stat.looks > 0
+  text: "Time takes its toll on {player.first_name}'s looks."
+  outcomes:
+    - weight: 1
+      effects:
+        - stat.looks -= 1 + (age - 40) / 25
+
 - id: wear-and-tear
   icon: 🩹
   trigger: event

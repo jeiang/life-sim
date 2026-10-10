@@ -1,0 +1,3 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/readables.schema.json
+# Fame fades 5 points for every year since it was last set (`fame_age`); every reader sees the same lazy decay.
+- { kind: readable, id: fame_value, type: int, expr: "max(0, quality.fame - (age - quality.fame_age) * 5)" }

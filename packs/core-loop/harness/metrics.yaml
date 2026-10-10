@@ -1,0 +1,24 @@
+# Harness metrics for the core-loop Pack; the schema is docs/spec/harness.md#pack-metrics.
+title: Core loop
+intro: Looks by age (the `looks-fade` and `looks-decline` events pull looks down after 30 and 40; the gym is the offset).
+measures:
+  looks: { snapshot: { stat: looks }, ages: [18, 40, 65] }
+stats:
+  looks_median:
+    kind: median
+    value: looks
+    by: profile
+    ages: [18, 40, 65]
+    label: looks (median)
+  looks_dist:
+    kind: dist
+    value: looks
+    ages: [18, 40, 65]
+    label: looks
+blocks:
+  - text: "Looks at 18, 40 and 65 by profile:"
+  - stats:
+      - looks_median
+  - text: "Distribution of looks by age:"
+  - stats:
+      - looks_dist

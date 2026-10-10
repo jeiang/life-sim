@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+# Leaf capability: other Packs (Social media) read `fame_value` and call `core_loop.add_fame(points)`; never write `fame` directly.
+provides:
+  qualities:
+    - fame
+    - fame_age
+  readables:
+    - fame_value
+  effects:
+    - add_fame

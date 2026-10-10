@@ -60,12 +60,13 @@ describe("metrics.yaml validation", () => {
     );
   };
 
-  test("the Gambling and Vacations Packs declare valid metrics", () => {
+  test("the core-loop, Gambling and Vacations Packs declare valid metrics", () => {
     const all = bundlesOf(dirWith("core-loop", "gambling", "vacations"));
     const dir = dirWith("core-loop", "gambling", "vacations");
     const loaded = loadMetrics(dir, all);
     expect(loaded.diagnostics).toEqual([]);
     expect(loaded.metrics.map((m) => m.pack)).toEqual([
+      "core-loop",
       "gambling",
       "vacations",
     ]);

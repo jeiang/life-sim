@@ -4,7 +4,7 @@ name: release
 # seed-sharded harness matrix over every profile, runs each forced script, fails on
 # engine faults, never-matched forced entries and never-fired content, then merges
 # the shards into one report (job summary, workflow artifact, release asset).
-# It also rewrites ids.lock.json (docs/spec/ci.md#release-workflow).
+# It also rewrites ids.lock.json (docs/spec/ci.md#github-actions-release-vn).
 #
 # `workflow_dispatch` is the dry run: smaller sizes, never pushes anything and never
 # touches a release. `inject_fault` adds a fixture that must fail the workflow.

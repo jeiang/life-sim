@@ -1,5 +1,5 @@
 // Syncs project Status with GitHub issue dependencies ("blocked by" links).
-// Rules: see docs/spec/ci.md. Idempotent. Only two transitions:
+// Idempotent. Only two transitions:
 //   Blocked -> Todo   (no open blockers; posts one comment)
 //   Todo/empty -> Blocked (open blocker, no assignee, no open linked PR)
 // Issue data uses the default GITHUB_TOKEN; PROJECT_TOKEN is used only for Projects v2.

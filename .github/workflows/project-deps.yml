@@ -1,7 +1,7 @@
 name: Project dependencies
 
 # Keeps the Status field of user project #2 in sync with issue dependencies
-# ("blocked by" links). See docs/spec/ci.md.
+# ("blocked by" links). Rules: .github/scripts/project-deps.cjs.
 
 on:
   issues:
@@ -38,4 +38,4 @@ jobs:
             const run = require("./.github/scripts/project-deps.cjs");
             await run({ github, context, core });
       - if: env.PROJECT_TOKEN == ''
-        run: echo "::notice::PROJECT_TOKEN secret is not set; skipping project dependency sync. See docs/spec/ci.md."
+        run: echo "::notice::PROJECT_TOKEN secret is not set; skipping project dependency sync."

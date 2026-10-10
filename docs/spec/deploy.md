@@ -4,9 +4,9 @@ Decided in [Deployment path to the cluster](https://github.com/jeiang/life-sim/i
 
 ## Visibility
 
-`jeiang/life-sim` becomes **public** before the first deploy. This is a build task, done with explicit approval at that time. As a result, the cluster flake input needs no credentials (same as the other static-site inputs), and the Mac, cornn-flaek CI, and buildbot need no tokens.
+`jeiang/life-sim` becomes **public** before the first deploy. This is a build task, done with explicit approval at that time. As a result, the cluster flake input needs no credentials (same as the other static-site inputs), and the Mac and cornn-flaek CI need no tokens.
 
-Before the flip, review everything that becomes public: all branches (including `research/*` and `prototype/*`), all issues and comments, and the project board. The cluster details there (host names, edge layout, buildbot and garret endpoints, the garret OIDC client id) already appear in the public cluster repo `jeiang/.dotfiles`. Check anyway that no secret values or personal data were written down, and offer to delete throwaway branches or redact issue text before running `gh repo edit --visibility public`.
+Before the flip, review everything that becomes public: all branches (including `research/*` and `prototype/*`), all issues and comments, and the project board. The cluster details there (host names and edge layout) already appear in the public cluster repo `jeiang/.dotfiles`. Check anyway that no secret values or personal data were written down, and offer to delete throwaway branches or redact issue text before running `gh repo edit --visibility public`.
 
 ## Hosting
 
@@ -18,7 +18,7 @@ Before the flip, review everything that becomes public: all branches (including 
 
 | File | Change |
 |---|---|
-| `flake.nix`, `flake.lock` | `inputs.life-sim.url = "github:jeiang/life-sim"`, **without** `inputs.nixpkgs.follows`, so the derivation matches what buildbot built and pushed to garret |
+| `flake.nix`, `flake.lock` | `inputs.life-sim.url = "github:jeiang/life-sim"`; alda builds the package itself at deploy time |
 | `modules/edge/default.nix` | Hostname in `publicHostnames`, a `let` binding, and a site block with `root * <package>/dist` and `file_server` |
 | `modules/gatus/default.nix` | Status probe following the existing static-site precedent |
 | `modules/glance.nix` | Optional dashboard tile |
@@ -37,16 +37,16 @@ Observed after the first deploy: Cloudflare's Browser Cache TTL rewrites `/sw.js
 
 ## Release flow
 
-1. A change merges to life-sim `main`. buildbot builds it and pushes the outputs to garret within about 5 minutes ([CI](ci.md)).
+1. A change merges to life-sim `main` through a pull request gated by [CI](ci.md). No CI system builds or caches the flake for the cluster.
 2. A build agent (or you) opens a cornn-flaek PR from `nix flake update life-sim`, following that repo's AGENTS.md (signed Conventional Commits, PR to protected main).
-3. You merge after cornn-flaek CI passes and run `just deploy alda --skip-checks --remote-build`. alda downloads the build from garret.
+3. You merge after cornn-flaek CI passes and run `just deploy alda --skip-checks --remote-build`, which builds life-sim on alda.
 4. Rollback: switch to the previous NixOS generation.
 
 Agents prepare cornn-flaek PRs. Merging and deploying stay your explicit actions.
 
 ## Hidden options code
 
-The code that opens Settings > Hidden options (god mode, 18+ mode) is checked in the browser with bcrypt against a hash given to the build as `VITE_HIDDEN_CODE_HASH`. The plain code is never in the repo, bundle, PRs or logs; the hash is in the bundle. A build without the variable shows no code field. The default package and the buildbot build leave it unset.
+The code that opens Settings > Hidden options (god mode, 18+ mode) is checked in the browser with bcrypt against a hash given to the build as `VITE_HIDDEN_CODE_HASH`. The plain code is never in the repo, bundle, PRs or logs; the hash is in the bundle. A build without the variable shows no code field. The default package leaves it unset.
 
 Make a hash with the helper (cost 12 by default; `COST=10` changes it). It reads the code without echo from a prompt, or from stdin (`printf '%s' "$code" | ...`) or env `CODE`, never from the command line, so the code stays out of shell history and `ps`. It prints only the hash:
 
@@ -62,7 +62,7 @@ The cluster build (cornn-flaek `modules/edge/default.nix`) passes it by overridi
 lifeSim = "${inputs.life-sim.packages.${system}.default.overrideAttrs (_: { VITE_HIDDEN_CODE_HASH = "$2b$12$..."; })}/dist";
 ```
 
-That derivation is not the one buildbot pushed to garret, so `just deploy alda --skip-checks --remote-build` builds it on the target (the pnpm dependencies still come from the cache). The e2e build uses a throwaway code and hash (`e2e/playwright.config.ts`).
+That derivation is built on alda by `just deploy alda --skip-checks --remote-build`, like any other life-sim build. The e2e build uses a throwaway code and hash (`e2e/playwright.config.ts`).
 
 ## Version skew
 

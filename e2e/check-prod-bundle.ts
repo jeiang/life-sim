@@ -2,7 +2,13 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const FORBIDDEN = ["__life", "playFixedLives", "e2e-chain"];
+const FORBIDDEN = [
+  "__life",
+  "playFixedLives",
+  "e2e-chain",
+  "setStreamOverride",
+  "ScriptedRng",
+];
 const dist = process.argv[2];
 if (!dist) throw new Error("usage: check-prod-bundle.ts <dist dir>");
 

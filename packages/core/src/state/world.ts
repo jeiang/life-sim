@@ -1,4 +1,4 @@
-import { type Rng, streamFor } from "../rng.ts";
+import { forcedStream, type Rng, streamFor } from "../rng.ts";
 import {
   type Asset,
   type Holding,
@@ -225,6 +225,7 @@ export function nextStream(
   const counter = world.rngCounters[key] ?? 0;
   return [
     { ...world, rngCounters: { ...world.rngCounters, [key]: counter + 1 } },
-    streamFor(world.seed, age, purposeKey, counter, world.generation),
+    forcedStream(age, purposeKey, counter) ??
+      streamFor(world.seed, age, purposeKey, counter, world.generation),
   ];
 }

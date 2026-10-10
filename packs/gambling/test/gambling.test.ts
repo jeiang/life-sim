@@ -7,9 +7,12 @@ import {
   listActions,
   newLife,
   runAction,
+  ScriptedRng,
   setQuality,
+  setStreamOverride,
   updatePerson,
   type World,
+  worldHash,
 } from "../../../packages/core/src/index.ts";
 import type { CompiledOutcome } from "../../../packages/core/src/pack.ts";
 import { applyEffects } from "../../../packages/core/src/sim/effects.ts";
@@ -611,5 +614,67 @@ describe("friends, tips and splurges stake a share of cash and never overdraw", 
     ).toBeGreaterThan(0);
     const keep = apply(rich, outcomesOf("big-win-splurge", 1)[0] as Outcome);
     expect(me(keep).money).toBe(10000000);
+  });
+});
+
+describe("forced outcomes (setStreamOverride)", () => {
+  test("outcome/gambling/play-slots forced by label; neighbours' rolls are unchanged", () => {
+    const jackpot = outcomesOf("play-slots")[0] as Outcome;
+    const w = life(10000);
+    const free = runAction(w, bundles, G("play-slots"), undefined, 100).world;
+    setStreamOverride((_age, key) =>
+      key === `outcome/${G("play-slots")}`
+        ? new ScriptedRng({ pick: jackpot.text as string })
+        : undefined,
+    );
+    try {
+      const forced = runAction(
+        w,
+        bundles,
+        G("play-slots"),
+        undefined,
+        100,
+      ).world;
+      expect(me(forced).money).toBe(10000 + 100 * 99);
+      // The counter advanced exactly as the unforced run's did.
+      expect(forced.rngCounters).toEqual(free.rngCounters);
+      const other = runAction(
+        w,
+        bundles,
+        G("buy-lottery-ticket"),
+        undefined,
+        undefined,
+      ).world;
+      setStreamOverride(null);
+      const otherFree = runAction(w, bundles, G("buy-lottery-ticket")).world;
+      expect(worldHash(other)).toBe(worldHash(otherFree));
+    } finally {
+      setStreamOverride(null);
+    }
+  });
+
+  test("a forced pick by index and by an unknown label", () => {
+    const w = life(10000);
+    setStreamOverride((_a, key) =>
+      key === `outcome/${G("play-slots")}`
+        ? new ScriptedRng({ pick: 0 })
+        : undefined,
+    );
+    try {
+      const forced = runAction(
+        w,
+        bundles,
+        G("play-slots"),
+        undefined,
+        100,
+      ).world;
+      expect(me(forced).money).toBe(10000 + 100 * 99);
+      setStreamOverride(() => new ScriptedRng({ pick: "no such text" }));
+      expect(() =>
+        runAction(w, bundles, G("play-slots"), undefined, 100),
+      ).toThrow(/matches no label/);
+    } finally {
+      setStreamOverride(null);
+    }
   });
 });

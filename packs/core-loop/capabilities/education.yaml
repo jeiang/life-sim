@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+provides:
+  qualities:
+    - graduated_high_school
+    - has_degree_business
+    - has_degree_engineering
+    - has_degree_nursing
+    - has_degree_arts
+    - has_drivers_license
+    - tuition_by_loan
+  groups:
+    - school
+  occupations:
+    - elementary-school
+    - high-school
+    - university-business
+    - university-engineering
+    - university-nursing
+    - university-arts
+  loans:
+    - student-loan

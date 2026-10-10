@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+provides:
+  qualities:
+    - years_worked
+    - times_promoted
+    - raise_bonus
+    - work_effort
+    - applying_for
+    - interview_score
+  groups:
+    - full-time
+    - part-time
+  occupations:
+    - cashier
+    - barista
+    - server
+    - shift-lead
+    - restaurant-manager
+    - apprentice
+    - electrician
+    - master-electrician
+    - junior-analyst
+    - analyst
+    - senior-analyst
+    - junior-engineer
+    - engineer
+    - senior-engineer
+    - staff-nurse
+    - charge-nurse
+    - nurse-manager
+    - studio-assistant
+    - designer
+    - art-director
+    - retired

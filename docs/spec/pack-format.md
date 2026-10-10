@@ -7,6 +7,7 @@ Decided in [Pack format and expression language](https://github.com/jeiang/life-
 ```
 packs/<pack-id>/
   pack.yaml                  # manifest
+  capabilities/<feature>.yaml  # one file per feature: provides and requires (see Capabilities)
   storylets/<topic>.yaml     # list of storylets
   occupations/<topic>.yaml   # occupation kinds
   items/<topic>.yaml         # item kinds
@@ -24,8 +25,7 @@ packs/<pack-id>/
 
 | Field | Meaning |
 |---|---|
-| `id`, `version` | Pack id and integer version. Saves record the version. |
-| `depends` | Pack ids this Pack references. Only these can be referenced. |
+| `id` | Pack id; equals the directory name. A Pack has no integer version: what a Pack offers is its capabilities, and the Packs it uses are derived from their `requires`. |
 | `currency` | Symbol and minor-unit digits (only in the Pack that sets the currency). |
 | `stats` | Declared stats: id, label, icon, start range. Always 0 to 100. |
 | `qualities` | Declared qualities: id, type (`int` with optional min/max, or `flag`), default. |
@@ -38,9 +38,30 @@ packs/<pack-id>/
 
 ## Composition
 
-- Add-only. A Pack can add content and reference ids from the Packs it depends on. It cannot override or patch another Pack's content.
-- Stat and quality ids are bare and shared by every loaded Pack, so no two Packs may declare the same one. The compiler (and `indexBundles` at load) rejects a duplicate with an error naming both Packs and the id. Convention: a Pack prefixes its own qualities with its short name (`vac_`, `gambling_`, `moved_`). A quality several Packs need (for example `criminal_record`) is declared once in `core-loop`, and other Packs depend on `core-loop` and use it.
+- Add-only. A Pack can add content and reference ids that the Packs it requires export through capabilities. It cannot override or patch another Pack's content.
+- Stat and quality ids are bare and shared by every loaded Pack, so no two Packs may declare the same one. The compiler (and `indexBundles` at load) rejects a duplicate with an error naming both Packs and the id. Convention: a Pack prefixes its own qualities with its short name (`vac_`, `gambling_`, `moved_`). A quality several Packs need (for example `criminal_record`) is declared once in `core-loop`, and other Packs require a `core-loop` capability that provides it.
 - Content ids are permanent. A shipped id that disappears without a migration entry fails the build (compared against the previous release's id list).
+
+## Capabilities
+
+`packs/<id>/capabilities/<feature>.yaml` declares one feature of a Pack. Its id is `<pack>/<feature>` (the file stem). Schema: `packages/pack-tools/schema/capability.schema.json`.
+
+```yaml
+provides:
+  qualities:
+    - criminal_record
+    - wanted
+  roles:
+    - parent
+requires:
+  - core-loop/stats
+```
+
+- `provides` lists the bare ids this feature exports, per category: `stats`, `qualities`, `groups` (exclusivity groups), `tags`, `milestones`, `roles`, `generators`, `cities`, `occupations`, `items` (item kinds and markets), `loans`, `standards`, `storylets`. Every id except `tags` and `milestones` (opaque labels, not checked) must exist in the providing Pack. A feature of a Pack may not export an id another feature of that Pack already exports. Every key is optional; a file with neither key is valid.
+- `requires` lists capability ids (`<pack>/<feature>`) of other Packs. Each must be provided by a loaded Pack. A missing one fails the build with the Pack and the capability named (`Pack 'x' requires capability 'y/z', but Pack 'y' has no capabilities/z.yaml`).
+- Lists are block lists only, one entry per line (a flow list `[a, b]` is an error), so that two branches adding a line merge cleanly. Adding a capability file, or a line to one, never edits another Pack's files.
+- Visibility: a Pack may use another Pack's stats, qualities and exclusivity groups (in expressions) and content ids (in references) only when a capability of that Pack, required by one of the using Pack's own capability files, provides them. Anything else is a compile error saying the id is not exported by a required capability. Own-Pack ids need no capability.
+- Pack order is derived: a Pack compiles after every Pack whose capabilities it requires. A cycle between Packs is an error. The bundle (`PackBundle`) records `capabilities` (ids provided), `requires` (ids required) and `depends` (the derived Pack ids).
 
 ## Storylet
 
@@ -296,7 +317,7 @@ The Pack compiler (Node, at build time) fails on any of:
 
 - YAML syntax errors, schema violations (TypeBox), or duplicate ids.
 - Expressions that fail to parse, reference undeclared names, or have type errors (for example an integer where a boolean is needed).
-- Undeclared Pack dependencies, or dangling ids in references, `next`, or effects.
+- Required capabilities that no Pack provides, capability cycles, references or names not exported by a required capability, or dangling ids in references, `next`, or effects.
 - Unknown placeholders or unknown icons.
 - Ids removed or renamed without a migration entry.
 

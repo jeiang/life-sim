@@ -168,7 +168,10 @@ describe("build checks fail", () => {
       { "base/loans/kinds.yaml": sub("  term_years: 5\n", "") },
       "missing required field 'term_years'",
     );
-    expectError({ "base/pack.yaml": sub("version: 2", "version: 0") });
+    expectError(
+      { "base/pack.yaml": sub("id: base\n", "id: base\nversion: 2\n") },
+      "unknown field 'version'",
+    );
   });
 
   test("duplicate ids, within and across files and kinds", () => {
@@ -247,31 +250,95 @@ describe("build checks fail", () => {
     );
   });
 
-  test("undeclared Pack dependency", () => {
+  test("a Pack that requires nothing cannot reference another Pack", () => {
     expectError(
-      { "extra/pack.yaml": sub("depends: [base]", "depends: []") },
-      "'base/cashier' refers to Pack 'base', which is not declared in depends",
+      { "extra/capabilities/bonus.yaml": "provides: {}\n" },
+      "'base/cashier' refers to Pack 'base', but no capability of Pack 'extra' requires one of its capabilities",
     );
   });
 
-  test("dependency on an unknown Pack, self, and cycles", () => {
+  test("a required capability that no Pack provides names the Pack and the capability", () => {
     expectError(
-      { "extra/pack.yaml": sub("[base]", "[nowhere]") },
-      "unknown dependency 'nowhere'",
+      { "extra/capabilities/bonus.yaml": sub("base/economy", "base/nowhere") },
+      "Pack 'extra' requires capability 'base/nowhere', but Pack 'base' has no capabilities/nowhere.yaml",
     );
     expectError(
-      { "extra/pack.yaml": sub("[base]", "[extra]") },
-      "cannot depend on itself",
+      { "extra/capabilities/bonus.yaml": sub("base/economy", "ghost/feature") },
+      "Pack 'extra' requires capability 'ghost/feature', but no Pack 'ghost' is loaded",
+    );
+  });
+
+  test("a reference must resolve through a required capability", () => {
+    expectError(
+      {
+        "base/capabilities/economy.yaml": sub(
+          "  occupations:\n    - cashier\n",
+          "",
+        ),
+      },
+      "'base/cashier' is not exported by any capability that Pack 'extra' requires",
+    );
+  });
+
+  test("a provided id must exist in the providing Pack", () => {
+    expectError(
+      { "base/capabilities/economy.yaml": sub("- phone", "- nope") },
+      "'base/economy' provides items 'nope', but Pack 'base' declares none",
     );
     expectError(
-      { "base/pack.yaml": sub("id: base\n", "id: base\ndepends: [extra]\n") },
-      "dependency cycle",
+      { "base/capabilities/economy.yaml": sub("- phone", "- cashier") },
+      "provides items 'cashier'",
     );
+  });
+
+  test("capability files use block lists and the schema", () => {
+    expectError(
+      { "extra/capabilities/bonus.yaml": "requires: [base/economy]\n" },
+      "flow list",
+    );
+    expectError(
+      { "extra/capabilities/bonus.yaml": "requires:\n  - base\n" },
+      "extra/capabilities/bonus.yaml",
+    );
+    expectError(
+      { "extra/capabilities/bonus.yaml": "colour: red\n" },
+      "unknown field 'colour'",
+    );
+  });
+
+  test("a feature id is provided once per Pack", () => {
+    expectError(
+      {
+        "base/capabilities/more.yaml": "provides:\n  items:\n    - phone\n",
+      },
+      "items 'phone' is provided by both",
+    );
+  });
+
+  test("capability cycles between Packs", () => {
+    expectError(
+      {
+        "base/capabilities/back.yaml": "requires:\n  - extra/bonus\n",
+      },
+      "capability cycle",
+    );
+  });
+
+  test("the bundle lists its capabilities, requirements and derived dependencies", () => {
+    const r = compilePacks(VALID);
+    const extra = r.bundles.find((b) => b.id === "extra");
+    expect(extra?.capabilities).toEqual(["extra/bonus"]);
+    expect(extra?.requires).toEqual(["base/economy"]);
+    expect(extra?.depends).toEqual(["base"]);
+    expect(r.bundles.find((b) => b.id === "base")?.capabilities).toEqual([
+      "base/economy",
+      "base/people",
+    ]);
   });
 
   test("a quality or stat declared by two Packs names both Packs", () => {
     const dup = (decl: string) => (t: string) => `${t}${decl}`;
-    // extra depends on base.
+    // extra requires a capability of base.
     expectError(
       {
         "extra/pack.yaml": dup(
@@ -288,11 +355,12 @@ describe("build checks fail", () => {
       },
       "stat 'smarts' is declared by both Pack 'base' and Pack 'extra'",
     );
-    // No dependency between the Packs.
+    // No requirement between the Packs.
     expectError(
       {
+        "extra/capabilities/bonus.yaml": "provides: {}\n",
         "extra/pack.yaml":
-          "id: extra\nversion: 1\nqualities:\n  - { id: has_diploma, type: flag, default: false }\n",
+          "id: extra\nqualities:\n  - { id: has_diploma, type: flag, default: false }\n",
       },
       "quality 'has_diploma' is declared by both Pack 'base' and Pack 'extra'",
     );
@@ -388,7 +456,7 @@ describe("build checks fail", () => {
           "start_occupation(extra/anything)",
         ),
       },
-      "not declared in depends",
+      "but no capability of Pack 'base' requires one of its capabilities",
     );
   });
 
@@ -527,7 +595,7 @@ describe("build checks fail", () => {
           '"base/cashier",\n    "base/lost-job"',
         ),
       },
-      "id 'base/lost-job' shipped in release v1 but is gone",
+      "id 'base/lost-job' shipped in the last release but is gone",
     );
   });
 
@@ -557,16 +625,6 @@ describe("build checks fail", () => {
         "base/pack.yaml": sub("fallback: first-job-offer", "fallback: missing"),
       },
       "dangling reference 'missing'",
-    );
-  });
-
-  test("version may not go backwards", () => {
-    expectError(
-      {
-        "base/pack.yaml": sub("version: 2", "version: 1"),
-        "base/ids.lock.json": sub('"version": 1', '"version": 3'),
-      },
-      "lower than the released version",
     );
   });
 

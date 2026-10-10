@@ -3,22 +3,11 @@
   "additionalProperties": false,
   "title": "Pack manifest (pack.yaml)",
   "type": "object",
-  "required": ["id", "version"],
+  "required": ["id"],
   "properties": {
     "id": {
       "pattern": "^[a-z][a-z0-9-]*$",
       "type": "string"
-    },
-    "version": {
-      "minimum": 1,
-      "type": "integer"
-    },
-    "depends": {
-      "type": "array",
-      "items": {
-        "pattern": "^[a-z][a-z0-9-]*$",
-        "type": "string"
-      }
     },
     "currency": {
       "additionalProperties": false,

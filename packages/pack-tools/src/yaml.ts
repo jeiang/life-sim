@@ -1,7 +1,14 @@
 import type { Static, TSchema } from "@sinclair/typebox";
 import { type ValueError, ValueErrorType } from "@sinclair/typebox/errors";
 import { Value } from "@sinclair/typebox/value";
-import { type Document, isNode, LineCounter, parseDocument } from "yaml";
+import {
+  type Document,
+  isNode,
+  isSeq,
+  LineCounter,
+  parseDocument,
+  visit,
+} from "yaml";
 import type { Diagnostic } from "./diagnostics.ts";
 
 export type Path = readonly (string | number)[];
@@ -23,12 +30,14 @@ export function formatPath(path: Path): string {
 
 /**
  * Strict YAML 1.2 (core schema: `yes`/`no` are strings, not booleans), duplicate keys are
- * errors, and a file holds exactly one document.
+ * errors, and a file holds exactly one document. With `blockListsOnly`, a flow list
+ * (`[a, b]`) is an error: one entry per line keeps git merges clean.
  */
 export function parseYaml(
   file: string,
   text: string,
   diags: Diagnostic[],
+  blockListsOnly = false,
 ): Source | null {
   const lineCounter = new LineCounter();
   const doc = parseDocument(text, {
@@ -49,6 +58,25 @@ export function parseYaml(
     });
   }
   if (doc.errors.length > 0) return null;
+  if (blockListsOnly) {
+    let flow = false;
+    visit(doc, {
+      Seq(_, node) {
+        if (!isSeq(node) || !node.flow || !node.range) return;
+        flow = true;
+        const pos = lineCounter.linePos(node.range[0]);
+        diags.push({
+          file,
+          path: "",
+          message:
+            "flow list ([a, b]) is not allowed here: write a block list with one entry per line",
+          line: pos.line,
+          column: pos.col,
+        });
+      },
+    });
+    if (flow) return null;
+  }
   return {
     file,
     value: doc.toJS({ maxAliasCount: 0 }),

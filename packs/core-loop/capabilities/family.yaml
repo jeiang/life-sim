@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+provides:
+  roles:
+    - parent
+    - sibling
+    - classmate
+    - coworker
+    - friend
+    - partner
+    - spouse
+    - child
+  generators:
+    - parent-gen
+    - sibling-gen
+    - classmate-gen
+    - coworker-gen
+  qualities:
+    - family_wealth

@@ -1,5 +1,4 @@
 id: life
-version: 1
 currency:
   symbol: "$"
   digits: 2

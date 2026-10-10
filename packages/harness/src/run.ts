@@ -13,6 +13,7 @@ import {
   netWorth,
   newLife,
   type PackBundle,
+  packRevision,
   parseSave,
   purchase,
   REPOSSESSION_MISSES,
@@ -220,7 +221,7 @@ function checkSave(w: World, bundles: readonly PackBundle[]): string | null {
   const save: SaveFile = {
     schemaVersion: SAVE_SCHEMA_VERSION,
     packVersions: bundles
-      .map((b) => ({ id: b.id, version: String(b.version) }))
+      .map((b) => ({ id: b.id, version: String(packRevision(b)) }))
       .sort((a, b) => (a.id < b.id ? -1 : 1)),
     lives: [{ id: "harness", name: "harness", world: w }],
     graveyard: [],

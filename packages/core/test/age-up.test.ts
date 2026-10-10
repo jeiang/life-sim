@@ -66,8 +66,8 @@ describe("newLife", () => {
     for (const r of kin)
       expect(getPerson(w, r.to).familyName).toBe(p.familyName);
     expect(w.packVersions).toEqual([
-      { id: "core-loop", version: "1" },
-      { id: "life", version: "1" },
+      { id: "core-loop", version: "0" },
+      { id: "life", version: "0" },
     ]);
   });
 

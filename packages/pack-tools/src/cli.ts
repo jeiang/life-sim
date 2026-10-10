@@ -39,10 +39,9 @@ function main(argv: string[]): number {
     for (const bundle of result.bundles) {
       writeLock(join(a, bundle.id), {
         pack: bundle.id,
-        version: bundle.version,
         ids: [...(result.ids.get(bundle.id) ?? [])],
       });
-      console.log(`locked ${bundle.id} v${bundle.version}`);
+      console.log(`locked ${bundle.id}`);
     }
     return 0;
   }

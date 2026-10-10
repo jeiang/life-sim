@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "title": "Capability",
+  "type": "object",
+  "properties": {
+    "provides": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "stats": {
+          "uniqueItems": true,
+          "description": "Bare ids of stats this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          }
+        },
+        "qualities": {
+          "uniqueItems": true,
+          "description": "Bare ids of qualities this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          }
+        },
+        "groups": {
+          "uniqueItems": true,
+          "description": "Bare ids of exclusivity groups this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          }
+        },
+        "tags": {
+          "uniqueItems": true,
+          "description": "Bare ids of storylet tags this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          }
+        },
+        "milestones": {
+          "uniqueItems": true,
+          "description": "Bare ids of milestones this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          }
+        },
+        "roles": {
+          "uniqueItems": true,
+          "description": "Bare ids of people roles this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          }
+        },
+        "generators": {
+          "uniqueItems": true,
+          "description": "Bare ids of people generators this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          }
+        },
+        "cities": {
+          "uniqueItems": true,
+          "description": "Bare ids of cities this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          }
+        },
+        "occupations": {
+          "uniqueItems": true,
+          "description": "Bare ids of occupation kinds this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          }
+        },
+        "items": {
+          "uniqueItems": true,
+          "description": "Bare ids of item kinds and markets this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          }
+        },
+        "loans": {
+          "uniqueItems": true,
+          "description": "Bare ids of loan kinds this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          }
+        },
+        "standards": {
+          "uniqueItems": true,
+          "description": "Bare ids of standards of living this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          }
+        },
+        "storylets": {
+          "uniqueItems": true,
+          "description": "Bare ids of storylets this feature exports (block list, one id per line)",
+          "type": "array",
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "requires": {
+      "uniqueItems": true,
+      "description": "Capabilities (`<pack>/<feature>`) of other Packs this feature uses (block list, one id per line)",
+      "type": "array",
+      "items": {
+        "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9_-]*$",
+        "type": "string"
+      }
+    }
+  }
+}

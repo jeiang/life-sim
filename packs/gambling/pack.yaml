@@ -1,7 +1,5 @@
 # yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
 id: gambling
-version: 1
-depends: [core-loop]
 qualities:
   # Lifetime totals, minor units. `lost` counts stakes lost; `wagered` every stake placed.
   - { id: gambling_wagered, type: int, min: 0, default: 0 }

@@ -1,5 +1,4 @@
 id: amt
-version: 1
 currency:
   symbol: "$"
   digits: 2

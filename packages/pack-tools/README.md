@@ -21,12 +21,12 @@ The spec lists `storylets/`, `occupations/`, `items/`, `people/`. The compiler a
 
 ## Permanent ids
 
-`packs/<id>/ids.lock.json` (`{ pack, version, ids[] }`) records the ids of the last release: every content id plus `stat.<id>` and `quality.<id>`. If a locked id is gone, the build fails unless `migrations.rename` (`from`, `to`) or `migrations.remove` (`id`, optional `fallback`) in `pack.yaml` names it. Run `cli.ts lock packs` after cutting a release to refresh the lock. A Pack with no lock file has not been released yet.
+`packs/<id>/ids.lock.json` (`{ pack, ids[] }`) records the ids of the last release: every content id plus `stat.<id>` and `quality.<id>`. If a locked id is gone, the build fails unless `migrations.rename` (`from`, `to`) or `migrations.remove` (`id`, optional `fallback`) in `pack.yaml` names it. Run `cli.ts lock packs` after cutting a release to refresh the lock. A Pack with no lock file has not been released yet.
 
 ## Output (`build packs <out>`)
 
 - `<pack>.json`: `PackBundle` from `@life/core` (`packages/core/src/pack.ts`). All ids are namespaced; expressions are ASTs.
-- `index.json`: bundles in dependency order.
+- `index.json`: bundles in requirement order (`{ packs: [{ id, file }] }`).
 - `icons.json`: referenced icons. Twemoji SVGs are copied to `icons/twemoji/<codepoints>.svg` from the pinned `@twemoji/svg` package.
 - `credits.json`: Twemoji (CC BY 4.0), per-author game-icons (CC BY 3.0, modified), Lucide (ISC) and Feather (MIT).
 

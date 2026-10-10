@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
+provides:
+  qualities:
+    - missed_payments
+  items:
+    - phone
+    - computer
+    - jewellery
+    - instrument

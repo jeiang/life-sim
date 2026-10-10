@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=../../../../../schema/capability.schema.json
+provides:
+  roles:
+    - neighbour
+  generators:
+    - local

@@ -1,6 +1,5 @@
 {
   "pack": "gambling",
-  "version": 1,
   "ids": [
     "gambling/bet-on-horse-races",
     "gambling/betting-pool-invite",

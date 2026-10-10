@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../../../../../schema/capability.schema.json
+provides:
+  stats:
+    - happiness
+    - smarts
+  qualities:
+    - years_worked
+  occupations:
+    - cashier
+  items:
+    - phone

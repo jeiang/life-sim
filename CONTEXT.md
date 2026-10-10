@@ -19,7 +19,7 @@ The minimum playable cycle of one life: birth, aging up year by year, school, a 
 _Avoid_: MVP, base game
 
 **Pack manifest**:
-The declaration at the root of a pack: its id, version, dependencies, stats, qualities, exclusivity groups, year draw settings, and migrations.
+The declaration at the root of a pack: its id, stats, qualities, exclusivity groups, year draw settings, and migrations.
 _Avoid_: Pack config, header
 
 **Pack migration**:

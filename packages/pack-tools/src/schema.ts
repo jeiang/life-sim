@@ -91,13 +91,54 @@ const repeatCurve = (what: string) =>
     what,
   );
 
+/** A capability id: `<pack>/<feature>`, the feature being the file stem in `capabilities/`. */
+export const CAPABILITY_PATTERN = "^[a-z][a-z0-9-]*/[a-z][a-z0-9_-]*$";
+
+const provided = (what: string, pattern: string) =>
+  Type.Optional(
+    Type.Array(Type.String({ pattern }), {
+      uniqueItems: true,
+      description: `Bare ids of ${what} this feature exports (block list, one id per line)`,
+    }),
+  );
+
+/**
+ * `packs/<id>/capabilities/<feature>.yaml` (docs/spec/pack-format.md). One file per feature;
+ * lists are block lists, one entry per line, so concurrent edits merge cleanly.
+ */
+export const CapabilitySchema = obj(
+  {
+    provides: Type.Optional(
+      obj({
+        stats: provided("stats", NAME_PATTERN),
+        qualities: provided("qualities", NAME_PATTERN),
+        groups: provided("exclusivity groups", ID_PATTERN),
+        tags: provided("storylet tags", ID_PATTERN),
+        milestones: provided("milestones", ID_PATTERN),
+        roles: provided("people roles", ID_PATTERN),
+        generators: provided("people generators", ID_PATTERN),
+        cities: provided("cities", ID_PATTERN),
+        occupations: provided("occupation kinds", ID_PATTERN),
+        items: provided("item kinds and markets", ID_PATTERN),
+        loans: provided("loan kinds", ID_PATTERN),
+        standards: provided("standards of living", ID_PATTERN),
+        storylets: provided("storylets", ID_PATTERN),
+      }),
+    ),
+    requires: Type.Optional(
+      Type.Array(Type.String({ pattern: CAPABILITY_PATTERN }), {
+        uniqueItems: true,
+        description:
+          "Capabilities (`<pack>/<feature>`) of other Packs this feature uses (block list, one id per line)",
+      }),
+    ),
+  },
+  "Capability",
+);
+
 export const ManifestSchema = obj(
   {
     id: Type.String({ pattern: PACK_ID_PATTERN }),
-    version: Type.Integer({ minimum: 1 }),
-    depends: Type.Optional(
-      Type.Array(Type.String({ pattern: PACK_ID_PATTERN })),
-    ),
     currency: Type.Optional(
       obj({
         symbol: Type.String({ minLength: 1 }),
@@ -647,6 +688,7 @@ const list = (item: TSchema, title: string) =>
 /** Content directories and the schema of a file in each (a YAML list). */
 export const FILE_SCHEMAS = {
   "pack.schema.json": ManifestSchema,
+  "capability.schema.json": CapabilitySchema,
   "storylets.schema.json": list(StoryletSchema, "Storylets"),
   "occupations.schema.json": list(OccupationSchema, "Occupation kinds"),
   "items.schema.json": list(ItemSchema, "Item kinds"),
@@ -656,6 +698,7 @@ export const FILE_SCHEMAS = {
   "people.schema.json": list(PeopleSchema, "People data"),
 } as const;
 
+export type Capability = Static<typeof CapabilitySchema>;
 export type Manifest = Static<typeof ManifestSchema>;
 export type StoryletSrc = Static<typeof StoryletSchema>;
 export type OccupationSrc = Static<typeof OccupationSchema>;

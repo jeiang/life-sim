@@ -29,7 +29,6 @@ export interface IconManifest {
 export interface BuildIndex {
   readonly packs: readonly {
     readonly id: string;
-    readonly version: number;
     readonly file: string;
   }[];
 }
@@ -67,7 +66,6 @@ export function writeOutput(out: CompileOutput, dir: string): void {
   json("index.json", {
     packs: out.bundles.map((b) => ({
       id: b.id,
-      version: b.version,
       file: `${b.id}.json`,
     })),
   } satisfies BuildIndex);

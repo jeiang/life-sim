@@ -1,6 +1,5 @@
 # yaml-language-server: $schema=../../../../schema/pack.schema.json
 id: base
-version: 2
 currency:
   symbol: "$"
   digits: 2

@@ -1,4 +1,4 @@
-import type { PackBundle } from "../pack.ts";
+import { type PackBundle, packRevision } from "../pack.ts";
 import type {
   Asset,
   Loan,
@@ -134,7 +134,7 @@ export function applyPackMigrations(
   );
   const stale = bundles.filter((b) => {
     const v = recorded.get(b.id);
-    return v !== undefined && v < b.version;
+    return v !== undefined && v < packRevision(b);
   });
   const r = resolver(stale);
 
@@ -186,7 +186,9 @@ export function applyPackMigrations(
     uses[nk] = (uses[nk] ?? 0) + n;
   }
 
-  const installed = new Map(bundles.map((b) => [b.id, String(b.version)]));
+  const installed = new Map(
+    bundles.map((b) => [b.id, String(packRevision(b))]),
+  );
   const packVersions = [
     ...new Set([...world.packVersions.map((p) => p.id), ...installed.keys()]),
   ]
@@ -218,7 +220,9 @@ export function applyPackMigrationsToSave(
     ...l,
     world: applyPackMigrations(l.world, bundles),
   }));
-  const installed = new Map(bundles.map((b) => [b.id, String(b.version)]));
+  const installed = new Map(
+    bundles.map((b) => [b.id, String(packRevision(b))]),
+  );
   return {
     ...save,
     lives,

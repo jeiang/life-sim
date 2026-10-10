@@ -15,8 +15,26 @@ measures:
   assaulted: { fires: { storylet: crime/assault } }
   property_crimes: { fires: { tag: crime } }
   offender: { when: "property_crimes > 0 or murdered_someone > 0 or assaulted > 0" }
+  escaped: { quality: crime_escapes, at: ever }
+  recaptures: { fires: { storylet: crime/crime-recaptured } }
+  paroled: { outcome: { storylet: crime/parole-review, key: o1 } }
   nw65: { snapshot: net_worth, ages: [65] }
 stats:
+  escaped_share:
+    kind: share
+    when: escaped
+    of: imprisoned
+    label: sentenced lives that broke out
+  recaptured_share:
+    kind: share
+    when: "recaptures > 0"
+    of: escaped
+    label: escapees recaptured
+  paroled_share:
+    kind: share
+    when: "paroled > 0"
+    of: imprisoned
+    label: sentenced lives granted parole
   offenders:
     kind: share
     when: offender
@@ -77,6 +95,7 @@ blocks:
   - text: An offender is a life that opened any crime action.
   - stats: [offenders, arrested_share, convicted_share, imprisoned_share, record_share, record_end_share]
   - stats: [arrested_of_offenders, executed_share]
+  - stats: [escaped_share, recaptured_share, paroled_share]
   - stats: [arrests_per_arrested]
   - text: Net worth at 65 (minor units).
   - stats: [nw65_convicted, nw65_clean]

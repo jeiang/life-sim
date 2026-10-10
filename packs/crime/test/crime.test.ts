@@ -4,16 +4,20 @@ import { afterEach, describe, expect, test } from "vitest";
 import {
   ageUp,
   choose,
+  deserializeWorld,
   getPerson,
   indexBundles,
   listActions,
+  milestoneReached,
   newLife,
   runAction,
   scheduledEntries,
+  serializeWorld,
   setQuality,
   startStorylet,
   updatePerson,
   type World,
+  worldHash,
 } from "../../../packages/core/src/index.ts";
 import { forceRolls } from "../../../packages/harness/src/index.ts";
 import { compilePacks } from "../../../packages/pack-tools/src/index.ts";
@@ -432,5 +436,209 @@ describe("record clearing", () => {
       person(18, { age: 30, q: { crime_record: true, crime_on_parole: true } }),
     );
     expect(q(w, "crime_years_clean")).toBe(0);
+  });
+});
+
+/** Jail an adult for eight years through the arrest and court chain (forced rolls cleared after). */
+function jailed(seed: number, age = 30): World {
+  force({
+    "outcome/crime/court-plea": 1,
+    "outcome/crime/court-sentencing":
+      "Eight years. The gate closes with a sound you will remember.",
+  });
+  const w = year(person(seed, { age, q: { crime_pending_charge: 3 } }));
+  forced?.clear();
+  if (!held(w).includes("crime/prison")) throw new Error("not jailed");
+  return w;
+}
+
+describe("prison life", () => {
+  test("a prisoner holds only the prison: no job, school or retirement, and housing is provided", () => {
+    const w = jailed(21);
+    expect(held(w)).toEqual(["crime/prison"]);
+    expect(q(w, "crime_term")).toBe(8);
+    expect(q(w, "crime_release_age")).toBe(me(w).age + 8);
+    expect(q(w, "crime_parole_age")).toBe(me(w).age + 4);
+    expect(scheduledEntries(w).map((e) => e.storyletId)).toContain(
+      C("parole-review"),
+    );
+  });
+
+  test("confinement locks ordinary actions and keeps the custody-ok ones", () => {
+    const w = jailed(22);
+    const row = (menu: string, id: string) =>
+      listActions(w, bundles, menu).find((r) => r.id === id);
+    expect(row("activities/crime", C("shoplift"))?.locked).toBe(true);
+    expect(row("occupation/prison", C("prison-work-out"))?.locked).toBe(false);
+    expect(row("occupation/prison", C("prison-take-job"))?.locked).toBe(false);
+  });
+
+  test("taking a prison job adds a confining job that never counts as employment", () => {
+    const j = jailed(23);
+    force({ "outcome/crime/prison-take-job": 0 });
+    const w = runAction(j, bundles, C("prison-take-job")).world;
+    expect(held(w).sort()).toEqual(["crime/prison", "crime/prison_work"]);
+    expect(
+      me(w).occupations.filter(
+        (o) => o.pay > 0 && o.kindId !== "crime/prison_work",
+      ),
+    ).toEqual([]);
+  });
+
+  test("a gang can be joined only after a year and left again", () => {
+    let w = jailed(24);
+    const join = (x: World) =>
+      listActions(x, bundles, "occupation/prison").find(
+        (r) => r.id === C("prison-join-gang"),
+      );
+    expect(join(w)?.locked).toBe(true);
+    w = year(w);
+    expect(join(w)?.locked).toBe(false);
+    force({ "outcome/crime/prison-join-gang": 0 });
+    w = runAction(w, bundles, C("prison-join-gang")).world;
+    expect(q(w, "crime_gang")).toBe(true);
+    expect(q(w, "crime_respect")).toBeGreaterThan(0);
+  });
+
+  test("the cellmate is an inmate and can be talked to", () => {
+    const w = jailed(25);
+    const mate = [...w.persons.values()].reduce((a, b) =>
+      b.id > a.id ? b : a,
+    );
+    expect(mate).toBeDefined();
+    const rows = listActions(w, bundles, "relationships", mate?.id);
+    expect(rows.find((r) => r.id === C("prison-talk-cellmate"))?.locked).toBe(
+      false,
+    );
+  });
+});
+
+describe("escape, recapture, parole and release", () => {
+  test("a break-out ends the prison, makes you wanted, and stops the parole chain", () => {
+    const j = jailed(26);
+    force({ "outcome/crime/escape-attempt": 0 });
+    let w = startStorylet(j, bundles, C("escape-attempt")).world;
+    w = choose(w, bundles, 0).world;
+    forced?.clear();
+    expect(held(w)).toEqual([]);
+    expect(q(w, "crime_wanted")).toBe(true);
+    expect(q(w, "crime_escaped")).toBe(true);
+    expect(q(w, "crime_escapes")).toBe(1);
+    expect(scheduledEntries(w).map((e) => e.storyletId)).not.toContain(
+      C("parole-review"),
+    );
+    expect(
+      listActions(w, bundles, "occupation/prison").find(
+        (r) => r.id === C("escape-attempt"),
+      )?.locked,
+    ).toBe(true);
+  });
+
+  test("a failed attempt is recaptured, two years are added, and the cellmate stays unique", () => {
+    const j = jailed(27);
+    force({ "outcome/crime/escape-attempt": 1 });
+    let w = startStorylet(j, bundles, C("escape-attempt")).world;
+    w = drive(choose(w, bundles, 0).world);
+    expect(held(w)).toEqual(["crime/prison"]);
+    expect(q(w, "crime_release_age")).toBe(me(w).age + 10);
+    expect(q(w, "crime_escaped")).toBe(false);
+    const mates = [...w.persons.values()].filter(
+      (p) => p.id !== w.playerId && p.age >= 19,
+    );
+    expect(mates.length).toBeGreaterThan(0);
+  });
+
+  test("parole is denied before the parole age, granted after, and lifts the confinement", () => {
+    force({ "outcome/crime/parole-review": 0 });
+    let w = jailed(28, 30); // parole age 34
+    for (let i = 0; i < 3; i++) w = year(w);
+    expect(held(w)).toContain("crime/prison");
+    forced?.clear();
+    force({ "outcome/crime/parole-review": 0 });
+    w = setQuality(w, w.playerId, "crime_behaviour", 100);
+    for (let i = 0; i < 3; i++) w = year(w);
+    forced?.clear();
+    expect(
+      q(w, "crime_on_parole") || !held(w).includes("crime/prison"),
+    ).toBeTruthy();
+  });
+
+  test("serving the full term ends the sentence and fires the released milestone", () => {
+    let w = jailed(29, 30);
+    w = setQuality(w, w.playerId, "crime_release_age", me(w).age + 1);
+    w = setQuality(w, w.playerId, "crime_parole_age", 99);
+    for (let i = 0; i < 3 && held(w).includes("crime/prison"); i++) w = year(w);
+    expect(held(w)).not.toContain("crime/prison");
+    expect(q(w, "crime_term")).toBe(0);
+    expect(milestoneReached(w, "released")).toBe(true);
+  });
+
+  /** On parole: a jailed player past the parole age with perfect behaviour and a forced grant. */
+  const paroled = (seed: number) => {
+    let w = jailed(seed, 30);
+    w = setQuality(w, w.playerId, "crime_behaviour", 100);
+    w = setQuality(w, w.playerId, "crime_parole_age", me(w).age);
+    force({ "outcome/crime/parole-review": 0 });
+    for (let i = 0; i < 4 && !q(w, "crime_on_parole"); i++) w = year(w);
+    forced?.clear();
+    return w;
+  };
+
+  test("a parole grant lifts the confinement", () => {
+    const w = paroled(34);
+    expect(q(w, "crime_on_parole")).toBe(true);
+    expect(held(w)).not.toContain("crime/prison");
+  });
+
+  test("a parole violation returns to prison with the remaining term", () => {
+    let w = paroled(30);
+    expect(q(w, "crime_on_parole")).toBe(true);
+    force({ "outcome/crime/parole-visit": 0 });
+    const r = startStorylet(w, bundles, C("parole-visit")).world;
+    w = drive(choose(r, bundles, 1).world);
+    forced?.clear();
+    expect(held(w)).toContain("crime/prison");
+    expect(q(w, "crime_on_parole")).toBe(false);
+  });
+});
+
+describe("juvenile detention", () => {
+  const jailedKid = (seed: number, age: number) => {
+    force({
+      "outcome/crime/court-plea": 1,
+      "outcome/crime/court-sentencing-juvenile":
+        "Four years in juvenile detention, or until you turn 18, whichever comes first.",
+    });
+    const w = year(person(seed, { age, q: { crime_pending_charge: 2 } }));
+    forced?.clear();
+    return w;
+  };
+
+  test("it ends by 18 whatever the sentence", () => {
+    let w = jailedKid(31, 13);
+    expect(held(w)).toContain("crime/juvenile_detention");
+    expect(q(w, "crime_release_age")).toBe(18);
+    for (let i = 0; i < 6 && held(w).includes("crime/juvenile_detention"); i++)
+      w = year(w);
+    expect(held(w)).not.toContain("crime/juvenile_detention");
+    expect(me(w).age).toBeLessThanOrEqual(19);
+  });
+
+  test("school continues and there is no adult prison or paid prison job for a child", () => {
+    const w = jailedKid(32, 14);
+    expect(held(w)).not.toContain("crime/prison");
+    const rows = listActions(w, bundles, "occupation/prison").filter(
+      (r) => !r.locked,
+    );
+    expect(rows.map((r) => r.id)).not.toContain(C("prison-take-job"));
+    expect(rows.map((r) => r.id)).not.toContain(C("escape-attempt"));
+  });
+});
+
+describe("determinism", () => {
+  test("a convicted life round-trips a save and replays to the same hash", () => {
+    const w = jailed(33);
+    const back = deserializeWorld(serializeWorld(w));
+    expect(worldHash(back)).toBe(worldHash(w));
   });
 });

@@ -2,7 +2,7 @@
 
 - pack: crime
 - packs: crime,core-loop,karma,dating,gambling,relocation,vacations
-- profile: all
+- profile: criminal
 - lives: 1000
 
 > Adult custody only. Every storylet here gates on `has_occupation(prison)` or `quality.crime_on_parole`. Juvenile detention ends by 18 in the `juvie` chain and never reaches this sheet.

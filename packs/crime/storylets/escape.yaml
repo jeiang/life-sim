@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Prison escape".
+
+- id: escape-attempt
+  icon: 🏃
+  trigger: action
+  menu: occupation/prison
+  label: Plan an escape
+  tags: [custody-ok, crime]
+  when: "has_occupation(prison) and not quality.crime_escape_used and not quality.crime_death_row"
+  cooldown: 1
+  text: The fence has a dark stretch where the tower lights do not reach. Everyone in here thinks about it. This year you are going to try.
+  choices:
+    - label: Make a break for it
+      outcomes:
+        - weight: 2 + stat.smarts / 12 + stat.health / 25
+          text: You are over the fence and into the scrub before the tower light finds the gap. You are free, and you are wanted.
+          effects:
+            - "end_occupation(prison)"
+            - "end_occupation(prison_work)"
+            - unschedule(crime/parole-review)
+            - "quality.crime_escaped = true"
+            - "quality.crime_wanted = true"
+            - "quality.crime_escapes += 1"
+            - "quality.crime_escape_used = true"
+            - stat.happiness += 6
+            - "journal(\"Broke out of prison at age {age}.\")"
+        - weight: 98 - stat.smarts / 12 - stat.health / 25
+          text: A guard spots you halfway up the fence. The alarm goes off and the dog starts barking.
+          effects:
+            - stat.health -= 5
+            - stat.happiness -= 3
+            - "quality.crime_behaviour += -10"
+          next: crime-recaptured
+    - label: Keep your head down
+      outcomes:
+        - weight: 1
+          text: You make your bed, mind your manners and wait for a better year.
+          effects:
+            - "quality.crime_behaviour += 4"
+            - stat.happiness -= 1

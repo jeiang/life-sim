@@ -1,0 +1,14 @@
+# Forced script: a 13-year-old shoplifter is caught and sentenced to juvenile detention.
+description: A child is caught shoplifting and held in juvenile detention
+steps:
+  - age: 13
+    do: crime/shoplift
+  - roll: outcome/crime/shoplift
+    value: A security guard grabs your arm at the door and calls the police.
+  - choose: Cooperate
+  - choose: Take the public defender
+  - choose: Plead guilty
+  - roll: outcome/crime/court-plea
+    value: You say you did it. Your voice barely carries.
+  - roll: outcome/crime/court-sentencing-juvenile
+    value: One year in juvenile detention. It is quieter than you expected.

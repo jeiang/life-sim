@@ -1,6 +1,7 @@
 # Content sheet: Prison escape
 
 - pack: crime
+- profile: criminal
 - packs: crime,core-loop,karma
 - lives: 3000
 
@@ -32,6 +33,8 @@
 - outcome: 2 + stat.smarts / 12 + stat.health / 25
   - text: You are over the fence and into the scrub before the tower light finds the gap. You are free, and you are wanted.
   - effect: end_occupation(prison)
+  - effect: end_occupation(prison_work)
+  - effect: unschedule(crime/parole-review)
   - effect: quality.crime_escaped = true
   - effect: quality.crime_wanted = true
   - effect: quality.crime_escapes += 1

@@ -1,0 +1,131 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Parole and release".
+
+- id: parole-review
+  icon: ⚖️
+  trigger: event
+  tags: [custody-ok]
+  chance: 0%
+  when: "quality.crime_term > 0 and not quality.crime_death_row and (has_occupation(prison) or quality.crime_on_parole)"
+  text: The year turns over behind bars, and somebody's paperwork is waiting for you.
+  outcomes:
+    - weight: 1
+      when: "has_occupation(prison) and age < quality.crime_parole_age"
+      text: Another year inside. The board has not called your name yet.
+      effects:
+        - "schedule(crime/parole-review, after: 1-1 years)"
+    - weight: "20 + quality.crime_behaviour + quality.crime_respect"
+      when: "has_occupation(prison) and age >= quality.crime_parole_age and age < quality.crime_release_age"
+      text: The board grants parole. You walk out on conditions, with a curfew and a parole officer who wants to see you.
+      effects:
+        - "end_occupation(prison)"
+        - "end_occupation(prison_work)"
+        - "quality.crime_on_parole = true"
+        - stat.happiness += 8
+        - "schedule(crime/parole-review, after: 1-1 years)"
+        - "journal(\"Parole granted. The custody lock is gone, and the officer has your address.\")"
+    - weight: "max(10, 100 - quality.crime_behaviour)"
+      when: "has_occupation(prison) and age >= quality.crime_parole_age and age < quality.crime_release_age"
+      text: Denied. The board says come back next year, and they will be watching.
+      effects:
+        - stat.happiness -= 2
+        - "schedule(crime/parole-review, after: 1-1 years)"
+    - weight: 1
+      when: "has_occupation(prison) and age >= quality.crime_release_age and not milestone_reached(released)"
+      text: Your sentence is finally over. The gate buzzes, and the air outside smells like a parking lot.
+      effects:
+        - "end_occupation(prison)"
+        - "end_occupation(prison_work)"
+        - "quality.crime_term = 0"
+        - "quality.crime_on_parole = false"
+        - "quality.crime_years_clean = 0"
+        - "reach_milestone(released)"
+        - "journal(\"Full term served. You walk out of prison.\")"
+    - weight: 1
+      when: "has_occupation(prison) and age >= quality.crime_release_age and milestone_reached(released)"
+      text: The gate buzzes again. Your second sentence is over, and the paperwork is shorter this time.
+      effects:
+        - "end_occupation(prison)"
+        - "end_occupation(prison_work)"
+        - "quality.crime_term = 0"
+        - "quality.crime_on_parole = false"
+        - "quality.crime_years_clean = 0"
+        - "journal(\"Second full term served. You walk out of prison.\")"
+    - weight: 1
+      when: "quality.crime_on_parole and age < quality.crime_release_age"
+      text: Another year on parole. The officer's file on you gets a little thicker.
+      effects:
+        - "schedule(crime/parole-review, after: 1-1 years)"
+    - weight: 1
+      when: "quality.crime_on_parole and age >= quality.crime_release_age and not milestone_reached(released)"
+      text: Parole ends. The officer signs the last form and does not shake your hand.
+      effects:
+        - "quality.crime_term = 0"
+        - "quality.crime_on_parole = false"
+        - "quality.crime_years_clean = 0"
+        - "reach_milestone(released)"
+        - "journal(\"Parole ends. Your sentence is over.\")"
+    - weight: 1
+      when: "quality.crime_on_parole and age >= quality.crime_release_age and milestone_reached(released)"
+      text: Parole ends again. This time the officer just nods.
+      effects:
+        - "quality.crime_term = 0"
+        - "quality.crime_on_parole = false"
+        - "quality.crime_years_clean = 0"
+        - "journal(\"Second parole ends. Your sentence is over.\")"
+
+- id: parole-check
+  icon: 📋
+  trigger: event
+  chance: 25%
+  when: "quality.crime_on_parole and quality.crime_term > 0 and age < quality.crime_release_age"
+  text: Your parole officer turns up at the door without calling first.
+  outcomes:
+    - weight: "20 + quality.crime_behaviour"
+      text: Clean check, no new trouble. The officer ticks a box and leaves.
+      effects:
+        - stat.happiness += 1
+    - weight: "max(5, 80 - quality.crime_behaviour)"
+      text: You missed a meeting, or the test came back dirty. The board is not amused.
+      effects:
+        - unschedule(crime/parole-review)
+        - "quality.crime_on_parole = false"
+        - "quality.crime_term = max(1, quality.crime_release_age - age)"
+        - "quality.crime_behaviour = quality.crime_behaviour - 10"
+        - stat.happiness -= 5
+        - "journal(\"Parole revoked. You are back inside to finish the term.\")"
+      next: custody-intake
+
+- id: parole-visit
+  icon: 👮
+  trigger: action
+  menu: activities
+  label: Visit your parole officer
+  tags: [crime]
+  when: "quality.crime_on_parole"
+  cooldown: 1
+  text: Your parole officer wants to see you in person this month.
+  choices:
+    - label: Report on time
+      outcomes:
+        - weight: 1
+          text: You answer every question like a model citizen, and the officer writes it all down.
+          effects:
+            - "quality.crime_behaviour += 3"
+            - stat.happiness += 1
+    - label: Skip the check-in
+      outcomes:
+        - weight: "max(10, 60 - quality.crime_behaviour)"
+          text: The officer shows up at your address anyway. Your parole is revoked.
+          effects:
+            - unschedule(crime/parole-review)
+            - "quality.crime_on_parole = false"
+            - "quality.crime_term = max(1, quality.crime_release_age - age)"
+            - "quality.crime_behaviour = quality.crime_behaviour - 10"
+            - stat.happiness -= 5
+            - "journal(\"Missed check-in. Parole revoked.\")"
+          next: custody-intake
+        - weight: 40
+          text: Nobody checks. The caseload is huge, and you get lucky this time.
+          effects:
+            - "quality.crime_behaviour = quality.crime_behaviour - 2"

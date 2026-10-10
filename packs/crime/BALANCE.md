@@ -13,3 +13,9 @@ Final population numbers (sentence and years served p50/p90, ex-convict employme
 Open flags for #237: murder opens often under `criminal` (the profile always takes it); the `random` share must be confirmed at 10k lives.
 
 `random`, 1000 lives, seed 1: about 3% of lives open a property crime, murder opens in 0.5% of lives (5 of 1000), 8 lives arrested, 6 imprisoned, 0 faults.
+
+## #236: prison life, parole, escape, juvie
+
+Focused sim (criminal profile, 1000 lives) reports `off-band` opens of 10x to 90x on every prison, juvie and parole storylet, and `over-decisions` for `prison-cellmate-trouble` (23% of choice events, chance cut 40% to 25%) and `prison-riot` (3.6%). The sheet bands are per life of the whole population; the `criminal` profile re-offends on purpose (about 13 custody intakes and 30 parole reviews per life, murder once per target person because `max_per_life` counts per bound person), so these numbers measure the profile, not play. The `criminal` profile now down-weights `escape-attempt` (0.1) because failed attempts repeat yearly. Real rates come from the artemis run (#237); the cellmate event chances are the first knob if a mixed run still shows them over 3%.
+
+`prison-study-ged` never fires in simulation: adults in the criminal profile have a high-school diploma. Forced scripts `crime/escape`, `crime/death-penalty` and `crime/juvie` reach the rare branches.

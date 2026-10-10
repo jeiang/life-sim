@@ -220,7 +220,7 @@
 - outcome: 15
   - text: {person.first_name} does not want to talk, and the silence lasts the whole shift.
   - effect: stat.happiness -= 2
-  - effect: relationship(person).closeness -= 2
+  - effect: relationship(person).closeness += -2
   - rate: 10..20%
 
 ## prison-write-family
@@ -251,7 +251,7 @@
 - outcome: 10
   - text: The letter is never answered.
   - effect: stat.happiness -= 3
-  - effect: relationship(person).closeness -= 2
+  - effect: relationship(person).closeness += -2
   - rate: 5..15%
 
 ## prison-cellmate-small-talk
@@ -284,7 +284,7 @@
 - target: crime/inmate
 - tags: custody-ok, npc
 - needs: role crime/inmate: person role, label Cellmate: a fellow inmate spawned once per sentence
-- chance: 40%
+- chance: 25%
 - when: confined and person.role == crime/inmate
 - text: {person.first_name} says you owe for a commissary favor you do not remember asking for.
 - opens: 0.06..0.22 per life
@@ -302,13 +302,13 @@
 - outcome: 60
   - text: Words get exchanged. Nothing is settled, but nothing breaks either.
   - effect: stat.happiness -= 2
-  - effect: relationship(person).closeness -= 3
+  - effect: relationship(person).closeness += -3
   - rate: 55..65%
 - outcome: 40
   - text: Your bunk gets tipped in the night, and the morning fight costs you a few days of pain.
   - effect: stat.health -= 5
   - effect: stat.happiness -= 4
-  - effect: relationship(person).closeness -= 5
+  - effect: relationship(person).closeness += -5
   - rate: 35..45%
 
 ## prison-cellmate-killed

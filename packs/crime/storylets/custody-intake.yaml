@@ -19,6 +19,7 @@
         - "start_occupation(prison)"
         - "quality.crime_cellmate = true"
         - "spawn_person(crime/inmate, crime/inmate-gen) as cellmate"
+        - "schedule(crime/parole-review, after: 1-1 years)"
         - "journal(\"Sent to prison at age {age}.\")"
     - weight: 1
       when: "age >= 18 and quality.crime_cellmate"
@@ -29,6 +30,7 @@
         - "end_group(\"school\")"
         - "end_occupation(core-loop/retired)"
         - "start_occupation(prison)"
+        - "schedule(crime/parole-review, after: 1-1 years)"
         - "journal(\"Returned to prison at age {age}.\")"
     - weight: 1
       when: "age < 18 and not quality.crime_cellmate"
@@ -39,6 +41,7 @@
         - "start_occupation(juvenile_detention)"
         - "quality.crime_cellmate = true"
         - "spawn_person(crime/inmate, crime/inmate-gen-juvenile) as cellmate"
+        - "schedule(crime/juvie-release, after: 1-1 years)"
         - "journal(\"Sent to juvenile detention at age {age}.\")"
     - weight: 1
       when: "age < 18 and quality.crime_cellmate"
@@ -47,6 +50,7 @@
         - "end_group(\"part-time\")"
         - "end_group(\"full-time\")"
         - "start_occupation(juvenile_detention)"
+        - "schedule(crime/juvie-release, after: 1-1 years)"
         - "journal(\"Returned to juvenile detention at age {age}.\")"
 
 - id: crime-recaptured

@@ -23,3 +23,4 @@
 - { id: crime_convictions, type: int, min: 0, default: 0 }    # convictions, probation included
 - { id: crime_appeals, type: int, min: 0, default: 0 }        # paid appeal filings; one per conviction
 - { id: crime_years_clean, type: int, min: 0, max: 200, default: 0 }   # years with a record, free of custody and parole; reset at sentencing
+- { id: crime_escapes, type: int, min: 0, default: 0 }       # break-outs (balance counter)

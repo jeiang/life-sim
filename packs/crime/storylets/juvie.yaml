@@ -1,0 +1,188 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Scaffolded by `pnpm tool scaffold` from the content sheet "Juvenile detention".
+
+- id: juvie-counsellor
+  icon: 🗣️
+  trigger: event
+  tags: [crime, custody-ok]
+  chance: 20%
+  when: "has_occupation(juvenile_detention) and age < 18"
+  cooldown: 1
+  text: The detention counsellor has a folder with your name on it and a lot of questions.
+  choices:
+    - label: Open up
+      outcomes:
+        - weight: 3
+          text: You talk about home, the stuff you have never said out loud. The counsellor just listens, which is weirdly helpful.
+          effects:
+            - stat.happiness += 4
+            - "quality.karma_score += 2"
+        - weight: 1
+          text: You say a lot of words and mean none of them. The counsellor writes it all down anyway.
+          effects:
+            - stat.happiness -= 1
+    - label: Give them nothing
+      outcomes:
+        - weight: 1
+          text: You stare at the wall for fifty minutes. The counsellor sighs and makes a note.
+          effects:
+            - stat.happiness -= 2
+
+- id: juvie-yard-fight
+  icon: 🥊
+  trigger: event
+  tags: [crime, custody-ok]
+  chance: 12%
+  when: "has_occupation(juvenile_detention) and age < 18"
+  cooldown: 1
+  text: A kid from the next unit decides you look like an easy target at lunch.
+  choices:
+    - label: Throw the first punch
+      outcomes:
+        - weight: 2
+          text: Two swings and a guard in the middle. You both spend the week in the same quiet room.
+          effects:
+            - stat.health -= 5
+            - stat.happiness -= 2
+        - weight: 1
+          text: One clean hit and the other kid backs off. Word gets around the unit.
+          effects:
+            - stat.happiness += 2
+            - stat.health -= 2
+    - label: Stay out of it
+      outcomes:
+        - weight: 1
+          text: You keep your head down. They take a swing at you anyway.
+          effects:
+            - stat.health -= 3
+
+- id: juvie-mentor
+  icon: 🏫
+  trigger: event
+  tags: [crime, custody-ok]
+  chance: 10%
+  when: "has_occupation(juvenile_detention) and age < 18"
+  max_per_life: 2
+  text: A volunteer from a community programme sits down across from you and reads your file out loud.
+  outcomes:
+    - weight: 2
+      text: They tell you that you are smarter than the file says. Then they help you fill out a course application for when you are out.
+      effects:
+        - stat.smarts += 2
+        - "quality.karma_score += 3"
+    - weight: 1
+      text: A mentor starts meeting you on Thursdays. You go, even on the days you do not want to.
+      effects:
+        - stat.happiness += 3
+        - "quality.karma_score += 2"
+
+- id: juvie-cellmate-bond
+  icon: 🛏️
+  trigger: event
+  tags: [crime, custody-ok]
+  scope: person
+  target: [crime/inmate]
+  chance: 15%
+  when: "has_occupation(juvenile_detention) and age < 18 and person.age < 18"
+  text: "{person.first_name} shares the bunk above yours and talks until the lights go out."
+  outcomes:
+    - weight: 3
+      text: You trade stories after lights out. It almost feels like a friendship.
+      effects:
+        - stat.happiness += 3
+    - weight: 1
+      text: "{person.first_name} gets moved to another unit without saying goodbye."
+      effects:
+        - stat.happiness -= 2
+
+- id: juvie-cellmate-scheme
+  icon: 🧦
+  trigger: event
+  tags: [crime, custody-ok]
+  scope: person
+  target: [crime/inmate]
+  chance: 8%
+  when: "has_occupation(juvenile_detention) and age < 18 and person.age < 18"
+  text: "{person.first_name} slides you a rolled-up sock with something heavy in it and says, quietly, hold this."
+  choices:
+    - label: Hold it for them
+      outcomes:
+        - weight: 2
+          text: The search comes at dawn. The sock is not yours, but your locker is.
+          effects:
+            - stat.happiness -= 5
+            - "quality.karma_score += -4"
+        - weight: 1
+          text: "Nobody searches anything. {person.first_name} owes you one, apparently."
+          effects:
+            - stat.happiness += 2
+    - label: Tell a guard
+      outcomes:
+        - weight: 1
+          text: "The guard thanks you quietly and writes nothing down. {person.first_name} stops talking to you."
+          effects:
+            - stat.happiness -= 2
+            - "quality.karma_score += 3"
+
+- id: juvie-release
+  icon: 🔓
+  trigger: event
+  tags: [crime, custody-ok]
+  chance: 0%
+  when: "has_occupation(juvenile_detention)"
+  text: A caseworker opens your file for the yearly review.
+  outcomes:
+    - weight: 1
+      when: "age >= quality.crime_release_age"
+      text: The paperwork is signed. The gate buzzes open, and you walk out with a paper bag and a plan.
+      effects:
+        - "end_occupation(juvenile_detention)"
+        - "reach_milestone(released)"
+        - stat.happiness += 6
+        - "journal(\"Released from juvenile detention at age {age}.\")"
+    - weight: 2
+      when: "age < quality.crime_release_age"
+      text: Your sentence is not up yet. The caseworker writes a note and sends you back to your bunk.
+      effects:
+        - "schedule(crime/juvie-release, after: 1-1 years)"
+
+- id: juvie-ask-counsellor
+  icon: 🗣️
+  trigger: action
+  menu: "occupation/juvenile_detention"
+  label: Ask to see the counsellor
+  tags: [crime, custody-ok]
+  when: "has_occupation(juvenile_detention) and age < 18"
+  cooldown: 1
+  text: You knock on the counsellor's door and ask for a session. They look surprised, then pull up a chair.
+  outcomes:
+    - weight: 3
+      text: You talk through the week. It helps more than you expected.
+      effects:
+        - stat.happiness += 3
+        - "quality.karma_score += 1"
+    - weight: 1
+      text: The session is short and the counsellor is busy with someone else's paperwork.
+      effects:
+        - stat.happiness += 1
+
+- id: juvie-write-home
+  icon: ✉️
+  trigger: action
+  menu: "occupation/juvenile_detention"
+  label: Write a letter home
+  tags: [crime, custody-ok]
+  scope: person
+  target: [core-loop/parent]
+  when: "has_occupation(juvenile_detention) and age < 18"
+  cooldown: 1
+  text: "You write a letter to {person.first_name}. Spelling is not the point. The point is that you wrote it."
+  outcomes:
+    - weight: 3
+      text: A reply comes back on the next visit. It is short, and it is kind.
+      effects:
+        - stat.happiness += 3
+    - weight: 1
+      text: The reply never comes. You start checking the mail slot anyway.
+      effects:
+        - stat.happiness -= 2

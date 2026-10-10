@@ -5,9 +5,9 @@ currency:
   digits: 2
 stats:
   - { id: happiness, label: Happiness, icon: 😊, start: [50, 100] }
-  - { id: health, label: Health, icon: ❤️, start: [80, 100] }
-  - { id: smarts, label: Smarts, icon: 🧠, start: [0, 100] }
-  - { id: looks, label: Looks, icon: ✨, start: [0, 100] }
+  - { id: health, label: Health, icon: ❤️, start: [80, 100], inherit: 40% }
+  - { id: smarts, label: Smarts, icon: 🧠, start: [0, 100], inherit: 60% }
+  - { id: looks, label: Looks, icon: ✨, start: [0, 100], inherit: 60% }
 exclusivity: [school, full-time, part-time]
 repeat: { full: 3, reduced: 8, factor: 25% }
 year:

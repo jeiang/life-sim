@@ -11,7 +11,7 @@ import {
 import { lifeCount, type Shard } from "./harness.ts";
 import type { PackMetrics } from "./metrics.ts";
 import { Aggregate, type Report } from "./report.ts";
-import type { LifeResult } from "./run.ts";
+import type { LifeResult, Lineage } from "./run.ts";
 
 /** What every shard of one run agrees on; merging refuses shards whose `run` differs. */
 export interface ShardRun {
@@ -24,6 +24,8 @@ export interface ShardRun {
     readonly profile?: string;
     readonly labels: readonly string[];
   } | null;
+  /** Generations played per life and the heir policy; absent for single lives. */
+  readonly lineage?: Lineage;
 }
 
 /** The raw lives of one shard, so that a merge replays them exactly as a single run would. */
@@ -40,6 +42,7 @@ export const shardRunOf = (
   lives: number,
   profiles: readonly string[],
   force: ForceSet | undefined,
+  lineage?: Lineage,
 ): ShardRun => ({
   seed,
   lives,
@@ -51,6 +54,7 @@ export const shardRunOf = (
         labels: force.entries.map((e) => e.label),
       }
     : null,
+  ...(lineage && lineage.generations > 1 ? { lineage } : {}),
 });
 
 const SHARD_FILE = /^shard-(\d+)-of-(\d+)\.json\.gz$/;

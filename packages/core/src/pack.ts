@@ -18,6 +18,12 @@ export interface StatDecl {
   readonly icon?: IconRef;
   /** Inclusive start range, 0-100. */
   readonly start: readonly [number, number];
+  /**
+   * Genetics (docs/spec/pack-format/manifest.md#stats): on succession the heir's value is a
+   * random blend of their parents' values, this many basis points of it, the rest a fresh
+   * draw from `start`. Absent: the heir keeps the value they had.
+   */
+  readonly inheritBp?: number;
 }
 
 export type QualityDecl =

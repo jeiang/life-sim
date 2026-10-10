@@ -105,6 +105,26 @@ blocks:
       "blocks[0].stats[1]: unknown statistic",
     );
   });
+
+  test("generation measures and visible_if_measure are checked", () => {
+    const errors = check(`
+title: T
+measures:
+  a: { generation: no_such_value }
+  b: { generation: inheritance, n: 2 }
+  c: { generation: reached, n: -1 }
+stats: {}
+blocks:
+  - { text: x, visible_if_measure: nope }
+`);
+    const all = errors.join("\n");
+    expect(all).toContain("measures.a.generation: expected one of: reached");
+    expect(all).toContain("measures.c.n:");
+    expect(all).toContain(
+      "blocks[0].visible_if_measure: 'nope' is not a measure",
+    );
+    expect(all).not.toContain("measures.b");
+  });
 });
 
 describe("a Pack's declared metrics in a run", () => {

@@ -16,7 +16,7 @@ const BATCH = 32;
 export interface Job
   extends Pick<
     HarnessOptions,
-    "lives" | "profiles" | "seed" | "lifeSeed" | "force" | "shard"
+    "lives" | "profiles" | "seed" | "lifeSeed" | "force" | "lineage" | "shard"
   > {
   readonly from: number;
   readonly to: number;
@@ -109,6 +109,7 @@ export function runHarnessParallel(
         seed: opts.seed,
         ...(opts.lifeSeed === undefined ? {} : { lifeSeed: opts.lifeSeed }),
         ...(opts.force ? { force: opts.force } : {}),
+        ...(opts.lineage ? { lineage: opts.lineage } : {}),
         ...(opts.shard ? { shard: opts.shard } : {}),
         from,
         to: Math.min(from + batch, total),

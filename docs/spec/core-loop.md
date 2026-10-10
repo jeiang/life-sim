@@ -152,9 +152,10 @@ The dead player's life continues as one of their living children, in the same wo
 2. `World.deceased` records the dead player: `{ person, cause, money }` (the cash held at death, before debts). The person stays in the world, dead, with name, stats and qualities.
 3. The player pointer moves to the heir and `generation` rises by one; `worldYear` is untouched. `ended`, the open storylet, the will, the reached milestones, `storyletLog`, `uses` and the roll-site counters are cleared, so `once` storylets fire once per generation. The journal restarts with the heir's life; the caller keeps the finished life's obituary and journal before calling.
 4. Scheduled consequences: entries without `lineage: true` were dropped at death; the `lineage: true` ones are handed to the heir, except entries bound to the dead player or to the heir.
-5. The heir is seated in the family: for each relative, a role row from the heir in the family role their kinship names (`parent`, `sibling`, ...; only roles the Packs declare). Nothing is relabelled: every name is derived from the heir's position ([ADR 0006](../adr/0006-parent-links-derived-kinship.md)), so the dead player is now the heir's parent, the other parent a parent, the other children siblings.
-6. The `on_succession` hooks run for the heir (effects act on the heir), then every `trigger: succession` storylet is queued to open at the next age-up, with read-only `deceased.*` bound ([hooks](pack-format/hooks.md#succession), [storylets](pack-format/storylets.md#succession-storylets)).
-7. The choice log gets a `succeed` entry, so replay reproduces it (the heir's draws use generation `n + 1`, [ADR 0003](../adr/0003-saves-derived-rng-stable-ids.md)).
+5. **Genetics** (below): the stats the Packs mark `inherit` are re-drawn for the heir.
+6. The heir is seated in the family: for each relative, a role row from the heir in the family role their kinship names (`parent`, `sibling`, ...; only roles the Packs declare). Nothing is relabelled: every name is derived from the heir's position ([ADR 0006](../adr/0006-parent-links-derived-kinship.md)), so the dead player is now the heir's parent, the other parent a parent, the other children siblings.
+7. A minor heir with no living parent goes to live with a guardian at once, assets in trust (below). The `on_succession` hooks run for the heir (effects act on the heir), then every `trigger: succession` storylet is queued to open at the next age-up, with read-only `deceased.*` bound ([hooks](pack-format/hooks.md#succession), [storylets](pack-format/storylets.md#succession-storylets)).
+8. The choice log gets a `succeed` entry, so replay reproduces it (the heir's draws use generation `n + 1`, [ADR 0003](../adr/0003-saves-derived-rng-stable-ids.md)).
 
 ### The estate
 
@@ -164,7 +165,17 @@ Settled in `succeed`, before the heir takes over. No estate tax (a Pack may add 
 - **Secured loans** (a mortgage, a car loan) travel with their asset to an adult (18+) heir, keeping their balance and missed payments. For a minor heir the asset is sold at its value instead: the loan is repaid from the proceeds, a surplus joins the cash, a shortfall is written off.
 - **Other assets and investment holdings** pass whole to the heir, with no forced sale and whatever the will says; an asset keeps its age (`asset.years`) and a holding its start (`holding_years`), and a holding of a kind the heir already has merges with it. The dead player keeps nothing.
 - **Cash** left after debts is divided by the **will** (`set_will` / `will_heir`, [state](pack-format/state.md#the-will)): leave all to one named person (`heir`), split evenly among the children (`even`), all to the living spouse (`spouse`) or to charity (`charity`, the cash goes to nobody). With no will, or one that cannot be carried out (the named person is dead, no living spouse to leave it to), the no-will rule applies: a living spouse gets half and the children split the rest evenly; with no living spouse the children get it all. An uneven division gives the remainder to the succeeding heir. The spouse is a living person the dead player has a `spouse` role toward; their share is added to their own money (NPC money, #131).
-- A minor heir's money and assets sit in trust under the guardian rules (above). The guardian is chosen from kin as above; trust release at 18 and the other minor-heir rules are #221.
+- **A minor heir's money and assets sit in trust** under the guardian rules (Household costs, above). An heir under 18 with no living parent goes to live with a guardian in `succeed` itself (not at the next age-up): the journal names the guardian (chosen from kin as above, "a guardian" when none is left) and says the assets are held in trust; an orphan always gets one. While in trust nothing can be bought, and no living cost is charged. At 18 the next age-up releases the trust: the heir is on their own with their money and assets ("your guardian hands over your assets"). A minor heir whose other parent is alive stays with that parent, as any minor does. The guardian is chosen from kin as above.
+
+### Genetics
+
+Stats a Pack declares with `inherit` ([manifest](pack-format/manifest.md)) are re-drawn for the heir inside `succeed`, after the estate and before the `on_succession` hooks, so those see the final values. The heir's parents are their kin `parent` (birth or adoption), the dead player included, whether alive or not. For each such stat, in declaration order, one draw from the purpose key `succession/genetics/<stat>` (generation `n + 1`) gives:
+
+- a *lean* of 0-100: the blend of the two parents' values is `lean x first + (100 - lean) x second`, divided by 100 (a single parent gives that parent's value);
+- a *fresh* draw from the stat's `start` range;
+- the heir's value is `inherit x blend + (100% - inherit) x fresh`, rounded and clamped to 0-100.
+
+So an heir of two parents at 100 smarts with `inherit: 60%` lands in 60-100 (mean 80), and one of two parents at 0 in 0-40; two different parents pull the value anywhere between them. A stat without `inherit` (core-loop's happiness) keeps the heir's value, and an heir with no `parent` kin (a step-child) keeps all of theirs. The draw is a pure function of the seed, generation and world, so replay and saves reproduce it. core-loop declares `health` 40%, `smarts` 60% and `looks` 60%.
 
 ## Market and holdings
 

@@ -1,0 +1,5 @@
+requires:
+  - core-loop/careers
+  - core-loop/education
+  - core-loop/family
+  - core-loop/stats

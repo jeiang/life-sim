@@ -67,6 +67,11 @@
             "additionalItems": false,
             "minItems": 2,
             "maxItems": 2
+          },
+          "inherit": {
+            "pattern": "^\\d+(\\.\\d{1,2})?%$",
+            "description": "Genetics: share of the heir's value on succession that blends the parents' values (a percent literal up to 100%); the rest is a fresh draw from `start`. Absent: the heir keeps the value they had",
+            "type": "string"
           }
         }
       }

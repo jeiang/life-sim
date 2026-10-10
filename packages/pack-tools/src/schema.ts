@@ -50,6 +50,13 @@ export const StatSchema = obj({
     ],
     { description: "Inclusive start range within 0-100" },
   ),
+  inherit: Type.Optional(
+    Type.String({
+      pattern: "^\\d+(\\.\\d{1,2})?%$",
+      description:
+        "Genetics: share of the heir's value on succession that blends the parents' values (a percent literal up to 100%); the rest is a fresh draw from `start`. Absent: the heir keeps the value they had",
+    }),
+  ),
 });
 
 const QualityScope = Type.Optional(

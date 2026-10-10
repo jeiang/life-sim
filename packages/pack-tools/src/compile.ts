@@ -1765,6 +1765,7 @@ class PackCompiler {
         ? this.iconField(s.icon, ["stats", (m.stats ?? []).indexOf(s), "icon"])
         : {}),
       start: s.start as [number, number],
+      ...(s.inherit === undefined ? {} : { inheritBp: percentBp(s.inherit) }),
     }));
     const qualities = this.pack.qualities.map(
       (q) => ({ ...q.decl }) as QualityDecl,
@@ -2225,6 +2226,8 @@ class PackCompiler {
       seen.add(`stat.${s.id}`);
       if (s.start[0] > s.start[1])
         this.err(["stats", i, "start"], "start range minimum exceeds maximum");
+      if (s.inherit !== undefined && percentBp(s.inherit) > 10000)
+        this.err(["stats", i, "inherit"], "inherit is above 100%");
     }
     if (m.year && m.year.slots[0] > m.year.slots[1])
       this.err(["year", "slots"], "slot range minimum exceeds maximum");

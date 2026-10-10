@@ -1,0 +1,8 @@
+- id: odd-job
+  trigger: action
+  menu: activities/job-board
+  tags: [job]
+  text: You pick up an odd job.
+  outcomes:
+    - effects:
+        - stat.smarts += 1

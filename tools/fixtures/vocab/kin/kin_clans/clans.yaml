@@ -1,0 +1,4 @@
+- id: heron
+  label: Heron
+  size: 12
+  rank: 3 + stat.smarts / 10

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../../../../packages/pack-tools/schema/capability.schema.json
+provides:
+  stats:
+    - happiness
+    - smarts
+  qualities:
+    - luck
+    - degree
+  readables:
+    - hiring_blocked
+  effects:
+    - cheer
+  roles:
+    - friend
+  groups:
+    - school
+    - full-time
+  tags:
+    - job
+    - school
+  milestones:
+    - graduated
+  singletons:
+    - currency
+    - exclusivity
+    - year

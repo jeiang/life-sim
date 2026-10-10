@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=../../../../../packages/pack-tools/schema/effects.schema.json
+# A scandal breaks: counts it and cheers nobody.
+- id: scandal
+  effects:
+    - world.kin_scandals += 1
+    - core_loop.cheer(0 - 2, 5)

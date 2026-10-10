@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=../../../../../packages/pack-tools/schema/qualities.schema.json
+# Starts at 1 for everyone; luck of the draw in chance events.
+- { id: luck, type: int, min: 0, max: 5, default: 0 }
+- { id: degree, type: flag, default: false } # Finished university.

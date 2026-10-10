@@ -2,7 +2,7 @@
 
 - pack: grad-school
 - packs: core-loop, grad-school
-- profile: all
+- profile: scholar
 - lives: 3000
 
 > Chain 9, the professor ladder: postdoc (apply, then one interview step), assistant professor (2 years served), associate professor (4 years served), full professor (5 years served, then a yearly tenure review).

@@ -2,7 +2,7 @@
 
 - pack: grad-school
 - packs: grad-school, core-loop
-- profile: all
+- profile: scholar
 - lives: 3000
 
 > Chain 2: the yearly stage for the four programs. Entry (`start_occupation`, `grad_program`, `grad_gpa` start) is chain 1; tuition and funding are chain 3 (a yearly hook in pack.yaml) and scholarships are chain 4.
@@ -17,7 +17,7 @@
 - chance: 0%
 - when: grad_enrolled
 - text: The year-end transcript lands in your mailbox. Time to see how you really did.
-- opens: 0.45..0.75 per life
+- opens: 0.4..1.4 per life
 
 ### outcomes
 - outcome: 10 + stat.smarts / 2
@@ -39,7 +39,7 @@
 - chance: 0%
 - when: quality.grad_program == 1 and not in_group(school)
 - text: The last rotation ends and the hospital hands you a diploma. Your mother cries first.
-- opens: 0.03..0.05 per life
+- opens: 0.02..0.09 per life
 
 ### outcomes
 - outcome: 1
@@ -63,7 +63,7 @@
 - chance: 0%
 - when: quality.grad_program == 2 and not in_group(school)
 - text: The last exam is done. The bar results are weeks away, but the degree is yours.
-- opens: 0.03..0.05 per life
+- opens: 0.02..0.1 per life
 
 ### outcomes
 - outcome: 1
@@ -87,7 +87,7 @@
 - chance: 0%
 - when: quality.grad_program == 3 and not in_group(school)
 - text: You present your capstone to a room of executives. They applaud, and they hand you a diploma.
-- opens: 0.04..0.06 per life
+- opens: 0.01..0.06 per life
 
 ### outcomes
 - outcome: 1
@@ -111,7 +111,7 @@
 - chance: 0%
 - when: quality.grad_program == 4 and not in_group(school)
 - text: Your dissertation survives the defense with only minor corrections. You are now a doctor of philosophy.
-- opens: 0.022..0.04 per life
+- opens: 0.05..0.17 per life
 
 ### outcomes
 - outcome: 1
@@ -137,7 +137,7 @@
 - cooldown: 1
 - when: grad_enrolled
 - text: You settle in for another stretch of reading and problem sets.
-- opens: 0.8..2.5 per life
+- opens: 0.5..2.5 per life
 
 ### outcomes
 - outcome: 60
@@ -157,7 +157,7 @@
 - label: Drop out of grad school
 - when: grad_enrolled
 - text: You stop going to class, then stop answering the emails. The school quietly stops waiting for you.
-- opens: 0.04..0.065 per life
+- opens: 0..0.065 per life
 
 ### outcomes
 - outcome: 1

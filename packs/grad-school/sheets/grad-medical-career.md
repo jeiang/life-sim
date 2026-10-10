@@ -2,8 +2,8 @@
 
 - pack: grad-school
 - packs: grad-school, core-loop
-- profile: all
-- lives: 1000
+- profile: scholar
+- lives: 3000
 
 > Chain 6 of the grad-school pack (outline section 6), the doctor ladder: resident-doctor (medical degree and boards), attending-doctor after 3 years as a resident, chief-of-medicine after 6 years as an attending (rare).
 > apply-residency is an action on activities/job-board with cooldown 1 (one application a year). Its match weight rises with smarts and grad_gpa, so it has expression weights and no rate bands.

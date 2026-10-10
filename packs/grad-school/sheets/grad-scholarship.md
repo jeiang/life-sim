@@ -17,7 +17,7 @@
 - when: grad_enrolled
 - tags: education, money
 - text: The financial aid office opens your file, {player.first_name}, and starts reading.
-- opens: 0.15..0.30 per life
+- opens: 0.1..0.3 per life
 
 ### outcomes
 - outcome: 25
@@ -47,7 +47,7 @@
 - when: grad_enrolled and quality.grad_scholarship > 0
 - tags: education, money
 - text: The scholarship committee checks your grade report, {player.first_name}.
-- opens: 0.12..0.25 per life
+- opens: 0.08..0.25 per life
 
 ### outcomes
 - outcome: 1
@@ -88,7 +88,7 @@
 - when: quality.grad_cheated
 - tags: education
 - text: Someone on the exam board has noticed your answers were a little too neat, {player.first_name}.
-- opens: 0.01..0.08 per life
+- opens: 0..0.08 per life
 
 ### outcomes
 - outcome: 40

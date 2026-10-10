@@ -2,8 +2,8 @@
 
 - pack: grad-school
 - packs: core-loop, grad-school
-- profile: all
-- lives: 1000
+- profile: scholar
+- lives: 3000
 
 > Chain 8 of grad-school (issue #230). The MBA ladder: apply-business-manager (action) -> business-manager-interview (chance 0% chain step) -> business-manager-result (chain step, hire or reject). Five years as business-manager can open ceo-offer (rare, once per life).
 > Apply mirrors core apply-* gates: not in_group("full-time") and not hiring_blocked. Entry is quality.grad_degree_mba and not in_group(school).

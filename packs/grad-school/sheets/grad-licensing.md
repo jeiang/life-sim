@@ -2,7 +2,7 @@
 
 - pack: grad-school
 - packs: grad-school, core-loop
-- profile: all
+- profile: scholar
 - lives: 3000
 
 > Chain 5 of the grad-school pack (outline section 5). Two licensing exams (medical boards, bar), one prep action, and a cheat choice on each exam.
@@ -22,7 +22,7 @@
 - when: (quality.grad_degree_medical and not quality.grad_licensed_medical) and not in_group(school)
 - cooldown: 1
 - text: Three days in a testing hall, one question after another, while the clock on the wall loses ground. {player.first_name} is about to find out whether the years of school count.
-- opens: 0.03..0.09 per life
+- opens: 0.03..0.12 per life
 
 ### choice: Sit it straight
 - outcome: 30 + stat.smarts / 2 + 8 * quality.grad_prep
@@ -67,7 +67,7 @@
 - when: (quality.grad_degree_law and not quality.grad_licensed_law) and not in_group(school)
 - cooldown: 1
 - text: Two days of essays and multiple choice in a hall that smells of toner. {player.first_name} gets one shot a year at a bar card, and today is that shot.
-- opens: 0.03..0.09 per life
+- opens: 0.03..0.15 per life
 
 ### choice: Sit it straight
 - outcome: 30 + stat.smarts / 2 + 8 * quality.grad_prep
@@ -112,7 +112,7 @@
 - repeatable: true
 - when: ((quality.grad_degree_medical and not quality.grad_licensed_medical) or (quality.grad_degree_law and not quality.grad_licensed_law)) and quality.grad_prep < 5 and not in_group(school)
 - text: Old practice papers, flashcards at the kitchen table, and a highlighter running low. {player.first_name} starts to see the patterns in the questions.
-- opens: 0.08..0.25 per life
+- opens: 0.08..0.3 per life
 
 ### outcomes
 - outcome: 1

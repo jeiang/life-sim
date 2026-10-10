@@ -2,8 +2,8 @@
 
 - pack: grad-school
 - packs: grad-school, core-loop
-- profile: all
-- lives: 1000
+- profile: scholar
+- lives: 3000
 
 > Chain 3 (grad-funding). Who pays tuition. Tuition is charged automatically by Pack data, not by storylets: a school stage's pay is `0 - grad_tuition_cash` (cash) and the yearly `on_age_up_pre` hook adds `grad_tuition_due` to `grad_debt` while `grad_loan` is set (and moves a player who cannot cover the year in cash onto the loan). Admission starts every program in cash with no parents' share.
 > The actions below only change the mix: cash or loan, and the parents' share (0, 50 or 100). A scholarship step-down raises `grad_tuition_due`, so the lost amount falls to whatever mix the player has; `grad-funding-gap` (reached from chain 4) lets the player change that mix right away.
@@ -20,7 +20,7 @@
 - cooldown: 1
 - when: grad_enrolled and quality.grad_tuition > 0 and quality.grad_loan and money >= grad_tuition_due
 - text: The school wants its money every year. Savings are where the money lives.
-- opens: 0.01..0.10 per life
+- opens: 0..0.1 per life
 
 ### outcomes
 - outcome: 1
@@ -38,7 +38,7 @@
 - cooldown: 1
 - when: grad_enrolled and quality.grad_tuition > 0 and not quality.grad_loan
 - text: The school takes a promise to pay instead of cash. The promise comes due after the degree.
-- opens: 0.09..0.40 per life
+- opens: 0.02..0.4 per life
 
 ### outcomes
 - outcome: 1
@@ -56,7 +56,7 @@
 - cooldown: 1
 - when: grad_enrolled and quality.grad_tuition > 0 and quality.grad_parents < 100
 - text: Your parents have opinions about your education, and most of them are about money.
-- opens: 0.1..0.50 per life
+- opens: 0.2..0.7 per life
 
 ### outcomes
 - outcome: role_closeness(core-loop/parent) * quality.family_wealth / 20
@@ -77,7 +77,7 @@
 - chance: 0%
 - when: grad_enrolled and quality.grad_tuition > 0
 - text: Your scholarship shrank, and the school wants the difference this year. Who pays it?
-- opens: 0.02..0.12 per life
+- opens: 0..0.12 per life
 
 ### choice: Keep paying as before
 - outcome: 1

@@ -2,8 +2,8 @@
 
 - pack: grad-school
 - packs: grad-school, core-loop
-- profile: all
-- lives: 10000
+- profile: scholar
+- lives: 3000
 
 > Chain 7 (grad-law-career). Lawyer ladder: associate-lawyer (apply, needs law degree and bar pass), then partner-lawyer (scheduled 4 years after hire), then a rare judge offer (partner only, once per life).
 > Occupation ids are full ids (grad-school/...) as in the outline's chain 1 and 2 notation.

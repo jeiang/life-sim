@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# Adult children have children of their own, so the player's grandchildren exist (core-loop grandchild-babysit and tell-old-stories need them).
+
+- id: adult-child-has-baby
+  icon: 👶
+  trigger: event
+  scope: person
+  target: [core-loop/child]
+  chance: 9%
+  when: person.age >= 22 and person.age <= 45 and count_kin(grandchild, 0, 120) < 6
+  text: "{person.first_name} has news: a baby is on the way."
+  outcomes:
+    - weight: 1
+      text: "{person.first_name} calls to say the baby has arrived, and you are a grandparent."
+      effects:
+        - "spawn_person(dating/grandchild, dating/baby-gen, parent: person) as grandbaby"
+        - relationship(person).closeness += 2
+        - stat.happiness += 5
+        - "journal(\"{person.first_name} had a baby: your grandchild.\")"

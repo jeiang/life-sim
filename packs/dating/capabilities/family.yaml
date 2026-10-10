@@ -1,6 +1,8 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/capability.schema.json
 # Pregnancy, children, adoption and moving out.
 provides:
+  roles:
+    - grandchild
   qualities:
     - dating_pregnant
     - dating_moved_out

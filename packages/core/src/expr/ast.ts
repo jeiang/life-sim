@@ -45,7 +45,7 @@ export type Effect =
   | readonly ["spawn", Expr, Expr, string, SpawnLink?]; // spawn_person(role, generator[, parent: p][, link: k]) as name
 
 /**
- * The optional family-tree arguments of a child `spawn_person`: `parent` names the other birth
+ * The optional family-tree arguments of a child or grandchild `spawn_person`: `parent` names the other birth
  * parent (a person in scope; the spouses are then not linked) and `link` the kind of the links
  * (default birth).
  */

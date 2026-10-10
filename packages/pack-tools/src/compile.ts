@@ -3043,10 +3043,22 @@ class PackCompiler {
             typeof role === "object" && role[0] === "id"
               ? (role[1] as string)
               : undefined;
-          if (id !== undefined && familyRoleOf(id) !== "child") {
+          const family = id === undefined ? undefined : familyRoleOf(id);
+          if (
+            id !== undefined &&
+            family !== "child" &&
+            family !== "grandchild"
+          ) {
             this.err(
               path,
-              `'parent' and 'link' need a child role, '${id}' is not one (its last id segment must be 'child')`,
+              `'parent' and 'link' need a child or grandchild role, '${id}' is not one (its last id segment must be 'child' or 'grandchild')`,
+            );
+            return undefined;
+          }
+          if (family === "grandchild" && e[4].parent === undefined) {
+            this.err(
+              path,
+              `a grandchild role needs 'parent: <person>', the child they are born to`,
             );
             return undefined;
           }

@@ -337,13 +337,19 @@ function otherParents(
 }
 
 /** The family role a spawned or re-roled person holds, by the last segment of the role id. */
-export type FamilyRole = "parent" | "sibling" | "child" | "grandparent";
+export type FamilyRole =
+  | "parent"
+  | "sibling"
+  | "child"
+  | "grandchild"
+  | "grandparent";
 
 export function familyRoleOf(roleId: string): FamilyRole | undefined {
   const last = roleId.slice(roleId.lastIndexOf("/") + 1);
   return last === "parent" ||
     last === "sibling" ||
     last === "child" ||
+    last === "grandchild" ||
     last === "grandparent"
     ? last
     : undefined;
@@ -352,7 +358,8 @@ export function familyRoleOf(roleId: string): FamilyRole | undefined {
 /**
  * Record that `person` holds a family role toward `from` in the tree: a parent becomes a
  * parent of `from`, a sibling takes `from`'s parents, a child gets `from` (and `from`'s
- * spouses) as parent, a grandparent becomes a parent of `from`'s first birth or adopted
+ * spouses) as parent, a grandchild gets only the named `parent` (their birth parent, one of the
+ * player's children), a grandparent becomes a parent of `from`'s first birth or adopted
  * parent. Other roles, and roles with no parent to hang the link on, change nothing.
  */
 export function linkFamilyRole(
@@ -370,6 +377,10 @@ export function linkFamilyRole(
         (w, parent) => addParentLink(w, person, parent, opts.kind),
         world,
       );
+    case "grandchild":
+      return opts.parent === undefined
+        ? world
+        : addParentLink(world, person, opts.parent, opts.kind);
     case "sibling":
       return parentLinks(world, from).reduce(
         (w, l) => addParentLink(w, person, l.id, l.kind),

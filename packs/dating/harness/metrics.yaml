@@ -26,6 +26,8 @@ measures:
   adoptions: { fires: { storylet: dating/adopt-a-child } }
   adopted: { when: "adoptions > 0" }
   support_paid: { quality: dating_pays_support, at: ever }
+  grandchildren: { fires: { storylet: dating/adult-child-has-baby } }
+  grandparent: { when: "grandchildren > 0" }
   nw65: { snapshot: net_worth, ages: [65] }
 stats:
   partnered_share:
@@ -109,6 +111,21 @@ stats:
     value: children
     by: profile
     label: children per life
+  grandparent_of_parents:
+    kind: share
+    when: grandparent
+    of: parent
+    label: parents who became grandparents
+  grandchildren_per_parent:
+    kind: dist
+    value: grandchildren
+    of: parent
+    label: grandchildren per parent (whole life)
+  grandchildren_per_grandparent:
+    kind: dist
+    value: grandchildren
+    of: grandparent
+    label: grandchildren per grandparent (whole life)
   nw65_parents:
     kind: median
     value: nw65
@@ -136,5 +153,8 @@ blocks:
   - stats: [pregnant_share, parent_share, adopted_share, children_per_life]
   - stats: [miscarried_of_pregnant, support_share]
   - stats: [first_child_age_dist, children_per_parent]
+  - text: Grandchildren.
+  - stats: [grandparent_of_parents]
+  - stats: [grandchildren_per_parent, grandchildren_per_grandparent]
   - text: Net worth at 65 (minor units).
   - stats: [nw65_parents, nw65_childless, nw65_divorced]

@@ -64,10 +64,11 @@ describe("--generations", () => {
     for (const seed of [3, 4, 5]) {
       const one = runLife(s.bundles, seed, random, s.metrics, []);
       const many = runLife(s.bundles, seed, random, s.metrics, [], three);
-      const { lineage, metrics, faults, ...rest } = many;
+      const { lineage, heirFires, metrics, faults, ...rest } = many;
       const { metrics: m1, faults: f1, ...rest1 } = one;
       expect(lineage).toBeDefined();
       expect(one.lineage).toBeUndefined();
+      expect(heirFires).toBeDefined();
       expect(rest).toEqual(rest1);
       expect(faults).toEqual(f1);
       expect(Object.keys(metrics)).toEqual(Object.keys(m1));

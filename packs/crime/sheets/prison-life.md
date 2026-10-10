@@ -173,7 +173,7 @@
 - icon: 📝
 - menu: occupation/prison
 - label: Study for your GED
-- tags: custody-ok, education, learning
+- tags: custody-ok, education, learning, ged
 - when: has_occupation(prison) and not quality.graduated_high_school
 - cooldown: 1
 - text: The prep class meets in the chapel on Tuesdays, between the bingo and the sermon.

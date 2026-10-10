@@ -13,7 +13,7 @@
 > Karma writes use `quality.karma_score` (karma pack, clamped 0..100). The `packs` header includes `karma` so the name resolves; the outline's `quality.karma` is this name (GAP G4).
 > `quality.crime_murders` counts unsolved murders only. Its reader is the arrest chain's cold case, not this sheet. A caught murder does not increment it.
 > `die("murdered")` is in `scope: person`, so it kills the bound person, not the player. The cause string is checked at compile (GAP G6).
-> Murder is `max_per_life: 1`, so its opens band is the share of lives with a murder, matching the outline's per-life frequency.
+> Murder is once per life: `quality.crime_killer` (set by both going-through outcomes) gates it, because `max_per_life` counts per bound person and the harness found serial killers (#237). Opens band: murder is `max_per_life: 1`, so its opens band is the share of lives with a murder, matching the outline's per-life frequency.
 > Assault is not `repeatable`. It has a one-year cooldown and at most two uses per life. Its effects lower karma, happiness, and closeness, so repeats cost the player.
 > Random and all profiles: until #292 tag weights down-weight the `crime` tag in random play (GAP G2), the harness will open murder and assault more often than the design bands. The bands are design intent; lint and the focused sim report the difference.
 > Assault has no closeness gate (the outline's option is left unused): any bound person can be attacked.
@@ -68,16 +68,18 @@
 - icon: 🔪
 - scope: person
 - tags: crime
-- when: age >= 14 and person.alive
+- when: age >= 14 and person.alive and not quality.crime_killer
 - max_per_life: 1
 - text: Killing {person.first_name} cannot be undone. Are you sure?
 - opens: 0.001..0.005 per life
 - needs: quality crime_murders: integer 0..1000, default 0: unsolved murders the police may still connect to the player
+- needs: quality crime_killer: flag, default false: the player has murdered; gates murder to once per life
 
 ### choice: Go through with it
 - outcome: 60
   - text: {person.first_name} is dead, and the scene shows no sign of you. For now.
   - effect: die("murdered")
+  - effect: quality.crime_killer = true
   - effect: quality.crime_murders += 1
   - effect: quality.karma_score += -20
   - effect: stat.happiness -= 12
@@ -86,6 +88,7 @@
 - outcome: 40
   - text: {person.first_name} is dead, and the police are at your door within hours.
   - effect: die("murdered")
+  - effect: quality.crime_killer = true
   - effect: quality.karma_score += -20
   - effect: stat.happiness -= 12
   - effect: quality.crime_pending_charge = 4

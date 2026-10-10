@@ -13,8 +13,19 @@ measures:
   executed: { death: executed }
   murdered_someone: { fires: { storylet: crime/murder } }
   assaulted: { fires: { storylet: crime/assault } }
-  property_crimes: { fires: { tag: crime } }
-  offender: { when: "property_crimes > 0 or murdered_someone > 0 or assaulted > 0" }
+  property_crimes: { fires: { tag: property-crime } }
+  property_offender: { when: "property_crimes > 0" }
+  murders_unsolved: { outcome: { storylet: crime/murder, key: c0.o0 } }
+  murders_caught: { outcome: { storylet: crime/murder, key: c0.o1 } }
+  murderer: { when: "murders_unsolved > 0 or murders_caught > 0" }
+  serial_murderer: { when: "murders_unsolved > 1 or murders_caught > 1 or (murders_unsolved > 0 and murders_caught > 0)" }
+  offender: { when: "property_crimes > 0 or murderer or assaulted > 0" }
+  diploma_end: { quality: graduated_high_school, at: end }
+  studied_ged: { fires: { tag: ged } }
+  earned_prison_ged: { outcome: { storylet: crime/prison-study-ged, key: o0 } }
+  earned_juvie_ged: { outcome: { storylet: crime/juvie-study-ged, key: o0 } }
+  earned_ged: { when: "earned_prison_ged > 0 or earned_juvie_ged > 0" }
+  inmate_no_diploma: { when: "imprisoned and diploma_end == 0" }
   escaped: { quality: crime_escapes, at: ever }
   recaptures: { fires: { storylet: crime/crime-recaptured } }
   paroled: { outcome: { storylet: crime/parole-review, key: o1 } }
@@ -35,6 +46,56 @@ stats:
     when: "paroled > 0"
     of: imprisoned
     label: sentenced lives granted parole
+  property_offenders:
+    kind: share
+    when: property_offender
+    by: profile
+    label: committed a property crime
+  murderers:
+    kind: share
+    when: murderer
+    by: profile
+    label: murdered someone
+  serial_murderers:
+    kind: share
+    when: serial_murderer
+    by: profile
+    label: murdered twice or more
+  convicted_of_offenders:
+    kind: share
+    when: convicted
+    of: offender
+    label: offenders convicted
+  imprisoned_of_convicted:
+    kind: share
+    when: imprisoned
+    of: convicted
+    label: convicted lives sentenced to custody
+  reoffended:
+    kind: share
+    when: "arrests > 1"
+    of: arrested
+    label: arrested lives arrested again (recidivism)
+  reconvicted:
+    kind: share
+    when: "convictions > 1"
+    of: convicted
+    label: convicted lives convicted again
+  ged_studied:
+    kind: share
+    when: "studied_ged > 0"
+    of: offender
+    label: offenders who studied for a GED (juvenile detention or prison)
+  ged_earned:
+    kind: share
+    when: earned_ged
+    of: offender
+    label: offenders who earned a GED
+  no_diploma_inmates:
+    kind: share
+    when: inmate_no_diploma
+    of: imprisoned
+    label: sentenced lives that ended without a diploma
   offenders:
     kind: share
     when: offender
@@ -93,6 +154,9 @@ stats:
     label: net worth at 65, never convicted (median)
 blocks:
   - text: An offender is a life that opened any crime action.
+  - stats: [property_offenders, murderers, serial_murderers]
+  - stats: [convicted_of_offenders, imprisoned_of_convicted, reoffended, reconvicted]
+  - stats: [ged_studied, ged_earned, no_diploma_inmates]
   - stats: [offenders, arrested_share, convicted_share, imprisoned_share, record_share, record_end_share]
   - stats: [arrested_of_offenders, executed_share]
   - stats: [escaped_share, recaptured_share, paroled_share]

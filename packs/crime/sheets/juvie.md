@@ -188,6 +188,30 @@
   - effect: stat.happiness += 1
   - rate: 20..30%
 
+## juvie-study-ged
+- trigger: action
+- menu: occupation/juvenile_detention
+- label: Study for your GED
+- icon: 📝
+- tags: crime, custody-ok, education, learning, ged
+- when: has_occupation(juvenile_detention) and age >= 16 and age < 18 and not quality.graduated_high_school
+- cooldown: 1
+- text: The detention school offers an equivalency class in the room with the broken blinds. The teacher says sixteen is old enough to sit the exam.
+- opens: 0.002..0.02 per life
+
+### outcomes
+- outcome: 40
+  - text: You pass the exam, and the teacher pins the certificate to the corkboard before you can ask.
+  - effect: quality.graduated_high_school = true
+  - effect: stat.smarts += 3
+  - effect: stat.happiness += 4
+  - effect: journal("Earned a GED in juvenile detention at age {age}.")
+  - rate: 35..45%
+- outcome: 60
+  - text: You fall a few points short. The teacher says the next sitting is in a year.
+  - effect: stat.smarts += 2
+  - rate: 55..65%
+
 ## juvie-write-home
 - trigger: action
 - menu: occupation/juvenile_detention

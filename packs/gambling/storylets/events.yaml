@@ -164,7 +164,7 @@
 - id: casino-night-invite
   icon: 🎉
   trigger: event
-  tags: [gambling]
+  tags: [gambling, wager]
   weight: 6
   cooldown: 4
   when: age >= 18 and money >= 20000 and age >= quality.gambling_banned_until
@@ -197,7 +197,7 @@
 - id: betting-pool-invite
   icon: 🏈
   trigger: event
-  tags: [gambling]
+  tags: [gambling, wager]
   weight: 6
   cooldown: 3
   when: age >= 18 and money >= 10000
@@ -228,7 +228,7 @@
 - id: hot-tip
   icon: 🔥
   trigger: event
-  tags: [gambling]
+  tags: [gambling, wager]
   weight: 5
   cooldown: 4
   when: age >= 18 and money >= 10000

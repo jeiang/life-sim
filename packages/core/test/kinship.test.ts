@@ -19,6 +19,7 @@ import {
   choose,
   countKin,
   createWorld,
+  describePending,
   deserializeWorld,
   getPerson,
   indexBundles,
@@ -320,6 +321,33 @@ describe("expressions", () => {
     expect(rows("dad")).toBeDefined();
     const w = runAction(t.w, bundles, "kx/parents-around").world;
     expect(getPerson(w, w.playerId).qualities.kin_hits).toBe(10);
+  });
+
+  test("target takes kinship ids; {person.kin} renders the gendered label", () => {
+    const storylet = bundles
+      .flatMap((b) => b.storylets)
+      .find((s) => s.id === "kx/half-only");
+    expect(storylet?.target).toEqual(["half-sibling", "cousin"]);
+    const listed = (name: string) =>
+      listActions(t.w, bundles, "relationships", t.ids[name]).find(
+        (r) => r.id === "kx/half-only",
+      );
+    expect(listed("half")).toMatchObject({ locked: false });
+    expect(listed("cousin")).toMatchObject({ locked: false });
+    expect(listed("sister")).toBeUndefined();
+    const w = updatePerson(t.w, t.ids.half as number, (p) => ({
+      ...p,
+      gender: "female",
+    }));
+    const opened = runAction(
+      w,
+      bundles,
+      "kx/half-only",
+      t.ids.half as number,
+    ).world;
+    expect(describePending(opened, bundles)?.text).toMatch(
+      /is your half-sister\.$/,
+    );
   });
 
   test("the kinship argument is checked at build time", () => {

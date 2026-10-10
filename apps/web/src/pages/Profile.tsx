@@ -14,7 +14,7 @@ import { GodBadge } from "../components/GodFields.tsx";
 import { MenuList } from "../components/MenuList.tsx";
 import { PageFrame } from "../components/PageFrame.tsx";
 import { StatBars } from "../components/StatPanel.tsx";
-import { money } from "../game/format.ts";
+import { kinLabelOf, money } from "../game/format.ts";
 import { packIndex, runMenuAction, world } from "../game/store.ts";
 import { openPage, profileTarget } from "../nav.ts";
 
@@ -61,6 +61,7 @@ export function Profile() {
   const roleLabel = rel
     ? (packIndex.roles.get(rel.role)?.label ?? rel.role)
     : undefined;
+  const kin = isPlayer ? undefined : kinLabelOf(w, id);
 
   return (
     <PageFrame title={isPlayer ? "Your profile" : "Profile"}>
@@ -70,7 +71,10 @@ export function Profile() {
           {isPlayer && isGodLife(w) && <GodBadge />}
         </h2>
         <p class="text-text-muted">
-          {isPlayer ? "You" : (roleLabel ?? "Acquaintance")}, age {p.age}
+          <span data-testid="profile-relation">
+            {isPlayer ? "You" : (kin ?? roleLabel ?? "Acquaintance")}
+          </span>
+          , age {p.age}
           {p.gender ? `, ${p.gender}` : ""}
           {p.alive ? "" : " (deceased)"}
         </p>

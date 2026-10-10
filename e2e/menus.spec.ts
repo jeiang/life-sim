@@ -94,3 +94,24 @@ test("a person's profile lists their interactions", async ({ page }) => {
     page.getByRole("heading", { name: "Interactions" }),
   ).toBeVisible();
 });
+
+const KIN_LABEL =
+  /^(Father|Mother|Parent|Brother|Sister|Sibling|Half-brother|Half-sister|Half-sibling|Stepfather|Stepmother|Step-parent|Grandfather|Grandmother|Grandparent)$/;
+
+test("relationships and profiles show what each relative is by kinship", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Relationships", exact: true })
+    .click();
+  const row = page.getByRole("button", { name: /Closeness \d+/ }).first();
+  await expect(row).toBeVisible();
+  const kin = (await row.innerText())
+    .split("\n")
+    .map((l) => l.trim())
+    .find((l) => KIN_LABEL.test(l.replace(/, passed away$/, "")));
+  expect(kin, "a kinship label in the first relationship row").toBeTruthy();
+  await row.click();
+  await expect(page.getByTestId("profile-relation")).toHaveText(KIN_LABEL);
+});

@@ -42,7 +42,7 @@ Decided in [Screen kinds and main play layout](https://github.com/jeiang/life-si
 | Choice dialog | Storylet text, icon, and choices; continues through `next:` | Storylets |
 | Purchase dialog | Item, price, cash on hand; Pay cash / Take loan / Cancel, each disabled when not affordable | Item kinds; loan terms from the Pack |
 | Amount picker | Choose an amount within a range, then confirm or cancel | Action storylets that need an amount (for example a bet) |
-| Profile | A person's identity, relationship closeness, stats, and interactions; for the player: occupations, money, loans, net worth | Persons, relationships |
+| Profile | A person's identity (what they are to you by kinship, else their role), relationship closeness, stats, and interactions; for the player: occupations, money, loans, net worth | Persons, relationships |
 | Chart | A value over age (first use: net worth) | Core-tracked series |
 
 ## App screens (not Pack-driven)

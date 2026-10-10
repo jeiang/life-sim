@@ -95,7 +95,9 @@ describe("visit home", () => {
     );
 
   test("costs $1,200 to afford, and is offered every other year", () => {
-    expect(row(life({ age: 35, money: 119999, q: { reloc_abroad: true } }))?.locked).toBe(true);
+    expect(
+      row(life({ age: 35, money: 119999, q: { reloc_abroad: true } }))?.locked,
+    ).toBe(true);
     expect(row(abroad())?.locked).toBe(false);
     const { w, id } = relative(abroad(), "parent");
     const done = runAction(w, bundles, ID, id).world;
@@ -149,7 +151,10 @@ describe("reunion", () => {
 
   test("never while abroad or without a return", () => {
     const abroadAgain = relative(
-      life({ age: 41, q: { reloc_returns: 1, reloc_return_age: 40, reloc_abroad: true } }),
+      life({
+        age: 41,
+        q: { reloc_returns: 1, reloc_return_age: 40, reloc_abroad: true },
+      }),
       "parent",
     );
     expect(

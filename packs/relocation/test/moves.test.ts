@@ -39,8 +39,27 @@ describe("move back home", () => {
     expect(row(away(), HOME)?.locked).toBe(false);
     expect(row(life(), HOME)?.locked).toBe(true);
     expect(row(away({ reloc_home_city: 0 }), HOME)?.locked).toBe(true);
-    expect(row(life({ ...{}, money: 149999, city: R("tokyo"), q: { reloc_abroad: true, reloc_home_city: 4 } }), HOME)?.locked).toBe(true);
-    expect(row(life({ money: 150000, city: R("tokyo"), q: { reloc_abroad: true, reloc_home_city: 4 } }), HOME)?.locked).toBe(false);
+    expect(
+      row(
+        life({
+          ...{},
+          money: 149999,
+          city: R("tokyo"),
+          q: { reloc_abroad: true, reloc_home_city: 4 },
+        }),
+        HOME,
+      )?.locked,
+    ).toBe(true);
+    expect(
+      row(
+        life({
+          money: 150000,
+          city: R("tokyo"),
+          q: { reloc_abroad: true, reloc_home_city: 4 },
+        }),
+        HOME,
+      )?.locked,
+    ).toBe(false);
     expect(row(away(), HOME)?.locked).toBe(false);
   });
 
@@ -95,7 +114,10 @@ describe("move back home", () => {
       "core-loop/junior-analyst",
     ]);
     unforce();
-    const old = updatePerson(away(), away().playerId, (p) => ({ ...p, age: 66 }));
+    const old = updatePerson(away(), away().playerId, (p) => ({
+      ...p,
+      age: 66,
+    }));
     const retired = choose(
       runAction(hire(old, "core-loop/retired"), bundles, HOME).world,
       bundles,
@@ -124,7 +146,10 @@ describe("move to another city abroad", () => {
     expect(row(life(), ABROAD)?.locked).toBe(true);
     expect(row(away({}, "tokyo"), ABROAD)?.locked).toBe(false);
     expect(
-      row(life({ city: R("tokyo"), money: 249999, q: { reloc_abroad: true } }), ABROAD)?.locked,
+      row(
+        life({ city: R("tokyo"), money: 249999, q: { reloc_abroad: true } }),
+        ABROAD,
+      )?.locked,
     ).toBe(true);
   });
 
@@ -154,7 +179,11 @@ describe("move to another city abroad", () => {
     const w0 = away({ reloc_lang_spanish: 60 }, "tokyo");
     const w = choose(runAction(w0, bundles, ABROAD).world, bundles, 6).world;
     expect(qn(w, "reloc_lang_spanish")).toBe(60);
-    const w2 = choose(runAction(away(), bundles, ABROAD).world, bundles, 1).world;
+    const w2 = choose(
+      runAction(away(), bundles, ABROAD).world,
+      bundles,
+      1,
+    ).world;
     expect(qn(w2, "reloc_lang_french")).toBe(20);
     expect(row(w2, ABROAD)?.locked).toBe(true);
   });

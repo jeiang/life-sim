@@ -38,9 +38,9 @@ describe("cities and countries", () => {
     expect(countries.map(([id]) => id).sort()).toEqual(
       ["canada", "japan", "mexico", "uk", "us"].map((c) => `relocation/${c}`),
     );
-    expect(
-      countries.map(([, e]) => e.values.code as number).sort(),
-    ).toEqual([1, 2, 3, 4, 5]);
+    expect(countries.map(([, e]) => e.values.code as number).sort()).toEqual([
+      1, 2, 3, 4, 5,
+    ]);
   });
 
   test("every city, six at home and eight abroad, maps to a country", () => {

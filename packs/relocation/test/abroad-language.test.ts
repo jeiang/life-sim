@@ -10,7 +10,8 @@ const GROW = R("abroad-language-growth");
 const BARRIER = R("abroad-language-barrier");
 const at = (city: string, extra: Record<string, number | boolean> = {}) =>
   life({ age: 35, city: R(city), q: { reloc_abroad: true, ...extra } });
-const opens = (w: World, id: string) => startStorylet(w, bundles, id).world !== w;
+const opens = (w: World, id: string) =>
+  startStorylet(w, bundles, id).world !== w;
 
 const LANG: Record<string, string> = {
   tokyo: "japanese",
@@ -54,7 +55,9 @@ describe("barrier", () => {
   });
 
   test("from 40 skill, or in English, or at home, it does not open", () => {
-    expect(opens(at("tokyo", { reloc_lang_japanese: 40 }), BARRIER)).toBe(false);
+    expect(opens(at("tokyo", { reloc_lang_japanese: 40 }), BARRIER)).toBe(
+      false,
+    );
     expect(opens(at("london"), BARRIER)).toBe(false);
     expect(opens(life({ age: 35, city: R("tokyo") }), BARRIER)).toBe(false);
     expect(story(BARRIER).outcomes).toHaveLength(2);
@@ -69,10 +72,18 @@ describe("job friction", () => {
 
   test("under 20 skill abroad blocks professional applications; 20 does not", () => {
     const degree = { has_degree_business: true };
-    expect(blocked(at("tokyo", { ...degree, reloc_lang_japanese: 19 }))?.locked).toBe(true);
-    expect(blocked(at("tokyo", { ...degree, reloc_lang_japanese: 20 }))?.locked).toBe(false);
-    expect(blocked(at("mexico-city", { ...degree, reloc_lang_spanish: 0 }))?.locked).toBe(true);
-    expect(blocked(at("montreal", { ...degree, reloc_lang_french: 19 }))?.locked).toBe(true);
+    expect(
+      blocked(at("tokyo", { ...degree, reloc_lang_japanese: 19 }))?.locked,
+    ).toBe(true);
+    expect(
+      blocked(at("tokyo", { ...degree, reloc_lang_japanese: 20 }))?.locked,
+    ).toBe(false);
+    expect(
+      blocked(at("mexico-city", { ...degree, reloc_lang_spanish: 0 }))?.locked,
+    ).toBe(true);
+    expect(
+      blocked(at("montreal", { ...degree, reloc_lang_french: 19 }))?.locked,
+    ).toBe(true);
   });
 
   test("English cities never block, and neither does home", () => {

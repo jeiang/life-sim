@@ -96,7 +96,7 @@ export const forcePick = (storyletId: string, pick: number | string) =>
   forcePicks({ [storyletId]: pick });
 export const unforce = () => setStreamOverride(null);
 
-export { evalBool, evalInt, scopeFor, applyEffects };
+export { applyEffects, evalBool, evalInt, scopeFor };
 
 /** The player's relationship rows toward people holding `role` (`parent`, `sibling`, `friend`). */
 export function rows(w: World, role: string) {

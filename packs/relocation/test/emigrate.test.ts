@@ -43,9 +43,14 @@ describe("gating", () => {
   });
 
   test("blocked while enrolled", () => {
-    expect(locked(hire(life({ age: 18, q: { graduated_high_school: true } }), "core-loop/university-business"))).toBe(
-      true,
-    );
+    expect(
+      locked(
+        hire(
+          life({ age: 18, q: { graduated_high_school: true } }),
+          "core-loop/university-business",
+        ),
+      ),
+    ).toBe(true);
   });
 
   test("blocked while already abroad or between a move and its job decision", () => {
@@ -113,8 +118,7 @@ describe("denial", () => {
     expect(locked(w)).toBe(true);
     let n = ageUp(w, bundles);
     let guard = 0;
-    while (n.world.pending && guard++ < 20)
-      n = choose(n.world, bundles, 0);
+    while (n.world.pending && guard++ < 20) n = choose(n.world, bundles, 0);
     expect(locked(n.world)).toBe(false);
   });
 });
@@ -196,19 +200,38 @@ describe("the job fork", () => {
   });
 
   const remote = () =>
-    hire(life({ q: { has_degree_business: true } }), "core-loop/junior-analyst");
+    hire(
+      life({ q: { has_degree_business: true } }),
+      "core-loop/junior-analyst",
+    );
 
   test("a remote job survives when the boss agrees", () => {
-    forcePicks({ [R("emigrate-decision")]: 0, [R("emigrate-job-fork")]: "Your boss agrees you can keep working remotely from wherever you land." });
-    const w = choose(runAction(remote(), bundles, APPLY).world, bundles, 0).world;
+    forcePicks({
+      [R("emigrate-decision")]: 0,
+      [R("emigrate-job-fork")]:
+        "Your boss agrees you can keep working remotely from wherever you land.",
+    });
+    const w = choose(
+      runAction(remote(), bundles, APPLY).world,
+      bundles,
+      0,
+    ).world;
     expect(jobs(w)).toEqual(["core-loop/junior-analyst"]);
     expect(q(w, "reloc_abroad")).toBe(true);
     expect(q(w, "reloc_job_fork")).toBe(false);
   });
 
   test("a remote job ends when the boss wants the office", () => {
-    forcePicks({ [R("emigrate-decision")]: 0, [R("emigrate-job-fork")]: "Your boss wants you in the office, so the job goes with the move." });
-    const w = choose(runAction(remote(), bundles, APPLY).world, bundles, 0).world;
+    forcePicks({
+      [R("emigrate-decision")]: 0,
+      [R("emigrate-job-fork")]:
+        "Your boss wants you in the office, so the job goes with the move.",
+    });
+    const w = choose(
+      runAction(remote(), bundles, APPLY).world,
+      bundles,
+      0,
+    ).world;
     expect(jobs(w)).toEqual([]);
     expect(q(w, "reloc_abroad")).toBe(true);
   });

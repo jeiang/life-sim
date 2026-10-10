@@ -122,7 +122,10 @@ describe("abroad move", () => {
     ["guadalajara", "spanish"],
   ];
   test("eight equal outcomes", () => {
-    const rowsNow = eligible(kid(10, "core-loop/lakeshore"), "child-move-abroad");
+    const rowsNow = eligible(
+      kid(10, "core-loop/lakeshore"),
+      "child-move-abroad",
+    );
     expect(rowsNow).toHaveLength(8);
     expect(new Set(rowsNow.map((r) => r.weight))).toEqual(new Set([1]));
   });

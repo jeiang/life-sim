@@ -91,11 +91,13 @@ stats:
     kind: dist
     value: married_age
     of: married
+    by: profile
     label: age at the first marriage
   first_child_age_dist:
     kind: dist
     value: first_child_age
     of: parent
+    by: profile
     label: age when the first child joined
   children_per_parent:
     kind: dist

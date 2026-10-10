@@ -2,7 +2,7 @@
 
 - pack: dating
 - packs: dating
-- profile: all
+- profile: romantic
 - lives: 1000
 
 > Chains 6 and 7 of #239: moving in together, and a wedding (elope, small or big, with an optional prenup).

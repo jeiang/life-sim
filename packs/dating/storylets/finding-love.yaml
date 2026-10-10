@@ -4,7 +4,7 @@
 - id: find-a-date-teen
   icon: 💘
   trigger: event
-  weight: 8
+  weight: 16
   when: "age >= 14 and age <= 17 and count_role(core-loop/partner, 0, 100) == 0"
   cooldown: 1
   text: You notice someone in your year looking your way at school.
@@ -35,7 +35,7 @@
 - id: find-a-date
   icon: 💘
   trigger: event
-  weight: 10
+  weight: 18
   when: "age >= 18 and age <= 30 and count_role(core-loop/partner, 0, 100) == 0 and count_role(core-loop/spouse, 0, 100) == 0"
   cooldown: 1
   text: A chance to meet someone new comes up, and you are free this weekend.
@@ -124,7 +124,7 @@
 - id: dating-app
   icon: 📱
   trigger: event
-  weight: 10
+  weight: 3
   when: "age >= 18 and count_role(core-loop/partner, 0, 100) == 0 and count_role(core-loop/spouse, 0, 100) == 0"
   cooldown: 6
   text: A friend nudges you to try a dating app.

@@ -17,7 +17,7 @@
 ## find-a-date-teen
 - trigger: event
 - icon: 💘
-- weight: 8
+- weight: 16
 - when: age >= 14 and age <= 17 and count_role(core-loop/partner, 0, 100) == 0
 - cooldown: 1
 - needs: generator dating/date-teen-gen-male: age 14..17, fixed gender: a classmate-aged date; one generator per gender (also -female, -nonbinary) so the name, body and attraction roll match the gender
@@ -47,7 +47,7 @@
 ## find-a-date
 - trigger: event
 - icon: 💘
-- weight: 10
+- weight: 18
 - when: age >= 18 and age <= 30 and count_role(core-loop/partner, 0, 100) == 0 and count_role(core-loop/spouse, 0, 100) == 0
 - cooldown: 1
 - needs: generator dating/date-gen-male: age 18..30, fixed gender: an adult date; one generator per gender (also -female, -nonbinary) so the name, body and attraction roll match the gender
@@ -133,7 +133,7 @@
 ## dating-app
 - trigger: event
 - icon: 📱
-- weight: 10
+- weight: 3
 - when: age >= 18 and count_role(core-loop/partner, 0, 100) == 0 and count_role(core-loop/spouse, 0, 100) == 0
 - cooldown: 6
 - text: A friend nudges you to try a dating app.

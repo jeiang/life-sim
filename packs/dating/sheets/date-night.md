@@ -2,7 +2,7 @@
 
 - pack: dating
 - packs: dating
-- profile: all
+- profile: random
 - lives: 1000
 
 > Two repeatable, person-scoped actions in the relationships menu. `target` is the gate: the UI offers the action only for a person who holds one of the listed roles, so neither storylet needs a `count_role` in `when`.

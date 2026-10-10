@@ -2,7 +2,7 @@
 
 - pack: dating
 - packs: dating
-- profile: all
+- profile: unfaithful
 - lives: 1000
 
 > Chain 12 (child support) and chain 13 (merge money) of the dating outline, grilled in #239 and #240.

@@ -2,7 +2,7 @@
 
 - pack: dating
 - packs: dating
-- profile: all
+- profile: unfaithful
 - lives: 1000
 
 > Chain 8 (issue #239): break up, divorce, and heartbreak moved from core-loop.

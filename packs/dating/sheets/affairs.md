@@ -2,7 +2,7 @@
 
 - pack: dating
 - packs: dating
-- profile: all
+- profile: unfaithful
 - lives: 3000
 
 > Chain 5 (issue #239). Affairs run both ways, with a risk of being caught.

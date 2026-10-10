@@ -2,7 +2,7 @@
 
 - pack: dating
 - packs: dating
-- profile: all
+- profile: romantic
 - lives: 1000
 
 > Chain 9 (issue #240). A couple tries for a baby, or a pregnancy comes up by surprise. Whoever can carry carries: the player if `player.can_carry`, else the partner if `person.can_carry`. Neither means no pregnancy path (adoption only, chain 11).

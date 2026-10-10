@@ -1,0 +1,39 @@
+# Simulated player profiles of the core loop; the schema is docs/spec/harness.md#simulated-player-profiles.
+# Lives are dealt to the default profiles in Pack load order, then file order.
+profiles:
+  random:
+    description: Uniform random choices; 0-2 random eligible actions a year, repeatable ones included
+    moves: { below: 3 }
+    rules:
+      - {}
+  studious:
+    description: Prefers study actions and university; accepts job offers
+    moves: 2
+    # Repeatable actions never lock, so this player does each at most once a year.
+    once_per_year: true
+    choice:
+      prefer: [accept*, yes*, take*, say yes*, apply*, sign*]
+    rules:
+      - when: { age_at_least: 65 }
+        ids: ["*/retire"]
+        pick: first
+      - ids: ["*/enrol-*", "*/study-harder", "*/visit-library"]
+        menu: occupation/education
+      - ids: ["*/enrol-*", "*/study-harder", "*/visit-library"]
+      - ids: ["*/apply-*"]
+  spender:
+    description: Buys whenever affordable, takes loans when offered; looks for work when broke
+    moves: 3
+    rules:
+      - shop: true
+      - ids: ["*/apply-*"]
+  idle:
+    description: Takes no voluntary actions; answers events at random
+    moves: 0
+    rules: []
+  grinder:
+    description: 12 random repeatable actions a year, to stress diminishing returns
+    default: false
+    moves: 12
+    rules:
+      - repeatable: true

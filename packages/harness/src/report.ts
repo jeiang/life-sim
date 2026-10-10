@@ -6,7 +6,6 @@ import {
   type PackSection,
   renderPackSection,
 } from "./pack-report.ts";
-import type { ProfileName } from "./profiles.ts";
 import type { Fault, LifeResult } from "./run.ts";
 
 export type { Dist };
@@ -758,7 +757,7 @@ const major = (n: number): number => Math.round(n / 100);
 
 export function renderMarkdown(
   r: Report,
-  meta: { seed: number; profiles: readonly ProfileName[] },
+  meta: { seed: number; profiles: readonly string[] },
 ): string {
   const L: string[] = [];
   L.push("# Balance harness report", "");

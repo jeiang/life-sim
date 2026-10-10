@@ -13,7 +13,12 @@ export {
   resolveJobs,
   runHarnessParallel,
 } from "./parallel.ts";
-export { PROFILE_NAMES, type ProfileName } from "./profiles.ts";
+export {
+  compileProfiles,
+  loadProfiles,
+  type ProfileSpec,
+  selectProfiles,
+} from "./profile-spec.ts";
 export { Aggregate, type Dist, type Report, renderMarkdown } from "./report.ts";
 export {
   AGE_CAP,

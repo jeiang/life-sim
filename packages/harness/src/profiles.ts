@@ -8,19 +8,7 @@ import {
   type Rng,
   type World,
 } from "@life/core";
-
-export const PROFILE_NAMES = [
-  "random",
-  "studious",
-  "spender",
-  "idle",
-  "gambler",
-] as const;
-/** Profiles that only run when asked for by name (`--profile grinder`), never in `all`. */
-export const EXTRA_PROFILE_NAMES = ["grinder"] as const;
-export type ProfileName =
-  | (typeof PROFILE_NAMES)[number]
-  | (typeof EXTRA_PROFILE_NAMES)[number];
+import type { Globs, ProfileSpec, RuleSpec } from "./profile-spec.ts";
 
 /** One voluntary move: an action from a menu, a purchase, or a sale. */
 export type Move =
@@ -108,16 +96,29 @@ export function pickAmount(
   return range.min + rng.int(steps) * range.step;
 }
 
-const asMove = (r: ActionRow & { target?: PersonId }, rng: Rng): Move => {
-  const amount = r.amount ? pickAmount(r.amount, rng) : undefined;
+type Row = ActionRow & { target?: PersonId };
+
+const asMove = (
+  r: Row,
+  rng: Rng,
+  policy: ProfileSpec["amount"] = "uniform",
+): Move => {
+  const range = r.amount;
+  const amount = !range
+    ? undefined
+    : policy === "min"
+      ? range.min
+      : policy === "max"
+        ? range.max
+        : pickAmount(range, rng);
   return {
     t: "action",
     id: r.id,
     ...(r.target === undefined ? {} : { target: r.target }),
-    ...(r.amount && amount !== undefined
+    ...(range && amount !== undefined
       ? {
           amount,
-          slot: Math.round((amount - r.amount.min) / r.amount.step) + 1,
+          slot: Math.round((amount - range.min) / range.step) + 1,
         }
       : {}),
   };
@@ -125,128 +126,89 @@ const asMove = (r: ActionRow & { target?: PersonId }, rng: Rng): Move => {
 
 const pick = <T>(xs: readonly T[], rng: Rng): T => xs[rng.int(xs.length)] as T;
 
-const uniformChoice: Profile["pickChoice"] = (_v, enabled, rng) =>
-  (pick(enabled, rng) as { index: number }).index;
+const anyOf = (globs: Globs, s: string): boolean =>
+  globs.some((g) => g.test(s));
 
-const short = (id: string): string => id.split("/").pop() ?? id;
-
-const random: Profile = {
-  maxMoves: (rng) => rng.int(3),
-  nextMove(w, ctx, rng) {
-    const rows = unlockedActions(w, ctx);
-    return rows.length === 0 ? null : asMove(pick(rows, rng), rng);
-  },
-  pickChoice: uniformChoice,
-};
-
-const STUDY = /^(enrol-|study-harder$|visit-library$)/;
-const JOB = /^apply-/;
-const ACCEPT = /^(accept|yes|take|say yes|apply|sign)/i;
-
-const studious: Profile = {
-  maxMoves: () => 2,
-  nextMove(w, ctx, rng) {
-    // Repeatable actions never lock, so the diligent player does each at most once a year,
-    // as the old one-year cooldown made it; otherwise it would study forever and never work.
-    const rows = unlockedActions(w, ctx).filter(
-      (r) => !w.uses[r.target === undefined ? r.id : `${r.id}#${r.target}`],
-    );
-    const age = [...w.persons.values()].find((p) => p.id === w.playerId)?.age;
-    if ((age ?? 0) >= 65) {
-      const retire = rows.find((r) => short(r.id) === "retire");
-      if (retire) return asMove(retire, rng);
-    }
-    const study = rows.filter((r) => STUDY.test(short(r.id)));
-    const school = study.filter((r) => r.menu === "occupation/education");
-    const pool =
-      school.length > 0
-        ? school
-        : study.length > 0
-          ? study
-          : rows.filter((r) => JOB.test(short(r.id)));
-    return pool.length === 0 ? null : asMove(pick(pool, rng), rng);
-  },
-  pickChoice(_v, enabled, rng) {
-    const yes = enabled.filter((c) => ACCEPT.test(c.label));
-    return (pick(yes.length > 0 ? yes : enabled, rng) as { index: number })
-      .index;
-  },
-};
-
-const spender: Profile = {
-  maxMoves: () => 3,
-  nextMove(w, ctx, rng) {
-    const buyable = listShop(w, ctx.bundles).filter((r) => !r.locked);
-    if (buyable.length > 0) {
-      const row = pick(buyable, rng);
-      return {
-        t: "buy",
-        kind: row.id,
-        mode: row.canLoan ? "loan" : "cash",
-      };
-    }
-    // Broke: look for work, so there is something to spend.
-    const jobs = unlockedActions(w, ctx).filter((r) => JOB.test(short(r.id)));
-    return jobs.length === 0 ? null : asMove(pick(jobs, rng), rng);
-  },
-  pickChoice: uniformChoice,
-};
-
-/** Actions of the Gambling Pack (casino games, lottery, support meetings). */
-const GAMBLING = /^gambling\//;
-const GAMBLE = /^(play-|bet-|roll-|buy-lottery)/;
+function candidates(
+  rule: RuleSpec,
+  rows: readonly Row[],
+  repeatable: ReadonlySet<string>,
+): Row[] {
+  return rows.filter(
+    (r) =>
+      (rule.ids === null || anyOf(rule.ids, r.id)) &&
+      !anyOf(rule.except, r.id) &&
+      (rule.menu === null || r.menu === rule.menu) &&
+      (!rule.repeatable || repeatable.has(r.id)),
+  );
+}
 
 /**
- * Bets all year at the casinos and the lottery; works only when nothing is left to bet on.
- * Once addicted it tries to quit: support meetings and work, with a one-in-five relapse
- * on each move.
+ * The interpreter of a declared profile (`packs/<id>/harness/profiles.yaml`). It draws from
+ * the life's `harness/<profile>` stream only, in a fixed order, so a profile's lives never
+ * depend on which other profiles exist.
  */
-const gambler: Profile = {
-  maxMoves: () => 4,
-  nextMove(w, ctx, rng) {
-    const rows = unlockedActions(w, ctx);
-    const me = w.persons.get(w.playerId);
-    const quitting = me?.qualities.gambling_addicted === true && rng.int(5) > 0;
-    const meeting = rows.find(
-      (r) => r.id === "gambling/gambling-support-meeting",
-    );
-    if (quitting && meeting) return asMove(meeting, rng);
-    const bets = rows.filter(
-      (r) => GAMBLING.test(r.id) && GAMBLE.test(short(r.id)),
-    );
-    if (!quitting && bets.length > 0) return asMove(pick(bets, rng), rng);
-    const jobs = rows.filter((r) => JOB.test(short(r.id)));
-    return jobs.length === 0 ? null : asMove(pick(jobs, rng), rng);
-  },
-  pickChoice: uniformChoice,
-};
-
-const idle: Profile = {
-  maxMoves: () => 0,
-  nextMove: () => null,
-  pickChoice: uniformChoice,
-};
-
-/** Does repeatable actions all year, 12 a year, to stress diminishing returns. */
-const grinder: Profile = {
-  maxMoves: () => 12,
-  nextMove(w, ctx, rng) {
-    const repeatable = new Set(
-      ctx.bundles.flatMap((b) =>
-        b.storylets.filter((s) => s.repeatable).map((s) => s.id),
-      ),
-    );
-    const rows = unlockedActions(w, ctx).filter((r) => repeatable.has(r.id));
-    return rows.length === 0 ? null : asMove(pick(rows, rng), rng);
-  },
-  pickChoice: uniformChoice,
-};
-
-export const PROFILES: Record<ProfileName, Profile> = {
-  grinder,
-  random,
-  studious,
-  spender,
-  idle,
-  gambler,
-};
+export function makeProfile(
+  spec: ProfileSpec,
+  bundles: readonly PackBundle[],
+): Profile {
+  const repeatable = new Set(
+    spec.rules.some((r) => r.repeatable)
+      ? bundles.flatMap((b) =>
+          b.storylets.filter((s) => s.repeatable).map((s) => s.id),
+        )
+      : [],
+  );
+  return {
+    maxMoves: (rng) =>
+      "fixed" in spec.moves ? spec.moves.fixed : rng.int(spec.moves.below),
+    nextMove(w, ctx, rng) {
+      const me = w.persons.get(w.playerId);
+      const quit = spec.quit;
+      const quitting =
+        quit !== undefined &&
+        quit !== null &&
+        me?.qualities[quit.quality] === true &&
+        rng.int(quit.relapseOneIn) > 0;
+      let rows: Row[] | null = null;
+      for (const rule of spec.rules) {
+        const { quitting: q, ageAtLeast } = rule.when;
+        if (q !== undefined && q !== quitting) continue;
+        if (ageAtLeast !== undefined && (me?.age ?? 0) < ageAtLeast) continue;
+        if (rule.shop) {
+          const buyable = listShop(w, ctx.bundles).filter((r) => !r.locked);
+          if (buyable.length === 0) continue;
+          const row = pick(buyable, rng);
+          return {
+            t: "buy",
+            kind: row.id,
+            mode: row.canLoan ? "loan" : "cash",
+          };
+        }
+        rows ??= unlockedActions(w, ctx).filter(
+          (r) =>
+            !spec.oncePerYear ||
+            !w.uses[r.target === undefined ? r.id : `${r.id}#${r.target}`],
+        );
+        const found = candidates(rule, rows, repeatable);
+        if (found.length === 0) continue;
+        return asMove(
+          rule.pick === "first" ? (found[0] as Row) : pick(found, rng),
+          rng,
+          spec.amount,
+        );
+      }
+      return null;
+    },
+    pickChoice(_v, enabled, rng) {
+      const liked =
+        spec.choice.prefer.length === 0
+          ? []
+          : enabled.filter((c) => anyOf(spec.choice.prefer, c.label));
+      let pool = liked.length > 0 ? liked : enabled;
+      const kept = pool.filter((c) => !anyOf(spec.choice.avoid, c.label));
+      if (kept.length > 0) pool = kept;
+      return (pick(pool, rng) as { index: number }).index;
+    },
+  };
+}

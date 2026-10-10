@@ -1,0 +1,13 @@
+# Simulated player profiles of the Gambling Pack; the schema is docs/spec/harness.md#simulated-player-profiles.
+profiles:
+  gambler:
+    description: Bets all year at the casinos and the lottery; once addicted tries to quit, with a one-in-five relapse on each move
+    moves: 4
+    quit: { quality: gambling_addicted, relapse_one_in: 5 }
+    rules:
+      - when: { quitting: true }
+        ids: [gambling/gambling-support-meeting]
+        pick: first
+      - when: { quitting: false }
+        ids: [gambling/play-*, gambling/bet-*, gambling/roll-*, gambling/buy-lottery*]
+      - ids: ["*/apply-*"]

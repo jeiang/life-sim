@@ -34,13 +34,8 @@ import {
 } from "@life/core";
 import { type LifeMetrics, MetricCollector } from "./collect.ts";
 import type { PackMetrics } from "./metrics.ts";
-import {
-  type Context,
-  type Move,
-  menusOf,
-  PROFILES,
-  type ProfileName,
-} from "./profiles.ts";
+import type { ProfileSpec } from "./profile-spec.ts";
+import { type Context, type Move, makeProfile, menusOf } from "./profiles.ts";
 
 /** Lives still alive at this age are cut off and reported as stuck. */
 export const AGE_CAP = 130;
@@ -58,7 +53,7 @@ export type FaultKind =
 
 export interface Fault {
   readonly kind: FaultKind;
-  readonly profile: ProfileName;
+  readonly profile: string;
   /** Life seed; `--life-seed` replays exactly this life. */
   readonly seed: number;
   readonly age: number;
@@ -90,7 +85,7 @@ export interface YearSample {
 
 export interface LifeResult {
   readonly seed: number;
-  readonly profile: ProfileName;
+  readonly profile: string;
   readonly faults: readonly Fault[];
   /** Null when the life did not end (faulted or hit the cap). */
   readonly death: { readonly age: number; readonly cause: string } | null;
@@ -209,10 +204,11 @@ function checkSave(w: World, bundles: readonly PackBundle[]): string | null {
 export function runLife(
   bundles: readonly PackBundle[],
   seed: number,
-  profileName: ProfileName,
+  spec: ProfileSpec,
   packMetrics: readonly PackMetrics[] = [],
 ): LifeResult {
-  const profile = PROFILES[profileName];
+  const profile = makeProfile(spec, bundles);
+  const profileName = spec.id;
   const ctx: Context = { bundles, menus: menusOf(bundles) };
   const collector = new MetricCollector(packMetrics, (tag) => {
     const ids = new Set<string>();

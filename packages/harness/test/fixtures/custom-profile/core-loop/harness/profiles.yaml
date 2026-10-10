@@ -1,0 +1,16 @@
+profiles:
+  homebody:
+    description: Does nothing, but answers events by label
+    moves: 0
+    choice:
+      prefer: ["*yes*"]
+      avoid: ["*no*"]
+    rules: []
+  hoarder:
+    description: Opt-in, up to four random actions a year
+    default: false
+    moves: { below: 5 }
+    amount: max
+    rules:
+      - ids: ["*/*"]
+        except: ["*/skip-*"]

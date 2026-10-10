@@ -23,7 +23,7 @@
   trigger: action
   menu: assets/housing
   tags: [housing]
-  when: age >= 18 and not living.with_parents and money >= 250000
+  when: (age >= 18 or living.no_guardian) and not living.with_parents and money >= 250000
   text: "Moving costs $2,500."
   choices:
     - { label: Dustwater, when: city.id != core-loop/dustwater and money >= 250000, outcomes: [{ weight: 1, text: "You settle into Dustwater.", effects: [money -= 250000, move_to(core-loop/dustwater), "journal(\"Moved to Dustwater at age {age}.\")"] }] }
@@ -48,13 +48,27 @@
         - stat.happiness -= 5
         - journal("Your parents asked you to move out at age {age}.")
 
+- id: parents-put-you-out
+  icon: 🚪
+  trigger: event
+  tags: [housing]
+  when: age >= 16 and age < 18 and living.with_parents
+  chance: 50 + (100 - role_closeness(core-loop/parent)) * 2
+  text: "Things have broken down at home: your parents tell you to get out."
+  outcomes:
+    - weight: 1
+      effects:
+        - move_out()
+        - stat.happiness -= 8
+        - journal("Your parents put you out at age {age}.")
+
 - id: choose-standard
   label: Standard of living
   icon: 🏷️
   trigger: action
   menu: assets/housing
   tags: [housing]
-  when: age >= 18 and not living.with_parents
+  when: (age >= 18 or living.no_guardian) and not living.with_parents
   text: "How do you want to live? You pay for it every year."
   choices:
     - { label: Homeless, when: "living.standard != core-loop/homeless and standard_cost(core-loop/homeless) <= money", outcomes: [{ weight: 1, text: "You live a homeless life from now on.", effects: ["set_standard(core-loop/homeless)", "journal(\"Changed your standard of living to homeless at age {age}.\")"] }] }

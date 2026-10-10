@@ -62,6 +62,8 @@ These fired at least once in 10,000 lives but are rare on purpose:
 
 10,000 lives, seed 20260101, all profiles: no faults. Age at moving out (any cause): p10 20, median 33, p90 42. Share of lives reaching 18 that moved out 97.5%, kicked out 88.1% (`random` 66.5%, the others 95-96%: they never choose to leave). Still with parents at 30: 58.7% (`random` 50.2%); at 40: 14.8% (`random` 11.5%). The kick-out chance is 1% + 0.04% per missing closeness point + 0.75% per living sibling + 1.5% per impatience step (age 31 onward, 10 steps at most). A first draft with double those weights kicked out 92% and moved the median to 27, too fast for a player who is never forced out.
 
+Guardian choice (#222): the event `parents-put-you-out` puts a 16-17 year old out at 0.5% to 2.5% a year (cooler parents raise it). The guardian is the closest living adult kin (grandparent, aunt/uncle, sibling, cousin), else unnamed. The no-guardian roll is `(200 - karma - smarts) x 2.5` basis points: 5% at karma 0 and smarts 0, 2.5% at 50/50, 0 at 100/100. 1,000 lives, seed 20260101, all profiles: no faults; 28 lives put out, 1 (3.6%) with no guardian (the bots' karma and smarts sit mid-range). Tune the share through the `no_guardian.chance` expression, and the put-out rate through the event's `chance`.
+
 ## Living standards (cost of living, #109)
 
 Pay moved from take-home to gross at a realistic scale, and the player on their own pays a standard of living each year. The nominal prices of homes and events were left alone (homes $120k-$600k).

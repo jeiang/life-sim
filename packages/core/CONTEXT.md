@@ -118,11 +118,14 @@ A Pack-defined place to live, with a cost index (cost of living relative to the 
 _Avoid_: Town, location, region
 
 **Living situation**:
-Whether a person lives with their parents (free), with a guardian, or on their own. Ends for the player by moving out, being asked to leave by the parents, or the last parent dying; the player is never forced out by age. Living on their own never applies under 18: a minor with no living parent lives with a guardian instead.
+Whether a person lives with their parents (free), with a guardian, or on their own. Ends for the player by moving out, being asked to leave by the parents, or the last parent dying; the player is never forced out by age. Under 18 a minor lives with a guardian instead; the one exception is a 16-17 year old with a living parent who is put out and rolls no guardian.
 
 **With guardian**:
-The living situation of a minor with no living parent (a minor heir, a murdered or deceased parent): a relative is guardian, no living cost is charged, and money and assets sit in trust until 18.
+The living situation of a minor with no living parent (a minor heir, a murdered or deceased parent): the closest living adult relative (else an unnamed adult) is guardian, no living cost is charged, and money and assets sit in trust until 18.
 _Avoid_: Foster care, orphanage
+
+**No guardian**:
+A 16-17 year old with a living parent who is put out and rolls the Pack's low, karma- and smarts-weighted chance of no guardian: they live on their own with living costs and a standard of living. Under 16 and orphans always get a guardian.
 _Avoid_: Housing status, residence
 
 **Confinement**:

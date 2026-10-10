@@ -96,9 +96,9 @@ describe("cost of living", () => {
     expect(noHomeHere).toBe(sameCityNoHome);
   });
 
-  test("a minor on their own (last parent dead) is never charged or downgraded", () => {
+  test("a minor with a guardian (last parent dead) is never charged or downgraded", () => {
     let w = own("riverton", 1_000, "wealthy");
-    w = updatePerson(w, 0, (p) => ({ ...p, age: 15 }));
+    w = updatePerson(w, 0, (p) => ({ ...p, age: 15, withGuardian: true }));
     expect(livingCost(w, idx, me(w))).toBe(0);
     const after = settle(w);
     expect(me(after).money).toBe(1_000);

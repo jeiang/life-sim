@@ -49,4 +49,8 @@ living:
     dependent_cost: 400000
     partner_role: partner
     partner_share: 50%
-    guardian_roles: [sibling]
+    guardian_kin: [grandparent, aunt-uncle, sibling, cousin]
+    # 16-17 year olds put out of the home: 0% at karma 100 and smarts 100, 5% at 0 and 0 (basis points).
+    no_guardian:
+      from_age: 16
+      chance: (200 - karma_value - stat.smarts) * 5 / 2

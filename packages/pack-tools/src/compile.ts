@@ -485,6 +485,7 @@ export const PLAYER_NAMES: Record<string, ExprType> = {
   "living.with_parents": "bool",
   confined: "bool",
   "living.with_guardian": "bool",
+  "living.no_guardian": "bool",
   "living.dependents": "int",
   portfolio: "int",
   "player.first_name": "string",
@@ -2185,9 +2186,31 @@ class PackCompiler {
               dependentCost: l.household.dependent_cost,
               partnerRole: role("partner_role", l.household.partner_role),
               partnerShareBp: percentBp(l.household.partner_share),
-              guardianRoles: l.household.guardian_roles.map((r, i) =>
-                role(["guardian_roles", i], r),
-              ),
+              guardianKin: l.household.guardian_kin.map((k, i) => {
+                if (!isKinshipId(k))
+                  this.err(
+                    ["living", "household", "guardian_kin", i],
+                    `unknown kinship id '${k}'`,
+                  );
+                return k;
+              }),
+              ...(l.household.no_guardian
+                ? (() => {
+                    const chance = this.expr(
+                      l.household.no_guardian.chance,
+                      "int",
+                      ["living", "household", "no_guardian", "chance"],
+                    );
+                    return chance
+                      ? {
+                          noGuardian: {
+                            fromAge: l.household.no_guardian.from_age,
+                            chance,
+                          },
+                        }
+                      : {};
+                  })()
+                : {}),
             },
           }
         : {}),

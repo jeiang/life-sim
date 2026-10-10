@@ -37,6 +37,14 @@ export function livesWithGuardian(p: Person): boolean {
 }
 
 /**
+ * True for a minor who left home with no guardian: on their own, so living costs and standard
+ * effects apply (`withParents` false, no `withGuardian`).
+ */
+export function livesWithoutGuardian(p: Person): boolean {
+  return p.age < ADULT_AGE && p.withParents === false && !p.withGuardian;
+}
+
+/**
  * True when housing is provided (or they are confined), which waives living costs: an
  * occupation the person holds provides it or confines them, or a guardian houses them.
  */
@@ -69,7 +77,8 @@ export function confinementOf(
 
 /** Multiplier for illness and death chances (basis points): neutral for a minor or when housed. */
 export function riskBpOf(p: Person, idx: PackIndex): number {
-  return p.age < ADULT_AGE || housingProvided(p, idx)
+  return (p.age < ADULT_AGE && !livesWithoutGuardian(p)) ||
+    housingProvided(p, idx)
     ? 10000
     : (standardOf(p, idx)?.riskBp ?? 10000);
 }
@@ -202,7 +211,7 @@ export function livingBreakdown(
 export function livingCost(world: World, idx: PackIndex, p: Person): number {
   const s = standardOf(p, idx);
   return !s ||
-    p.age < ADULT_AGE ||
+    (p.age < ADULT_AGE && !livesWithoutGuardian(p)) ||
     livesWithParents(p) ||
     housingProvided(p, idx)
     ? 0
@@ -232,38 +241,28 @@ export function startLivingWithGuardian(world: World, id: PersonId): World {
   }));
 }
 
-/** The first living adult relative in the Pack's guardian roles, to name in the journal. */
-export function guardianOf(
-  world: World,
-  idx: PackIndex,
-  p: Person,
-): Person | undefined {
-  const roles = idx.living?.household?.guardianRoles ?? [];
-  for (const r of world.relationships) {
-    const rel = world.persons.get(r.to);
-    if (
-      r.from === p.id &&
-      roles.includes(r.role) &&
-      rel?.alive &&
-      rel.age >= ADULT_AGE
-    )
-      return rel;
-  }
-  return undefined;
-}
-
 /**
  * The person stops living with their parents (or their guardian) and takes the Pack's default
- * standard, or the best one they can afford with their money. Never applies under 18: a minor
- * lives with a guardian instead.
+ * standard, or the best one they can afford with their money. Under 18 a minor lives with a
+ * guardian instead (`moveOut` in guardian.ts rolls the 16-17 no-guardian exception).
  */
 export function startLivingOnOwn(
   world: World,
   idx: PackIndex,
   id: PersonId,
 ): World {
+  if (getPerson(world, id).age < ADULT_AGE)
+    return startLivingWithGuardian(world, id);
+  return takeOwnStandard(world, idx, id);
+}
+
+/** Leave parents and guardian and take the default (or best affordable) standard, at any age. */
+export function takeOwnStandard(
+  world: World,
+  idx: PackIndex,
+  id: PersonId,
+): World {
   const p = getPerson(world, id);
-  if (p.age < ADULT_AGE) return startLivingWithGuardian(world, id);
   const def = idx.living && idx.standardsById.get(idx.living.defaultStandard);
   const standard =
     def && livingBreakdown(world, idx, p, def).total <= p.money
@@ -296,7 +295,7 @@ export function settleLiving(world: World, idx: PackIndex): World {
   if (
     !p.alive ||
     !chosen ||
-    p.age < ADULT_AGE ||
+    (p.age < ADULT_AGE && !livesWithoutGuardian(p)) ||
     livesWithParents(p) ||
     housingProvided(p, idx)
   )

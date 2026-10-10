@@ -33,6 +33,12 @@ export {
   startStorylet,
 } from "./flow.ts";
 export { godSetMoney, godSetStat, isGodLife } from "./god.ts";
+export {
+  guardianOf,
+  guardianPhrase,
+  moveOut,
+  noGuardianBp,
+} from "./guardian.ts";
 export { KIND_CALL, type KindIndexEntry } from "./kinds.ts";
 export {
   countKin,
@@ -53,10 +59,10 @@ export {
   confinementOf,
   costIndexOf,
   dependentsOf,
-  guardianOf,
   housingProvided,
   type LivingBreakdown,
   livesWithGuardian,
+  livesWithoutGuardian,
   livesWithParents,
   livingBreakdown,
   livingCost,
@@ -65,6 +71,7 @@ export {
   standardCost,
   standardOf,
   startLivingOnOwn,
+  takeOwnStandard,
   wageIndexOf,
 } from "./living.ts";
 export {

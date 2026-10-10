@@ -48,7 +48,7 @@
   label: Murder
   tags: [crime]
   scope: person
-  when: age >= 14 and person.alive
+  when: "age >= 14 and person.alive and not quality.crime_killer"
   max_per_life: 1
   text: "Killing {person.first_name} cannot be undone. Are you sure?"
   choices:
@@ -58,6 +58,7 @@
           text: "{person.first_name} is dead, and the scene shows no sign of you. For now."
           effects:
             - "die(\"murdered\")"
+            - "quality.crime_killer = true"
             - "quality.crime_murders += 1"
             - "quality.karma_score += -20"
             - stat.happiness -= 12
@@ -66,6 +67,7 @@
           text: "{person.first_name} is dead, and the police are at your door within hours."
           effects:
             - "die(\"murdered\")"
+            - "quality.crime_killer = true"
             - "quality.karma_score += -20"
             - stat.happiness -= 12
             - "quality.crime_pending_charge = 4"

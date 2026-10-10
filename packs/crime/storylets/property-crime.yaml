@@ -6,7 +6,7 @@
   trigger: action
   menu: activities/crime
   label: Shoplift
-  tags: [crime]
+  tags: [crime, property-crime]
   when: age >= 12 and not confined
   once: true
   cooldown: 1
@@ -35,7 +35,7 @@
   trigger: action
   menu: activities/crime
   label: Pick pockets
-  tags: [crime]
+  tags: [crime, property-crime]
   when: age >= 12 and not confined
   once: true
   cooldown: 1
@@ -64,7 +64,7 @@
   trigger: action
   menu: activities/crime
   label: Steal a car
-  tags: [crime]
+  tags: [crime, property-crime]
   when: age >= 14 and not confined
   once: true
   cooldown: 1
@@ -93,7 +93,7 @@
   trigger: action
   menu: activities/crime
   label: Burgle a house
-  tags: [crime]
+  tags: [crime, property-crime]
   when: age >= 14 and not confined
   once: true
   cooldown: 1
@@ -122,7 +122,7 @@
   trigger: action
   menu: activities/crime
   label: Run a scam
-  tags: [crime]
+  tags: [crime, property-crime]
   when: age >= 16 and not confined
   once: true
   cooldown: 1
@@ -151,7 +151,7 @@
   trigger: action
   menu: activities/crime
   label: Rob a store
-  tags: [crime]
+  tags: [crime, property-crime]
   when: age >= 16 and not confined
   once: true
   cooldown: 1

@@ -17,6 +17,7 @@
 - { id: crime_escaped, type: flag, default: false }                    # at large after a break-out; cleared on recapture
 # Unsolved murders: the cold case may still connect them to the player.
 - { id: crime_murders, type: int, min: 0, max: 1000, default: 0 }
+- { id: crime_killer, type: flag, default: false }   # has murdered; murder is once per life, however many people the player knows
 # Counters (balance and gates).
 - { id: crime_arrests, type: int, min: 0, default: 0 }        # lifetime bookings
 - { id: crime_sentences, type: int, min: 0, default: 0 }      # custodial sentences received

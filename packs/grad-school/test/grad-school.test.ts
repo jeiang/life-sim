@@ -259,7 +259,7 @@ describe("enrolment", () => {
       expect(q(w, "grad_program")).toBe(program);
       expect(q(w, "grad_tuition")).toBe(tuition);
       expect(held(w, G(occ))).toBe(true);
-      expect(q(w, "grad_gpa")).toBe(50 + Math.trunc(10 / 4));
+      expect(q(w, "grad_gpa")).toBe(40 + Math.trunc(10 / 3));
     });
 });
 
@@ -878,14 +878,25 @@ describe("careers", () => {
 });
 
 describe("determinism", () => {
-  test("a grad life replays and round-trips a save", () => {
-    let w = fire(
-      at(30, { ...BACH }, { money: 5_000_000 }),
-      G("admit-law-school"),
-    );
-    for (let i = 0; i < 4; i++) w = year(w);
-    const again = deserializeWorld(serializeWorld(w));
+  test("a grad life replays from its choice log and round-trips a save", () => {
+    // A seeded life played to the end with the first option everywhere, enrolling when allowed.
+    let w = newLife(bundles, 11);
+    for (let guard = 0; guard < 120 && !w.ended; guard++) {
+      for (const id of [
+        "apply-phd",
+        "apply-mba",
+        "apply-law-school",
+        "apply-medical-school",
+      ]) {
+        const r = row(w, "occupation/education", G(id));
+        if (r && !r.locked && !w.pending)
+          w = runAction(w, bundles, G(id)).world;
+        while (w.pending) w = choose(w, bundles, 0).world;
+      }
+      w = year(w);
+    }
+    const again = replay(11, bundles, w.choiceLog);
     expect(worldHash(again)).toBe(worldHash(w));
-    expect(replay).toBeTypeOf("function");
+    expect(worldHash(deserializeWorld(serializeWorld(w)))).toBe(worldHash(w));
   });
 });

@@ -30,8 +30,21 @@ Top-level keys: `title` (required), `intro`, `visible_if_table`, `measures`, `ta
 | `death: <cause>` | 1 when the life ended with exactly this cause of death |
 | `fires: { storylet: <id> }` or `{ tag: <tag> }` | times such storylets opened |
 | `table: <id>, column: <col>` | a table column summed over the life's actions |
-| `snapshot: net_worth\|{stat: <id>}\|{quality: <id>}, ages: [..]` | the value at each listed age (absent for lives that did not reach it) |
+| `snapshot: net_worth\|holdings\|{stat: <id>}\|{quality: <id>}\|{holding: <market kind>}, ages: [..]` | the value at each listed age (absent for lives that did not reach it); `holdings` is the player's market holdings at current prices, `holding` those of one kind (0 when none) |
+| `market: <kind>, take: <take>` | a statistic of the kind's price series over the life (below) |
+| `outcome: { storylet: <id>, key: <key> }` | times the storylet resolved that outcome: `key` is the `storylets.outcomes` key of `report.json`, `c<j>.o<i>` for outcome i of choice j (0-based, YAML order) or `o<i>` for a storylet without choices; the storylet and key are checked against the compiled Packs |
 | `when: "<expression>"` | 1 or 0; comparisons (`> >= < <= == !=`), `and`, `or`, `not` and parentheses over earlier measures and numbers |
+
+**Market measures** read the series of a market kind (full item id, an item with a `market` block) as the player's world sees it: the price at birth and after every age-up (the one that ends the life included), one point per world year. The series is a function of the seed and year, not of the player. Prices are minor units per whole unit. `take`:
+
+| `take` | Value |
+|---|---|
+| `annualized_return` | basis points a year, compounded from the first price to the last: `((last / first) ^ (1 / steps) - 1) x 10000`, unrounded; 0 when the first price is 0 or there are no steps. A delisted kind that ends at 0 reads -10000; a relist restarts at `start`, so read it with `delistings` and `relistings` |
+| `start_price`, `end_price`, `min_price`, `max_price` | the first, last, lowest and highest price of the life |
+| `delistings` | years the price went from above 0 to 0 |
+| `relistings` | years the price went from 0 to above 0 |
+| `defaults` | bond issuer defaults (years the remaining principal share fell) |
+| `drop_years`, with `drop_bp: <1..10000>` | years the price fell by at least `drop_bp` basis points; a delisting counts as a 10000 bp drop |
 
 **Tables** count voluntary actions of the Pack (ids starting `<pack>/`), per action id: `raises: <quality>` counts only actions that raised it, `with_amount: true` only actions done with an amount (their amount-grid slot, counted from 1, is recorded too), `money_floor: <n>` makes an action that leaves money below it an assertion fault. `columns` are totals per life: `count`, `amount` (sum of the amounts chosen), `{ delta: money }` or `{ delta: <quality> }` (change over the action and the events it opened).
 

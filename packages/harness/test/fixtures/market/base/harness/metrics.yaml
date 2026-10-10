@@ -1,0 +1,43 @@
+title: Market
+measures:
+  years: { life: years }
+  steady_return: { market: base/steady, take: annualized_return }
+  steady_start: { market: base/steady, take: start_price }
+  steady_end: { market: base/steady, take: end_price }
+  slump_end: { market: base/slump, take: end_price }
+  slump_return: { market: base/slump, take: annualized_return }
+  slump_drops: { market: base/slump, take: drop_years, drop_bp: 2500 }
+  slump_drops_big: { market: base/slump, take: drop_years, drop_bp: 7500 }
+  slump_min: { market: base/slump, take: min_price }
+  steady_max: { market: base/steady, take: max_price }
+  doomed_delists: { market: base/doomed, take: delistings }
+  doomed_relists: { market: base/doomed, take: relistings }
+  doomed_return: { market: base/doomed, take: annualized_return }
+  shaky_defaults: { market: base/shaky, take: defaults }
+  left: { outcome: { storylet: base/fork, key: c0.o0 } }
+  right: { outcome: { storylet: base/fork, key: c1.o0 } }
+  held_at_10: { snapshot: holdings, ages: [10] }
+  held_steady_at_10: { snapshot: { holding: base/steady }, ages: [10] }
+stats:
+  lives: { kind: count }
+  years: { kind: mean, value: years, format: number }
+  steady_return: { kind: mean, value: steady_return, decimals: 6, format: number }
+  steady_start: { kind: mean, value: steady_start, format: number }
+  steady_end: { kind: mean, value: steady_end, format: number }
+  slump_end: { kind: mean, value: slump_end, format: number }
+  slump_return: { kind: mean, value: slump_return, decimals: 6, format: number }
+  slump_drops: { kind: mean, value: slump_drops, format: number }
+  slump_drops_big: { kind: mean, value: slump_drops_big, format: number }
+  slump_min: { kind: mean, value: slump_min, format: number }
+  steady_max: { kind: mean, value: steady_max, format: number }
+  doomed_delists: { kind: mean, value: doomed_delists, format: number }
+  doomed_relists: { kind: mean, value: doomed_relists, format: number }
+  doomed_return: { kind: mean, value: doomed_return, format: number }
+  shaky_defaults: { kind: mean, value: shaky_defaults, format: number }
+  left: { kind: sum, value: left, format: number }
+  right: { kind: sum, value: right, format: number }
+  held_at_10: { kind: median, value: held_at_10, ages: [10], format: number }
+  held_steady_at_10: { kind: median, value: held_steady_at_10, ages: [10], format: number }
+blocks:
+  - stats: [lives, years, steady_return, steady_end, doomed_delists, shaky_defaults]
+    key: kind

@@ -6,6 +6,7 @@ import {
   describePending,
   familyRoleOf,
   getPerson,
+  holdingValue,
   indexBundles,
   kinshipOf,
   type Loan,
@@ -402,6 +403,7 @@ export function runLife(
 
   try {
     w = newLife(bundles, seed);
+    collector.market(w.market);
     while (w && !w.ended) {
       age = playerOf(w).age;
       if (age >= AGE_CAP) {
@@ -476,6 +478,7 @@ export function runLife(
       if (!resolve()) break;
       noteHome();
       collector.observe(playerOf(w));
+      collector.market(w.market);
       collector.yearEnd(playerOf(w));
       yearEvents.push(totalFires(w) - firesBefore);
       yearChoices.push({ age, n: firesIn(w, choiceIds) - choicesBefore });
@@ -546,7 +549,13 @@ export function runLife(
           ? null
           : (standardOf(me, indexBundles(bundles))?.id ?? null),
       });
-      collector.snapshot(me, nw);
+      const byKind: Record<string, number> = {};
+      for (const h of me.holdings)
+        byKind[h.kindId] = (byKind[h.kindId] ?? 0) + holdingValue(w, h);
+      collector.snapshot(me, nw, {
+        total: Object.values(byKind).reduce((a, v) => a + v, 0),
+        byKind,
+      });
       if (rng.int(SAVE_CHECK_ONE_IN) === 0) {
         const bad = checkSave(w, bundles);
         if (bad) fault("save-mismatch", bad);
@@ -618,6 +627,7 @@ export function runLife(
       earnings,
       death: final?.ended && me ? { cause: final.ended.cause } : null,
       fires,
+      outcomes,
     }),
     retired: retired || all.some((o) => isRetired(o.kindId)),
     moveOutAge,

@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { PackBundle } from "@life/core";
+import { indexBundles, type PackBundle } from "@life/core";
 import {
   type Diagnostic,
   formatPath,
@@ -179,11 +179,51 @@ export type Measure =
       readonly kind: "snapshot";
       readonly take:
         | "net_worth"
+        | "holdings"
         | { readonly stat: string }
-        | { readonly quality: string };
+        | { readonly quality: string }
+        | { readonly holding: string };
       readonly ages: readonly number[];
     }
+  | {
+      readonly id: string;
+      readonly kind: "market";
+      /** A market kind (full item id). */
+      readonly market: string;
+      readonly take: MarketTake;
+    }
+  | {
+      readonly id: string;
+      readonly kind: "outcome";
+      readonly storylet: string;
+      /** `o<i>` or `c<j>.o<i>`, as in `report.json` storylets.outcomes. */
+      readonly key: string;
+    }
   | { readonly id: string; readonly kind: "when"; readonly when: Expr };
+
+/** What a market measure reads from the kind's price series over a life (one price a world year). */
+export type MarketTake =
+  | "annualized_return"
+  | "start_price"
+  | "end_price"
+  | "min_price"
+  | "max_price"
+  | "delistings"
+  | "relistings"
+  | "defaults"
+  | { readonly dropYears: number };
+
+export const MARKET_TAKES = [
+  "annualized_return",
+  "start_price",
+  "end_price",
+  "min_price",
+  "max_price",
+  "delistings",
+  "relistings",
+  "defaults",
+  "drop_years",
+] as const;
 
 export type Column =
   | "count"
@@ -414,6 +454,10 @@ export function compileMetrics(
   const storylets = new Set(
     bundles.flatMap((b) => b.storylets.map((s) => s.id)),
   );
+  const marketKinds = new Set(indexBundles(bundles).markets.keys());
+  const storyletById = new Map(
+    bundles.flatMap((b) => b.storylets.map((s) => [s.id, s] as const)),
+  );
   const tags = new Set(
     bundles.flatMap((b) => b.storylets.flatMap((s) => s.tags)),
   );
@@ -510,12 +554,14 @@ export function compileMetrics(
       "fires",
       "table",
       "snapshot",
+      "market",
+      "outcome",
       "when",
     ].filter((k) => k in raw);
     if (kinds.length !== 1) {
       l.err(
         p,
-        "declare exactly one of: quality, life, death, fires, table, snapshot, when",
+        "declare exactly one of: quality, life, death, fires, table, snapshot, market, outcome, when",
       );
       continue;
     }
@@ -594,8 +640,13 @@ export function compileMetrics(
         const s = raw.snapshot;
         let take: Extract<Measure, { kind: "snapshot" }>["take"] | null = null;
         if (s === "net_worth") take = "net_worth";
+        else if (s === "holdings") take = "holdings";
         else if (isObj(s)) {
-          const t = l.obj([...p, "snapshot"], s, ["stat", "quality"]);
+          const t = l.obj([...p, "snapshot"], s, [
+            "stat",
+            "quality",
+            "holding",
+          ]);
           if (t?.stat !== undefined) {
             const st = l.str([...p, "snapshot", "stat"], t.stat, "a stat id");
             if (st !== null && !statIds.has(st))
@@ -604,13 +655,91 @@ export function compileMetrics(
           } else if (t?.quality !== undefined) {
             const q = quality([...p, "snapshot", "quality"], t.quality);
             if (q !== null) take = { quality: q };
-          } else l.err([...p, "snapshot"], "declare stat or quality");
+          } else if (t?.holding !== undefined) {
+            const k = l.str(
+              [...p, "snapshot", "holding"],
+              t.holding,
+              "a market kind id",
+            );
+            if (k !== null && !marketKinds.has(k))
+              l.err(
+                [...p, "snapshot", "holding"],
+                `unknown market kind '${k}'`,
+              );
+            else if (k !== null) take = { holding: k };
+          } else l.err([...p, "snapshot"], "declare stat, quality or holding");
         } else
           l.err(
             [...p, "snapshot"],
-            "expected net_worth, { stat: id } or { quality: id }",
+            "expected net_worth, holdings, { stat: id }, { quality: id } or { holding: kind }",
           );
         if (take && ages.length > 0) m = { id, kind: "snapshot", take, ages };
+        break;
+      }
+      case "market": {
+        const o = l.obj(p, raw, ["market", "take", "drop_bp"]);
+        const kind = l.str([...p, "market"], raw.market, "a market kind id");
+        if (kind !== null && !marketKinds.has(kind))
+          l.err([...p, "market"], `unknown market kind '${kind}'`);
+        const take = o?.take;
+        let t: MarketTake | null = null;
+        if (take === "drop_years") {
+          const bp = l.int([...p, "drop_bp"], o?.drop_bp, 1, 10000);
+          if (bp !== null) t = { dropYears: bp };
+        } else if (
+          typeof take === "string" &&
+          (MARKET_TAKES as readonly string[]).includes(take)
+        ) {
+          if (o?.drop_bp !== undefined)
+            l.err([...p, "drop_bp"], "only `take: drop_years` has `drop_bp`");
+          t = take as MarketTake;
+        } else
+          l.err([...p, "take"], `expected one of: ${MARKET_TAKES.join(", ")}`);
+        if (kind !== null && marketKinds.has(kind) && t)
+          m = { id, kind: "market", market: kind, take: t };
+        break;
+      }
+      case "outcome": {
+        const o = l.obj(p, raw, ["outcome"]);
+        const f = l.obj([...p, "outcome"], o?.outcome, ["storylet", "key"]);
+        if (!f) break;
+        const sid = l.str(
+          [...p, "outcome", "storylet"],
+          f.storylet,
+          "a storylet id",
+        );
+        const key = l.str([...p, "outcome", "key"], f.key, "an outcome key");
+        if (sid === null || key === null) break;
+        const sl = storyletById.get(sid);
+        const hit = /^(?:c(\d+)\.)?o(\d+)$/.exec(key);
+        if (!sl)
+          l.err([...p, "outcome", "storylet"], `unknown storylet '${sid}'`);
+        else if (!hit)
+          l.err([...p, "outcome", "key"], "expected `o<i>` or `c<j>.o<i>`");
+        else {
+          const j = hit[1] === undefined ? null : Number(hit[1]);
+          const list =
+            j === null
+              ? sl.choices.length === 0
+                ? sl.outcomes
+                : undefined
+              : sl.choices[j]?.outcomes;
+          if (!list)
+            l.err(
+              [...p, "outcome", "key"],
+              j === null
+                ? `storylet '${sid}' has choices: use c<j>.o<i>`
+                : sl.choices.length === 0
+                  ? `storylet '${sid}' has no choices: use o<i>`
+                  : `storylet '${sid}' has no choice ${j}`,
+            );
+          else if (Number(hit[2]) >= list.length)
+            l.err(
+              [...p, "outcome", "key"],
+              `'${key}' is past the ${list.length} outcome(s) there`,
+            );
+          else m = { id, kind: "outcome", storylet: sid, key };
+        }
         break;
       }
       case "when": {

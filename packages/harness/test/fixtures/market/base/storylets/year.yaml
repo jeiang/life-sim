@@ -1,0 +1,36 @@
+- id: calm-year
+  trigger: event
+  weight: 10
+  text: A quiet year.
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+# Fires once, at age 4; the first choice always has the same outcome.
+- id: fork
+  trigger: event
+  chance: 100%
+  when: age == 4
+  text: A fork in the road.
+  choices:
+    - label: Left
+      outcomes:
+        - weight: 1
+          text: Left it is.
+          effects:
+            - stat.happiness += 1
+    - label: Right
+      outcomes:
+        - weight: 1
+          text: Right it is.
+          effects:
+            - stat.happiness += 1
+
+- id: end
+  trigger: event
+  chance: 100%
+  when: age >= 30
+  text: The end.
+  outcomes:
+    - effects:
+        - die("old")

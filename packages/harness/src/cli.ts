@@ -7,28 +7,34 @@ import { runHarness } from "./harness.ts";
 import { loadMetrics } from "./metrics.ts";
 import { resolveJobs, runHarnessParallel } from "./parallel.ts";
 import {
-  EXTRA_PROFILE_NAMES,
-  PROFILE_NAMES,
-  type ProfileName,
-} from "./profiles.ts";
+  loadProfiles,
+  type ProfileSpec,
+  selectProfiles,
+} from "./profile-spec.ts";
 import { renderMarkdown } from "./report.ts";
 
-const USAGE = `usage: pnpm harness --lives N [--profile random|studious|spender|idle|gambler|grinder|all|a,b] [--seed S] [--out dir] [--packs a,b] [--packs-dir dir] [--life-seed X] [--jobs N]
+/** Profile ids the loaded Packs declare, for the usage text (empty until the Packs load). */
+let known: readonly ProfileSpec[] = [];
+
+const usage =
+  (): string => `usage: pnpm harness --lives N [--profile ${known.length > 0 ? `${known.map((p) => p.id).join("|")}|` : ""}all|a,b] [--seed S] [--out dir] [--packs a,b] [--packs-dir dir] [--life-seed X] [--jobs N]
        pnpm harness --check-packs [--packs a,b] [--packs-dir dir]
+       pnpm harness --list-profiles [--packs a,b] [--packs-dir dir]
   --lives      lives to simulate (default 100)
-  --profile    simulated player profile(s); several are dealt to lives in turn (default all)
+  --profile    simulated player profile(s), declared by Packs; several are dealt to lives in turn (default all: every profile not marked \`default: false\`)
   --seed       base seed, uint32 (default 1)
   --out        write report.md and report.json here
   --packs      load only these Packs and the Packs they require (default: every Pack)
   --packs-dir  Packs directory (default: the repository's packs/)
   --jobs       worker threads (default: available cores); the report is identical for any N
-  --check-packs  validate every Pack's harness/metrics.yaml against the compiled Packs, then exit (0 valid, 2 not)
+  --check-packs  validate every Pack's harness/metrics.yaml and harness/profiles.yaml against the compiled Packs, then exit (0 valid, 2 not)
+  --list-profiles  print the profiles the Packs declare (id, Pack, whether in \`all\`), then exit
   --life-seed  run one life with exactly this life seed (to replay a reported fault)
 Exit status 1 when any engine fault is found.
 `;
 
 function fail(msg: string): never {
-  console.error(`${msg}\n\n${USAGE}`);
+  console.error(`${msg}\n\n${usage()}`);
   process.exit(2);
 }
 
@@ -51,31 +57,10 @@ const { values: a } = parseArgs({
     "life-seed": { type: "string" },
     jobs: { type: "string" },
     "check-packs": { type: "boolean" },
+    "list-profiles": { type: "boolean" },
     help: { type: "boolean" },
   },
 });
-if (a.help) {
-  console.log(USAGE);
-  process.exit(0);
-}
-
-const profiles: ProfileName[] =
-  a.profile === undefined || a.profile === "all"
-    ? [...PROFILE_NAMES]
-    : a.profile.split(",").map((p) => {
-        if (
-          ![...PROFILE_NAMES, ...EXTRA_PROFILE_NAMES].includes(p as ProfileName)
-        )
-          fail(`unknown profile '${p}'`);
-        return p as ProfileName;
-      });
-const lives = int("lives", a.lives, 100);
-const seed = int("seed", a.seed, 1);
-const lifeSeed =
-  a["life-seed"] === undefined
-    ? undefined
-    : int("life-seed", a["life-seed"], 0);
-const jobs = int("jobs", a.jobs, 0);
 const packsDir = resolve(
   a["packs-dir"] ??
     join(dirname(fileURLToPath(import.meta.url)), "../../../packs"),
@@ -87,6 +72,11 @@ const only =
     : a.packs.split(",").filter((p) => p !== "");
 if (only?.length === 0) fail("--packs needs at least one Pack id");
 const compiled = compilePacks(packsDir, only ? { only } : {});
+if (a.help) {
+  if (compiled.ok) known = loadProfiles(packsDir, compiled.bundles).profiles;
+  console.log(usage());
+  process.exit(0);
+}
 if (!compiled.ok) {
   for (const d of compiled.diagnostics) console.error(formatDiagnostic(d));
   console.error(`The Packs in ${packsDir} do not compile.`);
@@ -99,16 +89,46 @@ if (loaded.diagnostics.length > 0) {
   console.error(`The Pack metrics in ${packsDir} are invalid.`);
   process.exit(2);
 }
+const registry = loadProfiles(packsDir, compiled.bundles);
+if (registry.diagnostics.length > 0) {
+  for (const d of registry.diagnostics) console.error(formatDiagnostic(d));
+  console.error(`The Pack profiles in ${packsDir} are invalid.`);
+  process.exit(2);
+}
+known = registry.profiles;
 if (a["check-packs"]) {
   console.log(
-    `${compiled.bundles.length} Packs compile; metrics valid for ${loaded.metrics.length} (${loaded.metrics.map((m) => m.pack).join(", ")})`,
+    `${compiled.bundles.length} Packs compile; metrics valid for ${loaded.metrics.length} (${loaded.metrics.map((m) => m.pack).join(", ")}); ${known.length} profiles valid (${known.map((p) => p.id).join(", ")})`,
   );
   process.exit(0);
 }
+if (a["list-profiles"]) {
+  for (const p of known)
+    console.log(
+      `${p.id}\t${p.pack}\t${p.default ? "default" : "opt-in"}${p.description ? `\t${p.description}` : ""}`,
+    );
+  process.exit(0);
+}
+
+const lives = int("lives", a.lives, 100);
+const seed = int("seed", a.seed, 1);
+const lifeSeed =
+  a["life-seed"] === undefined
+    ? undefined
+    : int("life-seed", a["life-seed"], 0);
+const jobs = int("jobs", a.jobs, 0);
+const requested =
+  a.profile === undefined || a.profile === "all" ? [] : a.profile.split(",");
+for (const p of requested)
+  if (!known.some((k) => k.id === p)) fail(`unknown profile '${p}'`);
+const profiles = selectProfiles(known, requested).map((p) => p.id);
+if (profiles.length === 0)
+  fail("no profiles: no Pack declares a default profile");
 
 const run = {
   bundles: compiled.bundles,
   metrics: loaded.metrics,
+  profileSpecs: known,
   lives,
   profiles,
   seed,

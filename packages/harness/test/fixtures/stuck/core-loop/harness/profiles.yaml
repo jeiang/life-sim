@@ -1,0 +1,8 @@
+profiles:
+  random:
+    moves: { below: 3 }
+    rules:
+      - {}
+  idle:
+    moves: 0
+    rules: []

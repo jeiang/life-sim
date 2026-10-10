@@ -12,6 +12,7 @@ import {
   parseExpr,
 } from "../src/metrics.ts";
 import { runHarnessParallel } from "../src/parallel.ts";
+import { loadProfiles } from "../src/profile-spec.ts";
 
 const packs = fileURLToPath(new URL("../../../packs", import.meta.url));
 
@@ -112,6 +113,7 @@ describe("a Pack's declared metrics in a run", () => {
   const run = {
     bundles,
     metrics,
+    profileSpecs: loadProfiles(dir, bundles).profiles,
     lives: 40,
     profiles: ["gambler", "idle"] as const,
     seed: 11,
@@ -141,6 +143,7 @@ describe("a Pack's declared metrics in a run", () => {
   test("a Pack without metrics adds no section", () => {
     const { report } = runHarness({
       bundles,
+      profileSpecs: run.profileSpecs,
       lives: 4,
       profiles: ["idle"],
       seed: 1,

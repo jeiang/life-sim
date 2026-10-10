@@ -1,6 +1,6 @@
 import { type PackBundle, streamFor } from "@life/core";
 import type { PackMetrics } from "./metrics.ts";
-import { PROFILE_NAMES, type ProfileName } from "./profiles.ts";
+import { type ProfileSpec, selectProfiles } from "./profile-spec.ts";
 import { Aggregate, type Report } from "./report.ts";
 import { type LifeResult, runLife } from "./run.ts";
 
@@ -9,8 +9,10 @@ export interface HarnessOptions {
   /** Pack metrics to collect and report (`loadMetrics`); none by default. */
   readonly metrics?: readonly PackMetrics[];
   readonly lives: number;
-  /** Lives are dealt to these profiles in turn. */
-  readonly profiles: readonly ProfileName[];
+  /** The profile registry (`loadProfiles`): every profile a Pack declares. */
+  readonly profileSpecs: readonly ProfileSpec[];
+  /** Ids of the profiles lives are dealt to in turn; empty means the registry's default set. */
+  readonly profiles: readonly string[];
   /** Base seed; each life's seed is derived from it. */
   readonly seed: number;
   /** Run exactly one life with this life seed (replays a reported fault). */
@@ -32,17 +34,17 @@ export function runLives(
   bundles: readonly PackBundle[],
   opts: Pick<
     HarnessOptions,
-    "lives" | "profiles" | "seed" | "lifeSeed" | "metrics"
+    "lives" | "profiles" | "profileSpecs" | "seed" | "lifeSeed" | "metrics"
   >,
   from: number,
   to: number,
   onLife?: (r: LifeResult) => void,
 ): LifeResult[] {
-  const profiles = opts.profiles.length > 0 ? opts.profiles : PROFILE_NAMES;
+  const profiles = selectProfiles(opts.profileSpecs, opts.profiles);
   const out: LifeResult[] = [];
   for (let i = from; i < to; i++) {
     const seed = opts.lifeSeed ?? lifeSeedFor(opts.seed, i);
-    const profile = profiles[i % profiles.length] as ProfileName;
+    const profile = profiles[i % profiles.length] as ProfileSpec;
     const r = runLife(bundles, seed, profile, opts.metrics);
     out.push(r);
     onLife?.(r);

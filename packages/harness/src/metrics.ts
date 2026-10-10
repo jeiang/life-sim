@@ -266,7 +266,7 @@ export const SNAPSHOT_AGES = [18, 40, 65] as const;
 // Loading and validation
 // ---------------------------------------------------------------------------------------
 
-const IDENT = /^[a-z][a-z0-9_]*$/;
+export const IDENT = /^[a-z][a-z0-9_]*$/;
 const KINDS: readonly StatKind[] = [
   "count",
   "share",
@@ -278,11 +278,11 @@ const KINDS: readonly StatKind[] = [
 ];
 const FORMATS: readonly Format[] = ["percent", "number", "money"];
 
-type Obj = Record<string, unknown>;
-const isObj = (v: unknown): v is Obj =>
+export type Obj = Record<string, unknown>;
+export const isObj = (v: unknown): v is Obj =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 
-class Loader {
+export class Loader {
   readonly diags: Diagnostic[] = [];
   private readonly src: Source;
 

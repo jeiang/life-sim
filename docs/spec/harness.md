@@ -50,15 +50,42 @@ Stats that read a table column or slot have one result per action id any life di
 
 ## Simulated player profiles
 
-Every choice comes from the seeded RNG, so a run is reproducible from its seed. Profiles and report sections that exist for one Pack are described in that Pack's `BALANCE.md`.
+Every choice comes from the seeded RNG, so a run is reproducible from its seed. A profile draws only from its own stream (`harness/<profile id>`), so adding a profile never changes the lives of another. Profiles are declared by Packs in `packs/<id>/harness/profiles.yaml`; the harness package owns the schema and interprets it, so no Pack has code in `packages/harness/src`. The registry is every Pack's profiles in Pack load order, then file order; ids are global and a repeat is an error. `pnpm harness --list-profiles` prints the registry, `--profile` takes any of its ids (or `all`, the profiles without `default: false`), and `--check-packs` validates the files.
 
-| Profile | Behaviour |
-|---|---|
-| `random` | Uniform random choices; 0-2 random eligible actions per year, repeatable ones included (and repeated) |
-| `studious` | Prefers study actions and university; accepts job offers |
-| `spender` | Buys whenever affordable, takes loans when offered |
-| `idle` | Takes no voluntary actions; answers events at random |
-| `grinder` | 12 random repeatable actions a year, to stress diminishing returns; opt-in (`--profile grinder`), not part of `all` |
+```yaml
+profiles:
+  gambler:
+    description: ...
+    default: true            # false: only `--profile gambler` runs it, `all` omits it
+    moves: 4                 # voluntary moves a year; `{ below: 3 }` draws 0..2
+    amount: uniform          # uniform | min | max, for actions with an amount grid
+    once_per_year: false     # skip an action already used this year
+    quit: { quality: gambling_addicted, relapse_one_in: 5 }
+    choice:                  # event choices, by label (case-insensitive globs)
+      prefer: [accept*, yes*]
+      avoid: ["*refuse*"]
+    rules:                   # tried in order; the first with a candidate decides the move
+      - when: { quitting: true }       # quitting | age_at_least
+        ids: [gambling/gambling-support-meeting]
+        pick: first                    # first | random (default)
+      - when: { quitting: false }
+        ids: [gambling/play-*, gambling/bet-*]
+        except: ["*/skip-*"]
+        menu: some/menu                # only this menu
+        repeatable: true               # only `repeatable` actions
+      - shop: true                     # buy something (a loan when offered)
+```
+
+`ids` and `except` are globs on the full action id (`*` within one `/` segment, `**` across them); a glob that matches no action is an error. `quit` makes the profile `quitting` while the quality holds, except for a one-in-`relapse_one_in` relapse drawn on each move. A rule without `ids` takes every unlocked action; a profile whose rules find nothing makes no move. Profiles that exist for one Pack are described in that Pack's `BALANCE.md`.
+
+| Profile | Pack | Behaviour |
+|---|---|---|
+| `random` | core-loop | Uniform random choices; 0-2 random eligible actions per year, repeatable ones included (and repeated) |
+| `studious` | core-loop | Prefers study actions and university; accepts job offers |
+| `spender` | core-loop | Buys whenever affordable, takes loans when offered |
+| `idle` | core-loop | Takes no voluntary actions; answers events at random |
+| `grinder` | core-loop | 12 random repeatable actions a year, to stress diminishing returns; opt-in (`--profile grinder`), not part of `all` |
+| `gambler` | gambling | Bets all year at the casinos and the lottery; tries to quit once addicted |
 
 ## CI check `harness`
 

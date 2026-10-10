@@ -165,6 +165,42 @@ export function mergeShards(
   };
 }
 
+/**
+ * Combine the merged reports of several runs of one release (founder lives and lineage lives,
+ * say) into the first run's report: content counts as never fired only when it fired in none
+ * of the runs, and faults from every run are kept. Everything else is the first run's.
+ */
+export function unionRuns(runs: readonly Merged[]): Merged {
+  const [first, ...rest] = runs;
+  if (!first) throw new Error("no runs to combine");
+  if (rest.length === 0) return first;
+  const all = runs.map((m) => m.report);
+  const inEvery = (pick: (r: Report) => readonly string[]): string[] =>
+    pick(first.report).filter((id) => all.every((r) => pick(r).includes(id)));
+  const byKind: Record<string, number> = {};
+  for (const r of all)
+    for (const [k, n] of Object.entries(r.faults.byKind))
+      byKind[k] = (byKind[k] ?? 0) + n;
+  const forced = runs.map((m) => m.forced).find((f) => f !== undefined);
+  return {
+    run: first.run,
+    report: {
+      ...first.report,
+      faults: {
+        total: all.reduce((n, r) => n + r.faults.total, 0),
+        byKind,
+        first: all.flatMap((r) => r.faults.first).slice(0, 50),
+      },
+      storylets: {
+        ...first.report.storylets,
+        neverFired: inEvery((r) => r.storylets.neverFired),
+        chainStepsNeverFired: inEvery((r) => r.storylets.chainStepsNeverFired),
+      },
+    },
+    ...(forced ? { forced } : {}),
+  };
+}
+
 export const FAIL_ON = ["faults", "never-fired"] as const;
 export type FailOn = (typeof FAIL_ON)[number];
 

@@ -40,6 +40,8 @@ export interface Report {
     readonly outcomes: Record<string, Record<string, number>>;
     readonly top10: readonly { id: string; count: number }[];
     readonly neverFired: readonly string[];
+    /** `--generations` runs only: storylets fired in a later generation (not counted in `fired`, which is the founders'); they are not in `neverFired`. */
+    readonly heirFired?: readonly string[];
     /** `chance: 0%` storylets reached only through `next`; never counted as dead content. */
     readonly chainStepsNeverFired: readonly string[];
   };
@@ -315,6 +317,7 @@ export class Aggregate {
   private faultTotal = 0;
   private readonly faultKinds: Record<string, number> = {};
   private readonly fires: Record<string, number> = {};
+  private readonly heirFires = new Set<string>();
   private readonly outcomes: Record<string, Record<string, number>> = {};
   private readonly eventHist: Record<string, number> = {};
   private eventSum = 0;
@@ -390,6 +393,7 @@ export class Aggregate {
     }
     for (const [id, n] of Object.entries(r.fires))
       this.fires[id] = (this.fires[id] ?? 0) + n;
+    for (const id of r.heirFires ?? []) this.heirFires.add(id);
     for (const [id, picks] of Object.entries(r.outcomes)) {
       const t = this.outcomes[id] ?? {};
       this.outcomes[id] = t;
@@ -587,7 +591,9 @@ export class Aggregate {
     const sorted = Object.entries(this.fires)
       .map(([id, count]) => ({ id, count }))
       .sort((a, b) => b.count - a.count || (a.id < b.id ? -1 : 1));
-    const never = all.filter((id) => !this.fires[id]);
+    const never = all.filter(
+      (id) => !this.fires[id] && !this.heirFires.has(id),
+    );
     const decisionIds = new Set(
       this.bundles.flatMap((b) =>
         b.storylets
@@ -644,6 +650,9 @@ export class Aggregate {
         fired: this.fires,
         outcomes: sortedOutcomes(this.outcomes),
         top10: sorted.slice(0, 10),
+        ...(this.heirFires.size > 0
+          ? { heirFired: [...this.heirFires].sort() }
+          : {}),
         neverFired: never.filter((id) => !chain.has(id)),
         chainStepsNeverFired: never.filter((id) => chain.has(id)),
       },

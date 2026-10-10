@@ -48,12 +48,13 @@ The shipped-id check compares the Packs' ids with `ids.lock.json` as committed a
 
 - `prepare` derives the seed from the tag (`20260101 + N`, so a re-run reproduces the report) and the lists of shards and forced scripts (`harness --list-scripts`).
 - `shards`: 8 shards of 12,500 lives (100,000 lives, `--profile all`, `--shard i/8`), one runner each. A shard fails on engine faults.
+- `lineage-shards`: 4 shards of 1,000 lives (4,000 lives, `--profile dynasty --generations 4 --heir random`, `--shard i/4`). Content that fires only in generation 1 or later (succession openers, aftermath, minor-heir, heirloom history, grandchild events) fires here; a `--generations` run counts heirs' fires toward `never fired` (`storylets.heirFired` in its report).
 - `scripts`: each forced script (`<pack>/<name>`) runs by itself, 1,000 lives, and fails on faults or a forced entry that never matched.
-- `merge`: `harness merge --fail-on faults,never-fired` over the shard artifacts, so content no life reached fails the release. It writes the job summary and uploads the `release-report` artifact (`report.md`, `report.json`, `summary.md`) even when it fails.
+- `merge`: `harness merge shards lineage --fail-on faults,never-fired` over the founder and lineage shard artifacts (each directory is a whole run; the report is the founder run's with faults from both, and content is never fired only if no run fired it), so content no life reached fails the release. It writes the job summary and uploads the `release-report` artifact (`report.md`, `report.json`, `summary.md`) even when it fails.
 - `locks`: `pack-tools lock packs` on a full clone, uploaded as the `ids-locks` artifact.
 - `publish` (tag pushes, all of the above green): commits the refreshed `ids.lock.json` files to the branch `release/v<N>-locks` (one commit on top of the tagged commit; a PR to `main` is opened when the repository lets Actions create PRs), and attaches the merged report, each script's report and the summary to the `v<N>` GitHub release (created if absent).
 - The tag is **not** moved. The compiler reads locks from `git show v<N>:packs/<id>/ids.lock.json`, so the locks take effect as the baseline only once the tag points at a commit that contains them; until then the check for a Pack with no lock at the tag compares nothing. To make `release/v<N>-locks` the baseline, move the tag to it (`git tag -f v<N> origin/release/v<N>-locks && git push -f origin v<N>`; the workflow runs again and finds the locks unchanged).
-- Dry run: `gh workflow run release.yml --ref <branch> -f tag=v0-test -f lives=400 -f shards=2`; add `-f inject_fault=true` to include `.github/release-fixtures/never-matched.yaml`, a forced script whose step never matches, which must turn the run red.
+- Dry run: `gh workflow run release.yml --ref <branch> -f tag=v0-test -f lives=400 -f shards=2` (the lineage run uses the same lives and shards in a dry run); add `-f inject_fault=true` to include `.github/release-fixtures/never-matched.yaml`, a forced script whose step never matches, which must turn the run red.
 
 ## Open risk
 

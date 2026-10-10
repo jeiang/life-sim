@@ -195,6 +195,11 @@ export interface LifeResult {
    * fields above describe the founder's life only; later generations add their faults to it.
    */
   readonly lineage?: readonly GenerationRecord[];
+  /**
+   * With `--generations` above 1: storylet ids fired in a generation after the founder's, so
+   * the report can tell content only successions reach from content that is dead.
+   */
+  readonly heirFires?: readonly string[];
 }
 
 const playerOf = (w: World) => {
@@ -818,6 +823,7 @@ export function runLife(
     ),
   ];
   const faults = [...first.result.faults];
+  const heirFires = new Set<string>();
   let cur = first;
   const rng = streamFor(seed, 0, `harness/${spec.id}/heir`, 0);
   for (let g = 1; g < (lineage?.generations ?? 1); g++) {
@@ -850,6 +856,8 @@ export function runLife(
       });
     cur = playLife(bundles, seed, spec, packMetrics, [], next, g);
     faults.push(...cur.result.faults);
+    for (const [id, n] of Object.entries(cur.result.fires))
+      if (n > 0) heirFires.add(id);
     records.push(
       recordOf(
         cur,
@@ -868,6 +876,8 @@ export function runLife(
     ...first.result,
     faults,
     metrics: first.finish(records),
-    ...(lineage && lineage.generations > 1 ? { lineage: records } : {}),
+    ...(lineage && lineage.generations > 1
+      ? { lineage: records, heirFires: [...heirFires].sort() }
+      : {}),
   };
 }

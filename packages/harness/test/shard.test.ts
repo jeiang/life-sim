@@ -12,11 +12,13 @@ import type { LifeResult } from "../src/run.ts";
 import {
   failures,
   findShardFiles,
+  type Merged,
   mergeShards,
   neverFiredByPack,
   parseFailOn,
   parseShard,
   shardRunOf,
+  unionRuns,
   writeShard,
 } from "../src/shard.ts";
 
@@ -87,6 +89,28 @@ describe("--shard / merge", () => {
     expect(() =>
       mergeShards(findShardFiles(out), s.bundles, s.metrics),
     ).toThrow(/missing shard\(s\) 2\/2/);
+  });
+});
+
+describe("unionRuns", () => {
+  const run = (never: string[], faults: number): Merged =>
+    ({
+      run: { seed: 1, lives: 1, profiles: [], force: null },
+      report: {
+        faults: {
+          total: faults,
+          byKind: faults ? { exception: faults } : {},
+          first: [],
+        },
+        storylets: { neverFired: never, chainStepsNeverFired: never },
+      },
+    }) as unknown as Merged;
+
+  test("content is never fired only if no run fired it; faults add up", () => {
+    const u = unionRuns([run(["a/x", "a/y"], 0), run(["a/y", "a/z"], 2)]);
+    expect(u.report.storylets.neverFired).toEqual(["a/y"]);
+    expect(u.report.faults.total).toBe(2);
+    expect(u.report.faults.byKind).toEqual({ exception: 2 });
   });
 });
 

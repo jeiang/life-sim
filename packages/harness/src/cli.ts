@@ -36,6 +36,7 @@ import {
   parseFailOn,
   parseShard,
   shardRunOf,
+  unionRuns,
   writeShard,
 } from "./shard.ts";
 
@@ -47,7 +48,7 @@ const usage =
        pnpm harness --check-packs [--packs a,b] [--packs-dir dir]
        pnpm harness --list-profiles [--packs a,b] [--packs-dir dir]
        pnpm harness --list-scripts [--packs a,b] [--packs-dir dir]
-       pnpm harness merge <dir> [--out dir] [--fail-on faults,never-fired] [--packs a,b] [--packs-dir dir]
+       pnpm harness merge <dir> [<dir>...] [--out dir] [--fail-on faults,never-fired] [--packs a,b] [--packs-dir dir]
   --lives      lives to simulate (default 100)
   --profile    simulated player profile(s), declared by Packs; several are dealt to lives in turn (default all: every profile not marked \`default: false\`)
   --seed       base seed, uint32 (default 1)
@@ -65,7 +66,7 @@ const usage =
   --shard      run only shard i of n (\`2/4\`): lives whose index mod n is i-1, with the usual seeds; writes shard-i-of-n.json.gz to --out (required) for \`merge\`
   --fail-on    also exit 1 on: never-fired (content no life reached, listed per Pack); engine faults and never-matched forced entries always fail
   --life-seed  run one life with exactly this life seed (to replay a reported fault)
-  merge <dir>  combine the shard-*.json.gz files found under <dir> (recursively) into one report.md/report.json (in --out, default <dir>), identical to an unsharded run
+  merge <dir>  combine the shard-*.json.gz files found under <dir> (recursively) into one report.md/report.json (in --out, default <dir>), identical to an unsharded run. Several dirs, each a whole run (founder lives and \`--generations\` lives, say), give the first run's report where content is never fired only if no run fired it
 Exit status 1 when any engine fault is found or a forced entry never matched.
 `;
 
@@ -223,11 +224,16 @@ if (a["list-scripts"]) {
   process.exit(0);
 }
 if (positionals[0] === "merge") {
-  const dir = positionals[1];
-  if (!dir || positionals.length > 2) fail("usage: harness merge <dir>");
+  const dirs = positionals.slice(1);
+  const dir = dirs[0];
+  if (!dir) fail("usage: harness merge <dir> [<dir>...]");
   let merged: Merged;
   try {
-    merged = mergeShards(findShardFiles(dir), compiled.bundles, loaded.metrics);
+    merged = unionRuns(
+      dirs.map((d) =>
+        mergeShards(findShardFiles(d), compiled.bundles, loaded.metrics),
+      ),
+    );
   } catch (e) {
     console.error(`merge: ${e instanceof Error ? e.message : String(e)}`);
     process.exit(2);

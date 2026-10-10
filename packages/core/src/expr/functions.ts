@@ -84,6 +84,8 @@ export const EFFECTS = {
   remove_asset: { params: ["id"], returns: "bool" },
   start_occupation: { params: ["id"], returns: "bool" },
   end_occupation: { params: ["id"], returns: "bool" },
+  /** End every held occupation in an exclusivity group, in held order. */
+  end_group: { params: ["group"], returns: "bool" },
   spawn_person: { params: ["id", "id"], returns: "bool" },
   journal: { params: ["string"], returns: "bool" },
   die: { params: ["string"], returns: "bool" },

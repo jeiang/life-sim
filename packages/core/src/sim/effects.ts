@@ -236,6 +236,13 @@ function applyEffect(
           );
           return o ? endOccupation(w, who, o.id) : w;
         }
+        case "end_group": {
+          const group = str(args[0], w, idx, scope);
+          let next = w;
+          for (const o of getPerson(w, who).occupations)
+            if (o.group === group) next = endOccupation(next, who, o.id);
+          return next;
+        }
         case "move_to": {
           const city = str(args[0], w, idx, scope);
           if (!idx.cities.has(city)) throw new RangeError("unknown city");

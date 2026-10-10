@@ -2410,14 +2410,7 @@ class PackCompiler {
     }
     if (tag === "call" && GROUP_FUNCTIONS.has(e[1] as string)) {
       const g = (e[2] as unknown as readonly string[])[1] as string;
-      if (!this.groups.has(g)) {
-        this.err(
-          path,
-          `undeclared exclusivity group '${g}'; declared: ${[...this.groups].sort().join(", ") || "none"}`,
-        );
-        return undefined;
-      }
-      return e;
+      return this.groupDeclared(g, path) ? e : undefined;
     }
     if (tag === "call") {
       const args = (e.slice(2) as Expr[]).map((a, i) =>
@@ -2907,6 +2900,16 @@ class PackCompiler {
     }
   }
 
+  /** True when `g` is an exclusivity group this Pack or a required capability declares. */
+  private groupDeclared(g: string, path: Path): boolean {
+    if (this.groups.has(g)) return true;
+    this.err(
+      path,
+      `undeclared exclusivity group '${g}'; declared: ${[...this.groups].sort().join(", ") || "none"}`,
+    );
+    return false;
+  }
+
   private resolveEffect(e: Effect, path: Path): Effect | undefined {
     switch (e[0]) {
       case "set":
@@ -2920,6 +2923,10 @@ class PackCompiler {
         if (e[1] === "reach_milestone") {
           const m = (e[2] as unknown as readonly string[])[1] as string;
           return this.milestoneId(m, path, true) === undefined ? undefined : e;
+        }
+        if (e[1] === "end_group") {
+          const g = (e[2] as unknown as readonly string[])[1] as string;
+          return this.groupDeclared(g, path) ? e : undefined;
         }
         const args = (e.slice(2) as Expr[]).map((a, i) =>
           this.resolveExpr(a, CALL_KINDS[e[1]]?.[i], path),

@@ -96,6 +96,7 @@ Effect calls. Assign roots: `stat += -= =`, `quality += =`, `money += -=`, `pers
 - `remove_asset(id) -> bool`
 - `start_occupation(id) -> bool`
 - `end_occupation(id) -> bool`
+- `end_group(group) -> bool`
 - `spawn_person(id, id) -> bool`
 - `journal(string) -> bool`
 - `die(string) -> bool`

@@ -1,6 +1,7 @@
 import fc from "fast-check";
 import { expect, test } from "vitest";
 import { worldHash } from "../hash.ts";
+import { ScriptedRng, setStreamOverride } from "../rng.ts";
 import {
   canonicalStringify,
   deserializeWorld,
@@ -129,6 +130,34 @@ test("hash changes with any state change and is pinned for a fixture", () => {
   expect(worldHash(sample(43))).not.toBe(h);
   expect(worldHash(addJournalLine(w, 18, "!"))).not.toBe(h);
   expect(h).toMatchInlineSnapshot(`"7648b03c47a68232"`);
+});
+
+test("a stream override forces chance, int and pick by purpose key without moving counters", () => {
+  const w = sample();
+  const [, base] = nextStream(w, 30, "chance:illness");
+  const [, baseOther] = nextStream(w, 30, "flavour");
+  const [wf, forced] = (() => {
+    setStreamOverride((age, key, counter) =>
+      key === "chance:illness" && age === 30 && counter === 0
+        ? new ScriptedRng({ chance: true, int: 3, pick: "b" })
+        : undefined,
+    );
+    try {
+      return nextStream(w, 30, "chance:illness");
+    } finally {
+      setStreamOverride(null);
+    }
+  })();
+  expect(forced.chanceBp(0)).toBe(true);
+  expect(forced.int(10)).toBe(3);
+  expect(forced.weightedPick([1, 1], ["a", "b"])).toBe(1);
+  expect(() => forced.int(3)).toThrow(RangeError);
+  expect(wf.rngCounters).toEqual(
+    nextStream(w, 30, "chance:illness")[0].rngCounters,
+  );
+  const [, again] = nextStream(w, 30, "chance:illness");
+  expect(again.next32()).toBe(base.next32());
+  expect(nextStream(w, 30, "flavour")[1].next32()).toBe(baseOther.next32());
 });
 
 test("nextStream advances per-site counters only, and a save reload cannot reroll", () => {

@@ -50,7 +50,10 @@ export class Rng {
   }
 
   /** Index chosen with probability weights[i] / sum(weights). Weights are non-negative integers with a positive sum; zero weights are never chosen. */
-  weightedPick(weights: readonly number[]): number {
+  weightedPick(
+    weights: readonly number[],
+    _labels?: readonly string[],
+  ): number {
     let total = 0;
     for (const w of weights) {
       if (!Number.isInteger(w) || w < 0)
@@ -67,6 +70,87 @@ export class Rng {
     }
     throw new Error("unreachable");
   }
+}
+
+/** Values a {@link ScriptedRng} returns in place of random draws; unset kinds fall back to the (all-zero-seeded) generator. */
+export interface ScriptedRolls {
+  /** Result of `chanceBp` (hit or miss), whatever the probability. */
+  readonly chance?: boolean;
+  /** Result of `int(n)`; must lie in `[0, n)`. */
+  readonly int?: number;
+  /** Result of `weightedPick`: an index with positive weight, or a label matched exactly against the caller's labels (outcomes: their `text`). */
+  readonly pick?: number | string;
+}
+
+/**
+ * A stream whose draws are forced (test and harness only; ADR 0003 amendment).
+ * Returned from a stream override, it replaces the derived stream of one roll site.
+ */
+export class ScriptedRng extends Rng {
+  private readonly forced: ScriptedRolls;
+
+  constructor(forced: ScriptedRolls) {
+    super(0, 0, 0, 0);
+    this.forced = forced;
+  }
+
+  override int(n: number): number {
+    const v = this.forced.int;
+    if (v === undefined) return super.int(n);
+    if (!Number.isInteger(v) || v < 0 || v >= n)
+      throw new RangeError(`forced int ${v} is outside [0, ${n})`);
+    return v;
+  }
+
+  override chanceBp(bp: number): boolean {
+    return this.forced.chance ?? super.chanceBp(bp);
+  }
+
+  override weightedPick(
+    weights: readonly number[],
+    labels?: readonly string[],
+  ): number {
+    const p = this.forced.pick;
+    if (p === undefined) return super.weightedPick(weights, labels);
+    const i = typeof p === "string" ? (labels?.indexOf(p) ?? -1) : p;
+    if (typeof p === "string" && i < 0)
+      throw new RangeError(
+        `forced pick "${p}" matches no label (${labels?.join(" | ") ?? "none given"})`,
+      );
+    if (!Number.isInteger(i) || !((weights[i] ?? 0) > 0))
+      throw new RangeError(`forced pick ${i} is not a drawable index`);
+    return i;
+  }
+}
+
+let streamOverride:
+  | ((age: number, purposeKey: string, counter: number) => Rng | undefined)
+  | null = null;
+
+/**
+ * Replace the stream of any roll site: `override` is asked for every `nextStream` (the age, the
+ * purpose key such as `gambling/play-slots` or `outcome/gambling/play-slots`, and the counter the
+ * site would use) and a returned Rng is used instead of the derived one; `undefined` leaves the
+ * roll alone. Counters advance exactly as without it, so unforced rolls are unchanged. `null`
+ * clears. Forced rolls are not logged: a forced life is not replayable from its choice log.
+ * Module-level, for vitest and the harness; `apps/web` must never import it (the e2e
+ * production-bundle guard checks).
+ */
+export function setStreamOverride(
+  override:
+    | ((age: number, purposeKey: string, counter: number) => Rng | undefined)
+    | null,
+): void {
+  streamOverride = override;
+}
+
+/** @internal Used by `nextStream`. */
+export function forcedStream(
+  age: number,
+  purposeKey: string,
+  counter: number,
+): Rng | undefined {
+  return streamOverride?.(age, purposeKey, counter);
 }
 
 /**

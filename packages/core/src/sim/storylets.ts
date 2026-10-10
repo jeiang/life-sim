@@ -225,7 +225,15 @@ function pickOutcome(
   );
   if (!weights.some((x) => x > 0)) return [world, undefined];
   const [w, rng] = nextStream(world, clockAge(world), `outcome/${storyletId}`);
-  return [w, live[rng.weightedPick(weights)]];
+  return [
+    w,
+    live[
+      rng.weightedPick(
+        weights,
+        live.map((o) => o.text ?? ""),
+      )
+    ],
+  ];
 }
 
 function runOutcome(

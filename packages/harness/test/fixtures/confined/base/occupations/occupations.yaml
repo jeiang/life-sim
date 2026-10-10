@@ -1,0 +1,9 @@
+- id: jail
+  label: Jail
+  group: custody
+  pay: 0
+  confines: { menus: true, events: false }
+- id: clerk
+  label: Clerk
+  group: work
+  pay: 1000

@@ -1,0 +1,33 @@
+- id: calm-year
+  trigger: event
+  weight: 10
+  text: A quiet year.
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+- id: arrest
+  trigger: event
+  tags: [custody-ok]
+  chance: 100%
+  when: age == 3
+  text: Arrested.
+  outcomes:
+    - effects:
+        - start_occupation(base/jail)
+- id: release
+  trigger: event
+  tags: [custody-ok]
+  chance: 100%
+  when: age == 6
+  text: Released.
+  outcomes:
+    - effects:
+        - end_occupation(base/jail)
+- id: hired
+  trigger: event
+  chance: 100%
+  when: age == 9
+  text: Hired.
+  outcomes:
+    - effects:
+        - start_occupation(base/clerk)

@@ -1,0 +1,5 @@
+profiles:
+  idle:
+    description: Does nothing
+    moves: 0
+    rules: []

@@ -17,6 +17,7 @@ Exit 0 on success, 1 when the file cannot be read or `--pack` names a Pack with 
 | net worth median at 40 and 65, major units | `netWorth.40/65.p50` |
 | employment share (person-years aged 25-64) | `rates.employment` |
 | decision slots: years with at least 1 / 2 / 3 decisions, against the 90 / 50 / 30 targets | `decisions.atLeast1/2/3` |
+| decision share by storylet: the top 5 storylets by share of all player decisions, with the count of storylets over 3% and each over-3% one marked `OVER` | `decisions.byStorylet`, `decisions.total` |
 | yearly cap hits: chance hits dropped by the yearly cap, summed over Packs, and as a percent of age-ups | `capDrops`, `eventsPerYear.years` |
 | top storylet and its share of all fires | `storylets.top10[0]`, sum of `storylets.fired` |
 | storylets never fired, of the total | `storylets.neverFired`, `storylets.total` |

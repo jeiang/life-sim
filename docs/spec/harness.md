@@ -165,6 +165,7 @@ It **fails** on engine faults:
 It **reports** without failing, in `report.md` and `report.json` in the check output:
 
 - per-storylet fire counts, with storylets that never fired and the 10 most frequent;
+- per-storylet share of player decisions (`report.json` `decisions.total` and `decisions.byStorylet`: storylet id -> `{ count, share }`, share a percent to two decimals, largest first, shown as a table in `report.md`): decisions are opens of `event` storylets with choices (drawn into decision slots, person decisions included), chained steps reached only through `next` excluded. The balance rule is that no storylet exceeds 3% (`DECISION_SHARE_CAP`); over-3% rows are flagged. Counts add across shards, so a merged report has it too;
 - per-storylet outcome counts (`report.json` `storylets.outcomes`): for each storylet, the times each outcome was picked, keyed `o<i>` (a storylet without choices) or `c<j>.o<i>` (outcome `i` of choice `j`), 0-based in YAML order. Counts add across shards, so a merged report has them too; ids and keys are sorted;
 - events per year (mean and distribution);
 - age at death (distribution) and causes of death;

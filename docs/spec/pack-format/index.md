@@ -12,6 +12,8 @@ packs/<pack-id>/
   qualities/<topic>.yaml     # list of quality declarations (see Qualities)
   state/<topic>.yaml         # list of state container declarations (see state.md)
   readables/<topic>.yaml     # readables, slots and slot contributions (see readables.md)
+  kinds/<kind>.yaml          # one declared content kind: its typed fields (see kinds.md)
+  <kind>/<topic>.yaml        # entries of a declared kind, named after the kind (see kinds.md)
   effects/<topic>.yaml       # effect macros over the closed effects (see effects.md)
   CONTEXT.md                 # glossary of the terms this Pack owns
   BALANCE.md                 # balance targets, harness profiles and report notes
@@ -37,6 +39,7 @@ packs/<pack-id>/
 - [Effect macros](effects.md): pack-declared named effect sequences over the closed Core effects, with integer parameters, called as `<pack>.<macro>(...)`.
 - [Settlement line items](settlement.md): pack-declared yearly income and cost lines, applied after the Core settlement with a journal line each.
 - [Lifecycle hooks](hooks.md): pack-declared effects run at birth, age-up, death and milestones, in Pack order with keyed RNG.
+- [Declared content kinds](kinds.md): pack-declared kinds with typed fields and entries, read as `kind("<kind>", <id>).<field>`.
 - [Readables](readables.md): named read-only expressions, closed aggregators over containers, and slots other Packs contribute to.
 - [Storylets and the year draw](storylets.md): storylets, repeatable actions, year draw and decision slots.
 - [Content kinds](content-kinds.md): market kinds, cities, standards of living, household costs, confinement, NPC careers.

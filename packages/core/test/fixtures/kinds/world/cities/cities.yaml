@@ -1,0 +1,1 @@
+- { id: harbor, label: Harbor, cost_index: 100%, weight: 1 }

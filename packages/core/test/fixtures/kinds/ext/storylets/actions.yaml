@@ -1,0 +1,7 @@
+- id: border
+  trigger: action
+  menu: relationships
+  when: not kind("countries", mx).open
+  outcomes:
+    - effects:
+        - stat.happiness += kind("countries", mx).tax

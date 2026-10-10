@@ -8,6 +8,7 @@ import {
   type Expr,
   evaluate,
   FUNCTIONS,
+  KIND_CALL,
   type Signature,
   type Target,
   type Type,
@@ -28,6 +29,11 @@ export interface CheckEnv {
    * element (`table.<id>`, `people.quality.<id>`, `people.table.<id>.<key>`).
    */
   aggregates?: Readonly<Record<string, Type>>;
+  /**
+   * Content kinds `kind("<kind>", <id>).<field>` may read: kind id -> field name -> type
+   * (`ref` fields are `id`). Absent: the call is unknown.
+   */
+  kinds?: Readonly<Record<string, Readonly<Record<string, Type>>>>;
   /** Bound person names usable in `relationship(<person>)`. */
   persons?: readonly string[];
   /**
@@ -171,6 +177,7 @@ export class Checker {
       }
       case "call": {
         if (isAggregate(n)) return this.aggregate(n);
+        if (n.name === KIND_CALL && this.env.kinds) return this.kind(n);
         const sig = Object.hasOwn(this.fns, n.name)
           ? this.fns[n.name]
           : undefined;
@@ -183,6 +190,36 @@ export class Checker {
         return args && [sig.returns, ["call", n.name, ...args]];
       }
     }
+  }
+
+  /** `kind("<kind>", <id>).<field>` over a declared content kind. */
+  private kind(n: Node & { k: "call" }): Checked {
+    const kinds = this.env.kinds ?? {};
+    const [k, id] = n.args;
+    if (n.args.length !== 2 || n.field === undefined)
+      return this.err(
+        n,
+        'a kind read is kind("<kind>", <id>).<field>, for example kind("countries", us).tax',
+      );
+    if (k?.k !== "str" || !Object.hasOwn(kinds, k.v))
+      return this.err(
+        n,
+        `the first argument of 'kind' must be the quoted id of a declared content kind${
+          k?.k === "str" ? suggest(k.v, Object.keys(kinds)) : ""
+        }; visible: ${Object.keys(kinds).sort().join(", ") || "none"}`,
+      );
+    const fields = kinds[k.v] as Record<string, Type>;
+    if (!Object.hasOwn(fields, n.field))
+      return this.err(
+        n,
+        `kind '${k.v}' has no field '${n.field}'${suggest(n.field, Object.keys(fields))}; fields: ${Object.keys(fields).sort().join(", ")}`,
+      );
+    const idArg = id && this.param(id, "id");
+    if (!idArg) return null;
+    return [
+      fields[n.field] as Type,
+      ["call", KIND_CALL, ["s", k.v], idArg[1], ["s", n.field]],
+    ];
   }
 
   /** `sum(src)`, `count(src)`, `max(src)`, `min(src)` over a declared container. */

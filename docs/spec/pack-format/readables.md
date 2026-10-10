@@ -51,7 +51,7 @@ Four closed aggregators range over declared containers. `sum`, `count`, `max` an
 
 For authors of the next extension points (effect macros, lifecycle hooks, settlement line items) and of the `vocab` script.
 
-- **Compiled form.** `PackBundle.readables: ReadableDecl[]` (sorted by id) with `ReadableDecl = ExprReadableDecl | SlotDecl` and `PackBundle.contributions: ContributionDecl[]` (`{ slot, expr }`, source order); `PACK_BUNDLE_FORMAT` is 5. `PackIndex.readables: ReadonlyMap<id, ReadableEntry>`, `ReadableEntry = { decl, terms: Expr[] }` with every Pack's terms attached. `indexBundles` throws on a duplicate id, a contribution to a non-slot, or a cycle.
+- **Compiled form.** `PackBundle.readables: ReadableDecl[]` (sorted by id) with `ReadableDecl = ExprReadableDecl | SlotDecl` and `PackBundle.contributions: ContributionDecl[]` (`{ slot, expr }`, source order); `PACK_BUNDLE_FORMAT` is 6. `PackIndex.readables: ReadonlyMap<id, ReadableEntry>`, `ReadableEntry = { decl, terms: Expr[] }` with every Pack's terms attached. `indexBundles` throws on a duplicate id, a contribution to a non-slot, or a cycle.
 - **Evaluation.** In `makeEnv` (`sim/env.ts`) a bare name that is a readable evaluates `decl.expr`, or `combineSlot(decl, terms)` (`sim/readables.ts`), in a fresh player-level environment. The compiler guarantees acyclicity, so there is no runtime depth guard.
 - **Aggregators.** Compiled to `["call", "agg_<op>", ["s", "<source>"]]` (`AGGREGATES`, `AGGREGATE_PREFIX` in `@life/core`; `aggregate` in `sim/readables.ts`). The checker (`pack-tools/src/expr/check.ts`) takes the visible sources from `CheckEnv.aggregates`.
 - **Listing.** `idx.readables` holds the name, type, kind and (for slots) terms of everything loaded, for `vocab` (#199).

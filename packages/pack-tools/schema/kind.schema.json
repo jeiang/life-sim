@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "title": "Content kind",
+  "type": "object",
+  "required": ["fields"],
+  "properties": {
+    "label": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "fields": {
+      "minProperties": 1,
+      "description": "Field name to field type; `id` and `label` are reserved",
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9_]*$": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "type": "object",
+              "required": ["type"],
+              "properties": {
+                "type": {
+                  "const": "int",
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "additionalProperties": false,
+              "type": "object",
+              "required": ["type"],
+              "properties": {
+                "type": {
+                  "const": "string",
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "additionalProperties": false,
+              "type": "object",
+              "required": ["type", "to"],
+              "properties": {
+                "type": {
+                  "const": "ref",
+                  "type": "string"
+                },
+                "to": {
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "description": "What the id must name: a content kind (`storylet`, `occupation`, `item`, `market`, `loan`, `city`, `standard`, `role`, `generator`) or a kind id",
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "additionalProperties": false,
+              "type": "object",
+              "required": ["type", "returns"],
+              "properties": {
+                "type": {
+                  "const": "expr",
+                  "type": "string"
+                },
+                "returns": {
+                  "anyOf": [
+                    {
+                      "const": "int",
+                      "type": "string"
+                    },
+                    {
+                      "const": "bool",
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

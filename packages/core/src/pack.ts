@@ -7,7 +7,7 @@ import type { Effect, Expr } from "./expr/index.ts";
 import type { Gender } from "./state/types.ts";
 
 /** Bundle format version; bump when the shape below changes incompatibly. */
-export const PACK_BUNDLE_FORMAT = 5;
+export const PACK_BUNDLE_FORMAT = 6;
 
 /** `twemoji:<codepoints>` (for example `twemoji:1f4bc`) or `gameicons:<author>/<name>`. */
 export type IconRef = string;
@@ -110,6 +110,39 @@ export interface ContributionDecl {
   /** The slot's bare id. */
   readonly slot: string;
   readonly expr: Expr;
+}
+
+/**
+ * A pack-declared content kind (docs/spec/pack-format/kinds.md): a schema of typed fields and
+ * the instances (`KindEntry`) Packs write for it. Read in expressions as
+ * `kind("<kind>", <id>).<field>`; stored nowhere.
+ */
+export interface KindDecl {
+  readonly id: string;
+  readonly label?: string;
+  /** Fields in declaration order. */
+  readonly fields: readonly KindFieldDecl[];
+}
+
+export type KindFieldDecl =
+  | { readonly name: string; readonly type: "int" }
+  | { readonly name: string; readonly type: "string" }
+  /** `to`: a content kind (`city`, `occupation`, ...) or a declared kind id; the value is a full id. */
+  | { readonly name: string; readonly type: "ref"; readonly to: string }
+  /** Evaluated on every read in the player-level scope; `returns` is its type. */
+  | {
+      readonly name: string;
+      readonly type: "expr";
+      readonly returns: "int" | "bool";
+    };
+
+/** One instance of a declared kind. Values hold every field: a number, a string (also a full id) or an `Expr`. */
+export interface KindEntry {
+  readonly kind: string;
+  /** Full id `<pack>/<id>`, of the Pack that wrote it. */
+  readonly id: string;
+  readonly label?: string;
+  readonly values: Readonly<Record<string, number | string | Expr>>;
 }
 
 export interface CompiledOutcome {
@@ -512,6 +545,10 @@ export interface PackBundle {
   readonly readables: readonly ReadableDecl[];
   /** Terms this Pack adds to slots (its own or a required Pack's), in source order. */
   readonly contributions: readonly ContributionDecl[];
+  /** Content kinds this Pack declares, sorted by id. */
+  readonly kinds: readonly KindDecl[];
+  /** Instances this Pack writes, of its own kinds or a required Pack's, sorted by full id. */
+  readonly kindEntries: readonly KindEntry[];
   readonly exclusivity: readonly string[];
   readonly year?: {
     readonly slots: readonly [number, number];

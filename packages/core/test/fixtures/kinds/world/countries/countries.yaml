@@ -1,0 +1,15 @@
+- id: us
+  label: United States
+  name: States
+  rank: 1
+  tax: 10 + stat.happiness / 10
+  open: stat.happiness > 50
+  capital: harbor
+  friend: ca
+- id: ca
+  name: Canada
+  rank: 2
+  tax: 4
+  open: true
+  capital: harbor
+  friend: us

@@ -64,10 +64,10 @@ const file = (w: World) =>
 const env = (w: World) => makeEnv(w, idx, { subject: w.playerId });
 
 describe("state containers: compile", () => {
-  test("bundles carry the declarations, format 5", () => {
-    expect(PACK_BUNDLE_FORMAT).toBe(5);
+  test("bundles carry the declarations, format 6", () => {
+    expect(PACK_BUNDLE_FORMAT).toBe(6);
     const b = bundles.find((x) => x.id === "stt");
-    expect(b?.format).toBe(5);
+    expect(b?.format).toBe(6);
     expect(b?.state.map((s) => `${s.kind}:${s.id}`)).toEqual([
       "table:favours",
       "counter:festival",

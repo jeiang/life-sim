@@ -1,0 +1,4 @@
+- kind: readable
+  id: home_tax
+  type: int
+  expr: kind("countries", us).tax + kind("countries", kind("countries", us).friend).rank

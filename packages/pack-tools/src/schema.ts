@@ -173,6 +173,39 @@ export const MacroSchema = obj({
   }),
 });
 
+/**
+ * `kinds/<kind>.yaml` (docs/spec/pack-format/kinds.md): a pack-declared content kind. The file
+ * stem is the kind id. `fields` maps each field name to its type; entries live in
+ * `<kind>/*.yaml` and are validated against a schema built from these fields.
+ */
+export const KindFieldSchema = Type.Union([
+  obj({ type: Type.Literal("int") }),
+  obj({ type: Type.Literal("string") }),
+  obj({
+    type: Type.Literal("ref"),
+    to: Type.String({
+      pattern: NAME_PATTERN,
+      description:
+        "What the id must name: a content kind (`storylet`, `occupation`, `item`, `market`, `loan`, `city`, `standard`, `role`, `generator`) or a kind id",
+    }),
+  }),
+  obj({
+    type: Type.Literal("expr"),
+    returns: Type.Union([Type.Literal("int"), Type.Literal("bool")]),
+  }),
+]);
+
+export const KindSchema = obj(
+  {
+    label: Type.Optional(Label),
+    fields: Type.Record(Name, KindFieldSchema, {
+      minProperties: 1,
+      description: "Field name to field type; `id` and `label` are reserved",
+    }),
+  },
+  "Content kind",
+);
+
 const PERCENT = "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$";
 
 /** A repeat curve; every field is optional because a storylet overrides the manifest's field by field. */
@@ -237,6 +270,10 @@ export const CapabilitySchema = obj(
         qualities: provided("qualities", NAME_PATTERN),
         state: provided("state containers", NAME_PATTERN),
         readables: provided("readables and slots", NAME_PATTERN),
+        kinds: provided(
+          "content kinds this Pack declares or writes entries for (their entries it wrote are exported too)",
+          NAME_PATTERN,
+        ),
         effects: provided("effect macros", NAME_PATTERN),
         groups: provided("exclusivity groups", ID_PATTERN),
         tags: provided("storylet tags", ID_PATTERN),
@@ -889,6 +926,7 @@ export const FILE_SCHEMAS = {
   "qualities.schema.json": list(QualitySchema, "Qualities"),
   "state.schema.json": list(StateSchema, "State containers"),
   "readables.schema.json": list(ReadableSchema, "Readables"),
+  "kind.schema.json": KindSchema,
   "effects.schema.json": list(MacroSchema, "Effect macros"),
   "migration.schema.json": MigrationSchema,
   "storylets.schema.json": list(StoryletSchema, "Storylets"),
@@ -913,4 +951,31 @@ export type PeopleSrc = Static<typeof PeopleSchema>;
 export type Quality = Static<typeof QualitySchema>;
 export type State = Static<typeof StateSchema>;
 export type Readable = Static<typeof ReadableSchema>;
+export type KindSrc = Static<typeof KindSchema>;
+export type KindFieldSrc = Static<typeof KindFieldSchema>;
+
+/** Source-field names an entry may not use as a kind field. */
+export const KIND_RESERVED_FIELDS = ["id", "label"] as const;
+
+/**
+ * Schema of one entry of a declared kind: `id`, an optional `label` and every field, required.
+ * A bad field type is reported by the same validator as every other file.
+ */
+export const kindEntrySchema = (fields: Record<string, KindFieldSrc>) =>
+  obj({
+    id: Id,
+    label: Type.Optional(Label),
+    ...Object.fromEntries(
+      Object.entries(fields).map(([name, f]) => [
+        name,
+        f.type === "int"
+          ? Type.Integer()
+          : f.type === "expr"
+            ? Src
+            : f.type === "ref"
+              ? Ref
+              : Type.String(),
+      ]),
+    ),
+  });
 export type Macro = Static<typeof MacroSchema>;

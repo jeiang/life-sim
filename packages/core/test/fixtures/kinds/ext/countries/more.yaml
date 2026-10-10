@@ -1,0 +1,7 @@
+- id: mx
+  name: Mexico
+  rank: 3
+  tax: 7 + quality.where
+  open: false
+  capital: world/harbor
+  friend: world/us

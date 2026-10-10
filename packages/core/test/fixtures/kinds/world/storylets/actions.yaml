@@ -1,0 +1,23 @@
+- id: audit
+  trigger: action
+  menu: relationships
+  when: kind("countries", ca).tax < 5 and kind("countries", us).rank == 1
+  outcomes:
+    - effects:
+        - stat.happiness += kind("countries", world/us).tax
+
+- id: shut
+  trigger: action
+  menu: relationships
+  when: not kind("countries", ca).open
+  outcomes:
+    - effects:
+        - stat.happiness += 1
+
+- id: named
+  trigger: action
+  menu: relationships
+  when: kind("countries", us).name in ["States"]
+  outcomes:
+    - effects:
+        - quality.where = kind("countries", world/ca).rank

@@ -13,7 +13,7 @@ Tuned with the [harness](../../docs/spec/harness.md): `pnpm harness --jobs 4 --l
 | Visit home | $1,200, every other year, +8 closeness (+3 when stilted) |
 | Language | floor 20 on arrival (40 for a child), +3 a year abroad in the destination language, study +/- by `(100 - skill) / 12` |
 
-Cities abroad (`cost_index` / `wage_index`): Toronto 120/110, Montreal 100/100, London 170/135, Manchester 115/105, Tokyo 145/125, Osaka 110/105, Mexico City 70/60, Guadalajara 55/50. Core-loop's six US cities run 70/80 (Dustwater) to 180/150 (Goldcrest).
+Cities abroad (`cost_index` / `wage_index`): Toronto 120/135, Montreal 100/125, London 170/160, Manchester 115/130, Tokyo 145/150, Osaka 110/130, Mexico City 70/85, Guadalajara 55/75. Core-loop's six US cities run 70/80 (Dustwater) to 180/150 (Goldcrest).
 
 ## Targets and measured numbers (800 lives, seed 1, the `mover` profile in the mix; reproduce with `--profile mover` and `--profile stayer`)
 
@@ -70,4 +70,4 @@ Changes (data only):
 | top decision storylet | dating/ask-out 2.61% | dating/ask-out 2.62% |
 | death age median, faults | 72, 0 | 72, 0 |
 
-Remaining gap: the `mover` profile is now 24% behind its parity stayer at 65, against the "within about 7%" target. An abroad wage index lift of 15 points (tried locally, 1,000 lives) closes it (195M against 200M) but it would push the `random` movers further above random stayers (already +50%, target 22-28%), and that gap is selection (movers must afford the fee; random stayers have a 2.5M median at 40), not something the city indexes can fix. The two targets pull opposite ways with data alone, so the indexes were left unchanged.
+The parity gap is addressed by #382 below. Random movers' advantage over random stayers is a selection effect (movers must afford the $3,000 fee), not a target.

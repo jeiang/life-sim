@@ -81,7 +81,9 @@ jobs:
           if [ "$EVENT" = workflow_dispatch ]; then
             tag="$INPUT_TAG"; lives="$INPUT_LIVES"; shards="$INPUT_SHARDS"
             script_lives=$(( lives < SCRIPT_LIVES ? lives : SCRIPT_LIVES ))
-            gen_lives="$lives"; gen_shards="$shards"
+            # Never more lineage work than a tag run does.
+            gen_lives=$(( lives < TAG_GEN_LIVES ? lives : TAG_GEN_LIVES ))
+            gen_shards=$(( shards < TAG_GEN_SHARDS ? shards : TAG_GEN_SHARDS ))
           else
             tag="$GITHUB_REF_NAME"; lives="$TAG_LIVES"; shards="$TAG_SHARDS"
             script_lives="$SCRIPT_LIVES"

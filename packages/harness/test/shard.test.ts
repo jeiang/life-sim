@@ -8,7 +8,6 @@ import { runHarness } from "../src/harness.ts";
 import { loadMetrics } from "../src/metrics.ts";
 import { loadProfiles } from "../src/profile-spec.ts";
 import { renderMarkdown } from "../src/report.ts";
-import type { LifeResult } from "../src/run.ts";
 import {
   failures,
   findShardFiles,
@@ -17,9 +16,9 @@ import {
   neverFiredByPack,
   parseFailOn,
   parseShard,
+  ShardWriter,
   shardRunOf,
   unionRuns,
-  writeShard,
 } from "../src/shard.ts";
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
@@ -59,14 +58,13 @@ describe("--shard / merge", () => {
     const out = mkdtempSync(join(tmpdir(), "harness-shards-"));
     for (let i = 0; i < 4; i++) {
       const shard = { index: i, count: 4 };
-      const got: LifeResult[] = [];
-      runHarness({ ...base, shard }, (r) => void got.push(r));
-      writeShard(
+      const w = new ShardWriter(
         join(out, `s${i}`),
         shardRunOf(7, lives, profiles, undefined),
         shard,
-        got,
       );
+      runHarness({ ...base, shard }, (r) => w.add(r));
+      w.close();
     }
     const merged = await mergeShards(findShardFiles(out), s.bundles, s.metrics);
     const json = (r: unknown) => JSON.stringify(r, null, 2);
@@ -83,9 +81,13 @@ describe("--shard / merge", () => {
     const out = mkdtempSync(join(tmpdir(), "harness-shards-"));
     const base = { ...s, lives: 4, profiles: ["random"], seed: 1 };
     const shard = { index: 0, count: 2 };
-    const got: LifeResult[] = [];
-    runHarness({ ...base, shard }, (r) => void got.push(r));
-    writeShard(out, shardRunOf(1, 4, ["random"], undefined), shard, got);
+    const w = new ShardWriter(
+      out,
+      shardRunOf(1, 4, ["random"], undefined),
+      shard,
+    );
+    runHarness({ ...base, shard }, (r) => w.add(r));
+    w.close();
     await expect(
       mergeShards(findShardFiles(out), s.bundles, s.metrics),
     ).rejects.toThrow(/missing shard\(s\) 2\/2/);

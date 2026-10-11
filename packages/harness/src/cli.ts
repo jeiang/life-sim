@@ -35,9 +35,9 @@ import {
   mergeShards,
   parseFailOn,
   parseShard,
+  ShardWriter,
   shardRunOf,
   unionRuns,
-  writeShard,
 } from "./shard.ts";
 
 /** Profile ids the loaded Packs declare, for the usage text (empty until the Packs load). */
@@ -327,8 +327,17 @@ const run = {
   ...(lineage ? { lineage } : {}),
   ...(shard ? { shard } : {}),
 };
-const shardLives: LifeResult[] = [];
-const onLife = shard ? (r: LifeResult) => void shardLives.push(r) : undefined;
+if (shard && !a.out)
+  fail("--shard needs --out: the shard's lives are written there");
+const writer =
+  shard && a.out
+    ? new ShardWriter(
+        a.out,
+        shardRunOf(seed, lives, profiles, force, lineage),
+        shard,
+      )
+    : undefined;
+const onLife = writer ? (r: LifeResult) => writer.add(r) : undefined;
 const { report, forced, seconds } =
   resolveJobs(jobs) === 1
     ? runHarness(run, onLife)
@@ -339,13 +348,5 @@ const { report, forced, seconds } =
         ...(onLife ? { onLife } : {}),
         jobs,
       });
-if (shard) {
-  if (!a.out) fail("--shard needs --out: the shard's lives are written there");
-  writeShard(
-    a.out,
-    shardRunOf(seed, lives, profiles, force, lineage),
-    shard,
-    shardLives,
-  );
-}
+writer?.close();
 finish(report, forced, seed, profiles, seconds, a.out, lineage);

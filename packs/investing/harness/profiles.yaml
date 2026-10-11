@@ -17,8 +17,8 @@ profiles:
     moves: 4
     once_per_year: true
     choice:
-      prefer: ["put in a quarter*", "sell*", "back it*", "walk away"]
-      avoid: ["go all in*", "put in 10%*", "put in 5%*"]
+      prefer: ["put in 5%*", "sell*", "back it*", "walk away"]
+      avoid: ["go all in*", "put in 10%*", "put in a quarter*"]
     rules:
       - ids: [investing/ask-for-tip]
         pick: max

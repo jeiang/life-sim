@@ -26,12 +26,11 @@
   label: Plan a wedding
   scope: person
   target: [core-loop/partner]
-  when: "person.quality.dating_engaged and person.closeness >= 60 and age >= 18 and count_role(core-loop/spouse, 0, 100) == 0 and not milestone_reached(married) and money >= 80000"
+  when: "person.quality.dating_engaged and person.closeness >= 60 and age >= 18 and count_role(core-loop/spouse, 0, 100) == 0 and not milestone_reached(married)"
   once: true
   text: "You start planning the big day with {person.first_name}."
   choices:
     - label: Elope
-      when: money >= 80000
       outcomes:
         - weight: 1
           text: You slip off to the courthouse with two strangers as witnesses and a ring from the gas station.

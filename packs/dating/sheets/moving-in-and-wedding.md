@@ -43,16 +43,15 @@
 - label: Plan a wedding
 - scope: person
 - target: core-loop/partner
-- when: person.quality.dating_engaged and person.closeness >= 60 and age >= 18 and count_role(core-loop/spouse, 0, 100) == 0 and not milestone_reached(married) and money >= 80000
+- when: person.quality.dating_engaged and person.closeness >= 60 and age >= 18 and count_role(core-loop/spouse, 0, 100) == 0 and not milestone_reached(married)
 - once: true
 - text: You start planning the big day with {person.first_name}.
 - opens: 0.2..0.6 per life
 - needs: quality dating_engaged: flag, default false, scope person: the partner accepted a proposal; set by the propose accept in the finding chain
 
-> The action is offered only to an engaged partner, and only with cash for the cheapest option (elope). Each choice hands on to `wedding-prenup` with `next`; the person carries over because both storylets have `scope: person`.
+> The action is offered only to an engaged partner, and the elopement is open to anyone (a broke couple puts the $800 on a card and the cash goes negative; the small and big weddings need the cash). Each choice hands on to `wedding-prenup` with `next`; the person carries over because both storylets have `scope: person`.
 
 ### choice: Elope
-- when: money >= 80000
 - outcome: 1
   - text: You slip off to the courthouse with two strangers as witnesses and a ring from the gas station.
   - effect: money -= 80000

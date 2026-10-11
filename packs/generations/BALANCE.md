@@ -69,4 +69,25 @@ Change (data only): `dynasty` no longer buys houses (the `will-make` and `will-h
 
 Succession shares: the 64% living-child rate and the larger minor-heir share follow the dating tuning (#241) and the profile's always-partner, always-baby play, not this Pack's rules. A bot that always dates and tries for a baby is a ceiling case; it is kept as is. Heir-generation storylets (`storylets.heirFired`): `inherit-under-12`, `inherit-12-17`, `inherit-18-39`, `inherit-40-plus`, `aftermath-grief`, `aftermath-cash-left`, `aftermath-spouse-share`, `aftermath-sibling-contests`, `aftermath-anniversary`, `minor-guardian-takes-in`, `minor-guardian-review`, `minor-handover-at-18`, `heirloom-history`, `heirloom-attic-find`, `heirloom-appraisal`, `heirloom-family-quarrel`, `will-heir`, `will-make` all fire; `aftermath-family-home` now fires only in the `family-home` script.
 
-Gap for Core (not fixable by data here): a life can own unlimited houses and the estate passes them whole with no cost, so any profile that buys property compounds across generations. A purchase cap on homes or an estate settlement cost would be an engine or Core item change.
+Gap for Core (closed by #379): Core now caps owned houses per item kind (`max_owned`) and an estate pays a settlement cost on succession. The house-buying restore still fails the growth bound, so `dynasty` stays property-free (below).
+
+## Estate settlement cost and house cap (#379)
+
+Core change (pack format 6 to 7): `estate.settlement_cost` is a percent that `generations` declares as the `estate` singleton (`provides.singletons`). On each succession the estate pays that percent of its value (cash, assets and holdings, less the debts the heir takes on), from cash only, capped at the cash left and before the split. The rate is 10%. `max_owned` on the `core-loop` items `house` and `big-house` caps owned houses at 1 (`studio-condo` stays unlimited). The shop greys the row and `purchase()` refuses.
+
+Restoring house buying in `dynasty` fails the bound. With the cap and the settlement cost on, a profile that buys a house or big house whenever it can afford one grows net worth 1.53x from generation 0 to 1 (`estate-cost-2`, 10,000 lives, `--profile dynasty --generations 4 --heir random`, seed 20260101; net worth at death p50 3.57M, 5.46M, 6.73M, 7.81M; growth 1.53x, 1.23x, 1.16x). The bound is about 1.2x, so the restore is reverted. `dynasty` buys no property. `dynasty_homes` (opt-in) buys at most one house and one big house, for the `family-home` script only; its growth was not measured after the cap.
+
+| | before: #364 run (`generations-dyn1-01fe761-20261011T055724Z`, seed 1) | after: `estate-cost-1` (`b91cd5d`, same tree as this PR, seed 20260101) |
+|---|---|---|
+| net worth at death p50, generation 0 / 1 / 2 / 3 (major units) | 2.56M / 2.99M / 3.22M / 3.29M | 2.75M / 2.97M / 3.11M / 3.15M |
+| growth per generation | 1.17x / 1.08x / 1.02x | 1.08x / 1.05x / 1.01x |
+| faults | 0 | 0 |
+| median age at death | 72 | 72 |
+| decision slots (at least 1 / 2 / 3) | 89.9 / 49.4 / 28.3% | 89.9 / 49.5 / 28.4% |
+| never-fired storylets | 124 | 125 (see below) |
+
+The seeds differ, so read shifts of a few percent as noise. The #364 run is the reference: the main-checkout baseline on `c1d14f1` hit the 2-hour artemis timeout (exit 124), so it has no report.
+
+Storylets that fired in the #364 run and are never-fired after this change: `grad-school/ceo-offer` (a 0.3% chance after five years as a business manager) and `gambling/year-at-the-tables` (8,138 fires in the #364 run). Both are never-fired with and without house buying. The all profile still fires them (11,008 and 3 times). Whether main had already lost them in dynasty is unconfirmed. Open item for the next balance pass.
+
+Artemis slugs: `estate-cost-1` (dynasty, no buying, this tree), `estate-cost-2` (dynasty with buying, rejected), `estate-cost-3` (all profiles; `all` excludes `default: false` profiles, so it covers this tree).

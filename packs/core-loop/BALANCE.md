@@ -133,3 +133,11 @@ Reports: v1 `~/life-sim-reports/rebalance-v1/all/report.md` (artemis `rebalance-
 **Pets.** Target: a save holds about 1-2 pets on average. v1 had 2.93 per save (p50 3, p99 8) and about 6.4 acquisitions a life. The four acquisition decisions drop in weight: `stray-dog` 5 -> 2, `adopt-a-pet` 8 -> 3, `found-cat` 9 -> 4, `pet-adoption-senior` 9 -> 5 (mortality and run-off unchanged; the decision slots refill from other storylets). Decision opens per 10,000 lives: `found-cat` 10,772, `stray-dog` 9,377, `adopt-a-pet` 8,792, `pet-adoption-senior` 3,778 (about 3.3 opens a life, down from about 6.4). Pets per save now p50 1, p99 5, max 10 (v1: 3, 8, 12).
 
 Global checks on the same run: decision slots 89.8 / 49.2 / 28.1% (v1 89.8 / 49.3 / 28.3), top decision `dating/ask-out` 2.61%, median death age 72, employment 81.1% (v1 80.3%).
+
+## Estate settlement cost and house cap (#379)
+
+Core change (pack format 6 to 7): `PackBundle.estate` (the `estate` singleton, declared by `generations`) and the item key `max_owned`. `settleEstate` (`sim/succession.ts`) takes the settlement cost from cash before the split: `min(cash, value * rate)`, where value is cash, assets and holdings less the debts to heirs. `house` and `big-house` declare `max_owned: 1`; `quote()` and `purchase()` refuse a purchase past the cap, and the shop greys the row ("You already own the limit of 1").
+
+All profiles (`--profile all`, 10,000 lives, seed 20260101, 0 faults): before `first-child-all-c1d14f1-20261011T153924Z`, after `estate-cost-3`. Median age at death 72 in both. Median net worth at 40 is unchanged for every profile except `spender` (349,982 to 348,854, major units). The never-fired set is identical (47 storylets, the same list). `gambling/year-at-the-tables` fires 11,008 times and `grad-school/ceo-offer` 3 times in both.
+
+The dynasty numbers, including the rejected house-buying restore, are in `packs/generations/BALANCE.md` (#379).

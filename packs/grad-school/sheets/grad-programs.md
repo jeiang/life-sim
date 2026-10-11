@@ -183,7 +183,7 @@
 ## grad-washout
 - trigger: event
 - icon: 🥀
-- chance: 7%
+- chance: 10%
 - tags: education
 - when: grad_enrolled
 - text: The work piles up, the funding thins, and the program stops feeling like a plan.

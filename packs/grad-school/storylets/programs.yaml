@@ -168,7 +168,7 @@
   icon: 🥀
   trigger: event
   tags: [education]
-  chance: 7%
+  chance: 10%
   when: "grad_enrolled"
   text: The work piles up, the funding thins, and the program stops feeling like a plan.
   outcomes:

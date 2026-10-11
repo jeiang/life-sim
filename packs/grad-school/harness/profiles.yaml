@@ -23,5 +23,5 @@ profiles:
 adjust:
   - { profile: studious, ids: ["grad-school/apply-medical-school", "grad-school/apply-law-school", "grad-school/apply-mba", "grad-school/apply-phd"], weight: 0.05 }
   - { profile: random, ids: ["grad-school/drop-out-grad"], weight: 5 }
-  - { profile: random, ids: ["grad-school/take-grad-loan"], weight: 20 }
+  - { profile: random, ids: ["grad-school/take-grad-loan"], weight: 50 }
   - { profile: scholar, ids: ["grad-school/take-grad-loan"], weight: 0.5 }

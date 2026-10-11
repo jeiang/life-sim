@@ -35,10 +35,13 @@ profiles:
       - {}
   stayer:
     default: false
-    description: Never touches an emigration action, so it is the net-worth baseline for the movers
+    description: Never touches an emigration action; otherwise plays like the mover (applies to jobs first, then the random profile), so it is the like-for-like net-worth baseline
     moves: { below: 4 }
     once_per_year: true
+    choice:
+      avoid: ["never mind"]
     rules:
+      - ids: ["*/apply-*"]
       - ids: ["**"]
         except: ["relocation/emigrate-apply", "relocation/move-*"]
 # Emigration is a rare life event, not a pastime: halve the random profile's draws on it (mover and caller are opt-in focused profiles).

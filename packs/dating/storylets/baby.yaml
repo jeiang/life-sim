@@ -35,8 +35,8 @@
   trigger: event
   scope: person
   target: [core-loop/partner, core-loop/spouse]
-  chance: 20%
-  when: "age >= 18 and person.age >= 18 and (player.can_carry or person.can_carry) and quality.dating_pregnant == 0 and person.quality.dating_pregnant == 0"
+  chance: 25%
+  when: "age >= 18 and person.age >= 18 and (player.can_carry or person.can_carry) and quality.dating_pregnant == 0 and person.quality.dating_pregnant == 0 and quality.dating_children < 3"
   text: A late period and a mix-up with the pill leave you with a surprise. There is a pregnancy, and it was not the plan.
   outcomes:
     - weight: 1

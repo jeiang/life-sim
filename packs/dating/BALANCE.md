@@ -112,3 +112,5 @@ Changes: `unplanned-pregnancy` chance rose from 5% to 25%. Surprise pregnancies 
 | decision slots 1 / 2 / 3 | 89.9 / 49.6 / 28.7% | 90 / 49.6 / 28.7% |
 | death age median | 72 | 72 |
 | faults | 0 | 0 |
+
+Separate profile check: Artemis `first-child-romantic-final`, ref `e531e80771e1`, 10,000 lives with `--profile romantic` and seed 20260101, reported persons per save p50 23, p99 31, max 38, and zero faults. Report: `~/Projects/life-sim/reports/first-child-romantic-final-e531e80-20261011T185350Z/report.md`.

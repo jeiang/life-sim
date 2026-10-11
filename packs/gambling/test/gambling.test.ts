@@ -16,6 +16,7 @@ import {
 } from "../../../packages/core/src/index.ts";
 import type { CompiledOutcome } from "../../../packages/core/src/pack.ts";
 import { applyEffects } from "../../../packages/core/src/sim/effects.ts";
+import { runHook } from "../../../packages/core/src/sim/hooks.ts";
 import { evalBool, evalInt } from "../../../packages/core/src/sim/ops.ts";
 import { scopeFor } from "../../../packages/core/src/sim/storylets.ts";
 import { compilePacks } from "../../../packages/pack-tools/src/index.ts";
@@ -391,12 +392,13 @@ describe("habit, addiction and cheating", () => {
     expect(rows).toHaveLength(1);
     return apply(w, rows[0]?.o as Outcome, undefined, G(id));
   };
+  // The year's habit is the age-up hook; a clean year of an addicted player is the event too.
+  const settle = (w: World) => runHook(w, idx, "on_age_up_post");
   const year = (bets: number, extra: Record<string, number | boolean> = {}) =>
-    only(
+    settle(
       life(100000, {
         q: { gambling_bets_year: bets, gambling_heat: 30, ...extra },
       }),
-      "year-at-the-tables",
     );
 
   test("four or more bets in a year build the habit, fewer let it fade", () => {
@@ -406,6 +408,15 @@ describe("habit, addiction and cheating", () => {
     expect(qn(year(0), "gambling_heat")).toBe(10);
     for (const b of [0, 2, 4])
       expect(qn(year(b), "gambling_bets_year")).toBe(0);
+  });
+
+  test("the habit takes no event place unless an addicted player stayed away", () => {
+    expect(q(year(4), "gambling_away")).toBe(false);
+    expect(q(year(0), "gambling_away")).toBe(false);
+    expect(q(year(0, { gambling_addicted: true }), "gambling_away")).toBe(true);
+    expect(q(year(3, { gambling_addicted: true }), "gambling_away")).toBe(
+      false,
+    );
   });
 
   test("addicted: betting again resets recovery and costs happiness; a clean year adds recovery and withdrawal", () => {
@@ -418,13 +429,20 @@ describe("habit, addiction and cheating", () => {
         gambling_heat: 40,
       },
     });
-    const still = only(w0, "year-at-the-tables");
+    const still = settle(w0);
     expect(qn(still, "gambling_recovery")).toBe(0);
+    expect(qn(still, "gambling_heat")).toBe(40);
     expect(happy(still)).toBe(happy(w0) - 3);
     const clean = only(
-      life(100000, {
-        q: { gambling_addicted: true, gambling_recovery: 1, gambling_heat: 40 },
-      }),
+      settle(
+        life(100000, {
+          q: {
+            gambling_addicted: true,
+            gambling_recovery: 1,
+            gambling_heat: 40,
+          },
+        }),
+      ),
       "year-at-the-tables",
     );
     expect(qn(clean, "gambling_recovery")).toBe(2);

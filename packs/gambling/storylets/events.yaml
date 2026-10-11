@@ -6,34 +6,12 @@
   trigger: event
   tags: [gambling]
   chance: 100%
-  when: quality.gambling_bets_year > 0 or quality.gambling_heat > 0 or quality.gambling_addicted
-  text: "The year's betting settles into a habit, or fades."
+  # The rest of the year's habit is the `on_age_up_post` hook of pack.yaml.
+  when: quality.gambling_away
+  text: "A year away from the tables."
   outcomes:
-    # Habit grows from 4 casino bets in a year; lighter betting lets it fade.
-    - weight: 1
-      when: quality.gambling_bets_year >= 4 and not quality.gambling_addicted
-      effects:
-        - quality.gambling_heat += 8 + 2 * quality.gambling_bets_year
-        - quality.gambling_bets_year = 0
-    - weight: 1
-      when: quality.gambling_bets_year >= 1 and quality.gambling_bets_year < 4 and not quality.gambling_addicted
-      effects:
-        - quality.gambling_heat += -5
-        - quality.gambling_bets_year = 0
-    - weight: 1
-      when: quality.gambling_bets_year == 0 and not quality.gambling_addicted
-      effects:
-        - quality.gambling_heat += -20
-    # Addicted and still betting: no recovery, and the habit weighs on you.
-    - weight: 1
-      when: quality.gambling_bets_year >= 1 and quality.gambling_addicted
-      effects:
-        - quality.gambling_recovery = 0
-        - quality.gambling_bets_year = 0
-        - stat.happiness -= 3
     # Addicted and away from the tables for the whole year: withdrawal, but progress.
     - weight: 1
-      when: quality.gambling_bets_year == 0 and quality.gambling_addicted
       effects:
         - quality.gambling_recovery += 1
         - quality.gambling_heat += -10

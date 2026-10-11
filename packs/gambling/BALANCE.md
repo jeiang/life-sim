@@ -1,25 +1,25 @@
 # gambling balance
 
-Tuned with the [harness](../../docs/spec/harness.md): `pnpm harness --lives 10000 --profile all --seed 20260101 --jobs 4`. The `gambler` profile (four voluntary moves a year, all on the casinos and lottery; once addicted it goes to support meetings and work, relapsing one move in five) exists to exercise this Pack. The other profiles reach it only through the lottery, the friend events and, for `random`, the menus.
+Tuned with the [harness](../../docs/spec/harness.md): `pnpm harness --lives 10000 --profile all --seed 20260101 --jobs 4`. Latest run: artemis `~/Projects/life-sim/reports/gambling-tune1-d82e433-20261011T064158Z/` (10,000 lives, seed 20260101, 0 faults), tuning after the v1 run `rebalance-v1-all-ab46a88-20261011T032954Z` (#363). The `gambler` profile (four voluntary moves a year, all on the casinos and lottery; once addicted it goes to support meetings and work, relapsing one move in five) exists to exercise this Pack. The other profiles reach it only through the lottery, the friend events and, for `random`, the menus.
 
 ## Targets and results
 
 | Metric | Target | Result (10,000 lives, seed 20260101, 0 faults) |
 |---|---|---|
 | Faults, including cash below 0 after any gambling action | 0 | 0 |
-| Realised return, roulette | about 95% | 96.4% (theory 95.0%) |
-| Realised return, slots | about 90% | 90.1% (theory 90.0%) |
-| Realised return, horses | 90-95% | 94.0% (theory 93.0%) |
-| Realised return, baccarat / craps | under 100% | 95.2% / 88.9% (random bets mix the 98.9% banker and 85.8% tie, and 94.4% field and 83.3% seven) |
-| Realised return, blackjack / poker | under 100% | 76.2% / 71.0%: the profile hits, stands, folds, calls and raises at random. Best play is 96.4% (blackjack) and 89-99% (poker, smarts 0-100); see below |
-| Realised return, lottery | about 50% in theory | 20.5%: the 1-in-10,000,000 $5M jackpot (25 points of the 50) did not fall in 47,869 tickets. Without it theory is 25% |
-| Lives that staked anything (lottery and friend events included) | most lives, over 40% for the passive profile | all 81.6%; `idle` 46.1% (only events), `random` 96.9% |
-| Addiction | only frequent bettors | `gambler` 97.6%, `random`, `studious`, `spender`, `idle` 0%; 23.9% of all gamblers |
-| Recovery | most addicted lives end it | 79.5% of addicted lives recovered |
-| Years lived addicted | a minority | 3.4% of the years of gamblers |
-| Bans (suspected cheating) | rare | 0.6% of lives |
-| VIP room | gamblers who win big or lose big | 56.1% of lives (mostly `gambler`, then wealthy lives that gambled) |
-| Decisions | unchanged: 90 / 50 / 30% | 90.0 / 49.9 / 29.5% |
+| Realised return, roulette | about 95% | 94.1% (theory 95.0%) |
+| Realised return, slots | about 90% | 90.0% (theory 90.0%) |
+| Realised return, horses | 90-95% | 91.8% (theory 93.0%; 97% in the v1 run, noise: the sample SD of a 20-to-1 mix over 25,000 bets is about 5 points) |
+| Realised return, baccarat / craps | under 100% | 92.8% / 87.5% (random bets mix the 98.9% banker and 85.8% tie, and 94.4% field and 83.3% seven) |
+| Realised return, blackjack / poker | under 100% | 75.4% / 69.4%: the profile hits, stands, folds, calls and raises at random. Best play is 96.4% (blackjack) and 89-99% (poker, smarts 0-100); see below |
+| Realised return, lottery | about 50% in theory | 24.8%: the 1-in-10,000,000 $5M jackpot (25 points of the 50) did not fall in 25,995 tickets. Without it theory is 25% |
+| Lives that staked anything (lottery and friend events included) | most lives, over 40% for the passive profile | all 82.4%; `idle` 42.2% (only events), `random` 95.3% |
+| Addiction | only frequent bettors | `gambler` 96.8%, every other profile 0%; 14.7% of all gamblers |
+| Recovery | most addicted lives end it | 68.7% of addicted lives recovered (78.5% in v1: the habit now settles before the year's events, so a relapse one move in five shows up a year sooner) |
+| Years lived addicted | a minority | 3.3% of the years of gamblers |
+| Bans (suspected cheating) | rare | 0.4% of lives |
+| VIP room | gamblers who win big or lose big | 53.8% of lives (mostly `gambler`, then wealthy lives that gambled) |
+| Decisions | unchanged: 90 / 50 / 30% | 89.9 / 49.5 / 28.7% (`gambler` 90.4 / 49.3 / 28.0%; v1: 89.7 / 47.9 / 25.4%) |
 | Median age at death | 72-82 | 72 (p10 49, p90 93) |
 | Never-fired storylets | none | none |
 
@@ -46,6 +46,8 @@ The issue asked for a jackpot of about 1 in 1,000,000 for $5M+ and a 50% return.
 Repeatable (default curve): payouts and stakes never scale, only happiness gains do. Two-step games put their positive happiness in the first step (scaled) and only harms in the second.
 
 ## Habit and addiction
+
+The yearly habit update is the `on_age_up_post` hook of `pack.yaml`, not an event. As a 100% chance event it took one of the six yearly event places (`year.cap`) from every gambler, and a gambler's chance events (habit, support, friend events) plus three decision slots overflowed the cap in 6% of years, which cut decisions: `gambler` reached 3 decisions in 25.4% of years against 28.3% overall (v1 report). Only a clean year of an addicted player (withdrawal, one step of progress) is still an event, for its journal line.
 
 `gambling_heat` rises by 8 + 2 x bets in a year with four or more casino bets, falls by 5 with one to three and by 20 with none. Above 20 each year can tip into addiction with a chance of (heat - 20) x 0.4%. Addicted: -3 happiness in years still betting, -4 in a year away (progress +1), a 25% yearly urge (resist -2 happiness; give in loses up to $500 and resets progress). Three progress ends it; a free support meeting (once a year) adds one.
 

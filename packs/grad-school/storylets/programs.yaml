@@ -34,6 +34,7 @@
     - weight: 1
       text: You finish the rotations and the faculty signs off on your degree.
       effects:
+        - unschedule(grad-school/grad-tuition-due)
         - "take_loan(grad-school/grad-loan, quality.grad_debt)"
         - "money -= quality.grad_debt"
         - "quality.grad_degree_medical = true"
@@ -57,6 +58,7 @@
     - weight: 1
       text: You turn in your last brief and the registrar confirms your degree.
       effects:
+        - unschedule(grad-school/grad-tuition-due)
         - "take_loan(grad-school/grad-loan, quality.grad_debt)"
         - "money -= quality.grad_debt"
         - "quality.grad_degree_law = true"
@@ -80,6 +82,7 @@
     - weight: 1
       text: The capstone goes well enough. The degree is official.
       effects:
+        - unschedule(grad-school/grad-tuition-due)
         - "take_loan(grad-school/grad-loan, quality.grad_debt)"
         - "money -= quality.grad_debt"
         - "quality.grad_degree_mba = true"
@@ -103,6 +106,7 @@
     - weight: 1
       text: The committee signs the last form and the degree is yours.
       effects:
+        - unschedule(grad-school/grad-tuition-due)
         - "take_loan(grad-school/grad-loan, quality.grad_debt)"
         - "money -= quality.grad_debt"
         - "quality.grad_degree_phd = true"
@@ -146,6 +150,7 @@
     - weight: 1
       text: You leave without a degree. The loan paperwork arrives a few weeks later.
       effects:
+        - unschedule(grad-school/grad-tuition-due)
         - "end_group(school)"
         - unschedule(grad-school/grad-year-review)
         - unschedule(grad-school/grad-scholarship-review)
@@ -175,6 +180,7 @@
     - weight: 1
       text: You pack your desk on a Friday and do not come back. The loan paperwork arrives a few weeks later.
       effects:
+        - unschedule(grad-school/grad-tuition-due)
         - "end_group(school)"
         - unschedule(grad-school/grad-year-review)
         - unschedule(grad-school/grad-scholarship-review)

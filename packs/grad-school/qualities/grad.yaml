@@ -9,6 +9,8 @@
 - { id: grad_parents, type: int, min: 0, max: 100, default: 0 }
 # True while the player's share of tuition is borrowed instead of paid in cash.
 - { id: grad_loan, type: flag, default: false }
+# True once this year's tuition is answered (paid, borrowed); the yearly fallback in the hook skips it.
+- { id: grad_funded, type: flag, default: false }
 # Borrowed tuition of the current program in cents, converted into a grad-loan when the program ends.
 - { id: grad_debt, type: int, min: 0, default: 0, format: money }
 # Grades: set at enrolment from smarts, moved by the yearly review and by studying. Kept after the program ends (residency match).
@@ -28,3 +30,5 @@
 - { id: grad_judge_offered, type: flag, default: false }
 # Rejected applications (any school); the schools stop looking at a player after two.
 - { id: grad_rejections, type: int, min: 0, max: 9, default: 0 }
+# True once the player has reapplied for a scholarship this program; reset on admission.
+- { id: grad_reapplied, type: flag, default: false }

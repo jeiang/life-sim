@@ -79,7 +79,24 @@ function only(
   return copy;
 }
 
-/** Open an event storylet now and answer any open choice with `pick`. */
+/** Answer the open choice with `pick`, or the first available choice after it. */
+function answer(w: World, b: readonly PackBundle[], pick: number) {
+  const p = w.pending;
+  const n = p
+    ? (indexBundles(b).storylets.get(p.storyletId)?.choices.length ?? 0)
+    : 0;
+  for (let i = pick; ; i++) {
+    try {
+      return choose(w, b, i);
+    } catch (e) {
+      const unavailable =
+        e instanceof RangeError && /not available/.test(e.message);
+      if (!unavailable || i + 1 >= n) throw e;
+    }
+  }
+}
+
+/** Open an event storylet now and answer any open choice, starting from `pick`. */
 function fire(
   w: World,
   id: string,
@@ -87,14 +104,16 @@ function fire(
   pick = 0,
 ) {
   let r = startStorylet(w, b, id).world;
-  while (r.pending) r = choose(r, b, pick).world;
+  while (r.pending) r = answer(r, b, pick).world;
   return r;
 }
 
-/** Age up one year, answering any open choice with the first option. */
-function year(w: World, b: readonly PackBundle[] = bundles): World {
-  let r = ageUp(w, b).world;
-  while (r.pending) r = choose(r, b, 0).world;
+/** Age up one year. The age-up refuses to run while a choice is open, so answer those first. */
+function year(w: World, b: readonly PackBundle[] = bundles, pick = 0): World {
+  let r = w;
+  while (r.pending) r = answer(r, b, pick).world;
+  r = ageUp(r, b).world;
+  while (r.pending) r = answer(r, b, pick).world;
   return r;
 }
 
@@ -260,7 +279,7 @@ describe("enrolment", () => {
       // weights 0 everywhere except outcome 0; force the low-smarts admit
       let w = at(30, { [id]: true }, { smarts: 10 });
       w = runAction(w, b, G(apply)).world;
-      while (w.pending) w = choose(w, b, 0).world;
+      while (w.pending) w = answer(w, b, 0).world;
       expect(q(w, "grad_program")).toBe(program);
       expect(q(w, "grad_tuition")).toBe(tuition);
       expect(held(w, G(occ))).toBe(true);
@@ -275,11 +294,7 @@ describe("tuition and funding", () => {
       { ...ENROLLED(1, 3_000_000), grad_degree_medical: false },
       { money: 20_000_000 },
     );
-    const started = updatePerson(
-      startStorylet(w, bundles, G("admit-medical-school")).world,
-      w.playerId,
-      (p) => p,
-    );
+    const started = fire(w, G("admit-medical-school"));
     expect(held(started, G("grad-medical-school"))).toBe(true);
     const before = me(started).money;
     const after = year(started);
@@ -316,45 +331,85 @@ describe("tuition and funding", () => {
       qualities: { ...p.qualities, grad_loan: true },
     }));
     const a = year(base);
-    const b = year(loan);
+    const b = year(loan, bundles, 1);
     expect(q(a, "grad_debt")).toBe(0);
     expect(q(b, "grad_debt")).toBe(2_400_000);
-    expect(me(b).money - me(a).money).toBe(2_400_000);
-    expect(q(year(b), "grad_debt")).toBe(4_800_000);
+    // Other yearly money moves are not tuition, so the saved cash is a floor of the tuition amount.
+    expect(me(b).money - me(a).money).toBeGreaterThanOrEqual(2_400_000);
+    expect(q(year(b, bundles, 1), "grad_debt")).toBe(4_800_000);
   });
 
   test("a player who cannot cover the year in cash is moved onto the loan", () => {
-    let w = fire(at(30, { ...BACH }, { money: 100 }), G("admit-law-school"));
+    // Pay was taken at admission; the cash then falls short with no new answer, so the hook falls back.
+    let w = fire(
+      at(30, { ...BACH }, { money: 100_000_000 }),
+      G("admit-law-school"),
+    );
+    w = updatePerson(w, w.playerId, (p) => ({
+      ...p,
+      money: 100,
+      qualities: { ...p.qualities, grad_funded: false },
+    }));
     w = year(w);
     expect(q(w, "grad_loan")).toBe(true);
     expect(q(w, "grad_debt")).toBe(2_400_000);
   });
 
   test("the PhD pays a stipend and has no tuition", () => {
+    const start = startStorylet(
+      at(30, { ...BACH }, { money: 1_000_000 }),
+      bundles,
+      G("admit-phd"),
+    ).world;
+    expect(start.pending).toBeNull();
     let w = fire(at(30, { ...BACH }, { money: 1_000_000 }), G("admit-phd"));
     expect(q(w, "grad_tuition")).toBe(0);
     const cash = me(w).money;
     w = year(w);
     expect(me(w).money).toBeGreaterThan(cash);
     expect(q(w, "grad_debt")).toBe(0);
-    expect(row(w, "occupation/education", G("take-grad-loan"))?.locked).toBe(
-      true,
-    );
   });
 
-  test("cash and loan actions switch the mix", () => {
-    let w = fire(at(30, { ...BACH }), G("admit-mba"));
-    expect(row(w, "occupation/education", G("take-grad-loan"))?.locked).toBe(
-      false,
-    );
-    w = runAction(w, bundles, G("take-grad-loan")).world;
-    expect(q(w, "grad_loan")).toBe(true);
-    expect(row(w, "occupation/education", G("pay-tuition-cash"))?.locked).toBe(
-      false,
-    );
-    w = year(w);
-    w = runAction(w, bundles, G("pay-tuition-cash")).world;
-    expect(q(w, "grad_loan")).toBe(false);
+  test("the tuition due is answered by borrowing or paying from savings", () => {
+    const start = startStorylet(
+      at(30, { ...BACH }),
+      bundles,
+      G("admit-mba"),
+    ).world;
+    expect(start.pending?.storyletId).toBe(G("grad-tuition-due"));
+    const borrowed = choose(start, bundles, 1).world;
+    expect(q(borrowed, "grad_loan")).toBe(true);
+    expect(q(borrowed, "grad_funded")).toBe(true);
+    const paid = choose(start, bundles, 0).world;
+    expect(q(paid, "grad_loan")).toBe(false);
+    expect(q(paid, "grad_funded")).toBe(true);
+  });
+
+  test("pay from savings is greyed out when the cash does not cover the tuition due", () => {
+    const start = startStorylet(
+      at(30, { ...BACH }, { money: 100 }),
+      bundles,
+      G("admit-mba"),
+    ).world;
+    expect(start.pending?.storyletId).toBe(G("grad-tuition-due"));
+    expect(() => choose(start, bundles, 0)).toThrow(RangeError);
+    expect(q(choose(start, bundles, 1).world, "grad_loan")).toBe(true);
+  });
+
+  test("a scholarship can be applied for once per program", () => {
+    let w = startStorylet(at(30, { ...BACH }), bundles, G("admit-mba")).world;
+    w = updatePerson(w, w.playerId, (p) => ({
+      ...p,
+      qualities: { ...p.qualities, grad_scholarship: 0 },
+    }));
+    w = choose(w, bundles, 2).world;
+    expect(q(w, "grad_reapplied")).toBe(true);
+    w = updatePerson(w, w.playerId, (p) => ({
+      ...p,
+      qualities: { ...p.qualities, grad_scholarship: 0 },
+    }));
+    expect(w.pending?.storyletId).toBe(G("grad-tuition-due"));
+    expect(() => choose(w, bundles, 2)).toThrow(RangeError);
   });
 
   test("parents' answer follows closeness times family wealth", () => {
@@ -731,7 +786,7 @@ describe("careers", () => {
     ).toBe(true);
     const mgr = apply("apply-business-manager", { grad_degree_mba: true });
     let w = mgr.w;
-    while (w.pending) w = choose(w, bundles, 0).world;
+    while (w.pending) w = answer(w, bundles, 0).world;
     expect(
       row(
         at(40, { ...BACH, grad_degree_mba: true }),
@@ -922,7 +977,7 @@ describe("determinism", () => {
         const r = row(w, "occupation/education", G(id));
         if (r && !r.locked && !w.pending)
           w = runAction(w, bundles, G(id)).world;
-        while (w.pending) w = choose(w, bundles, 0).world;
+        while (w.pending) w = answer(w, bundles, 0).world;
       }
       w = year(w);
     }

@@ -4,6 +4,7 @@
     "includes": [
       "**",
       "!**/pnpm-lock.yaml",
+      "!**/ids.lock.json",
       "!**/node_modules",
       "!**/dist",
       "!.worktrees"

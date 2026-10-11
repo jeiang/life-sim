@@ -1,0 +1,10 @@
+# Forced script (docs/spec/harness.md#forced-outcomes): the founder has a spouse and children and (with the dynasty_homes profile) buys houses, so the heir inherits one and `aftermath-family-home` fires. The plain dynasty profile does not buy houses: it would hoard them and inflate every later generation's net worth (#364).
+description: A founder who owns houses leaves one to an heir
+profile: dynasty_homes
+generations: 2
+heir: random
+steps:
+  - roll: outcome/dating/ask-out
+    value: 0
+  - roll: outcome/dating/try-for-a-baby
+    value: 1

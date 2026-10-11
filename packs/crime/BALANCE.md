@@ -58,3 +58,15 @@ Notes:
 - The all-profile aggregate (12% property, 12% murder, 11.5% sentenced) is not a population rate: the relocation Pack's `stayer` profile draws uniformly over every action and is not down-weighted for crime (96% of its lives murder, 92% are sentenced), and `crime` cannot adjust it from this Pack without breaking a crime-only Pack load. Read the `random` row. Flagged on #237 for the relocation Pack.
 - Serial killing: murder is gated by `quality.crime_killer`, once per life. Before the gate `criminal` lives had 98.8% with 2 or more murders (`max_per_life` counted per bound person).
 - GED: `juvie-study-ged` (juvenile detention, ages 16 and 17, no diploma) is reached by 29% of `criminal` offenders and earns the diploma for 12%. High school continues in juvenile detention (decision D4), so adults arrive in prison with a diploma and no adult GED storylet exists (`prison-study-ged` was removed in #351: core-loop has no high-school dropout path to serve).
+
+## #385: recapture after escape
+
+3,000 criminal lives, seed 20260101, on Artemis at commit 254e2c0 (`crime-recapture-final`), 0 faults.
+
+| Measure | Before (#385) | After |
+|---|---:|---:|
+| Escapees recaptured | 79.2% | 86.0% |
+| Sentenced lives that broke out | — | 2.9% |
+| Sentenced lives granted parole | — | 94.8% |
+| Executed of offenders | — | 1.3% |
+

@@ -2,9 +2,9 @@
 
 Part of the [Pack format](index.md). Core: `packages/core/src/save/`; ADR [0003](../../adr/0003-saves-derived-rng-stable-ids.md).
 
-## No compatibility before the first release tag
+## Compatibility starts at `v1`
 
-Save schema version 6 was a one-time reset. **No save compatibility is promised before the first `v<N>` release tag.** A save from an older schema is rejected on load with a clear message (the web app lists it among the lives that failed to load, and an import shows the same text); a save from a newer schema is rejected as coming from a newer build. There is no upgrade chain. From the first `v<N>` tag, a schema change must ship with a migration again.
+Save schema version 6 was a one-time reset. **Saves are compatible from tag `v1` onward** (schema version 6 is the `v1` baseline); no compatibility was promised before it. A save from an older schema is rejected on load with a clear message (the web app lists it among the lives that failed to load, and an import shows the same text); a save from a newer schema is rejected as coming from a newer build. There is no upgrade chain. From `v1`, a schema change must ship with a migration again.
 
 ## What a save records
 
@@ -31,4 +31,4 @@ remove:
 - A rename's target must exist, and neither a renamed nor a removed id may still exist.
 - A fallback is a full or short content id, or a declared `stat.`/`quality.`/`state.` name.
 - On load, every installed migration whose id is not in the world's `appliedMigrations` is applied once (persons, relationships, the open storylet, storylet log, repeatable-action counters, the obituary), then its id is recorded. Applying is pure and idempotent.
-- A shipped id that disappears needs an entry in some migration file or the build fails. Shipped means listed in `ids.lock.json` as committed at the last `v<N>` release tag; the file is written only by the tag workflow, never edited in a pull request, and the check is skipped when no tag exists yet.
+- A shipped id that disappears needs an entry in some migration file or the build fails. Shipped means listed in `ids.lock.json` as committed at the last `v<N>` release tag (now `v1`); the file is written only by the tag workflow, never edited in a pull request, and the check is skipped when no tag exists.

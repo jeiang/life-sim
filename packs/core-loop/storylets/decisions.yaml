@@ -289,7 +289,7 @@
 - id: adopt-a-pet
   icon: 🐕
   trigger: event
-  weight: 8
+  weight: 3
   when: age >= 20 and age <= 75
   cooldown: 6
   text: "A rescue centre has a pet that has clearly chosen {player.first_name}."

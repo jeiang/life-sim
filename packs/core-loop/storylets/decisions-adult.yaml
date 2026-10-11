@@ -360,7 +360,7 @@
 - id: found-cat
   icon: 🐈
   trigger: event
-  weight: 9
+  weight: 4
   when: age >= 20 and age <= 80
   cooldown: 10
   text: "A scruffy cat keeps turning up on the doorstep."

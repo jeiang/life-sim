@@ -322,7 +322,7 @@
 - id: pet-adoption-senior
   icon: 🐕
   trigger: event
-  weight: 9
+  weight: 5
   when: age >= 60 and age <= 90
   cooldown: 12
   text: "A rescue centre has a quiet, older dog that needs a home."

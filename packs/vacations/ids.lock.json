@@ -1,0 +1,13 @@
+{
+  "pack": "vacations",
+  "ids": [
+    "quality.vac_family_trip_age",
+    "quality.vac_tier",
+    "vacations/cruise-voyage",
+    "vacations/family-trip",
+    "vacations/family-trip-bond",
+    "vacations/go-on-cruise",
+    "vacations/vacation-destination",
+    "vacations/vacation-tier"
+  ]
+}

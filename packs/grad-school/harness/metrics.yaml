@@ -25,6 +25,8 @@ measures:
   grad_phd: { fires: { storylet: grad-school/graduate-phd-program } }
   dropouts: { fires: { storylet: grad-school/drop-out-grad } }
   washouts: { fires: { storylet: grad-school/grad-washout } }
+  take_grad_loan: { fires: { storylet: grad-school/take-grad-loan } }
+  tuition_enrolled: { when: "enrolled_program > 0 and enrolled_program < 4" }
   sittings_medical: { fires: { storylet: grad-school/sit-medical-boards } }
   sittings_bar: { fires: { storylet: grad-school/sit-bar-exam } }
   funding_gaps: { fires: { storylet: grad-school/grad-funding-gap } }
@@ -201,10 +203,16 @@ stats:
     by: profile
   loan_used:
     kind: share
-    label: borrowed tuition
+    label: tuition-paying entrants who borrowed
     when: loan_used
-    of: any_enrolled
+    of: tuition_enrolled
     by: profile
+  loan_choices:
+    kind: sum
+    label: tuition loan choices
+    value: take_grad_loan
+    by: profile
+    decimals: 0
   missed:
     kind: mean
     label: missed-payment events per grad life (all loans)
@@ -354,6 +362,7 @@ blocks:
       - step_holders
       - parents_paid
       - loan_used
+      - loan_choices
       - missed
       - dishonesty
   - stats:

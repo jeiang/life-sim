@@ -108,12 +108,27 @@ function fire(
   return r;
 }
 
+/** Keep yearly progression tests deterministic when testing other grad-school mechanics. */
+function withoutGradWashout(b: readonly PackBundle[]): PackBundle[] {
+  const copy = structuredClone(b) as PackBundle[];
+  const washout = copy
+    .flatMap((pack) => pack.storylets)
+    .find((s) => s.id === G("grad-washout"));
+  if (washout) {
+    // This copy is only used by tests, so the compiled, read-only chance may be overridden safely.
+    const mutable = washout as { chance: unknown };
+    mutable.chance = 0;
+  }
+  return copy;
+}
+
 /** Age up one year. The age-up refuses to run while a choice is open, so answer those first. */
 function year(w: World, b: readonly PackBundle[] = bundles, pick = 0): World {
+  const stable = withoutGradWashout(b);
   let r = w;
-  while (r.pending) r = answer(r, b, pick).world;
-  r = ageUp(r, b).world;
-  while (r.pending) r = answer(r, b, pick).world;
+  while (r.pending) r = answer(r, stable, pick).world;
+  r = ageUp(r, stable).world;
+  while (r.pending) r = answer(r, stable, pick).world;
   return r;
 }
 

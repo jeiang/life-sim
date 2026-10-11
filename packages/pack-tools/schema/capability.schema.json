@@ -184,6 +184,10 @@
                 "type": "string"
               },
               {
+                "const": "estate",
+                "type": "string"
+              },
+              {
                 "const": "repeat",
                 "type": "string"
               },

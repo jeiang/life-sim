@@ -1,6 +1,9 @@
 # yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
 id: generations
 namespace: gen
+# Estate settlement cost: a share of the net estate, paid from the cash left on succession.
+estate:
+  settlement_cost: 10%
 # The heir takes the family's state forward: the generation counter, the minor-heir flag and the heirlooms.
 # Heirlooms are not holdings: each pass copies the dead player's rows and adds the generation gain to the held ones.
 hooks:

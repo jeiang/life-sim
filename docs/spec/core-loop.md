@@ -79,6 +79,7 @@ About 10 item kinds, bought through the purchase dialog:
 
 - Asset values change each year at settlement (vehicles depreciate, homes appreciate slightly).
 - Selling an asset returns its current value.
+- **Ownership limit**: an item kind may declare `max_owned` (a whole number of at least 1). Core counts the player's owned items of the kind; at the limit the shop greys the row out and a purchase is refused. The Core-loop house and big house have `max_owned: 1`, so a player owns at most one of each (a house and a big house together is allowed); the studio condo has no limit. Market kinds cannot declare it.
 
 ## Loans
 
@@ -160,11 +161,12 @@ The dead player's life continues as one of their living children, in the same wo
 
 ### The estate
 
-Settled in `succeed`, before the heir takes over. No estate tax (a Pack may add one later, with its own settlement line).
+Settled in `succeed`, before the heir takes over. The Core takes no estate tax; a Pack sets a settlement cost with the `estate` block (see the bullet below).
 
 - **Unsecured debts** (loans that secure no asset the dead player owns) are paid from the cash, in loan id order; a shortfall is written off.
 - **Secured loans** (a mortgage, a car loan) travel with their asset to an adult (18+) heir, keeping their balance and missed payments. For a minor heir the asset is sold at its value instead: the loan is repaid from the proceeds, a surplus joins the cash, a shortfall is written off.
 - **Other assets and investment holdings** pass whole to the heir, with no forced sale and whatever the will says; an asset keeps its age (`asset.years`) and a holding its start (`holding_years`), and a holding of a kind the heir already has merges with it. The dead player keeps nothing.
+- **Settlement cost** (the `estate` block, [manifest](pack-format/manifest.md); the `generations` Pack sets 10%): after the debts, a percent of the estate's value (cash, assets and holdings, less the loans that pass to the heir) comes out of the cash, capped at what is left. It is journaled, is never a forced sale, and is paid before the will divides the cash. No `estate` block means no cost.
 - **Cash** left after debts is divided by the **will** (`set_will` / `will_heir`, [state](pack-format/state.md#the-will)): leave all to one named person (`heir`), split evenly among the children (`even`), all to the living spouse (`spouse`) or to charity (`charity`, the cash goes to nobody). With no will, or one that cannot be carried out (the named person is dead, no living spouse to leave it to), the no-will rule applies: a living spouse gets half and the children split the rest evenly; with no living spouse the children get it all. An uneven division gives the remainder to the succeeding heir. The spouse is a living person the dead player has a `spouse` role toward; their share is added to their own money (NPC money, #131).
 - **A minor heir's money and assets sit in trust** under the guardian rules (Household costs, above). An heir under 18 with no living parent goes to live with a guardian in `succeed` itself (not at the next age-up): the journal names the guardian (chosen from kin as above, "a guardian" when none is left) and says the assets are held in trust; an orphan always gets one. While in trust nothing can be bought, and no living cost is charged. At 18 the next age-up releases the trust: the heir is on their own with their money and assets ("your guardian hands over your assets"). A minor heir whose other parent is alive stays with that parent, as any minor does. The guardian is chosen from kin as above.
 

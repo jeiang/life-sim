@@ -7,6 +7,8 @@ provides:
     - gen_minor_heir
   state:
     - gen_generation
+  singletons:
+    - estate
 requires:
   - core-loop/stats
   - core-loop/family

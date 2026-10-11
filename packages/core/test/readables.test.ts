@@ -56,10 +56,10 @@ function open(w: World, b: readonly PackBundle[], id: string): boolean {
 }
 
 describe("readables: compile", () => {
-  test("bundles carry sorted readables and the contribution list, format 6", () => {
-    expect(PACK_BUNDLE_FORMAT).toBe(6);
+  test("bundles carry sorted readables and the contribution list, format 7", () => {
+    expect(PACK_BUNDLE_FORMAT).toBe(7);
     const b = build();
-    expect(b.find((x) => x.id === "base")?.format).toBe(6);
+    expect(b.find((x) => x.id === "base")?.format).toBe(7);
     expect(ids(b, "base")).toEqual([
       "echo",
       "favour_kinds",

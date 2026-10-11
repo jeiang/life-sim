@@ -408,6 +408,19 @@
         }
       }
     },
+    "estate": {
+      "additionalProperties": false,
+      "title": "Estate settlement cost on succession; only one Pack may declare it",
+      "type": "object",
+      "required": ["settlement_cost"],
+      "properties": {
+        "settlement_cost": {
+          "pattern": "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$",
+          "description": "Share of the net estate paid from cash on succession, as a percent literal",
+          "type": "string"
+        }
+      }
+    },
     "hooks": {
       "additionalProperties": false,
       "title": "Lifecycle hooks (docs/spec/pack-format/hooks.md)",

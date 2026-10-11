@@ -260,6 +260,7 @@ export const SINGLETONS = [
   "family",
   "npc_careers",
   "living",
+  "estate",
   "repeat",
   "currency",
   "exclusivity",
@@ -506,6 +507,18 @@ export const ManifestSchema = obj(
           ),
         },
         "Living costs",
+      ),
+    ),
+    estate: Type.Optional(
+      obj(
+        {
+          settlement_cost: Type.String({
+            pattern: "^(100|[0-9]{1,2})(\\.[0-9]{1,2})?%$",
+            description:
+              "Share of the net estate paid from cash on succession, as a percent literal",
+          }),
+        },
+        "Estate settlement cost on succession; only one Pack may declare it",
       ),
     ),
     hooks: Type.Optional(
@@ -844,6 +857,13 @@ export const ItemSchema = obj(
     value: Type.Optional(Src),
     requires: Type.Optional(Src),
     loan: Type.Optional(Ref),
+    max_owned: Type.Optional(
+      Type.Integer({
+        minimum: 1,
+        description:
+          "Most the player may own at once of this kind; buying at the limit is refused and the shop greys it out",
+      }),
+    ),
     market: Type.Optional(MarketSchema),
   },
   "Item kind. A kind with `market` has no `price`, `value` or `loan`; any other has `price` and `value`",

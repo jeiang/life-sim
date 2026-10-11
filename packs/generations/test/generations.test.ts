@@ -228,9 +228,8 @@ describe("the will", () => {
   test("the no-will rule: a spouse gets half, the children split the rest (core estate)", () => {
     const f = family({ spouse: true, cash: 100000 });
     const w = inherit(f);
-    expect(getPerson(w, f.spouse as PersonId).money).toBeGreaterThanOrEqual(
-      50000,
-    );
+    // The 10% settlement cost comes off the cash first: 90000 left, half to the spouse.
+    expect(getPerson(w, f.spouse as PersonId).money).toBe(45000);
     expect(q(w, "gen_will_kind")).toBe(0);
     expect(q(w, "gen_will_kind", f.dead)).toBe(0);
   });

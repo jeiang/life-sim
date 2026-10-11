@@ -13,8 +13,8 @@ profiles:
       - ids: [investing/ask-for-tip, investing/read-the-news, investing/read-investing-book]
       - ids: ["*/apply-*"]
   tipstacker:
-    description: "Asks the smartest relative or friend each year and trades on the tip, the best single source rather than every source. Approximates the majority rule (decision 4, G2): the harness cannot compare two tips. Taking two or three tips a year at a quarter of cash each put it 14% to 44% ahead of `investor` on exposure alone (#366), and 5% stakes put it 18% to 54% behind"
-    moves: 4
+    description: "Takes the two best tips each year: the smartest relative or friend first, then the book (the news only if one of those is not there), and trades on both. Approximates the majority rule (decision 4, G2): the harness cannot compare two tips, so it takes each one. Two moves, like `investor`, so it does not also look for work (#366)"
+    moves: 2
     once_per_year: true
     choice:
       prefer: ["put in a quarter*", "sell*", "back it*", "walk away"]
@@ -23,4 +23,6 @@ profiles:
       - ids: [investing/ask-for-tip]
         pick: max
         by: person.stat.smarts
+      - ids: [investing/read-investing-book]
+      - ids: [investing/read-the-news]
       - ids: ["*/apply-*"]

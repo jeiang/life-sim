@@ -431,7 +431,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/total-market, money * 23 / 100)
+  - effect: trade(investing/total-market, age < 40 ? money * 23 / 100 : money * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -449,7 +449,7 @@
 - when: units(investing/total-market) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/total-market, 0 - holding_value(investing/total-market) * 23 / 100)
+  - effect: trade(investing/total-market, age < 40 ? 0 - holding_value(investing/total-market) * 23 / 100 : 0 - holding_value(investing/total-market) * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -473,7 +473,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/world-index, money * 23 / 100)
+  - effect: trade(investing/world-index, age < 40 ? money * 23 / 100 : money * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -491,7 +491,7 @@
 - when: units(investing/world-index) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/world-index, 0 - holding_value(investing/world-index) * 23 / 100)
+  - effect: trade(investing/world-index, age < 40 ? 0 - holding_value(investing/world-index) * 23 / 100 : 0 - holding_value(investing/world-index) * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -515,7 +515,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/income-bond-fund, money * 23 / 100)
+  - effect: trade(investing/income-bond-fund, age < 40 ? money * 23 / 100 : money * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -533,7 +533,7 @@
 - when: units(investing/income-bond-fund) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/income-bond-fund, 0 - holding_value(investing/income-bond-fund) * 23 / 100)
+  - effect: trade(investing/income-bond-fund, age < 40 ? 0 - holding_value(investing/income-bond-fund) * 23 / 100 : 0 - holding_value(investing/income-bond-fund) * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -557,7 +557,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/corporate-bond-fund, money * 23 / 100)
+  - effect: trade(investing/corporate-bond-fund, age < 40 ? money * 23 / 100 : money * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -575,7 +575,7 @@
 - when: units(investing/corporate-bond-fund) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/corporate-bond-fund, 0 - holding_value(investing/corporate-bond-fund) * 23 / 100)
+  - effect: trade(investing/corporate-bond-fund, age < 40 ? 0 - holding_value(investing/corporate-bond-fund) * 23 / 100 : 0 - holding_value(investing/corporate-bond-fund) * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -599,7 +599,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/acme-robotics, money * 23 / 100)
+  - effect: trade(investing/acme-robotics, age < 40 ? money * 23 / 100 : money * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -617,7 +617,7 @@
 - when: units(investing/acme-robotics) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/acme-robotics, 0 - holding_value(investing/acme-robotics) * 23 / 100)
+  - effect: trade(investing/acme-robotics, age < 40 ? 0 - holding_value(investing/acme-robotics) * 23 / 100 : 0 - holding_value(investing/acme-robotics) * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -641,7 +641,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/northwind-foods, money * 23 / 100)
+  - effect: trade(investing/northwind-foods, age < 40 ? money * 23 / 100 : money * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -659,7 +659,7 @@
 - when: units(investing/northwind-foods) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/northwind-foods, 0 - holding_value(investing/northwind-foods) * 23 / 100)
+  - effect: trade(investing/northwind-foods, age < 40 ? 0 - holding_value(investing/northwind-foods) * 23 / 100 : 0 - holding_value(investing/northwind-foods) * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -683,7 +683,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/lumen-energy, money * 23 / 100)
+  - effect: trade(investing/lumen-energy, age < 40 ? money * 23 / 100 : money * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -701,7 +701,7 @@
 - when: units(investing/lumen-energy) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/lumen-energy, 0 - holding_value(investing/lumen-energy) * 23 / 100)
+  - effect: trade(investing/lumen-energy, age < 40 ? 0 - holding_value(investing/lumen-energy) * 23 / 100 : 0 - holding_value(investing/lumen-energy) * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -725,7 +725,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/quark-coin, money * 23 / 100)
+  - effect: trade(investing/quark-coin, age < 40 ? money * 23 / 100 : money * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -743,7 +743,7 @@
 - when: units(investing/quark-coin) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/quark-coin, 0 - holding_value(investing/quark-coin) * 23 / 100)
+  - effect: trade(investing/quark-coin, age < 40 ? 0 - holding_value(investing/quark-coin) * 23 / 100 : 0 - holding_value(investing/quark-coin) * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -767,7 +767,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/pinecrest-mining, money * 23 / 100)
+  - effect: trade(investing/pinecrest-mining, age < 40 ? money * 23 / 100 : money * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -785,7 +785,7 @@
 - when: units(investing/pinecrest-mining) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/pinecrest-mining, 0 - holding_value(investing/pinecrest-mining) * 23 / 100)
+  - effect: trade(investing/pinecrest-mining, age < 40 ? 0 - holding_value(investing/pinecrest-mining) * 23 / 100 : 0 - holding_value(investing/pinecrest-mining) * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -809,7 +809,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/brightwave-labs, money * 23 / 100)
+  - effect: trade(investing/brightwave-labs, age < 40 ? money * 23 / 100 : money * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -827,7 +827,7 @@
 - when: units(investing/brightwave-labs) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/brightwave-labs, 0 - holding_value(investing/brightwave-labs) * 23 / 100)
+  - effect: trade(investing/brightwave-labs, age < 40 ? 0 - holding_value(investing/brightwave-labs) * 23 / 100 : 0 - holding_value(investing/brightwave-labs) * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -851,7 +851,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/gov-bond-5, money * 23 / 100)
+  - effect: trade(investing/gov-bond-5, age < 40 ? money * 23 / 100 : money * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -869,7 +869,7 @@
 - when: units(investing/gov-bond-5) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/gov-bond-5, 0 - holding_value(investing/gov-bond-5) * 23 / 100)
+  - effect: trade(investing/gov-bond-5, age < 40 ? 0 - holding_value(investing/gov-bond-5) * 23 / 100 : 0 - holding_value(investing/gov-bond-5) * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -893,7 +893,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/gov-bond-10, money * 23 / 100)
+  - effect: trade(investing/gov-bond-10, age < 40 ? money * 23 / 100 : money * 21 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -911,7 +911,7 @@
 - when: units(investing/gov-bond-10) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/gov-bond-10, 0 - holding_value(investing/gov-bond-10) * 23 / 100)
+  - effect: trade(investing/gov-bond-10, age < 40 ? 0 - holding_value(investing/gov-bond-10) * 23 / 100 : 0 - holding_value(investing/gov-bond-10) * 21 / 100)
 
 ### choice: Pass
 - outcome: 1

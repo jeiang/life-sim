@@ -11,26 +11,31 @@
   outcomes:
     - weight: 25
       text: A form letter arrives. Financial aid thanks you for applying and wishes you luck with tuition.
+      next: grad-tuition-due
     - weight: 25
       text: Another form letter, a little warmer. No scholarship this year, but they liked your essay.
+      next: grad-tuition-due
     - weight: max(0, stat.smarts - 30) / 4
       text: A partial scholarship is offered. Half your tuition is covered, for now.
       effects:
         - "quality.grad_scholarship = 50"
         - "schedule(grad-school/grad-scholarship-review, after: 1-1 years)"
         - "journal(\"Partial scholarship awarded, half of tuition covered\")"
+      next: grad-tuition-due
     - weight: max(0, stat.smarts - 30) / 4
       text: The committee splits the difference. Half your tuition is covered by a scholarship.
       effects:
         - "quality.grad_scholarship = 50"
         - "schedule(grad-school/grad-scholarship-review, after: 1-1 years)"
         - "journal(\"Partial scholarship awarded, half of tuition covered\")"
+      next: grad-tuition-due
     - weight: max(0, stat.smarts - 60) / 4
       text: A full scholarship. The committee calls your transcript a pleasure to read, and your bank account agrees.
       effects:
         - "quality.grad_scholarship = 100"
         - "schedule(grad-school/grad-scholarship-review, after: 1-1 years)"
         - "journal(\"Full scholarship awarded, tuition covered\")"
+      next: grad-tuition-due
 
 - id: grad-scholarship-review
   icon: 📝

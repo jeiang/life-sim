@@ -1,14 +1,44 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
 # Scaffolded by `pnpm tool scaffold` from the content sheet "Paying for grad school".
 
+- id: grad-tuition-due
+  icon: 🧾
+  trigger: event
+  tags: [education, money]
+  chance: 0%
+  when: "grad_enrolled and quality.grad_tuition > 0"
+  text: "Tuition for the coming year is due, {player.first_name}. How will you pay it?"
+  choices:
+    - label: Pay from savings
+      when: "money >= grad_tuition_due"
+      outcomes:
+        - weight: 1
+          text: Savings will cover this year's bill.
+          effects:
+            - "quality.grad_funded = true"
+            - "schedule(grad-school/grad-tuition-due, after: 1-1 years)"
+          next: pay-tuition-cash
+    - label: Borrow the tuition
+      outcomes:
+        - weight: 1
+          text: The school takes a promise to pay for this year.
+          effects:
+            - "quality.grad_funded = true"
+            - "schedule(grad-school/grad-tuition-due, after: 1-1 years)"
+          next: take-grad-loan
+    - label: Apply for a scholarship
+      when: "quality.grad_scholarship == 0 and not quality.grad_reapplied"
+      outcomes:
+        - weight: 1
+          text: You send the financial aid forms in again.
+          effects:
+            - "quality.grad_reapplied = true"
+          next: grad-scholarship-offer
+
 - id: pay-tuition-cash
   icon: 💵
-  trigger: action
-  menu: occupation/education
-  label: Pay tuition from savings
-  tags: [money, education]
-  when: "grad_enrolled and quality.grad_tuition > 0 and quality.grad_loan and money >= grad_tuition_due"
-  cooldown: 1
+  trigger: event
+  chance: 0%
   text: The school wants its money every year. Savings are where the money lives.
   outcomes:
     - weight: 1
@@ -19,12 +49,8 @@
 
 - id: take-grad-loan
   icon: 🏦
-  trigger: action
-  menu: occupation/education
-  label: Borrow the tuition
-  tags: [loan, education]
-  when: "grad_enrolled and quality.grad_tuition > 0 and not quality.grad_loan"
-  cooldown: 1
+  trigger: event
+  chance: 0%
   text: The school takes a promise to pay instead of cash. The promise comes due after the degree.
   outcomes:
     - weight: 1

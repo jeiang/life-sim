@@ -1,7 +1,6 @@
-description: A scholar who is admitted to any school is asked, each year, to keep paying as before; the borrowed tuition converts into a graduate loan at the end
+description: A scholar admitted to business school borrows the first year's tuition; the borrowed tuition converts into a graduate loan
 profile: scholar
 steps:
   - roll: outcome/grad-school/apply-mba
     value: 0
-  - do: grad-school/take-grad-loan
-    age: 23
+  - choose: "Borrow the tuition*"

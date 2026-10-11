@@ -9,13 +9,13 @@ One of four school stages, each an occupation in Core's `school` group: medical 
 Four yearly `apply-*` actions (`occupation/education`, cooldown 1). Chance is a smarts band (under 40, 40-69, 70+). Admission chains to `admit-*`, which sets the qualities, schedules the year review and the graduation and chains to the scholarship offer.
 
 **Tuition**:
-`grad_tuition` is the yearly price, fixed at enrolment. `grad_tuition_due` is what the player owes after the scholarship and the parents' share. A school stage's pay is `0 - grad_tuition_cash` (cash, charged at settlement; Core does not cap an occupation's pay at cash, so a cash year can overdraw). The `on_age_up_pre` hook moves a player who cannot cover the year onto the loan and adds `grad_tuition_due` to `grad_debt` while `grad_loan` is set.
+`grad_tuition` is the yearly price, fixed at enrolment. `grad_tuition_due` is what the player owes after the scholarship and the parents' share. A school stage's pay is `0 - grad_tuition_cash` (cash, charged at settlement; Core does not cap an occupation's pay at cash, so a cash year can overdraw). Each year the `grad-tuition-due` prompt asks how to pay. The `on_age_up_pre` hook is a fallback: it moves a player who was not asked and cannot cover the year onto the loan, and adds `grad_tuition_due` to `grad_debt` while `grad_loan` is set.
 
 **Graduate loan**:
 `grad-school/grad-loan` (6.5%, 20 years, unsecured). Borrowed tuition accrues as `grad_debt` and becomes a loan (`take_loan` plus the matching `money -=`) at graduation or drop-out, so repayment starts then. Core's `missed-payment` event covers its misses; Core exposes no loan kind in expressions, so the harness counts missed-payment events for all loans.
 
 **Funding mix**:
-Cash or loan (`take-grad-loan`, `pay-tuition-cash`) and the parents' share (`grad_parents` 0, 50, 100; `ask-parents-tuition`, chance from `role_closeness(parent) * family_wealth`). The scholarship step-down raises the amount due, so the lost amount falls to the existing mix; `grad-funding-gap` lets the player change it.
+Cash or loan, chosen each year in `grad-tuition-due` (`pay-tuition-cash` and `take-grad-loan` are terminal events reached through `next`; options the player cannot afford are greyed out through `when`), and the parents' share (`grad_parents` 0, 50, 100; `ask-parents-tuition`, chance from `role_closeness(parent) * family_wealth`). The scholarship step-down raises the amount due, so the lost amount falls to the existing mix; `grad-funding-gap` lets the player change it.
 
 **Scholarship**:
 `grad_scholarship` 0, 50 or 100. Offered at enrolment (`grad-scholarship-offer`, chance and size scale with smarts), reviewed yearly (`grad-scholarship-review`, scheduled): grades 70+ keep it, 50-69 steps full to partial, under 50 steps full to partial and partial to none. A caught cheat (`grad-dishonesty-case`) drops it straight to none; the program continues (suspension is not modelled separately).

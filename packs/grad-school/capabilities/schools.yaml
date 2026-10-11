@@ -6,6 +6,7 @@ provides:
     - grad_scholarship
     - grad_parents
     - grad_loan
+    - grad_funded
     - grad_debt
     - grad_rejections
     - grad_gpa
@@ -14,6 +15,7 @@ provides:
     - grad_degree_law
     - grad_degree_mba
     - grad_degree_phd
+    - grad_reapplied
   readables:
     - grad_enrolled
     - grad_tuition_due

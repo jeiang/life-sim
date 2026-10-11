@@ -60,7 +60,7 @@
 - id: arrest-manhunt
   icon: 🚨
   trigger: event
-  chance: 25%
+  chance: 28%
   when: "quality.crime_wanted and not confined"
   text: The police are still looking for you.
   outcomes:

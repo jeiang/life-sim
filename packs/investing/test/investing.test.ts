@@ -378,7 +378,7 @@ describe("tips: direction and accuracy", () => {
 });
 
 describe("trading from a tip", () => {
-  test("a buy tip puts 5% or 25% of cash into the kind; a sell tip sells a quarter", () => {
+  test("a buy tip invests 23% before 40 and 21% from 40; sell tips match", () => {
     const w = life(100_000_00);
     const buy = story("tip-total-market");
     const small = apply(
@@ -395,7 +395,13 @@ describe("trading from a tip", () => {
       buy.choices[1]?.outcomes[0] as CompiledOutcome,
       "tip-total-market",
     );
-    expect(me(big).money).toBe(100_000_00 - 25_000_00);
+    expect(me(big).money).toBe(77_000_00);
+    const late = apply(
+      life(100_000_00, 40),
+      buy.choices[1]?.outcomes[0] as CompiledOutcome,
+      "tip-total-market",
+    );
+    expect(me(late).money).toBe(79_000_00);
     const sell = story("tip-total-market-sell");
     const sold = apply(
       big,

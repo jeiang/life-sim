@@ -13,16 +13,15 @@ profiles:
       - ids: [investing/ask-for-tip, investing/read-the-news, investing/read-investing-book]
       - ids: ["*/apply-*"]
   tipstacker:
-    description: "Asks every source each year (the smartest relative or friend first, then the book and the news) and trades on all of them. Approximates the majority rule (decision 4, G2): the harness cannot compare two tips, so it takes each one"
+    description: "Asks two sources each year (the smartest relative or friend first, then the book) and trades on both. Approximates the majority rule (decision 4, G2): the harness cannot compare two tips, so it takes each one. It skips the news so its exposure stays near the investor's"
     moves: 4
     once_per_year: true
     choice:
-      prefer: ["put in 5%*", "sell*", "back it*", "walk away"]
-      avoid: ["go all in*", "put in 10%*", "put in a quarter*"]
+      prefer: ["put in a quarter*", "sell*", "back it*", "walk away"]
+      avoid: ["go all in*", "put in 10%*", "put in 5%*"]
     rules:
       - ids: [investing/ask-for-tip]
         pick: max
         by: person.stat.smarts
       - ids: [investing/read-investing-book]
-      - ids: [investing/read-the-news]
       - ids: ["*/apply-*"]

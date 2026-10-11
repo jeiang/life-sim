@@ -68,3 +68,53 @@ Results (v1 -> now):
 | death age median, faults | 72, 0 | 72, 0 |
 
 Overall completion is about 72% of entrants (drop-out 27-29% against the 25% target); the PhD (5 years) and medical (4 years) lose the most, the 2-year MBA the least, a consequence of a flat yearly rate. Remaining gap: `take-grad-loan` fires rarely (7 in `all`) because most enrolled players are put on the loan by the hook before they can choose it; making it common needs a different funding model, not weights. `grad-dishonesty-case` still never fires, and `apply-associate-lawyer`, `promote-attending`, `promote-chief`, `judge-offer` stay unreached in `all` (studious never sits the licensing exams), both outside this tuning.
+
+## Tuning after v1 (#380, under #246)
+
+Runs: artemis `grad-loan-493e3b3-20261011T163855Z` (10,000 lives, `--profile all`, seed 20260101, first pass); `grad-loan-f4b27cf-20261011T182627Z` (10,000 lives, `--profile all`, final); `grad-loan-f4b27cf-20261011T180425Z` (3,000 lives, `--profile scholar`); `grad-loan-f4b27cf-20261011T184833Z` (1,000 lives, forced `grad-school/partner-track`, the CI scripts-job shape). Baseline: `grad-school-all-2-f1b6989-20261011T072857Z` (all) and `grad-school-scholar-2-f1b6989-20261011T072151Z` (scholar). The baseline is f1b6989 because it is the #365 code. The earlier 90fcd77 run was not used: it predates the washout metric and is not comparable.
+
+Findings: before this change tuition was a one-off choice. The on-age-up hook put a player short of cash on the loan before they could choose, so the choice rarely reached them (see #365). `partner-track` never fired in `all` runs. It needs a law degree and an associate job, and too few lives reach both.
+
+Changes (data and tests only):
+
+- Tuition is a yearly choice, `grad-tuition-due`. Its branches `pay-tuition-cash` and `take-grad-loan` are terminal and reached through `next`. Borrowing adds each year's tuition to `grad_debt` and keeps the cash.
+- New forced script `packs/grad-school/harness/force/partner-track.yaml` (profile `scholar`). It rolls the law, bar, and associate-lawyer outcomes so the partner track fires. Storylet weights are unchanged.
+- Test: the tuition floor is asserted, not exact equality, because branch paths draw different random values.
+
+Results, `--profile all`, 10,000 lives (before f1b6989, after f4b27cf):
+
+| metric | before | after |
+|---|---|---|
+| faults | 0 | 0 |
+| death age median | 72 | 72 |
+| decision slots 1 / 2 / 3 (%) | 89.9 / 49.2 / 28.1 | 89.9 / 49.6 / 28.7 |
+| max decision storylet share | not recorded | 2.41% (`core-loop/lottery-ticket`) |
+| never-fired storylets | 43 | 40 |
+| entered grad school / hold a grad degree (%) | 3.2 / 2.4 | 3.2 / 2.5 |
+| entrants who dropped out (%) | 28.7 | 25.3 |
+| completion medical / law / MBA / PhD (%) | 63 / 78.2 / 91.2 / 57.9 | 71.6 / 77.9 / 93.8 / 65.6 |
+| graduates medical / law / MBA / PhD | 46 / 79 / 93 / 62 | 48 / 60 / 90 / 82 |
+| opened loans / defaulted (%) | 28,407 / 20.4 | 28,008 / 13.1 |
+
+Results, `--profile scholar`, 3,000 lives (before f1b6989, after f4b27cf):
+
+| metric | before | after |
+|---|---|---|
+| entry (%) | 22.1 | 21.0 |
+| hold a grad degree (%) | 17.4 | 15.5 |
+| entrants who dropped out (%) | 28.3 | 31.3 |
+| washouts per life | 0.066 | 0.069 |
+| completion medical / law / MBA / PhD (%) | 78 / 84.2 / 87.7 / 66 | 69.6 / 80 / 84.1 / 63.4 |
+| opened loans | 5,794 | 5,786 |
+| net worth at 40, median (minor units) | 1,158,721 | 1,126,079 |
+
+Never-fired diff, `all` against f1b6989: newly never-fired are `crime/arrest-manhunt`, `crime/court-execution`, and `grad-school/partner-track`. Fixed (now fired) are `crime/prison-join-gang`, `crime/prison-take-job`, `grad-school/apply-residency`, `grad-school/doctor-on-call-strain`, `grad-school/pay-tuition-cash`, and `grad-school/promote-attending`.
+
+Coverage of the newly never-fired crime storylets: both are fired by existing forced scripts, not by `all` lives. Local 300-life runs: `crime/escape` fires `arrest-manhunt` 293 times, and `crime/death-penalty` fires `court-execution` 295 times. `partner-track` is fired by the new forced script (1,000-life artemis run above). The release gate unions forced-script artifacts, so none of the three counts as never-fired there.
+
+Remaining gap:
+
+- Grad completion fell in the scholar profile for all four programs (medical 78 to 69.6, law 84.2 to 80, MBA 87.7 to 84.1, PhD 66 to 63.4), and entry fell 22.1 to 21.0. Law graduates in `all` fell from 79 to 60. The cause is not established: the tuition change and random-path drift both fit. A same-ref A/B (tuition choice on and off, same seed) would settle it. It needs artemis approval.
+- Defaults fell from 20.4 to 13.1 while opened loans barely moved. The cause is not established either. Check whether the cash path reduces loan misses before treating it as a real drop.
+- Crime `arrest-manhunt` and `court-execution` are covered by forced scripts only (see above). No artemis run checked them.
+

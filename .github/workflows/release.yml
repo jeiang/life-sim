@@ -36,9 +36,12 @@ permissions:
   contents: read
 
 env:
-  # Tag runs: 8 shards x 12,500 lives. Forced scripts: 1,000 lives each.
+  # Tag runs: 20 shards x 5,000 lives. Forced scripts: 1,000 lives each. Life i plays
+  # profile i mod (profile count) on shard i mod (shard count), so a shard count that is a
+  # multiple of the 8 default profiles would give each shard one profile; 20 mixes 2 per shard,
+  # which keeps the slowest (romantic) shard well inside the job timeout.
   TAG_LIVES: "100000"
-  TAG_SHARDS: "8"
+  TAG_SHARDS: "20"
   SCRIPT_LIVES: "1000"
   # Lineage runs (`--profile dynasty --generations 4 --heir random`): 4 shards x 1,000 lives.
   TAG_GEN_LIVES: "4000"
@@ -110,7 +113,7 @@ jobs:
     name: shard ${{ matrix.shard }}
     needs: prepare
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:

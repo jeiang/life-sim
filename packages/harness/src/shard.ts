@@ -1,6 +1,13 @@
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  createReadStream,
+  mkdirSync,
+  readdirSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
-import { gunzipSync, gzipSync } from "node:zlib";
+import { createInterface } from "node:readline";
+import { createGunzip, gzipSync } from "node:zlib";
 import type { PackBundle } from "@life/core";
 import {
   type ForcedReport,
@@ -28,13 +35,17 @@ export interface ShardRun {
   readonly lineage?: Lineage;
 }
 
-/** The raw lives of one shard, so that a merge replays them exactly as a single run would. */
+/**
+ * The header line of a shard file. The file is gzipped NDJSON: this header, then one
+ * `LifeResult` per line in life-index order (life `shard.index + j * shard.count` is line
+ * `j + 1`). One line per life keeps every string far below the engine's string limit, so
+ * shards of any size can be written and merged.
+ */
 export interface ShardFile {
-  readonly version: 1;
+  readonly version: 2;
   readonly run: ShardRun;
   readonly shard: Shard;
-  /** In life-index order: life `shard.index + j * shard.count` is `lives[j]`. */
-  readonly lives: readonly LifeResult[];
+  readonly lives: number;
 }
 
 export const shardRunOf = (
@@ -68,6 +79,9 @@ export function parseShard(arg: string): Shard | null {
   return n >= 1 && i >= 1 && i <= n ? { index: i - 1, count: n } : null;
 }
 
+/** Lives per gzip member; the file is a valid concatenation of members. */
+const LIVES_PER_CHUNK = 256;
+
 /** Write one shard's lives to `dir`; returns the file path. */
 export function writeShard(
   dir: string,
@@ -77,9 +91,25 @@ export function writeShard(
 ): string {
   mkdirSync(dir, { recursive: true });
   const file = join(dir, `shard-${shard.index + 1}-of-${shard.count}.json.gz`);
-  const body: ShardFile = { version: 1, run, shard, lives };
-  writeFileSync(file, gzipSync(JSON.stringify(body)));
+  const header: ShardFile = { version: 2, run, shard, lives: lives.length };
+  writeFileSync(file, gzipSync(`${JSON.stringify(header)}\n`));
+  for (let i = 0; i < lives.length; i += LIVES_PER_CHUNK) {
+    const lines = lives
+      .slice(i, i + LIVES_PER_CHUNK)
+      .map((l) => `${JSON.stringify(l)}\n`)
+      .join("");
+    appendFileSync(file, gzipSync(lines));
+  }
   return file;
+}
+
+/** Lines of a gzipped file, read lazily. */
+function lineReader(file: string): AsyncIterator<string> {
+  const lines = createInterface({
+    input: createReadStream(file).pipe(createGunzip()),
+    crlfDelay: Number.POSITIVE_INFINITY,
+  });
+  return lines[Symbol.asyncIterator]();
 }
 
 /** Shard files under `dir`, found recursively (CI downloads one artifact directory per shard), sorted. */
@@ -100,17 +130,26 @@ export interface Merged {
  * Combine shard files into the report of the whole run. The lives are replayed through one
  * Aggregate in life-index order, so the result is identical to an unsharded run.
  */
-export function mergeShards(
+export async function mergeShards(
   files: readonly string[],
   bundles: readonly PackBundle[],
   metrics: readonly PackMetrics[] | undefined,
-): Merged {
+): Promise<Merged> {
   if (files.length === 0) throw new Error("no shard-*.json.gz files found");
-  const shards = files.map((f) => {
-    const s = JSON.parse(gunzipSync(readFileSync(f)).toString("utf8"));
-    if (s?.version !== 1) throw new Error(`${f}: not a shard file`);
-    return { file: f, ...(s as ShardFile) };
-  });
+  const shards = await Promise.all(
+    files.map(async (f) => {
+      const lines = lineReader(f);
+      const first = await lines.next();
+      let s: ShardFile | undefined;
+      try {
+        s = first.done ? undefined : JSON.parse(first.value);
+      } catch {
+        s = undefined;
+      }
+      if (s?.version !== 2) throw new Error(`${f}: not a shard file`);
+      return { file: f, lines, ...s };
+    }),
+  );
   const first = shards[0] as (typeof shards)[number];
   const runKey = JSON.stringify(first.run);
   const count = first.shard.count;
@@ -146,15 +185,17 @@ export function mergeShards(
     : undefined;
   for (const s of byIndex) {
     const expected = Math.max(0, Math.ceil((total - s.shard.index) / count));
-    if (s.lives.length !== expected)
+    if (s.lives !== expected)
       throw new Error(
-        `${s.file}: ${s.lives.length} lives, expected ${expected} for shard ${s.shard.index + 1}/${count} of ${total} lives`,
+        `${s.file}: ${s.lives} lives, expected ${expected} for shard ${s.shard.index + 1}/${count} of ${total} lives`,
       );
   }
   for (let i = 0; i < total; i++) {
-    const life = (byIndex[i % count] as (typeof shards)[number]).lives[
-      Math.floor(i / count)
-    ] as LifeResult;
+    const s = byIndex[i % count] as (typeof shards)[number];
+    const line = await s.lines.next();
+    if (line.done)
+      throw new Error(`${s.file}: ends before its ${s.lives} lives`);
+    const life = JSON.parse(line.value) as LifeResult;
     agg.add(life);
     tally?.add(life);
   }

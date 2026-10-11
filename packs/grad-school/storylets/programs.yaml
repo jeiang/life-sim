@@ -173,8 +173,8 @@
   icon: 🥀
   trigger: event
   tags: [education]
-  # Yearly washout chance: medical 6%, law 14%, MBA 25%, PhD 8%.
-  chance: "quality.grad_program == 1 ? 600 : quality.grad_program == 2 ? 1400 : quality.grad_program == 3 ? 2500 : 800"
+  # Yearly washout chance: medical 8%, law 14%, MBA 25%, PhD 6%.
+  chance: "quality.grad_program == 1 ? 800 : quality.grad_program == 2 ? 1400 : quality.grad_program == 3 ? 2500 : 600"
   when: "grad_enrolled"
   text: The work piles up, the funding thins, and the program stops feeling like a plan.
   outcomes:

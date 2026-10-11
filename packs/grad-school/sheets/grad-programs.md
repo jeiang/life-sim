@@ -11,7 +11,7 @@
 > Review outcome weights are expressions over `stat.smarts` (integer division), so no outcome `rate` is given.
 > `drop-out-grad` is one storylet over all four programs, so its `opens` band is the sum of the per-school drop-outs.
 
-> The yearly washout chance depends on the enrolled program: medical 6%, law 14%, MBA 25%, PhD 8%.
+> The yearly washout chance depends on the enrolled program: medical 8%, law 14%, MBA 25%, PhD 6%.
 
 ## grad-year-review
 - trigger: event
@@ -185,7 +185,7 @@
 ## grad-washout
 - trigger: event
 - icon: 🥀
-- chance: "quality.grad_program == 1 ? 600 : quality.grad_program == 2 ? 1400 : quality.grad_program == 3 ? 2500 : 800"
+- chance: "quality.grad_program == 1 ? 800 : quality.grad_program == 2 ? 1400 : quality.grad_program == 3 ? 2500 : 600"
 - tags: education
 - when: grad_enrolled
 - text: The work piles up, the funding thins, and the program stops feeling like a plan.

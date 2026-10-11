@@ -7,7 +7,7 @@ import type { Effect, Expr } from "./expr/index.ts";
 import type { Gender } from "./state/types.ts";
 
 /** Bundle format version; bump when the shape below changes incompatibly. */
-export const PACK_BUNDLE_FORMAT = 6;
+export const PACK_BUNDLE_FORMAT = 7;
 
 /** `twemoji:<codepoints>` (for example `twemoji:1f4bc`) or `gameicons:<author>/<name>`. */
 export type IconRef = string;
@@ -331,6 +331,11 @@ export interface CompiledItemKind {
    * `price` and `value` are unused (0) and the shop does not list it.
    */
   readonly market?: CompiledMarket;
+  /**
+   * Most the player may own at once of this kind (`max_owned`); buying at the limit is refused
+   * and the shop greys the kind out. Absent: no limit.
+   */
+  readonly maxOwned?: number;
 }
 
 export interface CompiledLoanKind {
@@ -396,6 +401,12 @@ export interface LivingDecl {
   readonly homeCategory: string;
   /** Costs and rules that depend on who lives with the player; absent: none apply. */
   readonly household?: HouseholdDecl;
+}
+
+/** Estate settlement cost of a Pack (the `estate` manifest block); only one Pack may declare it. */
+export interface EstateDecl {
+  /** Share of the net estate that is paid from cash on succession, basis points. */
+  readonly settlementBp: number;
 }
 
 /** Household settings of a Pack (`living.household`); role ids are full. */
@@ -620,6 +631,8 @@ export interface PackBundle {
   readonly settlement?: readonly SettlementLine[];
   /** Living costs; needs `standards`. */
   readonly living?: LivingDecl;
+  /** Estate settlement cost on succession; only one Pack may declare it. */
+  readonly estate?: EstateDecl;
   /** Default diminishing-returns curve for repeatable actions. */
   readonly repeat?: RepeatCurve;
   /** Starting family; ids are full. The first Pack that declares one wins. */

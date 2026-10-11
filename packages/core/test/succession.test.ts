@@ -312,6 +312,40 @@ describe("succession: the estate with a will", () => {
   });
 });
 
+describe("succession: estate settlement cost", () => {
+  // Only one loaded Pack may declare the estate block; core-loop stands in for the owner here.
+  const levied = bundles.map((b) =>
+    b.id === "core-loop" ? { ...b, estate: { settlementBp: 1000 } } : b,
+  );
+
+  test("a share of the net estate is paid from cash before the heir takes it", () => {
+    const f = family({ cash: 100000, spouse: true });
+    const w = succeed(
+      setWill(die(f), { mode: "heir", heir: f.kids[1] as number }),
+      levied,
+      f.kids[0] as number,
+    ).world;
+    expect(money(w, f.kids[1] as number)).toBe(90000);
+    expect(lines(w)).toContain("Estate settlement cost of $100.00.");
+  });
+
+  test("the cost is capped at the cash left; a house is not sold to pay it", () => {
+    const f = family({ cash: 100000 });
+    const [dead] = house(die(f), 1000000);
+    const w = succeed(
+      setWill(dead, { mode: "heir", heir: f.kids[1] as number }),
+      levied,
+      f.kids[0] as number,
+    ).world;
+    expect(money(w, f.kids[1] as number)).toBe(0);
+    // The will directs cash only; property passes to the succeeding heir.
+    expect(
+      getPerson(w, f.kids[0] as number).assets.map((a) => a.kindId),
+    ).toEqual(["core-loop/house"]);
+    expect(lines(w)).toContain("Estate settlement cost of $1,000.00.");
+  });
+});
+
 describe("succession: the estate with no will", () => {
   test("a living spouse gets half and the children split the rest", () => {
     const f = family({ cash: 100001, spouse: true });

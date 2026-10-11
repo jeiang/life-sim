@@ -8,6 +8,7 @@ import {
   type CompiledStandard,
   type CompiledStorylet,
   DEFAULT_REPEAT,
+  type EstateDecl,
   type FamilyDecl,
   type LivingDecl,
   type NpcCareersDecl,
@@ -36,6 +37,8 @@ export interface PackIndex {
   readonly standards: readonly CompiledStandard[];
   readonly standardsById: ReadonlyMap<string, CompiledStandard>;
   readonly living: LivingDecl | undefined;
+  /** Estate settlement cost from the first manifest that declares it; absent: none. */
+  readonly estate: EstateDecl | undefined;
   readonly roles: ReadonlyMap<string, CompiledRole>;
   readonly generators: ReadonlyMap<string, CompiledGenerator>;
   /** Bundle order (dependencies first). */
@@ -103,6 +106,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
   let year: PackIndex["year"] | undefined;
   let family: FamilyDecl | undefined;
   let living: LivingDecl | undefined;
+  let estate: EstateDecl | undefined;
   let npcCareers: NpcCareersDecl | undefined;
   const standards: CompiledStandard[] = [];
   const owners = new Map<string, string>();
@@ -127,7 +131,9 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     for (const c of b.cities) put(cities, "city", c.id, c);
     standards.push(...b.standards);
     single("living", b.living !== undefined, b.id);
+    single("estate", b.estate !== undefined, b.id);
     if (b.living) living = b.living;
+    if (b.estate) estate = b.estate;
     for (const p of b.people) {
       if (p.type === "role") put(roles, "role", p.id, p);
       else put(generators, "generator", p.id, p);
@@ -170,6 +176,7 @@ export function indexBundles(bundles: readonly PackBundle[]): PackIndex {
     standards: standards.sort((a, b) => a.cost - b.cost || cmp(a.id, b.id)),
     standardsById: new Map(standards.map((s) => [s.id, s])),
     living,
+    estate,
     roles,
     generators,
     stats,

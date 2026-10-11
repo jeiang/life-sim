@@ -53,6 +53,8 @@ interface Quote {
   readonly price: number;
   readonly down?: number;
   readonly requiresReason: string | null;
+  /** Set when the player already owns the most of this kind (`max_owned`). */
+  readonly limitReason: string | null;
 }
 
 function quote(world: World, idx: PackIndex, kindId: string): Quote {
@@ -74,10 +76,18 @@ function quote(world: World, idx: PackIndex, kindId: string): Quote {
         : explainFalse(kind.requires, (c) =>
             Boolean(evaluate(c, makeEnv(world, idx, scope))),
           );
+  const owned = getPerson(world, world.playerId).assets.filter(
+    (a) => a.kindId === kindId,
+  ).length;
+  const limitReason =
+    kind.maxOwned !== undefined && owned >= kind.maxOwned
+      ? `You already own the limit of ${kind.maxOwned}`
+      : null;
   return {
     price,
     ...(down === undefined ? {} : { down }),
     requiresReason,
+    limitReason,
   };
 }
 
@@ -89,6 +99,7 @@ function rejection(
   if (world.ended) return "This life is over";
   if (world.pending) return "Finish the open choice first";
   if (q.requiresReason) return q.requiresReason;
+  if (q.limitReason) return q.limitReason;
   const player = getPerson(world, world.playerId);
   if (player.withGuardian)
     return "Your assets are held in trust until you are 18";

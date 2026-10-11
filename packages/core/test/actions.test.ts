@@ -240,6 +240,27 @@ describe("shop and purchases", () => {
     expect(broke.choiceLog).toEqual([]);
   });
 
+  test("max_owned: a kind is greyed out at its limit and refused", () => {
+    const rb = real.bundles;
+    const start = newLife(rb, 3);
+    const rich = updatePerson(start, start.playerId, (p) => ({
+      ...p,
+      age: 30,
+      money: 99_000_000,
+    }));
+    const once = purchase(rich, rb, "core-loop/house", "cash").world;
+    expect(
+      listShop(once, rb, "homes").find((r) => r.id === "core-loop/house"),
+    ).toMatchObject({ locked: true, reason: "You already own the limit of 1" });
+    expect(() => purchase(once, rb, "core-loop/house", "cash")).toThrow(
+      "You already own the limit of 1",
+    );
+    expect(
+      listShop(once, rb, "homes").find((r) => r.id === "core-loop/studio-condo")
+        ?.locked,
+    ).toBe(false);
+  });
+
   test("cash purchase charges the price and grants the asset", () => {
     const w = purchase(
       grownUp(30, 5000),

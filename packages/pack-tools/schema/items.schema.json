@@ -72,6 +72,11 @@
         "description": "Content id reference: `<id>` in the same Pack or `<pack>/<id>`",
         "type": "string"
       },
+      "max_owned": {
+        "minimum": 1,
+        "description": "Most the player may own at once of this kind; buying at the limit is refused and the shop greys it out",
+        "type": "integer"
+      },
       "market": {
         "additionalProperties": false,
         "title": "Market block: the kind is traded by amount (`trade`) instead of bought, and has a price series per world year",

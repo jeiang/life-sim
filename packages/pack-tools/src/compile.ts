@@ -14,6 +14,7 @@ import type {
   CompiledStorylet,
   ContributionDecl,
   Effect,
+  EstateDecl,
   Expr,
   Type as ExprType,
   FamilyDecl,
@@ -1832,6 +1833,7 @@ class PackCompiler {
       ...(m.repeat ? { repeat: this.manifestRepeat(m.repeat) } : {}),
       ...(m.family ? { family: this.family(m.family) } : {}),
       ...(m.living ? { living: this.living(m.living) } : {}),
+      ...(m.estate ? { estate: this.estate(m.estate) } : {}),
       ...(m.npc_careers ? { npcCareers: this.npcCareers(m.npc_careers) } : {}),
       ...(m.hooks ? { hooks: this.hooks(m.hooks) } : {}),
       ...(m.spawn_qualities
@@ -2241,6 +2243,10 @@ class PackCompiler {
           }
         : {}),
     };
+  }
+
+  private estate(e: NonNullable<Manifest["estate"]>): EstateDecl {
+    return { settlementBp: percentBp(e.settlement_cost) };
   }
 
   private checkDeclarations(m: Manifest): void {
@@ -3140,7 +3146,7 @@ class PackCompiler {
       if (r !== undefined) out.requires = r;
     }
     if (i.market) {
-      for (const f of ["price", "value", "loan"] as const)
+      for (const f of ["price", "value", "loan", "max_owned"] as const)
         if (i[f] !== undefined)
           this.err([f], `a market kind has no '${f}' (it is traded by amount)`);
       out.market = this.market(i.market);
@@ -3165,6 +3171,7 @@ class PackCompiler {
       const r = this.ref(i.loan, ["loan"], ["loan"]);
       if (r) out.loan = r;
     }
+    if (i.max_owned !== undefined) out.maxOwned = i.max_owned;
     return out;
   }
 

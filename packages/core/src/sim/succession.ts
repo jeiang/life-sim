@@ -25,6 +25,7 @@ import { inheritStats } from "./genetics.ts";
 import { runHook } from "./hooks.ts";
 import { kinOf, spousesOf } from "./kinship.ts";
 import { ADULT_AGE } from "./living.ts";
+import { holdingValue } from "./market.ts";
 import { DEFAULT_FAMILY } from "./new-life.ts";
 import { indexBundles, type PackIndex } from "./pack-index.ts";
 import { formatMoney } from "./text.ts";
@@ -134,7 +135,9 @@ interface Settled {
  *   its value, the loan repaid from the proceeds, any surplus joins the cash and any shortfall
  *   is written off;
  * - the other assets and the investment holdings pass whole to the heir, no forced sale;
- * - the cash left is divided by the will, or by the no-will rule (`splitCash`); no estate tax.
+ * - the Pack's estate settlement cost (`estate.settlement_cost`, a share of the net estate) is
+ *   paid from the cash left, never more than that cash (no forced sale);
+ * - the cash left is divided by the will, or by the no-will rule (`splitCash`).
  * The dead player keeps nothing afterwards.
  */
 function settleEstate(
@@ -179,6 +182,19 @@ function settleEstate(
     lines.push(`Debts of ${money(paid)} were paid from the estate.`);
   if (writtenOff > 0)
     lines.push(`${money(writtenOff)} of debt was written off.`);
+
+  const bp = idx.estate?.settlementBp ?? 0;
+  const estateValue =
+    cash +
+    assets.reduce((n, a) => n + a.value, 0) +
+    d.holdings.reduce((n, h) => n + holdingValue(world, h), 0) -
+    toHeirLoans.reduce((n, l) => n + l.balance, 0);
+  const levy = Math.min(
+    cash,
+    Math.max(0, Math.trunc((estateValue * bp) / 10000)),
+  );
+  cash -= levy;
+  if (levy > 0) lines.push(`Estate settlement cost of ${money(levy)}.`);
 
   const split = splitCash(world, dead, heir, willOf(world), cash);
   let w = world;

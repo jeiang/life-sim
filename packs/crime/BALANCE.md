@@ -70,3 +70,5 @@ Notes:
 | Sentenced lives granted parole | — | 94.8% |
 | Executed of offenders | — | 1.3% |
 
+The 10,000-life all-profile run, seed 20260101, at commit 56b48a2 (`crime-recapture-all`), had 0 faults, death median 72, decision slots 89.9% / 49.6% / 28.7%, no decisions over 3%, and 0% escaped. The 10,000-life all-profile run at commit 254e2c0 was refused twice by Artemis after the queue limit (exit 75).
+

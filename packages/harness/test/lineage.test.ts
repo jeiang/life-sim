@@ -8,12 +8,12 @@ import { runHarness } from "../src/harness.ts";
 import { loadMetrics } from "../src/metrics.ts";
 import { loadProfiles } from "../src/profile-spec.ts";
 import { renderMarkdown } from "../src/report.ts";
-import { type LifeResult, type Lineage, runLife } from "../src/run.ts";
+import { type Lineage, runLife } from "../src/run.ts";
 import {
   findShardFiles,
   mergeShards,
+  ShardWriter,
   shardRunOf,
-  writeShard,
 } from "../src/shard.ts";
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
@@ -134,14 +134,13 @@ describe("--generations", () => {
     const out = mkdtempSync(join(tmpdir(), "harness-lineage-shards-"));
     for (let i = 0; i < 2; i++) {
       const shard = { index: i, count: 2 };
-      const got: LifeResult[] = [];
-      runHarness({ ...base, shard }, (r) => void got.push(r));
-      writeShard(
+      const w = new ShardWriter(
         join(out, `s${i}`),
         shardRunOf(5, lives, ["random"], undefined, three),
         shard,
-        got,
       );
+      runHarness({ ...base, shard }, (r) => w.add(r));
+      w.close();
     }
     const merged = await mergeShards(findShardFiles(out), s.bundles, s.metrics);
     expect(JSON.stringify(merged.report)).toBe(JSON.stringify(whole.report));

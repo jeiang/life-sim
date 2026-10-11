@@ -82,25 +82,49 @@ export function parseShard(arg: string): Shard | null {
 /** Lives per gzip member; the file is a valid concatenation of members. */
 const LIVES_PER_CHUNK = 256;
 
-/** Write one shard's lives to `dir`; returns the file path. */
-export function writeShard(
-  dir: string,
-  run: ShardRun,
-  shard: Shard,
-  lives: readonly LifeResult[],
-): string {
-  mkdirSync(dir, { recursive: true });
-  const file = join(dir, `shard-${shard.index + 1}-of-${shard.count}.json.gz`);
-  const header: ShardFile = { version: 2, run, shard, lives: lives.length };
-  writeFileSync(file, gzipSync(`${JSON.stringify(header)}\n`));
-  for (let i = 0; i < lives.length; i += LIVES_PER_CHUNK) {
-    const lines = lives
-      .slice(i, i + LIVES_PER_CHUNK)
-      .map((l) => `${JSON.stringify(l)}\n`)
-      .join("");
-    appendFileSync(file, gzipSync(lines));
+/** How many lives shard `shard` of a `total`-life run holds. */
+export const shardSize = (total: number, shard: Shard): number =>
+  Math.max(0, Math.ceil((total - shard.index) / shard.count));
+
+/**
+ * Writes one shard's lives to `dir` as they are played, so a shard never holds its lives
+ * in memory. `add` takes the lives in life order; `close` flushes and checks the count.
+ */
+export class ShardWriter {
+  readonly file: string;
+  private readonly expected: number;
+  private pending: string[] = [];
+  private written = 0;
+
+  constructor(dir: string, run: ShardRun, shard: Shard) {
+    mkdirSync(dir, { recursive: true });
+    this.file = join(dir, `shard-${shard.index + 1}-of-${shard.count}.json.gz`);
+    this.expected = shardSize(run.lives, shard);
+    const header: ShardFile = { version: 2, run, shard, lives: this.expected };
+    writeFileSync(this.file, gzipSync(`${JSON.stringify(header)}\n`));
   }
-  return file;
+
+  add(life: LifeResult): void {
+    this.pending.push(`${JSON.stringify(life)}\n`);
+    if (this.pending.length >= LIVES_PER_CHUNK) this.flush();
+  }
+
+  /** Flush the last lives; returns the file path. */
+  close(): string {
+    this.flush();
+    if (this.written !== this.expected)
+      throw new Error(
+        `${this.file}: wrote ${this.written} lives, expected ${this.expected}`,
+      );
+    return this.file;
+  }
+
+  private flush(): void {
+    if (this.pending.length === 0) return;
+    appendFileSync(this.file, gzipSync(this.pending.join("")));
+    this.written += this.pending.length;
+    this.pending = [];
+  }
 }
 
 /** Lines of a gzipped file, read lazily. */
@@ -184,7 +208,7 @@ export async function mergeShards(
       })
     : undefined;
   for (const s of byIndex) {
-    const expected = Math.max(0, Math.ceil((total - s.shard.index) / count));
+    const expected = shardSize(total, s.shard);
     if (s.lives !== expected)
       throw new Error(
         `${s.file}: ${s.lives} lives, expected ${expected} for shard ${s.shard.index + 1}/${count} of ${total} lives`,

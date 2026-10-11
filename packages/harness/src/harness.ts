@@ -50,7 +50,10 @@ export function lifeSeedFor(seed: number, i: number): number {
   return streamFor(seed, i, "harness/life-seed", 0).next32();
 }
 
-/** Lives [from, to) of the run, in order; lives past the run's end are skipped. */
+/**
+ * Lives [from, to) of the run, in order; lives past the run's end are skipped. With `onLife`
+ * each life goes to it and none is kept (the result is empty), so long runs stay in bounded memory.
+ */
 export function runLives(
   bundles: readonly PackBundle[],
   opts: Pick<
@@ -86,8 +89,8 @@ export function runLives(
       opts.force?.entries,
       opts.lineage,
     );
-    out.push(r);
-    onLife?.(r);
+    if (onLife) onLife(r);
+    else out.push(r);
   }
   return out;
 }

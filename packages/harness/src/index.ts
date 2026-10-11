@@ -65,7 +65,8 @@ export {
   parseShard,
   type ShardFile,
   type ShardRun,
+  ShardWriter,
   shardRunOf,
-  writeShard,
+  shardSize,
 } from "./shard.ts";
 export { type ForcedRolls, forceRolls } from "./testing.ts";

@@ -91,4 +91,24 @@ Share of lives married moved up with the speed (random about 75% in 1000-life ch
 
 Net worth by profile: the `romantic` profile's high median net worth (about 1.0 million at 40, against about 31,000 for `random`) comes from the profile itself, not from a dating number. It holds a job every year, is never homeless, and a moved-in partner pays half the standard. Read net worth by profile with that in mind, and do not tune dating prices against it.
 
-Remaining gap: first child joined at 39 median (all lives; children outside the romantic profile still come only from unplanned pregnancy). That was not an acceptance item of #362.
+At the time of #362, the remaining gap was first child joined at 39 median (all lives; children outside the romantic profile still came only from unplanned pregnancy).
+
+## Age at first child (#384)
+
+Artemis report: `~/Projects/life-sim/reports/first-child-after-final-e531e80-20261011T180346Z/report.md` (10,000 lives, `--profile all`, seed 20260101; ref `e531e80771e1`).
+
+Changes: `unplanned-pregnancy` chance rose from 5% to 25%. Surprise pregnancies stop once `quality.dating_children` reaches 3, which keeps births and adoptions from growing without limit.
+
+| measure (10,000 lives, all profiles) | before | after |
+|---|---:|---:|
+| age at first child joined, all (median) | 39 | 33 |
+| age at first child joined, random (median) | 43 | 34 |
+| age at first child joined, romantic (median) | 28 | 26 |
+| age at first marriage, all (median) | 28 | 28 |
+| age at first marriage, random (median) | 29 | 29 |
+| age at first marriage, romantic (median) | 26 | 26 |
+| `dating/ask-out` share of decisions | 2.11% | 2.11% |
+| persons per save (p99) | 30 | 30 |
+| decision slots 1 / 2 / 3 | 89.9 / 49.6 / 28.7% | 90 / 49.6 / 28.7% |
+| death age median | 72 | 72 |
+| faults | 0 | 0 |

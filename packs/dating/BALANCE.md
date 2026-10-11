@@ -81,7 +81,7 @@ Changes (data only, no decision weights, so the ask-out share fell instead of ri
 | median age at first marriage, all | 38 | 27 |
 | median age at first marriage, random | 45 | 29 |
 | median age at first marriage, romantic | 32 | 26 |
-| first child joined, median | 43 | 39 (random and romantic pooled with the others: 42) |
+| first child joined, all (mean; median) | 43 mean as reported | 42; 39 |
 | `dating/ask-out` share of decisions | 2.61% | 2.08% |
 | decision slots 1 / 2 / 3 | 89.8 / 49.3 / 28.3 | 89.9 / 49.2 / 28.1 |
 | death age median | 72 | 72 |

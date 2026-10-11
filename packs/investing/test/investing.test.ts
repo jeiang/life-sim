@@ -340,7 +340,7 @@ describe("tips: sell advice needs a holding", () => {
 
 describe("tips: direction and accuracy", () => {
   const w0 = holdAll(life(10_000_00));
-  test("the news is right with chance 53; the book 54; a relative 52 + smarts / 30", () => {
+  test("the news is right with chance 53; the book 55; a relative 52 + smarts / 30", () => {
     for (const k of KINDS) {
       const up = withForecast(w0, k, 500);
       const down = withForecast(w0, k, -500);
@@ -349,8 +349,8 @@ describe("tips: direction and accuracy", () => {
       expect(nu(down)).toBe(47);
       expect(weightTo(up, "read-the-news", `tip-${k}-sell`)).toBe(47);
       expect(weightTo(down, "read-the-news", `tip-${k}-sell`)).toBe(53);
-      expect(weightTo(up, "read-investing-book", `tip-${k}`)).toBe(54);
-      expect(weightTo(down, "read-investing-book", `tip-${k}-sell`)).toBe(54);
+      expect(weightTo(up, "read-investing-book", `tip-${k}`)).toBe(55);
+      expect(weightTo(down, "read-investing-book", `tip-${k}-sell`)).toBe(55);
     }
   });
 
@@ -378,7 +378,7 @@ describe("tips: direction and accuracy", () => {
 });
 
 describe("trading from a tip", () => {
-  test("a buy tip puts 5% or 25% of cash into the kind; a sell tip sells a quarter", () => {
+  test("a buy tip puts 5% or 23% of cash into the kind; a sell tip sells about 23%", () => {
     const w = life(100_000_00);
     const buy = story("tip-total-market");
     const small = apply(
@@ -395,7 +395,7 @@ describe("trading from a tip", () => {
       buy.choices[1]?.outcomes[0] as CompiledOutcome,
       "tip-total-market",
     );
-    expect(me(big).money).toBe(100_000_00 - 25_000_00);
+    expect(me(big).money).toBe(77_000_00);
     const sell = story("tip-total-market-sell");
     const sold = apply(
       big,

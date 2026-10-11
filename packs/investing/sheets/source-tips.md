@@ -7,7 +7,7 @@
 
 > Chain C1 of the investing pack (issue #232, outline `source-tips`). Three sources give tips: an action to ask a relative or friend (`ask-for-tip`), the financial news (`read-the-news`), and an investing book (`read-investing-book`). Relatives and friends are gated per person by `person.quality.invest_tip_age` (the year they last gave you a tip), so each gives at most one tip a year, and every tip stamps it with the current age. News and book have no bound person, so each keeps `cooldown: 1` (one tip a year per source).
 > A source draws a kind from the 12 market kinds that are priced above 0 (the gate is `price(k) > 0` on each outcome), then a direction. Sell advice for a kind is only drawable while the player holds it (`units(k) > 0`), so a source never tips you to sell something unowned. The direction is "up" (buy advice, `tip-<kind>`) or "down" (sell advice, `tip-<kind>-sell`). The advice is right with chance Q: the outcome weight for up advice is Q when `forecast(k) > 0`, else 100 - Q; down advice is the mirror. With a holding, each kind's two outcomes sum to 100 per source.
-> Q (#234): relatives and friends 52 + smarts / 30 (52 to 55); news 53; book 54. Tips give a modest edge (design target: about +1.3 points of annual return for a player who takes them), not the 65 to 80 percent hit rate of the first draft, which made `tipstacker` end 55% richer than `investor` at 65. A tipped kind rises only a little more often than chance.
+> Q (#234): relatives and friends 52 + smarts / 30 (52 to 55); news 53; book 55 (was 80). Tips give a modest edge (design target: about +1.3 points of annual return for a player who takes them), not the 65 to 80 percent hit rate of the first draft, which made `tipstacker` end 55% richer than `investor` at 65. A tipped kind rises only a little more often than chance.
 > `ask-for-tip` is a player action, not a decision event, so the 3% decision-concentration cap does not apply to it. Its opens depend on the profile: `investor` and `tipstacker` ask every year (about 32 per life across all profiles), `random` far less. The band is 6..40 per life for `profile: all`.
 > Rates are not given: outcome weights depend on the forecast sign, so the share of each outcome is not a constant. `opens` is given for every storylet.
 > Gov bonds are included in the draw (the grilled decision names no exclusion). The archive excluded them; main should confirm.
@@ -268,145 +268,145 @@
 - opens: 0.5..6 per life
 
 ### outcomes
-- outcome: (forecast(investing/total-market) > 0) ? 54 : 46
+- outcome: (forecast(investing/total-market) > 0) ? 55 : 45
   - when: price(investing/total-market) > 0
   - text: The chapter on index funds makes sense. It says the Total market fund is set to climb, and you believe it.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-total-market
-- outcome: (forecast(investing/total-market) > 0) ? 46 : 54
+- outcome: (forecast(investing/total-market) > 0) ? 45 : 55
   - when: price(investing/total-market) > 0
   - text: The chapter on index funds makes sense. It says the Total market fund is set to slide, and you believe it.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-total-market-sell
-- outcome: (forecast(investing/world-index) > 0) ? 54 : 46
+- outcome: (forecast(investing/world-index) > 0) ? 55 : 45
   - when: price(investing/world-index) > 0
   - text: The book's example is a World index fund, and it is due a good year.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-world-index
-- outcome: (forecast(investing/world-index) > 0) ? 46 : 54
+- outcome: (forecast(investing/world-index) > 0) ? 45 : 55
   - when: price(investing/world-index) > 0
   - text: The book's example is a World index fund, and it is heading for a rough year.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-world-index-sell
-- outcome: (forecast(investing/income-bond-fund) > 0) ? 54 : 46
+- outcome: (forecast(investing/income-bond-fund) > 0) ? 55 : 45
   - when: price(investing/income-bond-fund) > 0
   - text: A section on bond funds says the Income bond fund is about to pay off.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-income-bond-fund
-- outcome: (forecast(investing/income-bond-fund) > 0) ? 46 : 54
+- outcome: (forecast(investing/income-bond-fund) > 0) ? 45 : 55
   - when: price(investing/income-bond-fund) > 0
   - text: A section on bond funds says the Income bond fund is about to wobble.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-income-bond-fund-sell
-- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 54 : 46
+- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 55 : 45
   - when: price(investing/corporate-bond-fund) > 0
   - text: A section on corporate bonds says the Corporate bond fund is quietly about to rise.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-corporate-bond-fund
-- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 46 : 54
+- outcome: (forecast(investing/corporate-bond-fund) > 0) ? 45 : 55
   - when: price(investing/corporate-bond-fund) > 0
   - text: A section on corporate bonds says the Corporate bond fund is about to slip.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-corporate-bond-fund-sell
-- outcome: (forecast(investing/acme-robotics) > 0) ? 54 : 46
+- outcome: (forecast(investing/acme-robotics) > 0) ? 55 : 45
   - when: price(investing/acme-robotics) > 0
   - text: The stock-picking chapter is sure Acme Robotics is about to take off.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-acme-robotics
-- outcome: (forecast(investing/acme-robotics) > 0) ? 46 : 54
+- outcome: (forecast(investing/acme-robotics) > 0) ? 45 : 55
   - when: price(investing/acme-robotics) > 0
   - text: The stock-picking chapter is sure Acme Robotics is about to crash.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-acme-robotics-sell
-- outcome: (forecast(investing/northwind-foods) > 0) ? 54 : 46
+- outcome: (forecast(investing/northwind-foods) > 0) ? 55 : 45
   - when: price(investing/northwind-foods) > 0
   - text: The stock-picking chapter says Northwind Foods is about to climb.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-northwind-foods
-- outcome: (forecast(investing/northwind-foods) > 0) ? 46 : 54
+- outcome: (forecast(investing/northwind-foods) > 0) ? 45 : 55
   - when: price(investing/northwind-foods) > 0
   - text: The stock-picking chapter says Northwind Foods has a bad year coming.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-northwind-foods-sell
-- outcome: (forecast(investing/lumen-energy) > 0) ? 54 : 46
+- outcome: (forecast(investing/lumen-energy) > 0) ? 55 : 45
   - when: price(investing/lumen-energy) > 0
   - text: The stock-picking chapter says Lumen Energy is about to light up.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-lumen-energy
-- outcome: (forecast(investing/lumen-energy) > 0) ? 46 : 54
+- outcome: (forecast(investing/lumen-energy) > 0) ? 45 : 55
   - when: price(investing/lumen-energy) > 0
   - text: The stock-picking chapter says Lumen Energy is about to go dark.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-lumen-energy-sell
-- outcome: (forecast(investing/quark-coin) > 0) ? 54 : 46
+- outcome: (forecast(investing/quark-coin) > 0) ? 55 : 45
   - when: price(investing/quark-coin) > 0
   - text: A chapter on speculative coins says Quark Coin is about to moon.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-quark-coin
-- outcome: (forecast(investing/quark-coin) > 0) ? 46 : 54
+- outcome: (forecast(investing/quark-coin) > 0) ? 45 : 55
   - when: price(investing/quark-coin) > 0
   - text: A chapter on speculative coins says Quark Coin is about to crash.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-quark-coin-sell
-- outcome: (forecast(investing/pinecrest-mining) > 0) ? 54 : 46
+- outcome: (forecast(investing/pinecrest-mining) > 0) ? 55 : 45
   - when: price(investing/pinecrest-mining) > 0
   - text: A chapter on penny stocks says Pinecrest Mining is about to strike gold.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-pinecrest-mining
-- outcome: (forecast(investing/pinecrest-mining) > 0) ? 46 : 54
+- outcome: (forecast(investing/pinecrest-mining) > 0) ? 45 : 55
   - when: price(investing/pinecrest-mining) > 0
   - text: A chapter on penny stocks says Pinecrest Mining is about to dig itself into a hole.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-pinecrest-mining-sell
-- outcome: (forecast(investing/brightwave-labs) > 0) ? 54 : 46
+- outcome: (forecast(investing/brightwave-labs) > 0) ? 55 : 45
   - when: price(investing/brightwave-labs) > 0
   - text: A chapter on penny stocks says Brightwave Labs is about to light up.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-brightwave-labs
-- outcome: (forecast(investing/brightwave-labs) > 0) ? 46 : 54
+- outcome: (forecast(investing/brightwave-labs) > 0) ? 45 : 55
   - when: price(investing/brightwave-labs) > 0
   - text: A chapter on penny stocks says Brightwave Labs is about to fizzle.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-brightwave-labs-sell
-- outcome: (forecast(investing/gov-bond-5) > 0) ? 54 : 46
+- outcome: (forecast(investing/gov-bond-5) > 0) ? 55 : 45
   - when: price(investing/gov-bond-5) > 0
   - text: The bond chapter says the 5-year government bond is about to tick up.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-gov-bond-5
-- outcome: (forecast(investing/gov-bond-5) > 0) ? 46 : 54
+- outcome: (forecast(investing/gov-bond-5) > 0) ? 45 : 55
   - when: price(investing/gov-bond-5) > 0
   - text: The bond chapter says the 5-year government bond is about to tick down.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-gov-bond-5-sell
-- outcome: (forecast(investing/gov-bond-10) > 0) ? 54 : 46
+- outcome: (forecast(investing/gov-bond-10) > 0) ? 55 : 45
   - when: price(investing/gov-bond-10) > 0
   - text: The bond chapter says the 10-year government bond is about to tick up.
   - effect: money -= 2500
   - effect: stat.smarts += 1
   - next: tip-gov-bond-10
-- outcome: (forecast(investing/gov-bond-10) > 0) ? 46 : 54
+- outcome: (forecast(investing/gov-bond-10) > 0) ? 45 : 55
   - when: price(investing/gov-bond-10) > 0
   - text: The bond chapter says the 10-year government bond is about to tick down.
   - effect: money -= 2500
@@ -431,7 +431,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/total-market, money / 4)
+  - effect: trade(investing/total-market, money * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -449,7 +449,7 @@
 - when: units(investing/total-market) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/total-market, 0 - holding_value(investing/total-market) / 4)
+  - effect: trade(investing/total-market, 0 - holding_value(investing/total-market) * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -473,7 +473,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/world-index, money / 4)
+  - effect: trade(investing/world-index, money * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -491,7 +491,7 @@
 - when: units(investing/world-index) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/world-index, 0 - holding_value(investing/world-index) / 4)
+  - effect: trade(investing/world-index, 0 - holding_value(investing/world-index) * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -515,7 +515,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/income-bond-fund, money / 4)
+  - effect: trade(investing/income-bond-fund, money * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -533,7 +533,7 @@
 - when: units(investing/income-bond-fund) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/income-bond-fund, 0 - holding_value(investing/income-bond-fund) / 4)
+  - effect: trade(investing/income-bond-fund, 0 - holding_value(investing/income-bond-fund) * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -557,7 +557,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/corporate-bond-fund, money / 4)
+  - effect: trade(investing/corporate-bond-fund, money * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -575,7 +575,7 @@
 - when: units(investing/corporate-bond-fund) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/corporate-bond-fund, 0 - holding_value(investing/corporate-bond-fund) / 4)
+  - effect: trade(investing/corporate-bond-fund, 0 - holding_value(investing/corporate-bond-fund) * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -599,7 +599,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/acme-robotics, money / 4)
+  - effect: trade(investing/acme-robotics, money * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -617,7 +617,7 @@
 - when: units(investing/acme-robotics) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/acme-robotics, 0 - holding_value(investing/acme-robotics) / 4)
+  - effect: trade(investing/acme-robotics, 0 - holding_value(investing/acme-robotics) * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -641,7 +641,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/northwind-foods, money / 4)
+  - effect: trade(investing/northwind-foods, money * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -659,7 +659,7 @@
 - when: units(investing/northwind-foods) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/northwind-foods, 0 - holding_value(investing/northwind-foods) / 4)
+  - effect: trade(investing/northwind-foods, 0 - holding_value(investing/northwind-foods) * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -683,7 +683,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/lumen-energy, money / 4)
+  - effect: trade(investing/lumen-energy, money * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -701,7 +701,7 @@
 - when: units(investing/lumen-energy) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/lumen-energy, 0 - holding_value(investing/lumen-energy) / 4)
+  - effect: trade(investing/lumen-energy, 0 - holding_value(investing/lumen-energy) * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -725,7 +725,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/quark-coin, money / 4)
+  - effect: trade(investing/quark-coin, money * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -743,7 +743,7 @@
 - when: units(investing/quark-coin) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/quark-coin, 0 - holding_value(investing/quark-coin) / 4)
+  - effect: trade(investing/quark-coin, 0 - holding_value(investing/quark-coin) * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -767,7 +767,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/pinecrest-mining, money / 4)
+  - effect: trade(investing/pinecrest-mining, money * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -785,7 +785,7 @@
 - when: units(investing/pinecrest-mining) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/pinecrest-mining, 0 - holding_value(investing/pinecrest-mining) / 4)
+  - effect: trade(investing/pinecrest-mining, 0 - holding_value(investing/pinecrest-mining) * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -809,7 +809,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/brightwave-labs, money / 4)
+  - effect: trade(investing/brightwave-labs, money * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -827,7 +827,7 @@
 - when: units(investing/brightwave-labs) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/brightwave-labs, 0 - holding_value(investing/brightwave-labs) / 4)
+  - effect: trade(investing/brightwave-labs, 0 - holding_value(investing/brightwave-labs) * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -851,7 +851,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/gov-bond-5, money / 4)
+  - effect: trade(investing/gov-bond-5, money * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -869,7 +869,7 @@
 - when: units(investing/gov-bond-5) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/gov-bond-5, 0 - holding_value(investing/gov-bond-5) / 4)
+  - effect: trade(investing/gov-bond-5, 0 - holding_value(investing/gov-bond-5) * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -893,7 +893,7 @@
 - when: money >= 20000
 - outcome: 1
   - text: You put in a big slice and try not to think about it.
-  - effect: trade(investing/gov-bond-10, money / 4)
+  - effect: trade(investing/gov-bond-10, money * 23 / 100)
 
 ### choice: Pass
 - outcome: 1
@@ -911,7 +911,7 @@
 - when: units(investing/gov-bond-10) > 0
 - outcome: 1
   - text: You sell a quarter of your holding and feel smart about it.
-  - effect: trade(investing/gov-bond-10, 0 - holding_value(investing/gov-bond-10) / 4)
+  - effect: trade(investing/gov-bond-10, 0 - holding_value(investing/gov-bond-10) * 23 / 100)
 
 ### choice: Pass
 - outcome: 1

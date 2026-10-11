@@ -24,6 +24,7 @@ measures:
   grad_mba: { fires: { storylet: grad-school/graduate-mba-program } }
   grad_phd: { fires: { storylet: grad-school/graduate-phd-program } }
   dropouts: { fires: { storylet: grad-school/drop-out-grad } }
+  washouts: { fires: { storylet: grad-school/grad-washout } }
   sittings_medical: { fires: { storylet: grad-school/sit-medical-boards } }
   sittings_bar: { fires: { storylet: grad-school/sit-bar-exam } }
   funding_gaps: { fires: { storylet: grad-school/grad-funding-gap } }
@@ -52,7 +53,7 @@ measures:
   postdocs: { outcome: { storylet: grad-school/postdoc-interview, key: o0 } }
   tenure_granted: { outcome: { storylet: grad-school/tenure-review, key: o0 } }
   stepped_down: { when: "step_full_to_part_a > 0 or step_full_to_part_b > 0 or step_part_to_none > 0" }
-  dropped_out: { when: "dropouts > 0" }
+  dropped_out: { when: "dropouts > 0 or washouts > 0" }
   top_rung: { when: "chief_of_medicine > 0 or judge_made > 0 or ceo_offers > 0 or tenure_granted > 0" }
   career_started: { when: "residents > 0 or associates > 0 or managers > 0 or postdocs > 0" }
 stats:
@@ -126,6 +127,12 @@ stats:
     kind: mean
     label: drop-outs per life
     value: dropouts
+    by: profile
+    decimals: 3
+  washouts:
+    kind: mean
+    label: washouts per life
+    value: washouts
     by: profile
     decimals: 3
   sch_any:
@@ -327,6 +334,7 @@ blocks:
       - entry
       - degree
       - dropouts
+      - washouts
       - dropped_out
   - stats:
       - enrol_medical

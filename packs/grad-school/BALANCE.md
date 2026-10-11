@@ -40,3 +40,31 @@ Net worth rows are medians in major units; `random` has few degree holders (27 a
 ## Open
 
 Per-kind loan-miss reporting (the missed-payment events per grad life count every loan) needs an engine change.
+
+## Tuning after v1 (#365, under #246)
+
+Runs: artemis `grad-school-all-2` (10,000 lives, `--profile all`, seed 20260101, commit f1b6989; report `~/Projects/life-sim/reports/grad-school-all-2-f1b6989-20261011T072857Z/`) and `grad-school-scholar-2` (3,000 lives, `--profile scholar`, `reports/grad-school-scholar-2-f1b6989-20261011T072151Z/`). Baseline: the v1 reports of #245 (`rebalance-v1-all-ab46a88-...`, `rebalance-v1-scholar-ab46a88-...`).
+
+Findings from v1: `take-grad-loan` never fired because no profile rule or `adjust` ever picked it (`scholar` listed only `pay-tuition-cash`, and Core's `studious` takes no grad action but school applications); `studious` and `scholar` never dropped out, since `drop-out-grad` is voluntary.
+
+Changes (data only):
+
+- New event `grad-washout`: 10% a year while enrolled, the player leaves without a degree (same effects as `drop-out-grad`, happiness -6). It is the drop-out path for profiles that never choose `drop-out-grad`. Harness metrics count it (`washouts`, and `dropped_out` includes it).
+- `scholar` now includes `take-grad-loan` in its funding rule (weight 0.5 against the other actions); `random` gets weight 50 on `take-grad-loan` through `adjust`. The action stays gated by `not quality.grad_loan`, so it opens only when a player on cash (the `on_age_up_pre` hook sets the loan when money is short) chooses to borrow.
+
+Results (v1 -> now):
+
+| metric | v1 | now |
+|---|---|---|
+| `take-grad-loan` fires (10,000 `all` lives) | 0 | 7 (also fires in `scholar`) |
+| `studious` entrants who dropped out | 0% | 27.5% |
+| `scholar` entrants who dropped out | 0% | 28.3% |
+| `studious` completion medical / law / MBA / PhD | 98.6 / 96.3 / 98.9 / 95.4% (all) | 65.6 / 82 / 91 / 57% |
+| `scholar` completion medical / law / MBA / PhD | 100 / 98.2 / 100 / 99.4% | 78 / 84.2 / 87.7 / 66% |
+| `studious` entry / hold a degree | 21.9% / about 21.8% | 22.1% / 17% |
+| `studious` stepped-down scholarship holders | 27.5% | 25.7% |
+| `studious` top rungs (CEO / full professor) | 2.2% / 4.2% | 2.5% / 3.8% |
+| global slots 1 / 2 / 3 decisions | 89.8 / 49.3 / 28.3 | 89.9 / 49.2 / 28.1 |
+| death age median, faults | 72, 0 | 72, 0 |
+
+Overall completion is about 72% of entrants (drop-out 27-29% against the 25% target); the PhD (5 years) and medical (4 years) lose the most, the 2-year MBA the least, a consequence of a flat yearly rate. Remaining gap: `take-grad-loan` fires rarely (7 in `all`) because most enrolled players are put on the loan by the hook before they can choose it; making it common needs a different funding model, not weights. `grad-dishonesty-case` still never fires, and `apply-associate-lawyer`, `promote-attending`, `promote-chief`, `judge-offer` stay unreached in `all` (studious never sits the licensing exams), both outside this tuning.

@@ -179,3 +179,34 @@
   - effect: quality.grad_loan = false
   - effect: quality.grad_debt = 0
   - effect: journal("Dropped out of grad school at age {age}.")
+
+## grad-washout
+- trigger: event
+- icon: 🥀
+- chance: 10%
+- tags: education
+- when: grad_enrolled
+- text: The work piles up, the funding thins, and the program stops feeling like a plan.
+- opens: 0.03..0.12 per life
+
+### outcomes
+- outcome: 1
+  - text: You pack your desk on a Friday and do not come back. The loan paperwork arrives a few weeks later.
+  - effect: end_group(school)
+  - effect: unschedule(grad-school/grad-year-review)
+  - effect: unschedule(grad-school/grad-scholarship-review)
+  - effect: unschedule(grad-school/graduate-medical-school)
+  - effect: unschedule(grad-school/graduate-law-school)
+  - effect: unschedule(grad-school/graduate-mba-program)
+  - effect: unschedule(grad-school/graduate-phd-program)
+  - effect: take_loan(grad-school/grad-loan, quality.grad_debt)
+  - effect: money -= quality.grad_debt
+  - effect: stat.happiness -= 6
+  - effect: quality.grad_program = 0
+  - effect: quality.grad_tuition = 0
+  - effect: quality.grad_scholarship = 0
+  - effect: quality.grad_parents = 0
+  - effect: quality.grad_loan = false
+  - effect: quality.grad_debt = 0
+  - effect: journal("Left grad school without a degree at age {age}.")
+  - rate: 100..100%

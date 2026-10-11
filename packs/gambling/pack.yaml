@@ -1,3 +1,15 @@
 # yaml-language-server: $schema=../../packages/pack-tools/schema/pack.schema.json
 id: gambling
 namespace: gambling
+hooks:
+  # The year's habit, settled before the events are drawn. It used to be a 100% chance event of its own,
+  # which took one of the six yearly event places from every gambler (and from decisions with it).
+  # A clean year of an addicted player (withdrawal, progress) stays an event for its journal line.
+  on_age_up_post:
+    - quality.gambling_away = quality.gambling_addicted and quality.gambling_bets_year == 0
+    # Four or more casino bets build the habit, one to three let it fade, none fade it fast; addiction holds it.
+    - "quality.gambling_heat = quality.gambling_addicted ? quality.gambling_heat : (quality.gambling_bets_year >= 4 ? quality.gambling_heat + 8 + 2 * quality.gambling_bets_year : (quality.gambling_bets_year >= 1 ? quality.gambling_heat - 5 : quality.gambling_heat - 20))"
+    # Addicted and still betting: no recovery, and the habit weighs on you.
+    - "quality.gambling_recovery = (quality.gambling_addicted and quality.gambling_bets_year >= 1) ? 0 : quality.gambling_recovery"
+    - "stat.happiness -= (quality.gambling_addicted and quality.gambling_bets_year >= 1) ? 3 : 0"
+    - quality.gambling_bets_year = 0

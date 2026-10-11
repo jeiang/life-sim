@@ -46,7 +46,7 @@ describe("--shard / merge", () => {
       expect(parseShard(bad)).toBeNull();
   });
 
-  test("merged shards equal the unsharded run, byte for byte", () => {
+  test("merged shards equal the unsharded run, byte for byte", async () => {
     const dir = realPacks();
     const s = setup(dir);
     const lives = 13;
@@ -68,7 +68,7 @@ describe("--shard / merge", () => {
         got,
       );
     }
-    const merged = mergeShards(findShardFiles(out), s.bundles, s.metrics);
+    const merged = await mergeShards(findShardFiles(out), s.bundles, s.metrics);
     const json = (r: unknown) => JSON.stringify(r, null, 2);
     expect(json(merged.report)).toBe(json(whole.report));
     const meta = { seed: 7, profiles };
@@ -77,7 +77,7 @@ describe("--shard / merge", () => {
     );
   }, 60_000);
 
-  test("merge rejects a missing shard", () => {
+  test("merge rejects a missing shard", async () => {
     const dir = realPacks();
     const s = setup(dir);
     const out = mkdtempSync(join(tmpdir(), "harness-shards-"));
@@ -86,9 +86,9 @@ describe("--shard / merge", () => {
     const got: LifeResult[] = [];
     runHarness({ ...base, shard }, (r) => void got.push(r));
     writeShard(out, shardRunOf(1, 4, ["random"], undefined), shard, got);
-    expect(() =>
+    await expect(
       mergeShards(findShardFiles(out), s.bundles, s.metrics),
-    ).toThrow(/missing shard\(s\) 2\/2/);
+    ).rejects.toThrow(/missing shard\(s\) 2\/2/);
   });
 });
 

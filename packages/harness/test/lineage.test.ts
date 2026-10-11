@@ -127,7 +127,7 @@ describe("--generations", () => {
     ).not.toContain("deaths with a living child");
   }, 240_000);
 
-  test("sharded runs merge to the unsharded report", () => {
+  test("sharded runs merge to the unsharded report", async () => {
     const lives = 8;
     const base = { ...s, lives, profiles: ["random"], seed: 5, lineage: three };
     const whole = runHarness(base);
@@ -143,7 +143,7 @@ describe("--generations", () => {
         got,
       );
     }
-    const merged = mergeShards(findShardFiles(out), s.bundles, s.metrics);
+    const merged = await mergeShards(findShardFiles(out), s.bundles, s.metrics);
     expect(JSON.stringify(merged.report)).toBe(JSON.stringify(whole.report));
     expect(merged.run.lineage).toEqual(three);
   }, 240_000);

@@ -230,8 +230,10 @@ if (positionals[0] === "merge") {
   let merged: Merged;
   try {
     merged = unionRuns(
-      dirs.map((d) =>
-        mergeShards(findShardFiles(d), compiled.bundles, loaded.metrics),
+      await Promise.all(
+        dirs.map((d) =>
+          mergeShards(findShardFiles(d), compiled.bundles, loaded.metrics),
+        ),
       ),
     );
   } catch (e) {

@@ -7,7 +7,7 @@
   tags: [money, relationship]
   scope: person
   target: [core-loop/parent, core-loop/sibling, core-loop/friend]
-  chance: 0.1%
+  chance: 0.05%
   when: "age >= 18 and person.age >= 25 and person.quality.invest_tip_age < age and (units(investing/total-market) > 0 or units(investing/world-index) > 0 or units(investing/acme-robotics) > 0 or units(investing/northwind-foods) > 0 or units(investing/lumen-energy) > 0 or units(investing/quark-coin) > 0) and (forecast(investing/total-market) > 2000 or forecast(investing/world-index) > 2000 or forecast(investing/acme-robotics) > 2000 or forecast(investing/northwind-foods) > 2000 or forecast(investing/lumen-energy) > 2000 or forecast(investing/quark-coin) > 2000)"
   text: "{person.first_name} pulls you aside at the next family gathering and drops their voice."
   outcomes:

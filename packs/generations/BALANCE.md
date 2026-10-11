@@ -4,7 +4,7 @@ Content: 21 storylets (will 2, openers 4, aftermath 6, minor heir 4, heirlooms 5
 
 ## Profile and harness
 
-`dynasty` (opt-in, `default: false`): the dating `romantic` moves plus writing a will from 30 (`will-heir`, `will-make`). It exists so `--generations N` runs reach succession: scripts cannot combine with `--generations`. Heirloom and opener fire rates of later generations are not part of the founder's `report.json`; the Pack's own section reports the founder's will kinds and heirloom finds, and the heir availability, inheritance, heir age, minor-heir and insolvent-estate rates by generation are core-loop's generation tables.
+`dynasty` (opt-in, `default: false`): the dating `romantic` moves plus writing a will from 30 (`will-heir`, `will-make`); it does not buy property (#364). `dynasty_homes` (opt-in) is the same plus unlimited house buying, for the `family-home` script only. It exists so `--generations N` runs reach succession: scripts cannot combine with `--generations`. Heirloom and opener fire rates of later generations are not part of the founder's `report.json`; the Pack's own section reports the founder's will kinds and heirloom finds, and the heir availability, inheritance, heir age, minor-heir and insolvent-estate rates by generation are core-loop's generation tables.
 
 300 lives, `--profile dynasty --generations 4`, seed 5: 0 faults for `--heir random` and `--heir richest` (and 3 generations, `eldest`, seed 1); `once-repeated` 0. Decision slots 89.5 / 49.7 / 28.9%. Persons per save p50 24, p99 25; save bytes p50 165 KB (founder numbers).
 
@@ -42,4 +42,31 @@ Base: watch 60,000, quilt 20,000, clock 180,000, violin 900,000, letters 35,000.
 
 Heir-generation storylets (`storylets.heirFired` of a local 300-life run of the same command, after the dynasty profile learned to buy a house): the report lists which storylets fired in a later generation, not how often. Fired in generations 1+: the four `inherit-*` openers, `aftermath-grief`, `aftermath-cash-left`, `aftermath-spouse-share`, `aftermath-sibling-contests`, `aftermath-anniversary`, `aftermath-family-home`, `minor-guardian-takes-in`, `minor-guardian-review`, `minor-handover-at-18`, `heirloom-history`, `will-make`, `will-heir`, `heirloom-attic-find`, `heirloom-appraisal`, `heirloom-family-quarrel`. Not fired by that profile: `minor-on-own` (needs a 16-17 year old minor heir with a living parent who is put out and rolls no guardian, about 0.2% of minor heirs) and `heirloom-sell`.
 
-Reachability (#352): the dynasty profile buys a house or big house from age 30 when it can afford one (a `shop` rule limited by `ids`), so `aftermath-family-home` fires for heirs. `generations/minor-on-own` is a forced script (`profile: dynasty`, `generations: 4`, `heir: random`) that puts every 16-17 year old out of the house (`core-loop/parents-put-you-out` hit) and forces every no-guardian roll (`guardian/none/*` hit): 300 lives, 0 faults, `minor-on-own` in `heirFired`. Forced scripts may now declare `generations` and `heir`, and forcing applies to every generation.
+Reachability (#352, changed in #364): the `dynasty_homes` profile (below) buys a house or big house from age 30 when it can afford one (a `shop` rule limited by `ids`), so `aftermath-family-home` fires for heirs. `generations/minor-on-own` is a forced script (`profile: dynasty`, `generations: 4`, `heir: random`) that puts every 16-17 year old out of the house (`core-loop/parents-put-you-out` hit) and forces every no-guardian roll (`guardian/none/*` hit): 300 lives, 0 faults, `minor-on-own` in `heirFired`. Forced scripts may now declare `generations` and `heir`, and forcing applies to every generation.
+
+## Tuning after the v1 rebalance (#364)
+
+Report: `~/life-sim-reports/generations-v2/` (artemis `reports/generations-dyn1-01fe761-20261011T055724Z`), 10,000 lives, `--profile dynasty --generations 4 --heir random`, base seed 1, 0 faults. The v1 reference is the #245 run (`rebalance-v1/dyn`, seed 20260101); the seeds differ, so read the shifts of a few percent as noise.
+
+Cause: Core lets a life own any number of houses and the `dynasty` profile's `shop` rule bought one whenever it could afford it (a local lineage run showed 7 to 10 houses for a founder and 17 to 21 for a generation 2 heir). Cash went into property every year, so heir cash was 0 at the median, and the estate passes every asset whole, so the hoard grew with every generation. The compounding was the bot's, not the Pack's rules.
+
+Change (data only): `dynasty` no longer buys houses (the `will-make` and `will-heir` rules stay). The house-buying profile lives on as `dynasty_homes` (opt-in, `default: false`), used only by the new forced script `generations/family-home` (2 generations, 40 lives locally, 0 faults, `aftermath-family-home` in `heirFired`), so the release merge still sees that storylet fire. No storylet, will rule or heirloom number changed.
+
+| | v1 (#245) | after |
+|---|---|---|
+| net worth at death p50, generation 0 / 1 / 2 / 3 (major units) | 2.77M / 6.25M / 10.18M / 14.80M | 2.56M / 2.99M / 3.22M / 3.29M |
+| growth per generation | 2.3x / 1.6x / 1.5x | 1.17x / 1.08x / 1.02x |
+| cash inherited p50 into generation 1 / 2 / 3 (minor units) | 0 / 0 / 0 | 0 / 4,041,687 / 6,452,450 |
+| cash inherited p90 into generation 1 / 2 / 3 | 64.5M / 52.8M / 37.3M | 34.4M / 45.0M / 49.9M |
+| founders leaving a living child | 64.6% | 64.3% |
+| lives reaching generation 1 / 2 / 3 | 64.6 / 44.8 / 32.1% | 64.3 / 43.6 / 31.4% |
+| minor-heir successions into generation 1 / 2 / 3 | 37.9 / 28.0 / 24.5% | 38.5 / 28.4 / 22.5% |
+| heir age at succession p50 | 24 / 32 / 34 | 24 / 32 / 34 |
+| will share | 81.5% | 81.3% |
+| decision slots (at least 1 / 2 / 3) | 89.0 / 48.7 / 27.9% | 89.9 / 49.4 / 28.3% |
+| largest decision share | 2.14% | 2.44% (`core-loop/lottery-ticket`) |
+| median death age | 72 | 72 |
+
+Succession shares: the 64% living-child rate and the larger minor-heir share follow the dating tuning (#241) and the profile's always-partner, always-baby play, not this Pack's rules. A bot that always dates and tries for a baby is a ceiling case; it is kept as is. Heir-generation storylets (`storylets.heirFired`): `inherit-under-12`, `inherit-12-17`, `inherit-18-39`, `inherit-40-plus`, `aftermath-grief`, `aftermath-cash-left`, `aftermath-spouse-share`, `aftermath-sibling-contests`, `aftermath-anniversary`, `minor-guardian-takes-in`, `minor-guardian-review`, `minor-handover-at-18`, `heirloom-history`, `heirloom-attic-find`, `heirloom-appraisal`, `heirloom-family-quarrel`, `will-heir`, `will-make` all fire; `aftermath-family-home` now fires only in the `family-home` script.
+
+Gap for Core (not fixable by data here): a life can own unlimited houses and the estate passes them whole with no cost, so any profile that buys property compounds across generations. A purchase cap on homes or an estate settlement cost would be an engine or Core item change.

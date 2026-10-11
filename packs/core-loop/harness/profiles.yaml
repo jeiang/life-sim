@@ -19,6 +19,10 @@ profiles:
         pick: first
       - ids: ["*/enrol-*", "*/study-harder", "*/visit-library"]
         menu: occupation/education
+      # The full-time applications are only on the menu while the player has no full-time job, so this looks for
+      # work when unemployed and never swaps a career for a part-time job.
+      - ids: ["core-loop/apply-*"]
+        except: ["core-loop/apply-cashier", "core-loop/apply-barista"]
       - ids: ["*/enrol-*", "*/study-harder", "*/visit-library"]
       - ids: ["*/apply-*"]
   spender:

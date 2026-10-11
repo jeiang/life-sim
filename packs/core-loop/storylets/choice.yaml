@@ -214,7 +214,7 @@
 - id: stray-dog
   icon: 🐕
   trigger: event
-  weight: 5
+  weight: 2
   when: age >= 6
   cooldown: 6
   text: "A scruffy stray dog follows {player.first_name} home and refuses to leave."

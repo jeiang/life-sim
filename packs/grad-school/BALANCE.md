@@ -118,3 +118,22 @@ Remaining gap:
 - Defaults fell from 20.4 to 13.1 while opened loans barely moved. The cause is not established either. Check whether the cash path reduces loan misses before treating it as a real drop.
 - Crime `arrest-manhunt` and `court-execution` are covered by forced scripts only (see above). No artemis run checked them.
 
+## Tuning after v1 (#381, under #246)
+
+The yearly `grad-washout` chance now varies by program: medical 8%, law 14%, MBA 25%, and PhD 6%. The harness records the number of `take-grad-loan` fires and reports the share of tuition-paying entrants who borrowed; PhD entrants are excluded from that share because the program has no tuition.
+
+Runs: artemis `grad-washout-1994143-all` (10,000 lives, `--profile all`, seed 20260101, ref `1994143`, report `reports/grad-washout-1994143-all-1994143-20261011T193915Z/`) and `grad-washout-1994143-scholar-retry` (3,000 lives, `--profile scholar`, seed 20260101, ref `1994143`, report `reports/grad-washout-1994143-scholar-retry-1994143-20261011T200437Z/`). Local 2,000-life runs narrowed the rates before the Artemis runs.
+
+Completion, before (#380) and after (#381), in medical / law / MBA / PhD order:
+
+| Profile | Before | After |
+|---|---|---|
+| `all` | 71.6 / 77.9 / 93.8 / 65.6% | 75 / 73.8 / 76.8 / 76.4% |
+| `studious` | not separately reported | 73.8 / 75 / 76.8 / 82.2% |
+| `scholar` | 69.6 / 80 / 84.1 / 63.4% | 73.4 / 73.5 / 71.1 / 78.1% |
+
+`grad-school/take-grad-loan` fired 350 times in the 10,000-life `all` run. Of tuition-paying entrants, 54.3% borrowed; the share was 63.5% in the `scholar` run. The `take-grad-loan` count in the scholar run was 1,137.
+
+Global guards in the 10,000-life `all` run: decision slots 1 / 2 / 3 were 89.9 / 49.6 / 28.7%; the largest decision storylet was `core-loop/lottery-ticket` at 2.42%; death-age median was 72; faults were 0.
+
+Remaining gap: the requested completions are now near 75% overall, but the profile-specific spread remains. Studious PhD completion is 82.2%, and scholar MBA completion is 71.1%. Global guards pass in `all`.

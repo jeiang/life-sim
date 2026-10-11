@@ -56,8 +56,8 @@ Change (data only): `dynasty` no longer buys houses (the `will-make` and `will-h
 |---|---|---|
 | net worth at death p50, generation 0 / 1 / 2 / 3 (major units) | 2.77M / 6.25M / 10.18M / 14.80M | 2.56M / 2.99M / 3.22M / 3.29M |
 | growth per generation | 2.3x / 1.6x / 1.5x | 1.17x / 1.08x / 1.02x |
-| cash inherited p50 into generation 1 / 2 / 3 (minor units) | 0 / 0 / 0 | 0 / 4,041,687 / 6,452,450 |
-| cash inherited p90 into generation 1 / 2 / 3 | 64.5M / 52.8M / 37.3M | 34.4M / 45.0M / 49.9M |
+| cash inherited p50 into generation 1 / 2 / 3 (minor units) | 0 / 0 / 0 | 0 / 40.4M / 64.5M |
+| cash inherited p90 into generation 1 / 2 / 3 | 64.5M / 52.8M / 37.3M | 344.3M / 450.3M / 498.9M |
 | founders leaving a living child | 64.6% | 64.3% |
 | lives reaching generation 1 / 2 / 3 | 64.6 / 44.8 / 32.1% | 64.3 / 43.6 / 31.4% |
 | minor-heir successions into generation 1 / 2 / 3 | 37.9 / 28.0 / 24.5% | 38.5 / 28.4 / 22.5% |

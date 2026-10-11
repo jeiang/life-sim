@@ -1,0 +1,9 @@
+description: A scholar gets into law school, passes the bar, joins a firm as an associate, and is made partner after four years
+profile: scholar
+steps:
+  - roll: outcome/grad-school/apply-law-school
+    value: 0
+  - roll: outcome/grad-school/sit-bar-exam
+    value: 0
+  - roll: outcome/grad-school/apply-associate-lawyer
+    value: 0

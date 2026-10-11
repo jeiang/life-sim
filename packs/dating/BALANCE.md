@@ -64,3 +64,31 @@ Remaining gap: the all-profile median age at the first marriage is 38 (target la
 - `try-for-a-baby`'s two pregnant outcomes split by who carries (o1 the player, o2 the partner), so each reads about half of the sheet's 22..28%; the pair sums to 24.6%.
 - A caught affair, a partner's walk-away and a break-up leave the relationship as `dating/ex`; the ex is never used again (no reconciliation or ex-contact content in v1).
 - The spouse checks in the affair and divorce chains read `count_role(core-loop/spouse, 0, 100)`, the number of spouses, not the bound person's role; there is only one spouse per life (`plan-wedding` once, no remarriage).
+
+## Marriage age after v1 (#362)
+
+Report: artemis `~/Projects/life-sim/reports/dating-marriage-1-15c5766-20261011T055637Z/report.md` (10,000 lives, `--profile all`, seed 1; the v1 baseline is `rebalance-v1-all-ab46a88-20261011T032954Z`). Funnel found with a throwaway per-stage age measure on the `random` profile: the median first partner came at 30, the proposal at 33, but the wedding at 46. The gap was cash, not chance: a random player rarely holds the $800 that gated the elopement, and closeness to a partner only grew through chosen actions.
+
+Changes (data only, no decision weights, so the ask-out share fell instead of rising):
+
+- `plan-wedding` and its Elope choice no longer need cash. A broke couple puts the $800 on a card and the cash goes negative; Small and Big weddings still need the money.
+- New event `growing-closer` (80% a year, partner not yet asked, closeness under 80): +10 closeness. A partner no longer needs date nights to reach the 60 that proposing and the wedding ask for.
+- `ask-out` success adds +20 closeness.
+- `find-a-date` (18 to 30): a quarter of each attracted outcome is now someone you are already seeing (partner, closeness +20) instead of a friend you may ask out later. The no-spark weight keeps its share (60 to 240 with the other weights times four).
+
+| measure (10,000 lives, all profiles) | v1 | now |
+|---|---|---|
+| median age at first marriage, all | 38 | 27 |
+| median age at first marriage, random | 45 | 29 |
+| median age at first marriage, romantic | 32 | 26 |
+| first child joined, all (mean; median) | 43 mean as reported | 42; 39 |
+| `dating/ask-out` share of decisions | 2.61% | 2.08% |
+| decision slots 1 / 2 / 3 | 89.8 / 49.3 / 28.3 | 89.9 / 49.2 / 28.1 |
+| death age median | 72 | 72 |
+| faults | 0 | 0 |
+
+Share of lives married moved up with the speed (random about 75% in 1000-life checks, divorced of married 21% overall). Age at the first marriage is 27 against the 35 acceptance line; random's median is 29.
+
+Net worth by profile: the `romantic` profile's high median net worth (about 1.0 million at 40, against about 31,000 for `random`) comes from the profile itself, not from a dating number. It holds a job every year, is never homeless, and a moved-in partner pays half the standard. Read net worth by profile with that in mind, and do not tune dating prices against it.
+
+Remaining gap: first child joined at 39 median (all lives; children outside the romantic profile still come only from unplanned pregnancy). That was not an acceptance item of #362.

@@ -235,7 +235,7 @@ describe("finding love", () => {
   test("each outcome spawns a date of its own gender and age band, as a friend or classmate", () => {
     const genders = ["female", "male", "nonbinary"] as const;
     for (const [i, g] of genders.entries()) {
-      force({ "outcome/dating/find-a-date": i });
+      force({ "outcome/dating/find-a-date": i * 2 });
       const w = adult(2, 25);
       const r = startStorylet(w, bundles, D("find-a-date"));
       const date = [...r.world.persons.values()].find(
@@ -252,6 +252,18 @@ describe("finding love", () => {
       );
       expect(a.some((x) => x > 0)).toBe(true);
     }
+    // The odd outcomes (1, 3, 5) are the same three dates already seeing each other.
+    for (const [i, g] of genders.entries()) {
+      force({ "outcome/dating/find-a-date": i * 2 + 1 });
+      const w = adult(2, 25);
+      const r = startStorylet(w, bundles, D("find-a-date"));
+      const date = [...r.world.persons.values()].find(
+        (p) => p.id !== w.playerId && !w.persons.has(p.id),
+      );
+      expect(date?.gender).toBe(g);
+      expect(roleOf(r.world, date!.id)).toBe(`${CL}/partner`);
+      expect(rel(r.world, date!.id)?.closeness).toBeGreaterThanOrEqual(20);
+    }
     force({ "outcome/dating/find-a-date-teen": 1 });
     const t = adult(3, 15);
     const r = startStorylet(t, bundles, D("find-a-date-teen"));
@@ -266,7 +278,7 @@ describe("finding love", () => {
 
   test("a date is rolled by the player's attraction: nothing attracted to women gives the woman outcome weight 1", () => {
     const s = idx.storylets.get(D("find-a-date"));
-    expect(s?.outcomes).toHaveLength(4);
+    expect(s?.outcomes).toHaveLength(7);
   });
 
   test("ask-out guards both sides of 18, 14+ and the age gap", () => {
@@ -455,11 +467,11 @@ describe("moving in and the wedding", () => {
     return [w, pid] as const;
   };
 
-  test("plan a wedding needs an accepted proposal, cash for an elopement and no marriage yet", () => {
+  test("plan a wedding needs an accepted proposal and no marriage yet, not cash (elopement goes on a card)", () => {
     const [w, pid] = engaged();
     expect(locked(w, "plan-wedding", pid)).toBe(false);
-    const [poor, poorId] = engaged(79_999);
-    expect(locked(poor, "plan-wedding", poorId)).toBe(true);
+    const [poor, poorId] = engaged(0);
+    expect(locked(poor, "plan-wedding", poorId)).toBe(false);
     const [noRing, noId] = add(
       adult(13, 30),
       "partner",
@@ -474,7 +486,7 @@ describe("moving in and the wedding", () => {
     );
   });
 
-  test("choices are gated by cash: elope $800, small $12,000, big $40,000", () => {
+  test("choices: elope $800 (no cash needed), small $12,000, big $40,000 (gated by cash)", () => {
     const s = idx.storylets.get(D("plan-wedding"));
     expect(s?.choices.map((c) => c.label)).toEqual([
       "Elope",
@@ -495,6 +507,9 @@ describe("moving in and the wedding", () => {
     const [broke, bid] = engaged(100_000);
     const wb = play(broke, D("plan-wedding"), bid, 0);
     expect(me(wb.world).money).toBe(20_000);
+    const [skint, sid] = engaged(0);
+    const ws = play(skint, D("plan-wedding"), sid, 0);
+    expect(me(ws.world).money).toBe(-80_000);
   });
 
   test("no prenup: savings merge, the partner becomes a spouse, married fires and the age is recorded", () => {

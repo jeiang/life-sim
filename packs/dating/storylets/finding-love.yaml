@@ -40,25 +40,46 @@
   cooldown: 1
   text: A chance to meet someone new comes up, and you are free this weekend.
   outcomes:
-    - weight: "quality.dating_attracted_women + 1"
+    - weight: "(quality.dating_attracted_women + 1) * 3"
       text: A friend of a friend introduces you to a woman who laughs at all your jokes, and you swap numbers before the night ends.
       effects:
         - "spawn_person(core-loop/friend, dating/date-gen-female) as date"
         - relationship(date).closeness += 10
         - stat.happiness += 4
-    - weight: "quality.dating_attracted_men + 1"
+    - weight: "quality.dating_attracted_women + 1"
+      text: A friend of a friend introduces you to a woman who laughs at all your jokes, and by the end of the month you are seeing each other.
+      effects:
+        - "spawn_person(core-loop/friend, dating/date-gen-female) as date"
+        - relationship(date).role = core-loop/partner
+        - relationship(date).closeness += 20
+        - stat.happiness += 4
+    - weight: "(quality.dating_attracted_men + 1) * 3"
       text: A man you met at the gym asks if you want to grab a coffee, and it turns into a three hour chat.
       effects:
         - "spawn_person(core-loop/friend, dating/date-gen-male) as date"
         - relationship(date).closeness += 10
         - stat.happiness += 4
-    - weight: "quality.dating_attracted_nonbinary + 1"
+    - weight: "quality.dating_attracted_men + 1"
+      text: A man you met at the gym asks if you want to grab a coffee, and it turns into a three hour chat and then a regular thing.
+      effects:
+        - "spawn_person(core-loop/friend, dating/date-gen-male) as date"
+        - relationship(date).role = core-loop/partner
+        - relationship(date).closeness += 20
+        - stat.happiness += 4
+    - weight: "(quality.dating_attracted_nonbinary + 1) * 3"
       text: A coworker from the other team keeps finding reasons to talk to you, and you are glad they do.
       effects:
         - "spawn_person(core-loop/friend, dating/date-gen-nonbinary) as date"
         - relationship(date).closeness += 10
         - stat.happiness += 4
-    - weight: 60
+    - weight: "quality.dating_attracted_nonbinary + 1"
+      text: A coworker from the other team keeps finding reasons to talk to you, and soon you are properly together.
+      effects:
+        - "spawn_person(core-loop/friend, dating/date-gen-nonbinary) as date"
+        - relationship(date).role = core-loop/partner
+        - relationship(date).closeness += 20
+        - stat.happiness += 4
+    - weight: 240
       text: The night out is fine, but there is no spark, and you both head home early.
       effects:
         - stat.happiness -= 1
@@ -78,6 +99,7 @@
           text: "{person.first_name} lights up and says yes before you finish the sentence."
           effects:
             - relationship(person).role = core-loop/partner
+            - relationship(person).closeness += 20
             - stat.happiness += 6
         - weight: "(100 - (player.gender == \"male\" ? person.quality.dating_attracted_men : (player.gender == \"female\" ? person.quality.dating_attracted_women : person.quality.dating_attracted_nonbinary))) / 3"
           text: "{person.first_name} lets you down gently, and the next few days are a little awkward."
@@ -146,3 +168,19 @@
           text: A nice evening with friends instead.
           effects:
             - stat.happiness += 2
+
+- id: growing-closer
+  icon: 🫶
+  trigger: event
+  tags: [relationship]
+  scope: person
+  target: [core-loop/partner]
+  chance: 80%
+  when: "age >= 14 and person.closeness < 80 and not person.quality.dating_proposed"
+  text: "The year with {person.first_name} settles into a comfortable rhythm."
+  outcomes:
+    - weight: 1
+      text: "Little routines, shared jokes and a spare toothbrush make you feel closer to {person.first_name}."
+      effects:
+        - relationship(person).closeness += 10
+        - stat.happiness += 2

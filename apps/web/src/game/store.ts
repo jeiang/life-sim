@@ -10,8 +10,15 @@ import {
   choose,
   describePending,
   endLife,
+  finishGodStep,
   formatMoney,
+  GodAsk,
+  type GodCategory,
+  type GodDraw,
   type GraveyardEntry,
+  godEditPerson,
+  godPickRoll,
+  godSetMarket,
   godSetMoney,
   godSetStat,
   heirsOf,
@@ -23,17 +30,21 @@ import {
   type Obituary,
   type PackIndex,
   type PendingView,
+  type PersonId,
   playFixedLife,
   purchase,
   recordNetWorth,
+  rollId,
   runAction,
   type SavedLife,
   type ShopRow,
   type SimResult,
   sell,
+  spawnPerson,
   succeed,
   trade,
   type World,
+  withGodAsk,
 } from "@life/core";
 import { computed, effect, signal } from "@preact/signals";
 import {
@@ -44,7 +55,10 @@ import {
   openLifeStore,
   requestPersistence,
 } from "../persistence/index.ts";
-import { matureMode } from "./hidden.ts";
+import { godAsk, godMode, matureMode } from "./hidden.ts";
+
+type GodMarketEdit = Parameters<typeof godSetMarket>[2];
+type GodPersonPatch = Parameters<typeof godEditPerson>[2];
 
 /** UI-layer seed: the only place the web app draws randomness (ADR 0002). */
 function randomSeed(): number {
@@ -223,26 +237,30 @@ export async function initGame(): Promise<void> {
   ready.value = true;
 }
 
-export function ageUpOneYear(): void {
-  if (!canAgeUp(world.value)) return;
-  const r = ageUp(world.value, bundles);
-  world.value = r.world;
-  latestLines.value = r.lines;
-  track();
-  chainLines.value = [];
+export function ageUpOneYear(): string | null {
+  if (!canAgeUp(world.value)) return null;
+  return playStep(
+    (w) => ageUp(w, bundles),
+    () => {
+      track();
+      chainLines.value = [];
+    },
+  );
 }
 
-export function chooseOption(index: number): void {
+export function chooseOption(index: number): string | null {
   const before = world.value.pending;
-  if (!before) return;
-  const r = choose(world.value, bundles, index);
-  world.value = r.world;
-  latestLines.value = r.lines;
-  // A `next:` step keeps the parent's `rest` object; a later queued event gets a fresh one.
-  const chained =
-    r.world.pending !== null && r.world.pending.rest === before.rest;
-  chainLines.value = chained ? [...chainLines.value, ...r.lines] : [];
-  track();
+  if (!before) return null;
+  return playStep(
+    (w) => choose(w, bundles, index),
+    (r) => {
+      // A `next:` step keeps the parent's `rest` object; a later queued event gets a fresh one.
+      const chained =
+        r.world.pending !== null && r.world.pending.rest === before.rest;
+      chainLines.value = chained ? [...chainLines.value, ...r.lines] : [];
+      track();
+    },
+  );
 }
 
 /** Item kind id whose purchase dialog is open, or null. */
@@ -265,14 +283,16 @@ export const purchaseRow = computed<ShopRow | null>(() => {
 });
 
 /** Buy the open item with cash or its loan, then close the dialog. */
-export function confirmPurchase(mode: "cash" | "loan"): void {
+export function confirmPurchase(mode: "cash" | "loan"): string | null {
   const id = purchasing.value;
-  if (id === null) return;
-  const r = purchase(world.value, bundles, id, mode);
-  world.value = r.world;
-  latestLines.value = r.lines;
-  purchasing.value = null;
-  track();
+  if (id === null) return null;
+  return playStep(
+    (w) => purchase(w, bundles, id, mode),
+    () => {
+      purchasing.value = null;
+      track();
+    },
+  );
 }
 
 /** Add a new life to the list and play it. The current life stays in the list. */
@@ -334,6 +354,8 @@ if (import.meta.env.VITE_E2E) {
       return f.id;
     });
   };
+  /** The child the e2e `spawnChild` hook last added (see `lastChild`). */
+  let spawnedChild: number | null = null;
   const hook = {
     /** Run an action (e.g. start a `next:` chain). */
     runAction(id: string): void {
@@ -454,22 +476,177 @@ if (import.meta.env.VITE_E2E) {
       if (p) persons.set(w.playerId, { ...p, money: n });
       world.value = { ...w, persons };
     },
+    /** Have a child of the player through the spawn form (god mode asks its draws). */
+    spawnChild(): string | null {
+      let child: number | null = null;
+      return playStep(
+        (w) => {
+          const [next, id] = spawnPerson(
+            w,
+            packIndex,
+            w.playerId,
+            "core-loop/child",
+            "dating/baby-gen",
+          );
+          child = id;
+          return { world: next, lines: [] };
+        },
+        () => {
+          spawnedChild = child;
+        },
+      );
+    },
+    /** The child the last `spawnChild` added, or null. */
+    lastChild(): number | null {
+      return spawnedChild;
+    },
+    /** A person's given name, family name and gender (the reload check). */
+    personInfo(id: number) {
+      const p = world.value.persons.get(id);
+      return p
+        ? { givenName: p.givenName, familyName: p.familyName, gender: p.gender }
+        : null;
+    },
   };
   (window as unknown as { __life: typeof hook }).__life = hook;
 }
 
-/** Apply a sim result that may throw (rejected purchase); returns the error message or null. */
-function apply(
-  run: () => { world: World; lines: readonly string[] },
+/** A step's outcome: the world it leaves and the journal lines it wrote. */
+interface StepResult {
+  world: World;
+  lines: readonly string[];
+}
+type StepRun = (w: World) => StepResult;
+
+/** Most god-mode questions one step may ask before it stops (guards a stuck loop). */
+const MAX_GOD_ROUNDS = 500;
+
+/**
+ * A step parked until the player answers its god-mode questions: the draft (picks already
+ * logged), the step to rerun, and what it still asks. Null when no step is parked. Host:
+ * `GodAskDialog`.
+ */
+export interface GodPending {
+  readonly ask: GodAsk;
+  readonly draft: World;
+  readonly run: StepRun;
+  readonly cats: readonly GodCategory[];
+  readonly skip: ReadonlySet<string>;
+  readonly after: ((r: StepResult) => void) | undefined;
+  /** The Sex the step has settled on (picked earlier in the same step), for the names rows. */
+  readonly sex: string | undefined;
+  readonly rounds: number;
+}
+export const godPending = signal<GodPending | null>(null);
+
+/**
+ * Run a step and commit it, unless god mode parks it for the player's answers (`godPending`).
+ * The draft is committed only when the step finishes, so a cancelled step leaves the life
+ * unchanged. Returns an error message or null.
+ */
+function playStep(
+  run: StepRun,
+  after?: (r: StepResult) => void,
 ): string | null {
+  return drive(run, world.value, godAsk.value, new Set(), after, undefined, 0);
+}
+
+function drive(
+  run: StepRun,
+  draft: World,
+  cats: readonly GodCategory[],
+  skip: ReadonlySet<string>,
+  after: ((r: StepResult) => void) | undefined,
+  sex: string | undefined,
+  rounds: number,
+): string | null {
+  const armed = godMode.value ? withGodAsk(draft, cats, skip) : draft;
+  let r: StepResult;
   try {
-    const r = run();
-    world.value = r.world;
-    latestLines.value = r.lines;
-    return null;
+    const out = run(armed);
+    r = { world: finishGodStep(out.world), lines: out.lines };
+  } catch (e) {
+    if (e instanceof GodAsk) {
+      godPending.value = { ask: e, draft, run, cats, skip, after, sex, rounds };
+      return null;
+    }
+    godPending.value = null;
+    return e instanceof Error ? e.message : String(e);
+  }
+  godPending.value = null;
+  world.value = r.world;
+  latestLines.value = r.lines;
+  after?.(r);
+  return null;
+}
+
+/** The player's answers to the parked step's questions. */
+export interface GodAnswer {
+  /** Pinned values: the draw and the value it takes (see `GodDraw` for each kind's value). */
+  readonly picks: readonly {
+    readonly draw: GodDraw;
+    readonly v: number | boolean;
+  }[];
+  /** Draws to leave to the dice. */
+  readonly skip: readonly GodDraw[];
+  /** Leave every other draw of this step to the dice. */
+  readonly restToChance: boolean;
+}
+
+/**
+ * Answer the parked step and rerun it. A Sex that differs from its natural value is applied
+ * alone: the profile options under it change, so the other rows are asked again. Returns an
+ * error message or null.
+ */
+export function answerGod(answer: GodAnswer): string | null {
+  const p = godPending.value;
+  if (!p) return null;
+  if (p.rounds >= MAX_GOD_ROUNDS) {
+    godPending.value = null;
+    return "God mode stopped: too many questions in one step.";
+  }
+  const sexPick = answer.picks.find(
+    (x) => x.draw.label === "Sex" && x.draw.kind === "pick",
+  );
+  const staged =
+    sexPick !== undefined && sexPick.v !== sexPick.draw.natural
+      ? sexPick
+      : undefined;
+  const picks = staged ? [staged] : answer.picks;
+  const skipped = staged ? [] : answer.skip;
+  const restToChance = !staged && answer.restToChance;
+  if (picks.length === 0 && skipped.length === 0 && !restToChance)
+    return "Answer each question, or leave them to chance.";
+  try {
+    let draft = p.draft;
+    for (const { draw, v } of picks)
+      draft = godPickRoll(draft, {
+        age: draw.age,
+        key: draw.key,
+        n: draw.n,
+        d: draw.d,
+        v,
+      });
+    const skip = new Set(p.skip);
+    for (const draw of skipped) skip.add(rollId(draw, draw.d));
+    const sex = sexPick?.draw.options?.[Number(sexPick.v)]?.label ?? p.sex;
+    return drive(
+      p.run,
+      draft,
+      restToChance ? [] : p.cats,
+      skip,
+      p.after,
+      sex,
+      p.rounds + 1,
+    );
   } catch (e) {
     return e instanceof Error ? e.message : String(e);
   }
+}
+
+/** Drop the parked step: the life stays as it was before the step. */
+export function cancelGod(): void {
+  godPending.value = null;
 }
 
 /** Run a menu action (bound to `target` for person actions). Any open choice shows in the dialog. */
@@ -479,7 +656,7 @@ export function runMenuAction(
 ): string | null {
   const s = packIndex.storylets.get(actionId);
   if (!s?.amount)
-    return apply(() => runAction(world.value, bundles, actionId, target));
+    return playStep((w) => runAction(w, bundles, actionId, target));
   const row = listActions(world.value, bundles, s.menu ?? "", target).find(
     (r) => r.id === actionId,
   );
@@ -488,32 +665,40 @@ export function runMenuAction(
     title: row.label,
     ...row.amount,
     format: (n) => formatMoney(n, packIndex.currency),
-    onConfirm: (amount) =>
-      apply(() => runAction(world.value, bundles, actionId, target, amount)),
+    onConfirm: (amount) => {
+      playStep((w) => runAction(w, bundles, actionId, target, amount));
+    },
   });
   return null;
 }
 
 /** Buy (positive) or sell (negative) `amount` of cash worth of a market kind; error message or null. */
 export function tradeKind(kindId: string, amount: number): string | null {
-  return apply(() => trade(world.value, bundles, kindId, amount));
+  return playStep((w) => trade(w, bundles, kindId, amount));
 }
 
 /** God mode: set a player stat (0-100). */
 export function editStat(stat: string, value: number): string | null {
-  return apply(() => ({
-    world: godSetStat(world.value, stat, value),
-    lines: [],
-  }));
+  return playStep((w) => ({ world: godSetStat(w, stat, value), lines: [] }));
 }
 
 /** God mode: set the player's money, minor units. */
 export function editMoney(value: number): string | null {
-  return apply(() => ({ world: godSetMoney(world.value, value), lines: [] }));
+  return playStep((w) => ({ world: godSetMoney(w, value), lines: [] }));
+}
+
+/** God mode: set a market kind's next price (`next`, minor units) or its next event. */
+export function setMarket(kind: string, edit: GodMarketEdit): string | null {
+  return playStep((w) => ({ world: godSetMarket(w, kind, edit), lines: [] }));
+}
+
+/** God mode: rename a person, or set their sex or stats. */
+export function editPerson(id: PersonId, patch: GodPersonPatch): string | null {
+  return playStep((w) => ({ world: godEditPerson(w, id, patch), lines: [] }));
 }
 
 export function sellAsset(assetId: number): string | null {
-  return apply(() => sell(world.value, bundles, assetId));
+  return playStep((w) => sell(w, bundles, assetId));
 }
 
 /** Play a life from the list. */

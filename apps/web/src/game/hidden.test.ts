@@ -52,6 +52,7 @@ describe("loadHidden", () => {
       unlocked: false,
       god: false,
       mature: false,
+      ask: ["outcome", "person"],
     });
     expect(loadHidden(null).unlocked).toBe(false);
   });
@@ -60,17 +61,35 @@ describe("loadHidden", () => {
       "life-sim:hidden-unlocked": "1",
       "life-sim:mature-mode": "1",
     });
-    expect(loadHidden(s)).toEqual({ unlocked: true, god: false, mature: true });
+    expect(loadHidden(s)).toEqual({
+      unlocked: true,
+      god: false,
+      mature: true,
+      ask: ["outcome", "person"],
+    });
   });
   test("an install unlocked by the old code stays unlocked with god mode on", () => {
     const s = memory({ "life-sim:god-mode": "1" });
-    expect(loadHidden(s)).toEqual({ unlocked: true, god: true, mature: false });
+    expect(loadHidden(s)).toEqual({
+      unlocked: true,
+      god: true,
+      mature: false,
+      ask: ["outcome", "person"],
+    });
     expect(s.m.get("life-sim:hidden-unlocked")).toBe("1");
     s.removeItem("life-sim:god-mode");
     expect(loadHidden(s)).toEqual({
       unlocked: true,
       god: false,
       mature: false,
+      ask: ["outcome", "person"],
     });
+  });
+  test("the saved ask categories are read in canonical order; empty means none", () => {
+    expect(loadHidden(memory({ "life-sim:god-ask": "npc,event" })).ask).toEqual(
+      ["event", "npc"],
+    );
+    expect(loadHidden(memory({ "life-sim:god-ask": "" })).ask).toEqual([]);
+    expect(loadHidden(memory({ "life-sim:god-ask": "bogus" })).ask).toEqual([]);
   });
 });

@@ -1,5 +1,4 @@
-import { useState } from "preact/hooks";
-import { Field, inputClass } from "../components/GodFields.tsx";
+import { EditRow } from "../components/GodFields.tsx";
 import { PageShell } from "../components/PageShell.tsx";
 import { money } from "../game/format.ts";
 import {
@@ -9,60 +8,9 @@ import {
   player,
   world,
 } from "../game/store.ts";
-import { closePage } from "../nav.ts";
+import { closePage, openPage, openProfile, openSub } from "../nav.ts";
 
 const minorPerMajor = 10 ** (packIndex.currency?.digits ?? 2);
-
-/** One number input with its own Set button, so one press is one logged edit. */
-function EditRow(props: {
-  label: string;
-  value: number;
-  min?: number;
-  max?: number;
-  step?: number;
-  onSet: (n: number) => string | null;
-}) {
-  const [text, setText] = useState(String(props.value));
-  const [error, setError] = useState<string | null>(null);
-  return (
-    <div class="space-y-1">
-      <div class="flex items-end gap-2">
-        <div class="flex-1">
-          <Field label={props.label}>
-            <input
-              type="number"
-              inputMode="decimal"
-              min={props.min}
-              max={props.max}
-              step={props.step ?? 1}
-              value={text}
-              onInput={(e) => setText(e.currentTarget.value)}
-              class={inputClass}
-            />
-          </Field>
-        </div>
-        <button
-          type="button"
-          aria-label={`Set ${props.label}`}
-          disabled={text.trim() === "" || Number.isNaN(Number(text))}
-          onClick={() => {
-            const err = props.onSet(Number(text));
-            setError(err);
-            if (!err) setText(String(props.value));
-          }}
-          class="min-h-11 rounded-xl bg-action px-4 font-semibold text-on-action disabled:opacity-50"
-        >
-          Set
-        </button>
-      </div>
-      {error && (
-        <p role="alert" class="text-sm text-danger">
-          {error}
-        </p>
-      )}
-    </div>
-  );
-}
 
 /** God mode: edit the player's stats (0-100) and money. Each edit is a logged choice. */
 export function GodPanel() {
@@ -94,6 +42,25 @@ export function GodPanel() {
             step={1 / minorPerMajor}
             onSet={(n) => editMoney(Math.round(n * minorPerMajor))}
           />
+          <div class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => openProfile(null)}
+              class="min-h-11 rounded-xl px-4 font-semibold text-action ring-1 ring-text-muted/40"
+            >
+              Your profile
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                openPage("assets");
+                openSub("assets/investments");
+              }}
+              class="min-h-11 rounded-xl px-4 font-semibold text-action ring-1 ring-text-muted/40"
+            >
+              Investments
+            </button>
+          </div>
         </>
       )}
     </PageShell>

@@ -2,6 +2,7 @@ import { AmountPrompt } from "./components/AmountPrompt.tsx";
 import { BottomBar } from "./components/BottomBar.tsx";
 import { ChoiceDialog } from "./components/ChoiceDialog.tsx";
 import { Feed } from "./components/Feed.tsx";
+import { GodAskDialog } from "./components/GodAskDialog.tsx";
 import { Header } from "./components/Header.tsx";
 import { PurchaseDialog } from "./components/PurchaseDialog.tsx";
 import { SaveWarning } from "./components/SaveWarning.tsx";
@@ -59,6 +60,7 @@ export function App() {
         <SaveWarning />
         <Screen />
         <ChoiceDialog />
+        <GodAskDialog />
         <PurchaseDialog />
         <AmountPrompt />
       </div>

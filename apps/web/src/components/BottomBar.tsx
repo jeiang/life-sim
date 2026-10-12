@@ -32,7 +32,10 @@ export function BottomBar() {
         <button
           type="button"
           disabled={!canAge.value}
-          onClick={ageUpOneYear}
+          onClick={() => {
+            const err = ageUpOneYear();
+            if (err) throw new Error(err);
+          }}
           class="mx-auto -mt-6 flex size-20 flex-col items-center justify-center rounded-full bg-action font-black text-on-action shadow-lg enabled:active:scale-95 disabled:opacity-60 @max-xs:order-first @max-xs:col-span-2 @max-xs:mt-1 @max-xs:min-h-20 @max-xs:w-[calc(100%-1rem)] @max-xs:rounded-2xl motion-safe:transition-transform"
         >
           <Plus aria-hidden="true" class="size-6" />

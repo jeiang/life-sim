@@ -2,15 +2,25 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 import {
+  ageUp,
+  choose,
+  finishGodStep,
+  GodAsk,
+  type GodCategory,
+  type GodDraw,
   getPerson,
+  godPickRoll,
+  godSetMoney,
   indexBundles,
   listActions,
   newLife,
+  replay,
   runAction,
   setQuality,
   setStreamOverride,
   updatePerson,
   type World,
+  withGodAsk,
   worldHash,
 } from "../../../packages/core/src/index.ts";
 import type { CompiledOutcome } from "../../../packages/core/src/pack.ts";
@@ -641,7 +651,7 @@ describe("forced outcomes (setStreamOverride)", () => {
     const free = runAction(w, bundles, G("play-slots"), undefined, 100).world;
     setStreamOverride((_age, key) =>
       key === `outcome/${G("play-slots")}`
-        ? { pick: jackpot.text as string }
+        ? { pick: jackpot.label as string }
         : undefined,
     );
     try {
@@ -684,12 +694,76 @@ describe("forced outcomes (setStreamOverride)", () => {
         100,
       ).world;
       expect(me(forced).money).toBe(10000 + 100 * 99);
-      setStreamOverride(() => ({ pick: "no such text" }));
+      setStreamOverride(() => ({ pick: "no such label" }));
       expect(() =>
         runAction(w, bundles, G("play-slots"), undefined, 100),
       ).toThrow(/matches no label/);
     } finally {
       setStreamOverride(null);
     }
+  });
+});
+
+describe("god mode: labelled outcome picks", () => {
+  const ALL: GodCategory[] = ["outcome", "event", "person", "npc"];
+
+  /** Answers the outcome draw for `storylet` by its label; every other draw keeps its natural value. */
+  /** One live step, run the way the web driver does: answer each ask, retry until the step completes. */
+  function godStep(
+    start: World,
+    step: (w: World) => { world: World },
+    answer: (d: GodDraw) => number | boolean,
+  ): World {
+    let draft = start;
+    for (let round = 0; round < 100; round++) {
+      try {
+        return finishGodStep(step(withGodAsk(draft, ALL)).world);
+      } catch (e) {
+        if (!(e instanceof GodAsk)) throw e;
+        for (const d of e.draws)
+          draft = godPickRoll(draft, {
+            age: d.age,
+            key: d.key,
+            n: d.n,
+            d: d.d,
+            v: answer(d),
+          });
+      }
+    }
+    throw new Error("the step kept asking");
+  }
+
+  test("a labelled outcome pick applies that outcome, and the life replays", () => {
+    let adult = newLife(bundles, 5, { mature: true });
+    for (let year = 0; year < 30; year++) {
+      adult = godStep(
+        adult,
+        (w) => ageUp(w, bundles),
+        (d) => d.natural,
+      );
+      while (adult.pending)
+        adult = godStep(
+          adult,
+          (w) => choose(w, bundles, 0),
+          (d) => d.natural,
+        );
+    }
+    const picked = godStep(
+      godSetMoney(adult, 10000),
+      (w) => runAction(w, bundles, G("play-slots"), undefined, 100),
+      (d) => {
+        if (d.key !== `outcome/${G("play-slots")}` || !d.options)
+          return d.natural;
+        const i = d.options.findIndex(
+          (o) => o.label === "Three of a kind (pays 19 to 1)",
+        );
+        if (i < 0) throw new Error("no outcome has that label");
+        return i;
+      },
+    );
+    expect(me(picked).money).toBe(10000 + 100 * 19);
+    expect(worldHash(replay(picked.seed, bundles, picked.choiceLog))).toBe(
+      worldHash(picked),
+    );
   });
 });

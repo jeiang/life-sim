@@ -21,7 +21,7 @@ Set in `on_succession` as `age < 18`. `minor-guardian-takes-in` (`trigger: succe
 Five entries (watch, quilt, clock, violin, letters) with `base`, `gain` (percent per generation) and `story`. They are not market holdings and add nothing to net worth. The per-person table holds `<id>_held`, `_value`, `_passed`, `_told`, `_sold`. `heirloom-attic-find` sets `held` and `value = base`; `heirloom-sell` (Assets menu `assets/heirlooms`) pays `value` in cash and sets `sold`; `on_succession` copies the dead player's row from `deceased.table.gen_heirloom`, and for a held one adds `gain` percent and one to `passed`.
 
 **NPC-parent inheritance**:
-Two storylets on the `person_death` trigger (#341), bound to the dead parent, `once` per death: `npc-parent-cash-left` (the parent's whole cash) and `npc-parent-contested` (a choice). See [sheets/npc-parent-inheritance.md](sheets/npc-parent-inheritance.md).
+Two storylets on the `person_death` trigger (#341), bound to the dead parent, `once` per death: `npc-parent-cash-left` (a payout by the player's `quality.family_wealth` tier, split equally among the parent's living children with `living_kin_of`) and `npc-parent-contested` (a choice). See [sheets/npc-parent-inheritance.md](sheets/npc-parent-inheritance.md).
 
 **Harness**:
 Profile `dynasty` (opt-in) builds a family and writes a will so `--generations N` runs reach succession; metrics in `harness/metrics.yaml`. Heir availability, inheritance, heir age, minor-heir and insolvent-estate rates by generation are core-loop's generation tables.

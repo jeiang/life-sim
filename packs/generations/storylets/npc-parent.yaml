@@ -1,28 +1,99 @@
 # yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
 # NPC-parent inheritance: a parent of the player dies while the player is alive. Each storylet binds the dead parent (trigger person_death), once per death.
+# Payout: one of three amounts per family-wealth tier (quality.family_wealth), rolled once at the death, then split equally among the parent's living children (the player counts as one of them).
 
 - id: npc-parent-cash-left
   icon: 🏦
   trigger: person_death
   scope: person
   target: [parent]
-  when: person.money > 0
   once: true
-  text: "{person.first_name} died with {person.money} in the bank. The money is yours now."
+  text: "{person.first_name} has died, and the estate is settled. Your share comes through the lawyer."
   outcomes:
     - weight: 1
-      text: "The bank pays out. The whole of {person.first_name}'s savings goes into your account, since nobody wrote a will for the split."
+      when: quality.family_wealth == 1
+      text: "The estate is small. Your share of {person.first_name}'s savings is modest, but it helps."
       effects:
-        - money += person.money
+        - money += 500000 / living_kin_of(person, child)
+    - weight: 2
+      when: quality.family_wealth == 1
+      text: "The estate is small. Your share of {person.first_name}'s savings is modest, but it helps."
+      effects:
+        - money += 1000000 / living_kin_of(person, child)
+    - weight: 1
+      when: quality.family_wealth == 1
+      text: "The estate is small. Your share of {person.first_name}'s savings is modest, but it helps."
+      effects:
+        - money += 1500000 / living_kin_of(person, child)
+    - weight: 1
+      when: quality.family_wealth == 2
+      text: "The estate is a fair size. Your share of {person.first_name}'s savings covers a few bills."
+      effects:
+        - money += 1000000 / living_kin_of(person, child)
+    - weight: 2
+      when: quality.family_wealth == 2
+      text: "The estate is a fair size. Your share of {person.first_name}'s savings covers a few bills."
+      effects:
+        - money += 1750000 / living_kin_of(person, child)
+    - weight: 1
+      when: quality.family_wealth == 2
+      text: "The estate is a fair size. Your share of {person.first_name}'s savings covers a few bills."
+      effects:
+        - money += 2500000 / living_kin_of(person, child)
+    - weight: 1
+      when: quality.family_wealth == 3
+      text: "The estate is comfortable. Your share of {person.first_name}'s savings is a real help."
+      effects:
+        - money += 2000000 / living_kin_of(person, child)
+    - weight: 2
+      when: quality.family_wealth == 3
+      text: "The estate is comfortable. Your share of {person.first_name}'s savings is a real help."
+      effects:
+        - money += 3000000 / living_kin_of(person, child)
+    - weight: 1
+      when: quality.family_wealth == 3
+      text: "The estate is comfortable. Your share of {person.first_name}'s savings is a real help."
+      effects:
+        - money += 4000000 / living_kin_of(person, child)
+    - weight: 1
+      when: quality.family_wealth == 4
+      text: "The estate is large. Your share of {person.first_name}'s savings changes what comes next."
+      effects:
+        - money += 3000000 / living_kin_of(person, child)
+    - weight: 2
+      when: quality.family_wealth == 4
+      text: "The estate is large. Your share of {person.first_name}'s savings changes what comes next."
+      effects:
+        - money += 4000000 / living_kin_of(person, child)
+    - weight: 1
+      when: quality.family_wealth == 4
+      text: "The estate is large. Your share of {person.first_name}'s savings changes what comes next."
+      effects:
+        - money += 5000000 / living_kin_of(person, child)
+    - weight: 1
+      when: quality.family_wealth == 5
+      text: "The estate is big. Your share of {person.first_name}'s savings is more than you expected."
+      effects:
+        - money += 5000000 / living_kin_of(person, child)
+    - weight: 2
+      when: quality.family_wealth == 5
+      text: "The estate is big. Your share of {person.first_name}'s savings is more than you expected."
+      effects:
+        - money += 8000000 / living_kin_of(person, child)
+    - weight: 1
+      when: quality.family_wealth == 5
+      text: "The estate is big. Your share of {person.first_name}'s savings is more than you expected."
+      effects:
+        - money += 12000000 / living_kin_of(person, child)
 
 - id: npc-parent-contested
   icon: ⚖️
   trigger: person_death
   scope: person
   target: [parent]
-  when: person.money > 0 and age >= 16
+  when: age >= 16
   once: true
-  text: "{person.first_name} left money behind, and the family has opinions about who should get it. Someone has to say something at the funeral."
+  text: "{person.first_name}'s estate has to be divided, and the family has opinions about who should get what. Someone has to say something at the funeral."
   choices:
     - label: Hear the family out
       outcomes:

@@ -91,15 +91,15 @@ Each chain lists Summary, Trigger, Entry, Effects, Frequency, Decisions covered,
 - Size: 4 storylets, 5 item kinds.
 
 ### 6. NPC-parent inheritance (2 storylets)
-- Summary: a parent dies while the player is alive; the player inherits the parent's cash, or the will is contested.
+- Summary: a parent dies while the player is alive; the player inherits a share of the parent's estate by the family's wealth tier, or the family decision is contested.
 - Trigger: `person_death` (#341). It binds the dead parent for one storylet, once per death. Engine-side: no pack hook can read a dead person.
-- Entry conditions: `scope: person`, `target: [parent]`, `person.money` for the parent's cash.
-  1. `npc-parent-cash-left`: `when: person.money > 0`; effect `money += person.money`. Whole cash, not split by will kind (`count_kin` is player-relative).
-  2. `npc-parent-contested`: `when: person.money > 0 and age >= 16` (bare `age` is the player's age); choice. "Hear the family out" gives `stat.happiness += 1`; "Refuse to discuss the money" gives `stat.happiness -= 2`.
+- Entry conditions: `scope: person`, `target: [parent]`, `quality.family_wealth` (1 to 5) for the tier, `living_kin_of(person, child)` for the split.
+  1. `npc-parent-cash-left`: no money gate (NPC money is not modeled). Five tier rows of three weighted outcomes (weights 1, 2, 1); `money += <amount> / living_kin_of(person, child)`. Amounts are design values in the sheet (npc-parent-inheritance.md), pending the balance pass.
+  2. `npc-parent-contested`: `when: age >= 16` (bare `age` is the player's age); choice. "Hear the family out" gives `stat.happiness += 1`; "Refuse to discuss the money" gives `stat.happiness -= 2`.
 - Dropped: `home-left` (`owns()` reads only the player's assets, env.ts:417) and `heirloom-left` (NPCs hold no heirlooms).
 - `contested` binds the parent, not the sibling: `person_death` binds the dead person, and a dead sibling cannot be bound under this trigger.
 - Frequency: once per parent death.
-- Engine features: `trigger: person_death`, `scope: person`, `person.money`, `money +=`, `stat.happiness`.
+- Engine features: `trigger: person_death`, `scope: person`, `living_kin_of(person, kinship)` (new expression), `money +=`, `stat.happiness`.
 - Vocab status: confirmed; the death trigger is in the engine (#341).
 - Size: 2 storylets.
 

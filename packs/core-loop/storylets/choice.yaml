@@ -215,7 +215,7 @@
   icon: 🐕
   trigger: event
   weight: 2
-  when: age >= 6
+  when: age >= 6 and not pet_cap_reached
   cooldown: 6
   text: "A scruffy stray dog follows {player.first_name} home and refuses to leave."
   choices:

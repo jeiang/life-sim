@@ -132,6 +132,8 @@ Reports: v1 `~/life-sim-reports/rebalance-v1/all/report.md` (artemis `rebalance-
 
 **Pets.** Target: a save holds about 1-2 pets on average. v1 had 2.93 per save (p50 3, p99 8) and about 6.4 acquisitions a life. The four acquisition decisions drop in weight: `stray-dog` 5 -> 2, `adopt-a-pet` 8 -> 3, `found-cat` 9 -> 4, `pet-adoption-senior` 9 -> 5 (mortality and run-off unchanged; the decision slots refill from other storylets). Decision opens per 10,000 lives: `found-cat` 10,772, `stray-dog` 9,377, `adopt-a-pet` 8,792, `pet-adoption-senior` 3,778 (about 3.3 opens a life, down from about 6.4). Pets per save now p50 1, p99 5, max 10 (v1: 3, 8, 12).
 
+**Pet cap (#398).** A save holds at most three living pets. At the cap, `stray-dog` and `found-cat` do not open, and the adopt choices in `adopt-a-pet` and `pet-adoption-senior` are greyed out. The cap only limits acquisitions: no weight, chance or price changed, so the numbers above still describe uncapped play.
+
 Global checks on the same run: decision slots 89.8 / 49.2 / 28.1% (v1 89.8 / 49.3 / 28.3), top decision `dating/ask-out` 2.61%, median death age 72, employment 81.1% (v1 80.3%).
 
 ## Estate settlement cost and house cap (#379)

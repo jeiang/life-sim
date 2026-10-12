@@ -295,6 +295,7 @@
   text: "A rescue centre has a pet that has clearly chosen {player.first_name}."
   choices:
     - label: Take them home
+      when: not pet_cap_reached
       outcomes:
         - weight: 40
           text: "{pet.first_name} is a loyal dog who makes the house feel full."

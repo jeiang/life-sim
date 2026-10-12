@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/readables.schema.json
+# A save holds at most 3 living pets. `living_pets` counts the animals the player holds a pet role
+# toward (`count_role` skips dead and unlisted pets); the acquisition storylets and choices read
+# `pet_cap_reached`, so a save at the cap cannot take in another animal.
+- kind: readable
+  id: living_pets
+  type: int
+  expr: count_role(core-loop/dog, 0, 100) + count_role(core-loop/cat, 0, 100)
+- kind: readable
+  id: pet_cap_reached
+  type: bool
+  expr: living_pets >= 3

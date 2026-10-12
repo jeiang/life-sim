@@ -361,7 +361,7 @@
   icon: 🐈
   trigger: event
   weight: 4
-  when: age >= 20 and age <= 80
+  when: age >= 20 and age <= 80 and not pet_cap_reached
   cooldown: 10
   text: "A scruffy cat keeps turning up on the doorstep."
   choices:

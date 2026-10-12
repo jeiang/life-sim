@@ -2,6 +2,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "vitest";
 import {
+  ageUp,
   choose,
   finishGodStep,
   GodAsk,
@@ -9,11 +10,12 @@ import {
   type GodDraw,
   getPerson,
   godPickRoll,
+  godSetMoney,
+  godSetStat,
   newLife,
   type PackBundle,
   replay,
   runAction,
-  updatePerson,
   withGodAsk,
   type World,
   worldHash,
@@ -55,19 +57,24 @@ function stepWith(
 }
 
 test("a labeled destination outcome picked in god mode applies, and the life replays", () => {
-  const w0 = newLife(bundles, 5);
-  const start = updatePerson(w0, w0.playerId, (p) => ({
-    ...p,
-    age: 30,
-    money: 10_000_000,
-    stats: { ...p.stats, happiness: 50, health: 50 },
-  }));
+  // Age up through logged steps only, so replay reproduces the same adult.
+  let w = newLife(bundles, 5);
+  for (let y = 0; y < 17 && !w.ended; y++) {
+    w = ageUp(w, bundles).world;
+    while (w.pending) w = choose(w, bundles, 0).world;
+  }
+  // Money and stats go through the logged god setters.
+  const start = godSetStat(
+    godSetStat(godSetMoney(w, 10_000_000), "happiness", 50),
+    "health",
+    50,
+  );
   // Book the cheapest tier; the destination menu is now pending.
   const booked = choose(runAction(start, bundles, VAC).world, bundles, 0).world;
   // Choose Beach; its outcome draw is god-picked by label.
   const picked = stepWith(
     booked,
-    (w) => choose(w, bundles, 0),
+    (s) => choose(s, bundles, 0),
     (d) => {
       const i = d.options?.findIndex((o) => o.label === "Great trip") ?? -1;
       return i >= 0 ? i : d.natural;

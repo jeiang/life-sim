@@ -146,6 +146,7 @@
   text: "Things at school start to settle."
   outcomes:
     - weight: 50
+      label: "Teacher checks in"
       text: A teacher checks in and {player.first_name} finally gets some support.
       effects:
         - stat.happiness += 4

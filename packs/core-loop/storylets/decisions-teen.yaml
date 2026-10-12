@@ -85,6 +85,7 @@
             - money += 20000
             - stat.happiness += 1
         - weight: 30
+          label: "Let go by cafe"
           text: "The rota clashes with homework, and the cafe lets {player.first_name} go."
           effects:
             - money += 4000
@@ -142,6 +143,7 @@
             - stat.looks += 1
           next: band-first-gig
         - weight: 60
+          label: "Awkward show, quick split"
           text: "A single awkward show and a quick split, but good stories came out of it."
           effects:
             - stat.happiness += 3
@@ -235,6 +237,7 @@
     - label: "Run with a bold manifesto"
       outcomes:
         - weight: 40
+          label: "Win by a whisker"
           text: "A win by a whisker, and a chance to change the vending machines."
           effects:
             - stat.happiness += 5
@@ -359,23 +362,27 @@
     - label: "Buy a ticket"
       outcomes:
         - weight: 940
+          label: "No win"
           text: "Not a winner, but the dream was nice for a day."
           effects:
             - money -= 500
             - stat.happiness += 1
         - weight: 50
+          label: "Small win"
           text: "A small win, and a very big grin."
           effects:
             - money -= 500
             - money += 2000
             - stat.happiness += 4
         - weight: 9
+          label: "Decent prize"
           text: "A decent prize, enough for a proper night out."
           effects:
             - money -= 500
             - money += 10000
             - stat.happiness += 5
         - weight: 1
+          label: "Big win"
           text: "A big win. The shop owner shakes your hand."
           effects:
             - money -= 500
@@ -405,6 +412,7 @@
             - stat.health -= 1
             - quality.karma_score += 3
         - weight: 20
+          label: "Soggy hour, thank-you card"
           text: "A soggy hour for nothing much, though a thank-you card arrives."
           effects:
             - stat.happiness += 1
@@ -463,6 +471,7 @@
           effects:
             - stat.happiness += 6
         - weight: 40
+          label: "Broken string, cheers"
           text: "A broken string and a dropped beat, but the cheers keep coming."
           effects:
             - stat.happiness += 3

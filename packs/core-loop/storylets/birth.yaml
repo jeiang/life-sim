@@ -10,8 +10,8 @@
   when: age >= 1
   once: true
   outcomes:
-    - { weight: 15, effects: ["quality.family_wealth = 1"] }
-    - { weight: 25, effects: ["quality.family_wealth = 2"] }
-    - { weight: 30, effects: ["quality.family_wealth = 3"] }
-    - { weight: 20, effects: ["quality.family_wealth = 4"] }
-    - { weight: 10, effects: ["quality.family_wealth = 5"] }
+    - { weight: 15, label: "Poor", effects: ["quality.family_wealth = 1"] }
+    - { weight: 25, label: "Modest", effects: ["quality.family_wealth = 2"] }
+    - { weight: 30, label: "Middle", effects: ["quality.family_wealth = 3"] }
+    - { weight: 20, label: "Comfortable", effects: ["quality.family_wealth = 4"] }
+    - { weight: 10, label: "Wealthy", effects: ["quality.family_wealth = 5"] }

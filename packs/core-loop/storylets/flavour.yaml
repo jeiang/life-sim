@@ -93,6 +93,7 @@
       effects:
         - stat.happiness += 4
     - weight: 40
+      label: "Forgot the line"
       text: The line is forgotten in a rush of stage fright, but everyone is kind about it.
       effects:
         - stat.happiness += 1
@@ -200,6 +201,7 @@
         - stat.smarts += 3
         - stat.happiness += 2
     - weight: 35
+      label: "Poster falls off"
       text: The poster falls off the board, but the judges liked the idea.
       effects:
         - stat.smarts += 1
@@ -334,6 +336,7 @@
   text: "{player.first_name} catches sight of a grey hair and spends an evening thinking about the years so far."
   outcomes:
     - weight: 50
+      label: "Passing mood"
       text: The mood passes by breakfast and a sense of calm replaces it.
       effects:
         - stat.happiness += 2

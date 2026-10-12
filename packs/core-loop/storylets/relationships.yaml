@@ -70,6 +70,7 @@
   text: "You ask {person.first_name} for some money."
   outcomes:
     - weight: 45
+      label: "Cash with a reminder"
       text: "They hand over some cash with a gentle reminder to be responsible."
       effects:
         - money += 2000
@@ -99,6 +100,7 @@
   text: "You make an effort to get closer to {person.first_name}."
   outcomes:
     - weight: 55 + stat.looks / 5
+      label: "Warms to you"
       text: "{person.first_name} warms to you."
       effects:
         - relationship(person).closeness += 12
@@ -119,6 +121,7 @@
   text: "You try to befriend someone at school."
   outcomes:
     - weight: 60 + stat.looks / 5
+      label: "New classmate friend"
       text: "You and {friend.first_name} {friend.last_name} hit it off."
       effects:
         - spawn_person(core-loop/friend, core-loop/classmate-gen) as friend
@@ -141,6 +144,7 @@
   text: "You make an effort to get to know someone you work around."
   outcomes:
     - weight: 55 + stat.looks / 5
+      label: "New coworker friend"
       text: "You and {friend.first_name} {friend.last_name} swap stories over coffee."
       effects:
         - spawn_person(core-loop/friend, core-loop/coworker-gen) as friend

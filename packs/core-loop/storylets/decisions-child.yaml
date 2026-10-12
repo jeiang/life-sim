@@ -18,6 +18,7 @@
             - stat.happiness += 4
             - stat.smarts += 1
         - weight: 50
+          label: "Tower slumps"
           text: "The tower slumps in the first wave, but the digging was grand."
           effects:
             - stat.happiness += 1
@@ -72,6 +73,7 @@
             - stat.happiness += 3
             - stat.smarts += 1
         - weight: 25
+          label: "Hamster escapes"
           text: "The hamster escapes into the sofa for a whole afternoon, then returns safe."
           effects:
             - stat.happiness += 1
@@ -93,12 +95,14 @@
     - label: "Draw careful blueprints"
       outcomes:
         - weight: 60
+          label: "Sturdy treehouse"
           text: "The treehouse is sturdy and instantly the best club house on the street."
           effects:
             - stat.happiness += 4
             - stat.smarts += 2
           next: treehouse-aftermath
         - weight: 40
+          label: "Wobbly floor"
           text: "The blueprints are lovely, but a missing plank means a wobbly floor."
           effects:
             - stat.happiness += 1
@@ -137,6 +141,7 @@
             - stat.happiness += 4
             - stat.health -= 1
         - weight: 40
+          label: "Homesick, collected early"
           text: "Homesickness hits at midnight, and a parent comes to collect {player.first_name}."
           effects:
             - stat.happiness -= 1
@@ -186,6 +191,7 @@
             - money -= 300
             - stat.smarts += 1
         - weight: 30
+          label: "Book in the shed"
           text: "The librarian sighs, but the book turns up in the garden shed."
           effects:
             - stat.happiness += 1
@@ -217,6 +223,7 @@
             - stat.happiness += 5
             - stat.health += 1
         - weight: 30
+          label: "Skinned elbow"
           text: "A tumble leaves a skinned elbow, but the second try is better."
           effects:
             - stat.health -= 2
@@ -276,10 +283,12 @@
     - label: "Knock on the door"
       outcomes:
         - weight: 60
+          label: "Legend of the cat"
           text: "Nothing but a cat answers, and a legend is born among the kids."
           effects:
             - stat.happiness += 3
         - weight: 40
+          label: "Sprint and a sore knee"
           text: "A loud noise sends everyone sprinting, and a knee suffers on the gravel."
           effects:
             - stat.health -= 2
@@ -307,6 +316,7 @@
             - stat.smarts += 2
             - stat.happiness += 3
         - weight: 30
+          label: "Volcano floods kitchen"
           text: "The eruption floods the kitchen table, though it impresses the judges."
           effects:
             - stat.smarts += 1
@@ -548,6 +558,7 @@
             - stat.health += 3
             - stat.happiness += 4
         - weight: 60
+          label: "Maybe next year"
           text: "The coach says 'maybe next year', and fitness gets a lift anyway."
           effects:
             - stat.health += 2

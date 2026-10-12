@@ -121,6 +121,7 @@
             - stat.smarts += 2
             - stat.happiness += 4
         - weight: 30
+          label: "Pen runs dry"
           text: "The pen dries up after a few chapters, but the memories flowed freely."
           effects:
             - stat.happiness += 2
@@ -222,6 +223,7 @@
     - label: "Move to a smaller place"
       outcomes:
         - weight: 70
+          label: "Tidy flat"
           text: "A tidy flat with friendly neighbours, and less to look after."
           effects:
             - money -= min(money, 40000)
@@ -308,6 +310,7 @@
             - money -= 50000
             - stat.happiness += 6
         - weight: 15
+          label: "Trip with a long wait"
           text: "A cancelled train and a long wait, with a nice cafe at the end of it."
           effects:
             - money -= 50000
@@ -331,6 +334,7 @@
       when: not pet_cap_reached
       outcomes:
         - weight: 80
+          label: "Loyal dog"
           text: "{pet.first_name} is a loyal friend and two daily walks."
           effects:
             - spawn_person(core-loop/dog, core-loop/senior-dog-gen) as pet
@@ -339,6 +343,7 @@
             - money -= min(money, 10000)
           next: dog-first-walk
         - weight: 20
+          label: "Dog with quirks"
           text: "{pet.first_name} has a few quirks, but a devoted bond forms."
           effects:
             - spawn_person(core-loop/dog, core-loop/senior-dog-gen) as pet

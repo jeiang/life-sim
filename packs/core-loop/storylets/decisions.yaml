@@ -139,6 +139,7 @@
             - stat.happiness += 1
             - stat.smarts += 1
         - weight: 30
+          label: "Stern talking-to"
           text: There is a stern talking-to and a month of lost pocket money.
           effects:
             - stat.happiness -= 3
@@ -223,6 +224,7 @@
             - money -= min(money, 6000)
             - stat.happiness += 6
         - weight: 25
+          label: "Expensive adventure"
           text: The car breaks down, and the trip becomes an expensive adventure.
           effects:
             - money -= min(money, 15000)
@@ -298,24 +300,28 @@
       when: not pet_cap_reached
       outcomes:
         - weight: 40
+          label: "Loyal dog"
           text: "{pet.first_name} is a loyal dog who makes the house feel full."
           effects:
             - spawn_person(core-loop/dog, core-loop/dog-gen) as pet
             - money -= min(money, 5000)
             - stat.happiness += 6
         - weight: 40
+          label: "Loyal cat"
           text: "{pet.first_name} is a loyal cat who makes the house feel full."
           effects:
             - spawn_person(core-loop/cat, core-loop/cat-gen) as pet
             - money -= min(money, 5000)
             - stat.happiness += 6
         - weight: 10
+          label: "Difficult dog"
           text: "{pet.first_name} is a handful and the vet bills are steep."
           effects:
             - spawn_person(core-loop/dog, core-loop/dog-gen) as pet
             - money -= min(money, 15000)
             - stat.happiness += 2
         - weight: 10
+          label: "Difficult cat"
           text: "{pet.first_name} is a handful and the vet bills are steep."
           effects:
             - spawn_person(core-loop/cat, core-loop/cat-gen) as pet
@@ -472,6 +478,7 @@
             - stat.happiness += 4
             - stat.smarts += 1
         - weight: 30
+          label: "Crowded class, nice tea"
           text: The class is crowded, but there is a nice cup of tea afterwards.
           effects:
             - money -= min(money, 3000)

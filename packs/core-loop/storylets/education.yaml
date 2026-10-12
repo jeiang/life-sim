@@ -8,6 +8,7 @@
   text: "It is time for {player.first_name} to start elementary school."
   outcomes:
     - weight: 1
+      label: "Meet two classmates"
       text: "You meet {m1.first_name} {m1.last_name} and {m2.first_name} {m2.last_name}."
       effects:
         - start_occupation(core-loop/elementary-school)
@@ -17,6 +18,7 @@
         - relationship(m2).closeness += 12
         - journal("Started elementary school at age {age}.")
     - weight: 1
+      label: "Meet three classmates"
       text: "You meet {m1.first_name} {m1.last_name}, {m2.first_name} {m2.last_name} and {m3.first_name} {m3.last_name}."
       effects:
         - start_occupation(core-loop/elementary-school)
@@ -37,6 +39,7 @@
   text: "{player.first_name} starts high school."
   outcomes:
     - weight: 1
+      label: "Meet two classmates"
       text: "You meet {m1.first_name} {m1.last_name} and {m2.first_name} {m2.last_name}."
       effects:
         - start_occupation(core-loop/high-school)
@@ -46,6 +49,7 @@
         - relationship(m2).closeness += 12
         - journal("Started high school at age {age}.")
     - weight: 1
+      label: "Meet three classmates"
       text: "You meet {m1.first_name} {m1.last_name}, {m2.first_name} {m2.last_name} and {m3.first_name} {m3.last_name}."
       effects:
         - start_occupation(core-loop/high-school)

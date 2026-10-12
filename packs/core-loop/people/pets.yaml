@@ -7,6 +7,7 @@
 - { kind: role, id: cat, label: Cat, animal: true }
 - kind: generator
   id: dog-gen
+  label: "A dog"
   age: [0, 5]
   stats:
     happiness: [60, 100]
@@ -16,6 +17,7 @@
     female: [Bella, Daisy, Luna, Lucy, Molly, Sadie, Ruby, Maggie, Penny, Coco, Poppy, Rosie, Willow, Pippa, Nell]
 - kind: generator
   id: senior-dog-gen
+  label: "An older dog"
   age: [6, 10]
   stats:
     happiness: [50, 90]
@@ -25,6 +27,7 @@
     female: [Bella, Daisy, Luna, Lucy, Molly, Sadie, Ruby, Maggie, Penny, Coco, Poppy, Rosie, Willow, Pippa, Nell]
 - kind: generator
   id: cat-gen
+  label: "A cat"
   age: [0, 6]
   stats:
     happiness: [60, 100]

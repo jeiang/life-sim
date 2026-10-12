@@ -45,6 +45,10 @@
           {
             "const": "succession",
             "type": "string"
+          },
+          {
+            "const": "person_death",
+            "type": "string"
           }
         ]
       },

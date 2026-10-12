@@ -1,0 +1,19 @@
+- id: estate
+  trigger: person_death
+  scope: person
+  text: "{person.first_name} has died."
+  outcomes:
+    - effects:
+        - quality.deaths_seen += 1
+        - quality.seen_age = person.age
+        - money += person.money
+# A decision on the same death: it stops the age-up for a choice, like any storylet.
+- id: mourn
+  trigger: person_death
+  scope: person
+  text: You mourn {person.first_name}.
+  choices:
+    - label: Grieve
+      outcomes:
+        - effects:
+            - quality.mourned += 1

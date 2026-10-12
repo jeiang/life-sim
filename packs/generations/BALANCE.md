@@ -1,6 +1,6 @@
 # generations balance
 
-Content: 21 storylets (will 2, openers 4, aftermath 6, minor heir 4, heirlooms 5 including the sell action; NPC-parent inheritance is cut, #341) plus the `on_succession` hook. Final numbers come from the artemis run of the balance issue (#243); the figures below are local runs (seed 1/3/5, `--jobs 4`).
+Content: 23 storylets (will 2, openers 4, aftermath 6, minor heir 4, heirlooms 5 including the sell action, NPC-parent inheritance 2 on `person_death`, #341) plus the `on_succession` hook. Final numbers come from the artemis run of the balance issue (#243); the figures below are local runs (seed 1/3/5, `--jobs 4`).
 
 ## Profile and harness
 

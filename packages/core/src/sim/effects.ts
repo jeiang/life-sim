@@ -42,7 +42,7 @@ import {
   startOccupation,
 } from "./ops.ts";
 import type { PackIndex } from "./pack-index.ts";
-import { scheduleEffect, unschedule } from "./schedule.ts";
+import { queueDeath, scheduleEffect, unschedule } from "./schedule.ts";
 import { renderText } from "./text.ts";
 
 /**
@@ -396,7 +396,11 @@ function applyEffect(
         case "die": {
           const cause = renderText(str(args[0], w, idx, scope), w, idx, scope);
           if (scope.person !== undefined)
-            return killPerson(w, scope.person, cause);
+            return queueDeath(
+              killPerson(w, scope.person, cause),
+              idx,
+              scope.person,
+            );
           return runHook(endLife(w, who, cause), idx, "on_death");
         }
       }

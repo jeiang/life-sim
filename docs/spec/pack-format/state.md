@@ -59,6 +59,8 @@ An assignment to `person.*` or `<bound>.*` with no person in scope does nothing,
 
 The `schedule(...)` queue ([Scheduled consequences](storylets.md#scheduled-consequences)) is the one container the Core declares itself. It lives in `World.state` under the reserved id `_schedule` (a pack state id matches `^[a-z]`, so none can collide), shaped `{ <storylet id>: { <person id or "-">: { seq, wait, left, lineage } } }`: `seq` is the queue order, `wait` the age-ups before the window opens, `left` the age-ups the window still has, `lineage` a flag. It is absent until the first `schedule` and removed again when it empties, so a world that never schedules (or cancelled everything) is byte-identical to one that never had it. `checkWorldState` validates its shape (an unreadable queue rejects the save) and Pack migrations rename or remove its storylet ids. Access: `scheduledEntries` / `setScheduled` (`state/schedule.ts`), never by hand.
 
+A `person_death` storylet ([Person death storylets](storylets.md#person-death-storylets)) queues its death in the same container: one `{ wait: 0, left: 1, lineage: false }` entry per death. The Core drains each one in the same age-up or action. An entry is in the save only while a decision the death opened is pending.
+
 ## Engine contract
 
 For authors of the next extension points (readables, effect macros, lifecycle hooks, settlement line items, content kinds).

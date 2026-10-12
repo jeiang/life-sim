@@ -204,7 +204,12 @@ export interface CompiledStorylet {
   readonly label?: string;
   readonly icon?: IconRef;
   readonly tags: readonly string[];
-  readonly trigger: "event" | "action" | "milestone" | "succession";
+  readonly trigger:
+    | "event"
+    | "action"
+    | "milestone"
+    | "succession"
+    | "person_death";
   /** Actions only: `<top>` or `<top>/<submenu>`. */
   readonly menu?: string;
   /** Milestones only: the milestone id that opens it (docs/spec/pack-format/hooks.md#milestones). */

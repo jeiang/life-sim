@@ -82,6 +82,7 @@ Expression functions.
 - `kin(person) -> id`
 - `is_kin(person, kinship) -> bool`
 - `count_kin(kinship, int, int) -> int`
+- `living_kin_of(person, kinship) -> int`
 - `price(id) -> int`
 - `change(id) -> int`
 - `units(id) -> int`

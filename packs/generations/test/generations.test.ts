@@ -506,3 +506,84 @@ describe("determinism and saves across succession", () => {
     expect(gen(h)).toBe(1);
   });
 });
+
+/** A living parent of the player, aged 65, with the player aged 50. */
+function parentOf(w: World): [World, PersonId] {
+  let p: PersonId;
+  w = updatePerson(w, w.playerId, (x) => ({ ...x, age: 50 }));
+  [w, p] = addPerson(w, { givenName: "Pat", familyName: "Parent", age: 65 });
+  w = addParentLink(w, w.playerId, p);
+  w = putRelationship(w, {
+    from: w.playerId,
+    to: p,
+    role: "core-loop/parent",
+    closeness: 60,
+  });
+  return [w, p];
+}
+
+/** A living sibling of the player: a second child of `parent`. */
+function siblingOf(w: World, parent: PersonId): World {
+  let s: PersonId;
+  [w, s] = addPerson(w, { givenName: "Sam", familyName: "Parent", age: 30 });
+  return addParentLink(w, s, parent);
+}
+
+function withWealth(w: World, tier: number): World {
+  return updatePerson(w, w.playerId, (x) => ({
+    ...x,
+    qualities: { ...x.qualities, family_wealth: tier },
+  }));
+}
+
+/** core-loop's parent-death kills the parent; each decision it opens is answered with its first choice. */
+function killParent(
+  w: World,
+  parent: PersonId,
+): { world: World; opened: string[] } {
+  const opened: string[] = [];
+  let cur = startStorylet(w, bundles, "core-loop/parent-death", parent).world;
+  while (cur.pending) {
+    opened.push(cur.pending.storyletId);
+    cur = choose(cur, bundles, 0).world;
+  }
+  return { world: cur, opened };
+}
+
+describe("NPC-parent inheritance (person_death)", () => {
+  test("the player's share is a poor-tier amount and the family decision opens once", () => {
+    const [w0, parent] = parentOf(withWealth(newLife(bundles, 1), 1));
+    const before = getPerson(w0, w0.playerId).money;
+    const { world, opened } = killParent(w0, parent);
+    expect(getPerson(world, parent).alive).toBe(false);
+    expect([500000, 1000000, 1500000]).toContain(
+      getPerson(world, world.playerId).money - before,
+    );
+    expect(opened).toEqual([G("npc-parent-contested")]);
+  });
+
+  test("the payout is split equally among the parent's living children", () => {
+    const [w0, parent] = parentOf(withWealth(newLife(bundles, 2), 1));
+    const before = getPerson(w0, w0.playerId).money;
+    const { world } = killParent(siblingOf(w0, parent), parent);
+    expect([250000, 500000, 750000]).toContain(
+      getPerson(world, world.playerId).money - before,
+    );
+  });
+
+  test("each parent's death pays out once", () => {
+    const [w1, a] = parentOf(withWealth(newLife(bundles, 3), 5));
+    const [w2, b] = parentOf(w1);
+    const before = getPerson(w2, w2.playerId).money;
+    const first = killParent(w2, a);
+    const mid = getPerson(first.world, first.world.playerId).money - before;
+    const second = killParent(first.world, b);
+    const total = getPerson(second.world, w2.playerId).money - before;
+    expect(mid).toBeGreaterThan(0);
+    expect(total).toBeGreaterThan(mid);
+    expect([...first.opened, ...second.opened]).toEqual([
+      G("npc-parent-contested"),
+      G("npc-parent-contested"),
+    ]);
+  });
+});

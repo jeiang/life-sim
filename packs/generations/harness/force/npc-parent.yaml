@@ -1,0 +1,9 @@
+# Forced script (docs/spec/harness.md#forced-outcomes): a parent of the player dies, the estate pays out through `npc-parent-cash-left` (the first wealth-tier outcome, forced), and the family decision opens through `npc-parent-contested`, answered "Hear the family out". Both fire in any life where a parent dies; the dynasty profile builds the family that gives the lives those deaths.
+description: A parent's death pays the estate share and opens the family decision
+profile: dynasty
+generations: 4
+heir: random
+steps:
+  - roll: outcome/generations/npc-parent-cash-left
+    value: int:0
+  - choose: "Hear*"

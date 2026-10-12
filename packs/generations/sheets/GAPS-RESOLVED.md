@@ -8,7 +8,7 @@
 - #292 and #294 are merged (profile adjust/pick, market/outcome/holdings measures).
 - flake.nix depsSrc only matters for packages with package.json; packs have none.
 - #243 = metrics and balance for this pack, after #242.
-- will-heir targets `child, step-child` (kinship target ids; compiler accepts them; scaffold fix #342). Chain 6 is cut until #341 (person_death trigger); pack ships 18 storylets.
+- will-heir targets `child, step-child` (kinship target ids; compiler accepts them; scaffold fix #342). Chain 6 ships 2 storylets on the `person_death` trigger (#341); `home-left` and `heirloom-left` were dropped (see sheets/npc-parent-inheritance.md).
 - Schedule ids use the PACK id, not the namespace: `schedule(generations/<id>, after: a-b years)` (namespace `gen` is for qualities/state only).
 - Succession openers: the sheet grammar has no `trigger: succession`; write them as chance 0% steps scheduled from on_succession, and the implementer may convert them to `trigger: succession` storylets (engine supports it, PR 304). Minor handover at 18 as a weighted event is accepted for v1.
 - Debt write-off beat: dropped (money never goes negative; Core writes off shortfall silently). Spouse-share no-will gate: read `deceased.quality.gen_will_kind == 0` (deceased.quality.* is readable). Family-home has no sale choice (sale goes through the Assets menu).

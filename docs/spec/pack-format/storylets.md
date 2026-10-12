@@ -8,7 +8,7 @@ Storylets, repeatable actions and the yearly event draw. Part of the [Pack forma
 # packs/core-loop/storylets/work.yaml
 - id: first-job-offer
   icon: 💼
-  trigger: event              # event | action | milestone | succession
+  trigger: event              # event | action | milestone | succession | person_death
   chance: 4%                  # life event: absolute yearly roll
   when: age >= 16 and not has_occupation(job) and stat.smarts >= 30
   once: true
@@ -30,7 +30,7 @@ Storylets, repeatable actions and the yearly event draw. Part of the [Pack forma
 | Field | Meaning |
 |---|---|
 | `id`, `icon`, `tags` | Identity; optional icon (see Icons); free tags for grouping. `custody-ok` is a Core-owned tag: see [Confinement](content-kinds.md#confinement). `wager` marks a storylet in which the player risks money; the balance harness reports its realised return. |
-| `trigger` | `event` (drawn at age-up), `action` (offered in a menu), `milestone` (opened when the life reaches a milestone, see [Milestone storylets](#milestone-storylets)) or `succession` (opened for the heir when the game continues as them, see [Succession storylets](#succession-storylets)). |
+| `trigger` | `event` (drawn at age-up), `action` (offered in a menu), `milestone` (opened when the life reaches a milestone, see [Milestone storylets](#milestone-storylets)), `succession` (opened for the heir when the game continues as them, see [Succession storylets](#succession-storylets)) or `person_death` (opened when a non-player person dies, see [Person death storylets](#person-death-storylets)). |
 | `milestone` | `trigger: milestone` only, required: the milestone id (Core, or `provides: milestones`). |
 | `menu` | For actions: the menu path, `<top>` or `<top>/<submenu>`, where the top is one of `occupation`, `assets`, `relationships`, `activities` (see [screens](screens.md#menu-ids)). |
 | `scope` | Optional binding, evaluated once per bound item. `loan` (events only): once per loan the player holds, with `loan` bound (for example a missed-payment event). `person`: once per non-player person during the NPC yearly pass, with `person` bound (NPC storylets); an event with `choices` is instead a decision the player faces (see [Person decisions](#person-decisions)); on an action, the UI offers it for a chosen person. `die(...)` kills the bound person, and `relationship(person).closeness += n` changes the tie to them. Without `scope`, only the player and storylet-local names are in scope. |
@@ -167,6 +167,36 @@ A storylet with `trigger: succession` opens for the heir when the game continues
   outcomes:
     - effects:
         - stat.happiness -= 10
+```
+
+### Person death storylets
+
+A storylet with `trigger: person_death` opens when a non-player person dies, with that person bound. It needs `scope: person`, and it has no `chance`, `weight`, `menu`, `target` or `milestone`; `when`, `once`, `cooldown`, `max_per_life`, `text`, `choices` and `outcomes` work as on any storylet. The player's own death never opens it: the player's death ends the life ([Succession](../core-loop.md#succession)).
+
+- **Once per death.** Each NPC death queues one entry per `person_death` storylet. The entries drain right after the event or action that killed the person, before any other queued event. A storylet whose `when` fails at that point is dropped.
+- **Bound.** `person.*` reads the dead person (for example `person.money` or `person.age`), and `die(...)` on the same person is already done by the time the storylet opens.
+- **Decisions.** A `person_death` storylet with `choices` is a decision the player answers. The rest of the queue waits until it is answered.
+- **No roll.** Opening a death storylet spends no roll, so replaying the same seed and choices gives the same world.
+
+```yaml
+# An NPC dies: the estate settles with the player, then the player grieves.
+- id: estate
+  trigger: person_death
+  scope: person
+  text: "{person.first_name} has died."
+  outcomes:
+    - effects:
+        - money += person.money
+        - quality.deaths_seen += 1
+- id: mourn
+  trigger: person_death
+  scope: person
+  text: You mourn {person.first_name}.
+  choices:
+    - label: Grieve
+      outcomes:
+        - effects:
+            - quality.mourned += 1
 ```
 
 ### Decision slots

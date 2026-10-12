@@ -91,12 +91,20 @@ export function logKey(
   return scope ? `${storyletId}#${scope.id}` : storyletId;
 }
 
-/** Is the scope's binding still valid (loan still held, person alive)? */
-function bindingLive(world: World, scope: ScopeRef | undefined): boolean {
+/**
+ * Is the scope's binding still valid (loan still held, person alive)? A `person_death` storylet
+ * binds the person who has just died instead (docs/spec/pack-format/storylets.md#person-death-storylets).
+ */
+function bindingLive(
+  world: World,
+  scope: ScopeRef | undefined,
+  trigger: CompiledStorylet["trigger"],
+): boolean {
   if (!scope) return true;
   if (scope.kind === "person") {
     const p = world.persons.get(scope.id);
-    return !!p?.alive && p.listed !== false && scope.id !== world.playerId;
+    if (!p || p.listed === false || scope.id === world.playerId) return false;
+    return trigger === "person_death" ? !p.alive : p.alive;
   }
   return getPerson(world, world.playerId).loans.some((l) => l.id === scope.id);
 }
@@ -143,7 +151,7 @@ export function ineligibility(
   scope: ScopeRef | undefined,
 ): string | null {
   if ((s.scope ?? undefined) !== scope?.kind) return "Not available";
-  if (!bindingLive(world, scope)) return "Not available";
+  if (!bindingLive(world, scope, s.trigger)) return "Not available";
   if (scope?.kind === "person" && !hasTargetRole(world, idx, s, scope.id))
     return "Not available";
   const lock = confinementOf(getPerson(world, world.playerId), idx);

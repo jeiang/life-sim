@@ -6,6 +6,7 @@
 import type { Expr } from "../expr/index.ts";
 import { evaluate } from "../expr/index.ts";
 import type { CompiledStorylet } from "../pack.ts";
+import { GodAsk, type GodDraw } from "../rng.ts";
 import {
   type ScheduledEntry,
   scheduledEntries,
@@ -98,6 +99,7 @@ export function dueScheduled(
   let w = world;
   const keep: ScheduledEntry[] = [];
   const fire: QueuedEvent[] = [];
+  const draws: GodDraw[] = [];
   for (const e of queue) {
     const s = idx.storylets.get(e.storyletId);
     if (!s || (e.person !== undefined && !w.persons.get(e.person)?.alive))
@@ -110,14 +112,24 @@ export function dueScheduled(
       e.person === undefined ? undefined : { kind: "person", id: e.person };
     if (eligible(w, s, scope)) {
       const key = `schedule/${e.storyletId}${e.person === undefined ? "" : `#${e.person}`}`;
-      const [w2, rng] = nextStream(w, clockAge(w), key);
+      const [w2, rng] = nextStream(w, clockAge(w), key, "form");
       w = w2;
-      if (rng.chanceBp(Math.trunc(10000 / e.left))) {
+      const who =
+        e.person === undefined
+          ? ""
+          : `: ${w.persons.get(e.person)?.givenName ?? ""}`;
+      const hit = rng.chanceBp(Math.trunc(10000 / e.left), {
+        cat: "event",
+        label: `${s.label ?? s.id}${who}`,
+      });
+      draws.push(...rng.pendingDraws());
+      if (hit) {
         fire.push({ storyletId: e.storyletId, ...(scope ? { scope } : {}) });
         continue;
       }
     }
     if (e.left > 1) keep.push({ ...e, left: e.left - 1 });
   }
+  if (draws.length > 0) throw new GodAsk("This year's events", draws, true);
   return [setScheduled(w, keep), fire];
 }

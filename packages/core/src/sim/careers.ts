@@ -82,7 +82,10 @@ function rollEducation(
   w = w1;
   const gained: Record<string, boolean> = {};
   for (const e of cfg.education) {
-    const hit = rng.chanceBp(e.chanceBp);
+    const hit = rng.chanceBp(e.chanceBp, {
+      cat: "npc",
+      label: `${getPerson(w, id).givenName}: ${e.quality}`,
+    });
     const p = getPerson(w, id);
     const has = (q: string): boolean =>
       gained[q] === true || qualityOf(p, idx, q) === true;
@@ -106,7 +109,14 @@ function startEntryJob(
   const options = entryKinds(idx, cfg).filter((k) =>
     evalBool(k.requires, w, idx, { subject: id }),
   );
-  const pick = options[rng.int(options.length || 1)];
+  const pick =
+    options[
+      rng.int(options.length || 1, {
+        cat: "npc",
+        label: `${getPerson(w, id).givenName}: job`,
+        options: options.map((k) => k.label ?? k.id),
+      })
+    ];
   return pick ? startOccupation(w, idx, id, pick.id) : w;
 }
 
@@ -135,7 +145,12 @@ function withoutJob(
   if (p.age >= cfg.retireAge) return retire(world, idx, cfg, id);
   if (p.occupationHistory.some((o) => o.group === cfg.group)) {
     const [w, rng] = nextStream(world, clockAge(world), `career/${id}/hire`);
-    return rng.chanceBp(cfg.hireBp) ? startEntryJob(w, idx, cfg, id) : w;
+    return rng.chanceBp(cfg.hireBp, {
+      cat: "npc",
+      label: `${p.givenName}: hired?`,
+    })
+      ? startEntryJob(w, idx, cfg, id)
+      : w;
   }
   return startEntryJob(rollEducation(world, idx, cfg, id), idx, cfg, id);
 }
@@ -152,7 +167,13 @@ function working(
   if (!job) return world;
   if (p.age >= cfg.retireAge) return retire(world, idx, cfg, id);
   const [w1, loss] = nextStream(world, clockAge(world), `career/${id}/loss`);
-  if (loss.chanceBp(cfg.jobLossBp)) return endOccupation(w1, id, job.id);
+  if (
+    loss.chanceBp(cfg.jobLossBp, {
+      cat: "npc",
+      label: `${p.givenName}: job lost?`,
+    })
+  )
+    return endOccupation(w1, id, job.id);
   const kind = idx.occupations.get(job.kindId);
   if (
     !kind?.promotesTo ||
@@ -161,7 +182,10 @@ function working(
   )
     return w1;
   const [w2, promo] = nextStream(w1, clockAge(w1), `career/${id}/promotion`);
-  return promo.chanceBp(cfg.promotionBp)
+  return promo.chanceBp(cfg.promotionBp, {
+    cat: "npc",
+    label: `${p.givenName}: promoted?`,
+  })
     ? startOccupation(w2, idx, id, kind.promotesTo)
     : w2;
 }

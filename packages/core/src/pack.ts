@@ -157,6 +157,8 @@ export interface CompiledOutcome {
   /** Integer expression; 1 when omitted in the source. */
   readonly weight: Expr;
   readonly when?: Expr;
+  /** Short name for this outcome in god mode's ask; falls back to `text`. */
+  readonly label?: string;
   readonly text?: string;
   /** Replaces `text` in a life begun with 18+ mode on. */
   readonly matureText?: string;
@@ -444,6 +446,8 @@ export interface CompiledRole {
 export interface CompiledGenerator {
   readonly type: "generator";
   readonly id: string;
+  /** Short name for god mode's spawn ask; falls back to the id. */
+  readonly label?: string;
   /** First-name pool per gender (non-binary: both pools, unless the source gave a neutral list). */
   readonly firstNames: Readonly<Record<Gender, readonly string[]>>;
   /** Draw weights per gender; a weight of 0 never draws. Default male 1, female 1. */
@@ -566,6 +570,8 @@ export interface HooksDecl {
 export interface SpawnQualities {
   readonly outcomes: readonly {
     readonly weight: number;
+    /** Short name for god mode's pick; falls back to the outcome's index. */
+    readonly label?: string;
     /** Only for these genders; absent: any. */
     readonly gender?: readonly Gender[];
     /** Quality id (bare) -> value. */

@@ -32,3 +32,15 @@ remove:
 - A fallback is a full or short content id, or a declared `stat.`/`quality.`/`state.` name.
 - On load, every installed migration whose id is not in the world's `appliedMigrations` is applied once (persons, relationships, the open storylet, storylet log, repeatable-action counters, the obituary), then its id is recorded. Applying is pure and idempotent.
 - A shipped id that disappears needs an entry in some migration file or the build fails. Shipped means listed in `ids.lock.json` as committed at the last `v<N>` release tag (now `v1`); the file is written only by the tag workflow, never edited in a pull request, and the check is skipped when no tag exists.
+
+## God mode picks
+
+A god life records its edits in the choice log, like any other choice, so a replay reproduces them:
+
+- `god-roll {age, key, n, d, v}`: the value `v` picked for the draw at purpose key `key`, counter `n`, ordinal `d` (the draw's identity is `age|key|n|d`). `v` is a number or a boolean, or an index or label for a pick. A pick is logged before the step it applies to.
+- `god-market {kind, next?, event?}`: a price edit for a market kind, applied at the next settlement. `event` is `delisted`, `default` or `none`, and is stored in the optional `Series.nextEvent` until the settlement that consumes it clears it.
+- `god-person {id, givenName?, familyName?, gender?, stats?}`: an edit to a living person.
+
+A pick for a draw the step never reaches (the Pack changed, or the engine did) fails the replay with an error; it is never skipped silently. `world.god` (the pending picks and asks) is never serialized: the serializer drops it, and the store commits only worlds that finished their step.
+
+Schema stays 6. `Series.nextEvent` and the entry kinds are additive; a save from before this change loads unchanged. An older build that does not know these kinds rejects a save that contains them, the same as any new entry kind.

@@ -1,4 +1,5 @@
 import type { CompiledStorylet, PackBundle } from "../pack.ts";
+import { GodAsk, type GodCategory, type GodDraw } from "../rng.ts";
 import type {
   ChoiceEntry,
   PersonId,
@@ -139,21 +140,33 @@ function candidates(
 const keyOf = (c: Candidate): string =>
   c.scope ? `${c.storylet.id}@${c.scope.kind}:${c.scope.id}` : c.storylet.id;
 
-/** Roll every chance candidate independently (id order). */
+/**
+ * Roll every chance candidate independently (id order). The rolls share one form, so god mode
+ * asks for the whole year's chances at once.
+ */
 function rollChance(
   world: World,
   idx: PackIndex,
   cands: readonly Candidate[],
+  cat: GodCategory,
 ): [World, Candidate[]] {
   let w = world;
   const hits: Candidate[] = [];
+  const draws: GodDraw[] = [];
   for (const c of cands) {
     if (c.storylet.chance === undefined) continue;
     const bp = evalInt(c.storylet.chance, w, idx, scopeFor(w, c.scope));
-    const [w2, rng] = nextStream(w, clockAge(w), keyOf(c));
+    const [w2, rng] = nextStream(w, clockAge(w), keyOf(c), "form");
     w = w2;
-    if (rng.chanceBp(bp)) hits.push(c);
+    const base = c.storylet.label ?? c.storylet.id;
+    const label =
+      c.scope?.kind === "person"
+        ? `${base}: ${getPerson(w, c.scope.id).givenName}`
+        : base;
+    if (rng.chanceBp(bp, { cat, label })) hits.push(c);
+    draws.push(...rng.pendingDraws());
   }
+  if (draws.length > 0) throw new GodAsk("This year's events", draws, true);
   return [w, hits];
 }
 
@@ -209,9 +222,13 @@ function drawWeighted(
   for (let i = 0; i < slots; i++) {
     const weights = pool.map((c) => Math.max(0, weightOf(w, idx, c)));
     if (!weights.some((x) => x > 0)) break;
+    const labels = pool.map((c) => c.storylet.label ?? c.storylet.id);
     const [w2, rng] = nextStream(w, clockAge(w), `${purpose}/${i}`);
     w = w2;
-    const at = rng.weightedPick(weights);
+    const at = rng.weightedPick(weights, labels, {
+      cat: "event",
+      label: "Which event?",
+    });
     picked.push(pool[at] as Candidate);
     pool.splice(at, 1);
   }
@@ -243,12 +260,18 @@ function toEvents(
       `person-pick/${c.storylet.id}`,
     );
     w = w2;
+    const names = c.persons.map((id) => {
+      const p = getPerson(w, id);
+      return `${p.givenName} ${p.familyName}`;
+    });
+    const at = rng.int(c.persons.length, {
+      cat: "event",
+      label: "Who?",
+      options: names,
+    });
     out.push({
       storyletId: c.storylet.id,
-      scope: {
-        kind: "person",
-        id: c.persons[rng.int(c.persons.length)] as number,
-      },
+      scope: { kind: "person", id: c.persons[at] as number },
     });
   }
   return [w, out];
@@ -351,7 +374,7 @@ function drawEvents(world: World, idx: PackIndex): [World, QueuedEvent[]] {
     ...candidates(world, idx, "loan"),
     ...candidates(world, idx, "person-decision"),
   ];
-  const [w1, chance] = rollChance(world, idx, cands);
+  const [w1, chance] = rollChance(world, idx, cands, "event");
   if (idx.year.decisions) return drawWithDecisions(w1, idx, cands, chance);
   const [lo, hi] = idx.year.slots;
   let w = w1;
@@ -385,7 +408,7 @@ function npcPass(world: World, idx: PackIndex): World {
     const cands = candidates(w, idx, "person").filter(
       (c) => c.scope?.id === pid,
     );
-    const [w1, chance] = rollChance(w, idx, cands);
+    const [w1, chance] = rollChance(w, idx, cands, "npc");
     const [w2, flavour] = drawWeighted(
       w1,
       idx,

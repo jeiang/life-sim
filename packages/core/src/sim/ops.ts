@@ -1,6 +1,6 @@
 import { type Expr, evaluate } from "../expr/index.ts";
 import type { CompiledGenerator } from "../pack.ts";
-import type { Rng } from "../rng.ts";
+import { GodAsk, type GodDraw, type Rng } from "../rng.ts";
 import { clampDecl } from "../state/containers.ts";
 import type { ParentKind } from "../state/parents.ts";
 import { dropMortalSchedule } from "../state/schedule.ts";
@@ -248,7 +248,11 @@ export function drawGender(
   const weights = GENDERS.map(
     (g) => gen?.genderWeights[g] ?? DEFAULT_GENDER_WEIGHTS[g],
   );
-  return GENDERS[rng.weightedPick(weights)] as Gender;
+  const pick = rng.weightedPick(weights, GENDERS, {
+    cat: "person",
+    label: "Sex",
+  });
+  return GENDERS[pick] as Gender;
 }
 
 /** First name for `gender` from a `NAME_ROLL_RANGE` roll; "" with an empty pool. */
@@ -288,23 +292,47 @@ export function spawnPerson(
     world,
     age,
     opts.purpose ?? `spawn/${generatorId}`,
+    "form",
   );
   // The first-name roll sits where the name draw always was; the gender drawn last picks the pool.
-  const nameRoll = rng.int(NAME_ROLL_RANGE);
+  const nameRoll = rng.int(NAME_ROLL_RANGE, {
+    cat: "person",
+    label: "First name",
+  });
   const lastNames = gen.lastNames;
   const drawn = lastNames.length
-    ? (lastNames[rng.int(lastNames.length)] as string)
+    ? (lastNames[
+        rng.int(lastNames.length, {
+          cat: "person",
+          label: "Family name",
+          options: lastNames,
+        })
+      ] as string)
     : "";
   const stats: Record<string, number> = {};
   for (const s of idx.stats) {
     const [lo, hi] = gen.stats[s.id] ?? s.start;
-    stats[s.id] = clamp(lo + rng.int(hi - lo + 1), 0, 100);
+    const v = rng.int(hi - lo + 1, {
+      cat: "person",
+      label: s.label,
+      offset: lo,
+    });
+    stats[s.id] = clamp(lo + v, 0, 100);
   }
   const [lo, hi] = gen.age;
-  const personAge = lo + rng.int(hi - lo + 1);
+  const personAge =
+    lo + rng.int(hi - lo + 1, { cat: "person", label: "Age", offset: lo });
   const gender = drawGender(rng, gen);
   // Drawn last, and only by generators that declare jobs, so no other draw moves.
-  const job = gen.jobs?.length ? gen.jobs[rng.int(gen.jobs.length)] : undefined;
+  const job = gen.jobs?.length
+    ? gen.jobs[
+        rng.int(gen.jobs.length, {
+          cat: "person",
+          label: "Job",
+          options: gen.jobs.map((j) => j.label),
+        })
+      ]
+    : undefined;
   const qualities = drawGeneratorQualities(rng, gen, idx);
   const canCarry = drawCanCarry(rng, gen, gender);
   const [w1, id] = addPerson(w0, {
@@ -327,12 +355,13 @@ export function spawnPerson(
     ...(opts.parent === undefined ? {} : { parent: opts.parent }),
     ...(opts.kind === undefined ? {} : { kind: opts.kind }),
   });
-  return [
-    idx.roles.get(roleId)?.animal
-      ? family
-      : rollSpawnQualities(family, idx, id),
-    id,
-  ];
+  const animal = idx.roles.get(roleId)?.animal;
+  const spawned: [World, GodDraw[]] = animal
+    ? [family, []]
+    : rollSpawnQualities(family, idx, id);
+  const draws = [...rng.pendingDraws(), ...spawned[1]];
+  if (draws.length > 0) throw new GodAsk(gen.label ?? generatorId, draws, true);
+  return [spawned[0], id];
 }
 
 /**
@@ -352,7 +381,15 @@ export function drawGeneratorQualities(
     const decl = idx.qualities.get(id);
     if (typeof v === "boolean") out[id] = v;
     else {
-      const n = typeof v === "number" ? v : v[0] + rng.int(v[1] - v[0] + 1);
+      const n =
+        typeof v === "number"
+          ? v
+          : v[0] +
+            rng.int(v[1] - v[0] + 1, {
+              cat: "person",
+              label: id,
+              offset: v[0],
+            });
       out[id] = decl?.type === "int" ? clampDecl(decl, n) : n;
     }
   }
@@ -369,7 +406,8 @@ export function drawCanCarry(
   gender: Gender,
 ): boolean {
   if (gen?.canCarry !== undefined) return gen.canCarry;
-  if (gender === "nonbinary") return rng.int(2) === 0;
+  if (gender === "nonbinary")
+    return rng.int(2, { cat: "person", label: "Can carry" }) === 0;
   return gender === "female";
 }
 
@@ -378,8 +416,13 @@ export function drawCanCarry(
  * `<id>` picks one outcome whose gender filter matches, under its own stream
  * `pack/<id>/spawn/<n>`, and writes its qualities.
  */
-function rollSpawnQualities(world: World, idx: PackIndex, id: PersonId): World {
+function rollSpawnQualities(
+  world: World,
+  idx: PackIndex,
+  id: PersonId,
+): [World, GodDraw[]] {
   let w = world;
+  const draws: GodDraw[] = [];
   for (const b of idx.bundles) {
     for (const [n, entry] of (b.spawnQualities ?? []).entries()) {
       const gender = getPerson(w, id).gender;
@@ -387,8 +430,21 @@ function rollSpawnQualities(world: World, idx: PackIndex, id: PersonId): World {
         (o) => !o.gender || (gender !== undefined && o.gender.includes(gender)),
       );
       if (live.length === 0) continue;
-      const [w2, rng] = nextStream(w, clockAge(w), `pack/${b.id}/spawn/${n}`);
-      const pick = live[rng.weightedPick(live.map((o) => o.weight))];
+      const [w2, rng] = nextStream(
+        w,
+        clockAge(w),
+        `pack/${b.id}/spawn/${n}`,
+        "form",
+      );
+      const pick =
+        live[
+          rng.weightedPick(
+            live.map((o) => o.weight),
+            live.map((o, i) => o.label ?? String(i)),
+            { cat: "person", label: `${b.id} profile` },
+          )
+        ];
+      draws.push(...rng.pendingDraws());
       w = w2;
       for (const [q, v] of Object.entries(pick?.qualities ?? {})) {
         const decl = idx.qualities.get(q);
@@ -403,7 +459,7 @@ function rollSpawnQualities(world: World, idx: PackIndex, id: PersonId): World {
       }
     }
   }
-  return w;
+  return [w, draws];
 }
 
 function obitOccupation(o: Occupation, age: number): ObituaryOccupation {

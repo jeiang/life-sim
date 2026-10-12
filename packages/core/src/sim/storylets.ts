@@ -236,7 +236,7 @@ function wearNote(c: RepeatCurve, n: number): string {
 function pickOutcome(
   world: World,
   idx: PackIndex,
-  storyletId: string,
+  s: CompiledStorylet,
   outcomes: readonly CompiledOutcome[],
   scope: Scope,
 ): [World, CompiledOutcome | undefined] {
@@ -245,16 +245,13 @@ function pickOutcome(
     Math.max(0, evalInt(o.weight, world, idx, scope)),
   );
   if (!weights.some((x) => x > 0)) return [world, undefined];
-  const [w, rng] = nextStream(world, clockAge(world), `outcome/${storyletId}`);
-  return [
-    w,
-    live[
-      rng.weightedPick(
-        weights,
-        live.map((o) => o.text ?? ""),
-      )
-    ],
-  ];
+  const [w, rng] = nextStream(world, clockAge(world), `outcome/${s.id}`);
+  const labels = live.map((o) => o.label ?? o.text ?? "");
+  const at = rng.weightedPick(weights, labels, {
+    cat: "outcome",
+    label: s.label ?? s.text ?? s.id,
+  });
+  return [w, live[at]];
 }
 
 function runOutcome(
@@ -277,7 +274,7 @@ function runOutcome(
     curve ? repeatFactorBp(curve, base.uses ?? 0) : 10000,
   );
   const scope: Scope = bp < 10000 ? { ...base, factorBp: bp } : base;
-  const [w0, outcome] = pickOutcome(world, idx, s.id, outcomes, scope);
+  const [w0, outcome] = pickOutcome(world, idx, s, outcomes, scope);
   if (!outcome) return w0;
   const bound = new Map<string, PersonId>();
   let w = w0;

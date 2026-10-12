@@ -545,6 +545,7 @@ export const ManifestSchema = obj(
             outcomes: Type.Array(
               obj({
                 weight: Type.Integer({ minimum: 1 }),
+                label: Type.Optional(Label),
                 gender: Type.Optional(
                   Type.Array(GenderName, {
                     minItems: 1,
@@ -621,6 +622,7 @@ export const MigrationSchema = obj(
 
 const Outcome = obj({
   weight: Type.Optional(Src),
+  label: Type.Optional(Label),
   when: Type.Optional(Src),
   text: Type.Optional(Type.String()),
   mature_text: Type.Optional(
@@ -971,6 +973,7 @@ export const PeopleSchema = Type.Union(
     obj({
       kind: Type.Literal("generator"),
       id: Id,
+      label: Type.Optional(Label),
       first_names: Type.Union(
         [NameList, obj({ male: NameList, female: NameList })],
         {

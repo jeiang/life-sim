@@ -32,7 +32,16 @@ export {
   type SimResult,
   startStorylet,
 } from "./flow.ts";
-export { godSetMoney, godSetStat, isGodLife } from "./god.ts";
+export {
+  finishGodStep,
+  godEditPerson,
+  godPickRoll,
+  godSetMarket,
+  godSetMoney,
+  godSetStat,
+  isGodLife,
+  withGodAsk,
+} from "./god.ts";
 export {
   guardianOf,
   guardianPhrase,
@@ -79,6 +88,8 @@ export {
   forecastBp,
   holdingValue,
   MAX_HISTORY,
+  MAX_RETURN,
+  MIN_RETURN,
   portfolioValue,
   priceNow,
   tradeHolding,

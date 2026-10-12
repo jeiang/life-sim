@@ -2795,6 +2795,7 @@ class PackCompiler {
       const w = this.expr(o.weight, "int", [...path, "weight"], scopeNames);
       if (w !== undefined) out.weight = w;
     }
+    if (o.label !== undefined) out.label = o.label;
     if (o.when !== undefined) {
       const w = this.expr(o.when, "bool", [...path, "when"], scopeNames);
       if (w !== undefined) out.when = w;
@@ -2959,6 +2960,7 @@ class PackCompiler {
         }
         return {
           weight: o.weight,
+          ...(o.label === undefined ? {} : { label: o.label }),
           ...(o.gender ? { gender: [...o.gender] } : {}),
           qualities,
         };
@@ -3370,6 +3372,7 @@ class PackCompiler {
     }
     return {
       type: "generator",
+      ...(p.label === undefined ? {} : { label: p.label }),
       id: this.owner,
       firstNames,
       genderWeights,

@@ -87,7 +87,10 @@ export function moveOut(world: World, idx: PackIndex, id: PersonId): World {
   if (bp > 0) {
     const [w2, rng] = nextStream(w, clockAge(w), `guardian/none/${id}`);
     w = w2;
-    none = rng.chanceBp(bp);
+    none = rng.chanceBp(bp, {
+      cat: "event",
+      label: "No guardian takes you in",
+    });
   }
   const next = none
     ? takeOwnStandard(w, idx, id)

@@ -1,3 +1,5 @@
+import type { GodContext } from "../rng.ts";
+
 /**
  * Core state model (ADR 0002). Everything is a plain integer, string, boolean,
  * array or Map: no floats, no Dates, no class instances. Money is in minor units.
@@ -101,6 +103,8 @@ export interface Series {
   readonly next: number;
   /** Government bonds after an issuer default: share of the principal still owed, basis points. Absent: all of it. */
   readonly face?: number;
+  /** God mode: forces the next market event for this kind (`delisted`, `default`, or `none` for no event); cleared by the settlement that consumes it. */
+  readonly nextEvent?: "delisted" | "default" | "none";
 }
 
 /** Set on generated people and chosen in god mode; absent on people from old saves. */
@@ -342,7 +346,32 @@ export type ChoiceEntry =
   /** God mode: set one of the player's stats (0-100). */
   | { readonly t: "god-stat"; readonly stat: string; readonly value: number }
   /** God mode: set the player's money (minor units). */
-  | { readonly t: "god-money"; readonly value: number };
+  | { readonly t: "god-money"; readonly value: number }
+  /** God mode: one answered roll; logged before the step it steers. Replay fills the picks table from it, then the step draws. */
+  | {
+      readonly t: "god-roll";
+      readonly age: number;
+      readonly key: string;
+      readonly n: number;
+      readonly d: number;
+      readonly v: number | boolean;
+    }
+  /** God mode: set a market kind's next return (basis points) and/or force its next event. */
+  | {
+      readonly t: "god-market";
+      readonly kind: string;
+      readonly next?: number;
+      readonly event?: "delisted" | "default" | "none";
+    }
+  /** God mode: edit a person's name, gender, or stats after creation. */
+  | {
+      readonly t: "god-person";
+      readonly id: PersonId;
+      readonly givenName?: string;
+      readonly familyName?: string;
+      readonly gender?: Gender;
+      readonly stats?: Readonly<Record<string, number>>;
+    };
 
 export interface World {
   /** Core save schema version; see `SCHEMA_VERSION`. */
@@ -384,6 +413,11 @@ export interface World {
   readonly uses: Readonly<Record<string, number>>;
   /** Every player choice so far, in order; see `replay`. */
   readonly choiceLog: readonly ChoiceEntry[];
+  /**
+   * Transient god-mode context for a step in progress: answers and the asks in force. Never
+   * serialized; a loaded world has none.
+   */
+  readonly god?: GodContext;
   /** World-scope state containers (counters); absent while none was written. */
   readonly state?: StateTree;
   /** Capability ids (`<pack>/<feature>`) the life was made with, sorted. */

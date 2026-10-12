@@ -21,7 +21,6 @@ import {
   type PersonId,
   putRelationship,
   replay,
-  ScriptedRng,
   setStreamOverride,
   settleLiving,
   updatePerson,
@@ -186,7 +185,7 @@ describe("no guardian", () => {
     const rolls: string[] = [];
     setStreamOverride((_age, key) => {
       if (key.startsWith("guardian/none")) rolls.push(key);
-      return new ScriptedRng({ chance: true });
+      return { chance: true };
     });
     for (const age of [0, 10, 15]) {
       const w = moveOut(family(age).w, idx, 0);
@@ -207,18 +206,14 @@ describe("no guardian", () => {
 
   test("a miss goes to the guardian, a hit lives on their own with costs and a standard", () => {
     setStreamOverride((_a, key) =>
-      key.startsWith("guardian/none")
-        ? new ScriptedRng({ chance: false })
-        : undefined,
+      key.startsWith("guardian/none") ? { chance: false } : undefined,
     );
     const missed = moveOut(withScores(family().w, 0, 0), idx, 0);
     expect(me(missed).withGuardian).toBe(true);
     expect(livingCost(missed, idx, me(missed))).toBe(0);
 
     setStreamOverride((_a, key) =>
-      key.startsWith("guardian/none")
-        ? new ScriptedRng({ chance: true })
-        : undefined,
+      key.startsWith("guardian/none") ? { chance: true } : undefined,
     );
     const hit = moveOut(
       updatePerson(withScores(family().w, 0, 0), 0, (p) => ({
@@ -239,9 +234,7 @@ describe("no guardian", () => {
 
   test("a player with no money starts homeless-or-cheapest rather than in trust", () => {
     setStreamOverride((_a, key) =>
-      key.startsWith("guardian/none")
-        ? new ScriptedRng({ chance: true })
-        : undefined,
+      key.startsWith("guardian/none") ? { chance: true } : undefined,
     );
     const w = moveOut(withScores(family().w, 0, 0), idx, 0);
     expect(me(w).withGuardian).toBeUndefined();

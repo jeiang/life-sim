@@ -254,7 +254,7 @@ A hidden Settings section, unlocked per install by tapping the build version 7 t
 _Avoid_: Secret menu, cheat menu
 
 **God mode**:
-A Hidden options switch that lets the player pick a life's starting options (a custom life) and edit the player's stats and money mid-life. Each choice or edit is a choice log entry, so replay reproduces the life; such lives show an Edited badge. An app feature plus Core log entry types, not a Pack.
+A Hidden options switch that lets the player pick a life's starting options (a custom life), edit the player's stats and money mid-life, and pick the result of a random draw before it happens (a god pick, for example an event, an outcome, or a generated person's sex or name). A draw the player may choose asks first (`GodAsk`), and the picks are logged as `god-roll` entries before the step they apply to. Each choice or edit is a choice log entry, so replay reproduces the life; such lives show an Edited badge. An app feature plus Core log entry types, not a Pack.
 _Avoid_: Cheat mode, debug mode
 
 **18+ mode**:

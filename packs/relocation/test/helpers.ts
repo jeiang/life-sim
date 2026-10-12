@@ -5,7 +5,6 @@ import {
   indexBundles,
   newLife,
   type PersonId,
-  ScriptedRng,
   setQuality,
   setStreamOverride,
   startOccupation,
@@ -89,7 +88,7 @@ export function forcePicks(picks: Record<string, number | string>) {
   setStreamOverride((_a, key) => {
     const id = key.startsWith("outcome/") ? key.slice(8) : undefined;
     return id !== undefined && id in picks
-      ? new ScriptedRng({ pick: picks[id] as number | string })
+      ? { pick: picks[id] as number | string }
       : undefined;
   });
 }

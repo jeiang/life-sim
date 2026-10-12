@@ -101,13 +101,23 @@
 - opens: 0.25..0.9 per life
 
 ### choice: Keep the baby
-- outcome: 1
+- outcome: 97
   - text: You bring your baby home. Life is about to get a lot busier.
+  - label: One baby
   - effect: quality.dating_pregnant = 0
   - effect: spawn_person(core-loop/child, dating/baby-gen) as baby
   - effect: quality.dating_children += 1
   - effect: journal("Your baby is born.")
-  - rate: 100..100%
+  - rate: 94..99%
+- outcome: 3
+  - text: Two of them. Life is about to get a great deal busier.
+  - label: Twins
+  - effect: quality.dating_pregnant = 0
+  - effect: spawn_person(core-loop/child, dating/baby-gen) as first
+  - effect: spawn_person(core-loop/child, dating/baby-gen) as second
+  - effect: quality.dating_children += 2
+  - effect: journal("Your twins are born.")
+  - rate: 1..5%
 
 ### choice: Place the baby for adoption
 - outcome: 1
@@ -154,13 +164,23 @@
 - opens: 0.25..0.9 per life
 
 ### choice: Keep the baby
-- outcome: 1
+- outcome: 97
   - text: You bring your baby home. Life is about to get a lot busier.
+  - label: One baby
   - effect: person.quality.dating_pregnant = 0
   - effect: spawn_person(core-loop/child, dating/baby-gen, parent: person) as baby
   - effect: quality.dating_children += 1
   - effect: journal("Your baby is born.")
-  - rate: 100..100%
+  - rate: 94..99%
+- outcome: 3
+  - text: Two of them. Life is about to get a great deal busier.
+  - label: Twins
+  - effect: person.quality.dating_pregnant = 0
+  - effect: spawn_person(core-loop/child, dating/baby-gen, parent: person) as first
+  - effect: spawn_person(core-loop/child, dating/baby-gen, parent: person) as second
+  - effect: quality.dating_children += 2
+  - effect: journal("Your twins are born.")
+  - rate: 1..5%
 
 ### choice: Place the baby for adoption
 - outcome: 1

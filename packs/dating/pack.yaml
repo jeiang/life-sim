@@ -14,18 +14,18 @@ hooks:
 # the same table as the player's `roll-attraction`, by their own gender. Values are hidden.
 spawn_qualities:
   - outcomes:
-      - { weight: 78, gender: [male], qualities: { dating_attracted_men: 4, dating_attracted_women: 92, dating_attracted_nonbinary: 12 } }
-      - { weight: 8, gender: [male], qualities: { dating_attracted_men: 90, dating_attracted_women: 6, dating_attracted_nonbinary: 15 } }
-      - { weight: 10, gender: [male], qualities: { dating_attracted_men: 60, dating_attracted_women: 65, dating_attracted_nonbinary: 20 } }
-      - { weight: 2, gender: [male], qualities: { dating_attracted_men: 8, dating_attracted_women: 10, dating_attracted_nonbinary: 70 } }
-      - { weight: 2, gender: [male], qualities: { dating_attracted_men: 3, dating_attracted_women: 3, dating_attracted_nonbinary: 3 } }
-      - { weight: 78, gender: [female], qualities: { dating_attracted_men: 92, dating_attracted_women: 4, dating_attracted_nonbinary: 12 } }
-      - { weight: 8, gender: [female], qualities: { dating_attracted_men: 6, dating_attracted_women: 90, dating_attracted_nonbinary: 15 } }
-      - { weight: 10, gender: [female], qualities: { dating_attracted_men: 65, dating_attracted_women: 60, dating_attracted_nonbinary: 20 } }
-      - { weight: 2, gender: [female], qualities: { dating_attracted_men: 10, dating_attracted_women: 8, dating_attracted_nonbinary: 70 } }
-      - { weight: 2, gender: [female], qualities: { dating_attracted_men: 3, dating_attracted_women: 3, dating_attracted_nonbinary: 3 } }
-      - { weight: 30, gender: [nonbinary], qualities: { dating_attracted_men: 85, dating_attracted_women: 15, dating_attracted_nonbinary: 20 } }
-      - { weight: 30, gender: [nonbinary], qualities: { dating_attracted_men: 15, dating_attracted_women: 85, dating_attracted_nonbinary: 20 } }
-      - { weight: 28, gender: [nonbinary], qualities: { dating_attracted_men: 60, dating_attracted_women: 60, dating_attracted_nonbinary: 25 } }
-      - { weight: 6, gender: [nonbinary], qualities: { dating_attracted_men: 20, dating_attracted_women: 20, dating_attracted_nonbinary: 85 } }
-      - { weight: 6, gender: [nonbinary], qualities: { dating_attracted_men: 3, dating_attracted_women: 3, dating_attracted_nonbinary: 3 } }
+      - { weight: 78, gender: [male], label: "Mostly women", qualities: { dating_attracted_men: 4, dating_attracted_women: 92, dating_attracted_nonbinary: 12 } }
+      - { weight: 8, gender: [male], label: "Mostly men", qualities: { dating_attracted_men: 90, dating_attracted_women: 6, dating_attracted_nonbinary: 15 } }
+      - { weight: 10, gender: [male], label: "Men and women", qualities: { dating_attracted_men: 60, dating_attracted_women: 65, dating_attracted_nonbinary: 20 } }
+      - { weight: 2, gender: [male], label: "Mostly nonbinary", qualities: { dating_attracted_men: 8, dating_attracted_women: 10, dating_attracted_nonbinary: 70 } }
+      - { weight: 2, gender: [male], label: "Nobody", qualities: { dating_attracted_men: 3, dating_attracted_women: 3, dating_attracted_nonbinary: 3 } }
+      - { weight: 78, gender: [female], label: "Mostly men", qualities: { dating_attracted_men: 92, dating_attracted_women: 4, dating_attracted_nonbinary: 12 } }
+      - { weight: 8, gender: [female], label: "Mostly women", qualities: { dating_attracted_men: 6, dating_attracted_women: 90, dating_attracted_nonbinary: 15 } }
+      - { weight: 10, gender: [female], label: "Men and women", qualities: { dating_attracted_men: 65, dating_attracted_women: 60, dating_attracted_nonbinary: 20 } }
+      - { weight: 2, gender: [female], label: "Mostly nonbinary", qualities: { dating_attracted_men: 10, dating_attracted_women: 8, dating_attracted_nonbinary: 70 } }
+      - { weight: 2, gender: [female], label: "Nobody", qualities: { dating_attracted_men: 3, dating_attracted_women: 3, dating_attracted_nonbinary: 3 } }
+      - { weight: 30, gender: [nonbinary], label: "Mostly men", qualities: { dating_attracted_men: 85, dating_attracted_women: 15, dating_attracted_nonbinary: 20 } }
+      - { weight: 30, gender: [nonbinary], label: "Mostly women", qualities: { dating_attracted_men: 15, dating_attracted_women: 85, dating_attracted_nonbinary: 20 } }
+      - { weight: 28, gender: [nonbinary], label: "Men and women", qualities: { dating_attracted_men: 60, dating_attracted_women: 60, dating_attracted_nonbinary: 25 } }
+      - { weight: 6, gender: [nonbinary], label: "Mostly nonbinary", qualities: { dating_attracted_men: 20, dating_attracted_women: 20, dating_attracted_nonbinary: 85 } }
+      - { weight: 6, gender: [nonbinary], label: "Nobody", qualities: { dating_attracted_men: 3, dating_attracted_women: 3, dating_attracted_nonbinary: 3 } }

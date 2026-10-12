@@ -14,6 +14,7 @@
       outcomes:
         - weight: 85 + (100 - stat.smarts) / 10
           text: The fund collapses. The organisers are gone and so is the money.
+          label: Lose 10% of savings
           effects:
             - money -= money / 10
             - "quality.invest_scams += 1"
@@ -21,6 +22,7 @@
             - "journal(\"Lost money to a Ponzi scheme at age {age}.\")"
         - weight: 15 - (100 - stat.smarts) / 10
           text: The first payouts arrive on time and you pull out early with a profit. Later the scheme collapses around everyone else.
+          label: Get out early with a 2% profit
           effects:
             - money += money / 50
             - "journal(\"Got out of a Ponzi scheme in time at age {age}.\")"
@@ -28,6 +30,7 @@
       outcomes:
         - weight: 85 + (100 - stat.smarts) / 10
           text: The fund collapses. The organisers are gone and so is the money.
+          label: Lose 40% of savings
           effects:
             - money -= money * 2 / 5
             - "quality.invest_scams += 1"
@@ -35,6 +38,7 @@
             - "journal(\"Lost money to a Ponzi scheme at age {age}.\")"
         - weight: 15 - (100 - stat.smarts) / 10
           text: The first payouts arrive on time and you pull out early with a profit. Later the scheme collapses around everyone else.
+          label: Get out early with an 8% profit
           effects:
             - money += money * 2 / 25
             - "journal(\"Got out of a Ponzi scheme in time at age {age}.\")"
@@ -42,10 +46,12 @@
       outcomes:
         - weight: stat.smarts
           text: You ask for the licence and the audited accounts. There are none, and you walk away.
+          label: Spot the scam and walk away
           effects:
             - stat.smarts += 1
         - weight: 100 - stat.smarts
           text: You cannot find anything wrong, and the glossy brochure wins you over. You lose a tenth of your savings before you realise.
+          label: Fall for it and lose 10% of savings
           effects:
             - money -= money / 10
             - "quality.invest_scams += 1"
@@ -69,6 +75,7 @@
       outcomes:
         - weight: 85 + (100 - stat.smarts) / 10
           text: The coin's makers drain the pool overnight. The coin is worth nothing.
+          label: Lose 10% of savings
           effects:
             - money -= money / 10
             - "quality.invest_scams += 1"
@@ -76,6 +83,7 @@
             - "journal(\"Lost money to a fake coin at age {age}.\")"
         - weight: 15 - (100 - stat.smarts) / 10
           text: The coin spikes the same week and you sell near the top before it collapses.
+          label: Get out early with a 2% profit
           effects:
             - money += money / 50
             - "journal(\"Sold a fake coin before it collapsed at age {age}.\")"
@@ -83,6 +91,7 @@
       outcomes:
         - weight: 85 + (100 - stat.smarts) / 10
           text: The coin's makers drain the pool overnight. The coin is worth nothing.
+          label: Lose 40% of savings
           effects:
             - money -= money * 2 / 5
             - "quality.invest_scams += 1"
@@ -90,6 +99,7 @@
             - "journal(\"Lost money to a fake coin at age {age}.\")"
         - weight: 15 - (100 - stat.smarts) / 10
           text: The coin spikes the same week and you sell near the top before it collapses.
+          label: Get out early with an 8% profit
           effects:
             - money += money * 2 / 25
             - "journal(\"Sold a fake coin before it collapsed at age {age}.\")"
@@ -97,10 +107,12 @@
       outcomes:
         - weight: stat.smarts
           text: The token contract is a copy of a scam you read about last year. You skip it.
+          label: Spot the scam and walk away
           effects:
             - stat.smarts += 1
         - weight: 100 - stat.smarts
           text: The website looks professional and the chat is full of happy investors. You lose a tenth of your savings before you realise.
+          label: Fall for it and lose 10% of savings
           effects:
             - money -= money / 10
             - "quality.invest_scams += 1"
@@ -124,6 +136,7 @@
       outcomes:
         - weight: 85 + (100 - stat.smarts) / 10
           text: The bureau stops answering the phone. The money is gone.
+          label: Lose 10% of savings
           effects:
             - money -= money / 10
             - "quality.invest_scams += 1"
@@ -131,6 +144,7 @@
             - "journal(\"Lost money to a boiler-room caller at age {age}.\")"
         - weight: 15 - (100 - stat.smarts) / 10
           text: A first statement arrives showing a gain, and you withdraw some profit before the line goes dead.
+          label: Get out early with a 2% profit
           effects:
             - money += money / 50
             - "journal(\"Took profit from a boiler-room scheme just in time at age {age}.\")"
@@ -138,6 +152,7 @@
       outcomes:
         - weight: 85 + (100 - stat.smarts) / 10
           text: The bureau stops answering the phone. The money is gone.
+          label: Lose 40% of savings
           effects:
             - money -= money * 2 / 5
             - "quality.invest_scams += 1"
@@ -145,6 +160,7 @@
             - "journal(\"Lost money to a boiler-room caller at age {age}.\")"
         - weight: 15 - (100 - stat.smarts) / 10
           text: A first statement arrives showing a gain, and you withdraw some profit before the line goes dead.
+          label: Get out early with an 8% profit
           effects:
             - money += money * 2 / 25
             - "journal(\"Took profit from a boiler-room scheme just in time at age {age}.\")"
@@ -152,10 +168,12 @@
       outcomes:
         - weight: stat.smarts
           text: A guaranteed return is not a thing. You hang up and report the number.
+          label: Spot the scam and walk away
           effects:
             - stat.smarts += 1
         - weight: 100 - stat.smarts
           text: The caller knows your name and your bank, and sounds so sure that you are convinced. You lose a tenth of your savings before you realise.
+          label: Fall for it and lose 10% of savings
           effects:
             - money -= money / 10
             - "quality.invest_scams += 1"

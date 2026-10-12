@@ -15,144 +15,168 @@
     - weight: "(forecast(investing/total-market) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30"
       when: price(investing/total-market) > 0
       text: "{person.first_name} swears the Total market fund is about to climb."
+      label: Total Market fund climbs
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-total-market
     - weight: "(forecast(investing/total-market) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30"
       when: price(investing/total-market) > 0 and units(investing/total-market) > 0
       text: "{person.first_name} says to get out of the Total market fund before it slides."
+      label: Total Market fund slides
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-total-market-sell
     - weight: "(forecast(investing/world-index) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30"
       when: price(investing/world-index) > 0
       text: "{person.first_name} says the World index fund is due a good year."
+      label: World index fund has a good year
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-world-index
     - weight: "(forecast(investing/world-index) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30"
       when: price(investing/world-index) > 0 and units(investing/world-index) > 0
       text: "{person.first_name} warns that the World index fund is heading for a rough one."
+      label: World index fund has a rough year
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-world-index-sell
     - weight: "(forecast(investing/income-bond-fund) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30"
       when: price(investing/income-bond-fund) > 0
       text: "{person.first_name} says the Income bond fund is about to pay off nicely."
+      label: Income bond fund pays off
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-income-bond-fund
     - weight: "(forecast(investing/income-bond-fund) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30"
       when: price(investing/income-bond-fund) > 0 and units(investing/income-bond-fund) > 0
       text: "{person.first_name} says the Income bond fund is about to wobble. Get out."
+      label: Income bond fund wobbles
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-income-bond-fund-sell
     - weight: "(forecast(investing/corporate-bond-fund) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30"
       when: price(investing/corporate-bond-fund) > 0
       text: "{person.first_name} says the Corporate bond fund is quietly about to rise."
+      label: Corporate bond fund rises
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-corporate-bond-fund
     - weight: "(forecast(investing/corporate-bond-fund) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30"
       when: price(investing/corporate-bond-fund) > 0 and units(investing/corporate-bond-fund) > 0
       text: "{person.first_name} says the Corporate bond fund is about to slip."
+      label: Corporate bond fund slips
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-corporate-bond-fund-sell
     - weight: "(forecast(investing/acme-robotics) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30"
       when: price(investing/acme-robotics) > 0
       text: "{person.first_name} has a friend who says Acme Robotics is about to take off."
+      label: Acme Robotics takes off
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-acme-robotics
     - weight: "(forecast(investing/acme-robotics) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30"
       when: price(investing/acme-robotics) > 0 and units(investing/acme-robotics) > 0
       text: "{person.first_name} says Acme Robotics is about to crash, so sell."
+      label: Acme Robotics crashes
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-acme-robotics-sell
     - weight: "(forecast(investing/northwind-foods) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30"
       when: price(investing/northwind-foods) > 0
       text: "{person.first_name} says people always eat, so Northwind Foods is going up."
+      label: Northwind Foods climbs
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-northwind-foods
     - weight: "(forecast(investing/northwind-foods) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30"
       when: price(investing/northwind-foods) > 0 and units(investing/northwind-foods) > 0
       text: "{person.first_name} says Northwind Foods has a bad year coming."
+      label: Northwind Foods has a bad year
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-northwind-foods-sell
     - weight: "(forecast(investing/lumen-energy) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30"
       when: price(investing/lumen-energy) > 0
       text: "{person.first_name} says Lumen Energy is about to light up the market."
+      label: Lumen Energy lights up
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-lumen-energy
     - weight: "(forecast(investing/lumen-energy) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30"
       when: price(investing/lumen-energy) > 0 and units(investing/lumen-energy) > 0
       text: "{person.first_name} says Lumen Energy is about to go dark."
+      label: Lumen Energy goes dark
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-lumen-energy-sell
     - weight: "(forecast(investing/quark-coin) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30"
       when: price(investing/quark-coin) > 0
       text: "{person.first_name} says Quark Coin is about to moon. Trust the feeling."
+      label: Quark Coin moons
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-quark-coin
     - weight: "(forecast(investing/quark-coin) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30"
       when: price(investing/quark-coin) > 0 and units(investing/quark-coin) > 0
       text: "{person.first_name} says Quark Coin is about to crash, so sell it."
+      label: Quark Coin crashes
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-quark-coin-sell
     - weight: "(forecast(investing/pinecrest-mining) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30"
       when: price(investing/pinecrest-mining) > 0
       text: "{person.first_name} says Pinecrest Mining is about to strike gold."
+      label: Pinecrest Mining strikes gold
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-pinecrest-mining
     - weight: "(forecast(investing/pinecrest-mining) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30"
       when: price(investing/pinecrest-mining) > 0 and units(investing/pinecrest-mining) > 0
       text: "{person.first_name} says Pinecrest Mining is about to dig itself into a hole."
+      label: Pinecrest Mining digs a hole
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-pinecrest-mining-sell
     - weight: "(forecast(investing/brightwave-labs) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30"
       when: price(investing/brightwave-labs) > 0
       text: "{person.first_name} says Brightwave Labs is about to light up."
+      label: Brightwave Labs lights up
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-brightwave-labs
     - weight: "(forecast(investing/brightwave-labs) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30"
       when: price(investing/brightwave-labs) > 0 and units(investing/brightwave-labs) > 0
       text: "{person.first_name} says Brightwave Labs is about to fizzle."
+      label: Brightwave Labs fizzles
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-brightwave-labs-sell
     - weight: "(forecast(investing/gov-bond-5) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30"
       when: price(investing/gov-bond-5) > 0
       text: "{person.first_name} says the 5-year government bond is about to tick up. Boring, but right."
+      label: 5-year bond ticks up
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-gov-bond-5
     - weight: "(forecast(investing/gov-bond-5) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30"
       when: price(investing/gov-bond-5) > 0 and units(investing/gov-bond-5) > 0
       text: "{person.first_name} says the 5-year government bond is about to tick down. Cash out."
+      label: 5-year bond ticks down
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-gov-bond-5-sell
     - weight: "(forecast(investing/gov-bond-10) > 0) ? 52 + person.stat.smarts / 30 : 48 - person.stat.smarts / 30"
       when: price(investing/gov-bond-10) > 0
       text: "{person.first_name} says the 10-year government bond is about to tick up."
+      label: 10-year bond ticks up
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-gov-bond-10
     - weight: "(forecast(investing/gov-bond-10) > 0) ? 48 - person.stat.smarts / 30 : 52 + person.stat.smarts / 30"
       when: price(investing/gov-bond-10) > 0 and units(investing/gov-bond-10) > 0
       text: "{person.first_name} says the 10-year government bond is about to tick down."
+      label: 10-year bond ticks down
       effects:
         - "person.quality.invest_tip_age = age"
       next: tip-gov-bond-10-sell
@@ -169,98 +193,122 @@
     - weight: "(forecast(investing/total-market) > 0) ? 53 : 47"
       when: price(investing/total-market) > 0
       text: A financial column says the Total market fund is set to climb.
+      label: Total Market fund climbs
       next: tip-total-market
     - weight: "(forecast(investing/total-market) > 0) ? 47 : 53"
       when: price(investing/total-market) > 0 and units(investing/total-market) > 0
       text: A financial column says the Total market fund is set to slide.
+      label: Total Market fund slides
       next: tip-total-market-sell
     - weight: "(forecast(investing/world-index) > 0) ? 53 : 47"
       when: price(investing/world-index) > 0
       text: A market note expects the World index fund to have a good year.
+      label: World index fund has a good year
       next: tip-world-index
     - weight: "(forecast(investing/world-index) > 0) ? 47 : 53"
       when: price(investing/world-index) > 0 and units(investing/world-index) > 0
       text: A market note expects the World index fund to have a rough year.
+      label: World index fund has a rough year
       next: tip-world-index-sell
     - weight: "(forecast(investing/income-bond-fund) > 0) ? 53 : 47"
       when: price(investing/income-bond-fund) > 0
       text: A bond column says the Income bond fund is about to pay off.
+      label: Income bond fund pays off
       next: tip-income-bond-fund
     - weight: "(forecast(investing/income-bond-fund) > 0) ? 47 : 53"
       when: price(investing/income-bond-fund) > 0 and units(investing/income-bond-fund) > 0
       text: A bond column says the Income bond fund is about to wobble.
+      label: Income bond fund wobbles
       next: tip-income-bond-fund-sell
     - weight: "(forecast(investing/corporate-bond-fund) > 0) ? 53 : 47"
       when: price(investing/corporate-bond-fund) > 0
       text: A bond column says the Corporate bond fund is quietly about to rise.
+      label: Corporate bond fund rises
       next: tip-corporate-bond-fund
     - weight: "(forecast(investing/corporate-bond-fund) > 0) ? 47 : 53"
       when: price(investing/corporate-bond-fund) > 0 and units(investing/corporate-bond-fund) > 0
       text: A bond column says the Corporate bond fund is about to slip.
+      label: Corporate bond fund slips
       next: tip-corporate-bond-fund-sell
     - weight: "(forecast(investing/acme-robotics) > 0) ? 53 : 47"
       when: price(investing/acme-robotics) > 0
       text: A business page says Acme Robotics is about to take off.
+      label: Acme Robotics takes off
       next: tip-acme-robotics
     - weight: "(forecast(investing/acme-robotics) > 0) ? 47 : 53"
       when: price(investing/acme-robotics) > 0 and units(investing/acme-robotics) > 0
       text: A business page says Acme Robotics is about to crash.
+      label: Acme Robotics crashes
       next: tip-acme-robotics-sell
     - weight: "(forecast(investing/northwind-foods) > 0) ? 53 : 47"
       when: price(investing/northwind-foods) > 0
       text: A business page says Northwind Foods is about to climb.
+      label: Northwind Foods climbs
       next: tip-northwind-foods
     - weight: "(forecast(investing/northwind-foods) > 0) ? 47 : 53"
       when: price(investing/northwind-foods) > 0 and units(investing/northwind-foods) > 0
       text: A business page says Northwind Foods has a bad year coming.
+      label: Northwind Foods has a bad year
       next: tip-northwind-foods-sell
     - weight: "(forecast(investing/lumen-energy) > 0) ? 53 : 47"
       when: price(investing/lumen-energy) > 0
       text: An energy column says Lumen Energy is about to light up.
+      label: Lumen Energy lights up
       next: tip-lumen-energy
     - weight: "(forecast(investing/lumen-energy) > 0) ? 47 : 53"
       when: price(investing/lumen-energy) > 0 and units(investing/lumen-energy) > 0
       text: An energy column says Lumen Energy is about to go dark.
+      label: Lumen Energy goes dark
       next: tip-lumen-energy-sell
     - weight: "(forecast(investing/quark-coin) > 0) ? 53 : 47"
       when: price(investing/quark-coin) > 0
       text: A crypto blog says Quark Coin is about to moon.
+      label: Quark Coin moons
       next: tip-quark-coin
     - weight: "(forecast(investing/quark-coin) > 0) ? 47 : 53"
       when: price(investing/quark-coin) > 0 and units(investing/quark-coin) > 0
       text: A crypto blog says Quark Coin is about to crash.
+      label: Quark Coin crashes
       next: tip-quark-coin-sell
     - weight: "(forecast(investing/pinecrest-mining) > 0) ? 53 : 47"
       when: price(investing/pinecrest-mining) > 0
       text: A mining column says Pinecrest Mining is about to strike gold.
+      label: Pinecrest Mining strikes gold
       next: tip-pinecrest-mining
     - weight: "(forecast(investing/pinecrest-mining) > 0) ? 47 : 53"
       when: price(investing/pinecrest-mining) > 0 and units(investing/pinecrest-mining) > 0
       text: A mining column says Pinecrest Mining is about to dig itself into a hole.
+      label: Pinecrest Mining digs a hole
       next: tip-pinecrest-mining-sell
     - weight: "(forecast(investing/brightwave-labs) > 0) ? 53 : 47"
       when: price(investing/brightwave-labs) > 0
       text: A tech column says Brightwave Labs is about to light up.
+      label: Brightwave Labs lights up
       next: tip-brightwave-labs
     - weight: "(forecast(investing/brightwave-labs) > 0) ? 47 : 53"
       when: price(investing/brightwave-labs) > 0 and units(investing/brightwave-labs) > 0
       text: A tech column says Brightwave Labs is about to fizzle.
+      label: Brightwave Labs fizzles
       next: tip-brightwave-labs-sell
     - weight: "(forecast(investing/gov-bond-5) > 0) ? 53 : 47"
       when: price(investing/gov-bond-5) > 0
       text: A bond column says the 5-year government bond is about to tick up.
+      label: 5-year bond ticks up
       next: tip-gov-bond-5
     - weight: "(forecast(investing/gov-bond-5) > 0) ? 47 : 53"
       when: price(investing/gov-bond-5) > 0 and units(investing/gov-bond-5) > 0
       text: A bond column says the 5-year government bond is about to tick down.
+      label: 5-year bond ticks down
       next: tip-gov-bond-5-sell
     - weight: "(forecast(investing/gov-bond-10) > 0) ? 53 : 47"
       when: price(investing/gov-bond-10) > 0
       text: A bond column says the 10-year government bond is about to tick up.
+      label: 10-year bond ticks up
       next: tip-gov-bond-10
     - weight: "(forecast(investing/gov-bond-10) > 0) ? 47 : 53"
       when: price(investing/gov-bond-10) > 0 and units(investing/gov-bond-10) > 0
       text: A bond column says the 10-year government bond is about to tick down.
+      label: 10-year bond ticks down
       next: tip-gov-bond-10-sell
 
 - id: read-investing-book
@@ -276,6 +324,7 @@
     - weight: "(forecast(investing/total-market) > 0) ? 55 : 45"
       when: price(investing/total-market) > 0
       text: The chapter on index funds makes sense. It says the Total market fund is set to climb, and you believe it.
+      label: Total Market fund climbs
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -283,6 +332,7 @@
     - weight: "(forecast(investing/total-market) > 0) ? 45 : 55"
       when: price(investing/total-market) > 0 and units(investing/total-market) > 0
       text: The chapter on index funds makes sense. It says the Total market fund is set to slide, and you believe it.
+      label: Total Market fund slides
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -290,6 +340,7 @@
     - weight: "(forecast(investing/world-index) > 0) ? 55 : 45"
       when: price(investing/world-index) > 0
       text: The book's example is a World index fund, and it is due a good year.
+      label: World index fund has a good year
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -297,6 +348,7 @@
     - weight: "(forecast(investing/world-index) > 0) ? 45 : 55"
       when: price(investing/world-index) > 0 and units(investing/world-index) > 0
       text: The book's example is a World index fund, and it is heading for a rough year.
+      label: World index fund has a rough year
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -304,6 +356,7 @@
     - weight: "(forecast(investing/income-bond-fund) > 0) ? 55 : 45"
       when: price(investing/income-bond-fund) > 0
       text: A section on bond funds says the Income bond fund is about to pay off.
+      label: Income bond fund pays off
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -311,6 +364,7 @@
     - weight: "(forecast(investing/income-bond-fund) > 0) ? 45 : 55"
       when: price(investing/income-bond-fund) > 0 and units(investing/income-bond-fund) > 0
       text: A section on bond funds says the Income bond fund is about to wobble.
+      label: Income bond fund wobbles
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -318,6 +372,7 @@
     - weight: "(forecast(investing/corporate-bond-fund) > 0) ? 55 : 45"
       when: price(investing/corporate-bond-fund) > 0
       text: A section on corporate bonds says the Corporate bond fund is quietly about to rise.
+      label: Corporate bond fund rises
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -325,6 +380,7 @@
     - weight: "(forecast(investing/corporate-bond-fund) > 0) ? 45 : 55"
       when: price(investing/corporate-bond-fund) > 0 and units(investing/corporate-bond-fund) > 0
       text: A section on corporate bonds says the Corporate bond fund is about to slip.
+      label: Corporate bond fund slips
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -332,6 +388,7 @@
     - weight: "(forecast(investing/acme-robotics) > 0) ? 55 : 45"
       when: price(investing/acme-robotics) > 0
       text: The stock-picking chapter is sure Acme Robotics is about to take off.
+      label: Acme Robotics takes off
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -339,6 +396,7 @@
     - weight: "(forecast(investing/acme-robotics) > 0) ? 45 : 55"
       when: price(investing/acme-robotics) > 0 and units(investing/acme-robotics) > 0
       text: The stock-picking chapter is sure Acme Robotics is about to crash.
+      label: Acme Robotics crashes
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -346,6 +404,7 @@
     - weight: "(forecast(investing/northwind-foods) > 0) ? 55 : 45"
       when: price(investing/northwind-foods) > 0
       text: The stock-picking chapter says Northwind Foods is about to climb.
+      label: Northwind Foods climbs
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -353,6 +412,7 @@
     - weight: "(forecast(investing/northwind-foods) > 0) ? 45 : 55"
       when: price(investing/northwind-foods) > 0 and units(investing/northwind-foods) > 0
       text: The stock-picking chapter says Northwind Foods has a bad year coming.
+      label: Northwind Foods has a bad year
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -360,6 +420,7 @@
     - weight: "(forecast(investing/lumen-energy) > 0) ? 55 : 45"
       when: price(investing/lumen-energy) > 0
       text: The stock-picking chapter says Lumen Energy is about to light up.
+      label: Lumen Energy lights up
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -367,6 +428,7 @@
     - weight: "(forecast(investing/lumen-energy) > 0) ? 45 : 55"
       when: price(investing/lumen-energy) > 0 and units(investing/lumen-energy) > 0
       text: The stock-picking chapter says Lumen Energy is about to go dark.
+      label: Lumen Energy goes dark
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -374,6 +436,7 @@
     - weight: "(forecast(investing/quark-coin) > 0) ? 55 : 45"
       when: price(investing/quark-coin) > 0
       text: A chapter on speculative coins says Quark Coin is about to moon.
+      label: Quark Coin moons
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -381,6 +444,7 @@
     - weight: "(forecast(investing/quark-coin) > 0) ? 45 : 55"
       when: price(investing/quark-coin) > 0 and units(investing/quark-coin) > 0
       text: A chapter on speculative coins says Quark Coin is about to crash.
+      label: Quark Coin crashes
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -388,6 +452,7 @@
     - weight: "(forecast(investing/pinecrest-mining) > 0) ? 55 : 45"
       when: price(investing/pinecrest-mining) > 0
       text: A chapter on penny stocks says Pinecrest Mining is about to strike gold.
+      label: Pinecrest Mining strikes gold
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -395,6 +460,7 @@
     - weight: "(forecast(investing/pinecrest-mining) > 0) ? 45 : 55"
       when: price(investing/pinecrest-mining) > 0 and units(investing/pinecrest-mining) > 0
       text: A chapter on penny stocks says Pinecrest Mining is about to dig itself into a hole.
+      label: Pinecrest Mining digs a hole
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -402,6 +468,7 @@
     - weight: "(forecast(investing/brightwave-labs) > 0) ? 55 : 45"
       when: price(investing/brightwave-labs) > 0
       text: A chapter on penny stocks says Brightwave Labs is about to light up.
+      label: Brightwave Labs lights up
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -409,6 +476,7 @@
     - weight: "(forecast(investing/brightwave-labs) > 0) ? 45 : 55"
       when: price(investing/brightwave-labs) > 0 and units(investing/brightwave-labs) > 0
       text: A chapter on penny stocks says Brightwave Labs is about to fizzle.
+      label: Brightwave Labs fizzles
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -416,6 +484,7 @@
     - weight: "(forecast(investing/gov-bond-5) > 0) ? 55 : 45"
       when: price(investing/gov-bond-5) > 0
       text: The bond chapter says the 5-year government bond is about to tick up.
+      label: 5-year bond ticks up
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -423,6 +492,7 @@
     - weight: "(forecast(investing/gov-bond-5) > 0) ? 45 : 55"
       when: price(investing/gov-bond-5) > 0 and units(investing/gov-bond-5) > 0
       text: The bond chapter says the 5-year government bond is about to tick down.
+      label: 5-year bond ticks down
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -430,6 +500,7 @@
     - weight: "(forecast(investing/gov-bond-10) > 0) ? 55 : 45"
       when: price(investing/gov-bond-10) > 0
       text: The bond chapter says the 10-year government bond is about to tick up.
+      label: 10-year bond ticks up
       effects:
         - money -= 2500
         - stat.smarts += 1
@@ -437,6 +508,7 @@
     - weight: "(forecast(investing/gov-bond-10) > 0) ? 45 : 55"
       when: price(investing/gov-bond-10) > 0 and units(investing/gov-bond-10) > 0
       text: The bond chapter says the 10-year government bond is about to tick down.
+      label: 10-year bond ticks down
       effects:
         - money -= 2500
         - stat.smarts += 1

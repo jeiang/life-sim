@@ -5,7 +5,10 @@ import {
   ageUp,
   choose,
   deserializeWorld,
+  finishGodStep,
+  GodAsk,
   getPerson,
+  godPickRoll,
   indexBundles,
   listActions,
   newLife,
@@ -15,6 +18,7 @@ import {
   setQuality,
   updatePerson,
   type World,
+  withGodAsk,
   worldHash,
 } from "../../../packages/core/src/index.ts";
 import type { CompiledOutcome } from "../../../packages/core/src/pack.ts";
@@ -713,5 +717,60 @@ describe("determinism", () => {
     const w = lifeWithTips();
     const back = deserializeWorld(serializeWorld(w));
     expect(worldHash(back)).toBe(worldHash(w));
+  });
+});
+
+describe("god mode: labeled picks", () => {
+  /** A life played through logged steps, so a replay from its seed rebuilds it. */
+  const tipReady = (): World => {
+    let w = newLife(bundles, 11);
+    for (let y = 0; y < 60 && !w.ended; y++) {
+      w = settle(ageUp(w, bundles).world);
+      const [p] = parents(w);
+      if (p === undefined) continue;
+      const ask = listActions(w, bundles, "relationships", p).find(
+        (r) => r.id === I("ask-for-tip"),
+      );
+      if (ask && !ask.locked) return w;
+    }
+    throw new Error("no tip available");
+  };
+
+  test("a pick on a labeled tip outcome replays to the same world", () => {
+    const w0 = tipReady();
+    const [p] = parents(w0);
+    if (!p) throw new Error("no parent");
+    const climbs = "Total Market fund climbs";
+    let draft = w0;
+    let done: World | undefined;
+    for (let round = 0; round < 20 && !done; round++) {
+      try {
+        const r = runAction(
+          withGodAsk(draft, ["outcome"]),
+          bundles,
+          I("ask-for-tip"),
+          p,
+        );
+        done = finishGodStep(r.world);
+      } catch (e) {
+        if (!(e instanceof GodAsk)) throw e;
+        for (const d of e.draws) {
+          const i = d.options?.findIndex((o) => o.label === climbs) ?? -1;
+          draft = godPickRoll(draft, {
+            age: d.age,
+            key: d.key,
+            n: d.n,
+            d: d.d,
+            v: d.kind === "pick" && i >= 0 ? i : d.natural,
+          });
+        }
+      }
+    }
+    if (!done) throw new Error("the step kept asking");
+    expect(done.choiceLog.some((c) => c.t === "god-roll")).toBe(true);
+    expect(getPerson(done, p).qualities.invest_tip_age).toBe(me(done).age);
+    expect(done.pending?.storyletId).toBe(I("tip-total-market"));
+    const again = worldHash(replay(11, bundles, done.choiceLog));
+    expect(again).toBe(worldHash(done));
   });
 });

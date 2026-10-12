@@ -86,19 +86,29 @@ export function balanceContext(r: Report, pack?: string): string[] {
   L.push(
     `decision slots, years with >=1 / >=2 / >=3: ${r.decisions.atLeast1}% / ${r.decisions.atLeast2}% / ${r.decisions.atLeast3}% (target 90 / 50 / 30)`,
   );
-  const shares = Object.entries(r.decisions.byStorylet);
-  const over = shares.filter(([, v]) => v.share > DECISION_SHARE_CAP).length;
-  L.push(
-    shares.length === 0
-      ? "decision share by storylet: no decisions"
-      : `decision share by storylet, top 5 of ${shares.length} (${r.decisions.total} decisions; ${over} over ${DECISION_SHARE_CAP}%): ${shares
-          .slice(0, 5)
-          .map(
-            ([id, v]) =>
-              `${id} ${v.share}%${v.share > DECISION_SHARE_CAP ? " OVER" : ""}`,
-          )
-          .join(", ")}`,
-  );
+  // Reports written before decisions.byStorylet (#335) lack it: print n/a rather than throw.
+  const byStorylet = r.decisions.byStorylet as
+    | Report["decisions"]["byStorylet"]
+    | undefined;
+  if (byStorylet === undefined) {
+    L.push(
+      "decision share by storylet: n/a (report predates decisions.byStorylet)",
+    );
+  } else {
+    const shares = Object.entries(byStorylet);
+    const over = shares.filter(([, v]) => v.share > DECISION_SHARE_CAP).length;
+    L.push(
+      shares.length === 0
+        ? "decision share by storylet: no decisions"
+        : `decision share by storylet, top 5 of ${shares.length} (${r.decisions.total} decisions; ${over} over ${DECISION_SHARE_CAP}%): ${shares
+            .slice(0, 5)
+            .map(
+              ([id, v]) =>
+                `${id} ${v.share}%${v.share > DECISION_SHARE_CAP ? " OVER" : ""}`,
+            )
+            .join(", ")}`,
+    );
+  }
   const drops = Object.values(r.capDrops).reduce((a, b) => a + b, 0);
   L.push(
     `yearly cap hits: ${drops} chance hits dropped (${pct(drops, r.eventsPerYear.years)} of years)`,

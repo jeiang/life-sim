@@ -21,6 +21,7 @@
   text: The lab's principal investigator skims your CV and asks what you would do with two years of funding.
   outcomes:
     - weight: 30 + stat.smarts / 2
+      label: "Offered postdoc"
       text: The lab offers you the postdoc, and you start on Monday.
       effects:
         - "start_occupation(grad-school/postdoc)"
@@ -28,6 +29,7 @@
         - stat.happiness += 5
         - "journal(\"Started a postdoc position at age {age}.\")"
     - weight: 50 - stat.smarts / 4
+      label: "Went to a candidate with papers"
       text: The committee goes with a candidate who already has more papers out.
       effects:
         - stat.happiness -= 3
@@ -79,6 +81,7 @@
   text: The tenure committee meets again this spring, and your file is on the agenda.
   outcomes:
     - weight: 1 + stat.smarts / 30
+      label: "Tenure granted"
       text: The committee grants you tenure, and the title of full professor comes with it.
       effects:
         - "start_occupation(grad-school/full-professor)"
@@ -88,6 +91,7 @@
         - stat.happiness += 10
         - "journal(\"Granted tenure as a full professor at age {age}.\")"
     - weight: 9
+      label: "One more year"
       text: The committee wants one more year of papers, so the answer is not yet.
       effects:
         - stat.happiness -= 2

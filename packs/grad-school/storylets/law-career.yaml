@@ -12,6 +12,7 @@
   text: A mid-sized law firm is taking applications for associates.
   outcomes:
     - weight: 3
+      label: "Offered associate"
       text: The partners like your moot court answers and offer you an associate's chair.
       effects:
         - "start_occupation(grad-school/associate-lawyer)"
@@ -19,6 +20,7 @@
         - "schedule(grad-school/partner-track, after: 4-4 years)"
         - "journal(\"You start as an associate at a law firm.\")"
     - weight: 1
+      label: "Went to a clerk"
       text: They go with a candidate who clerked for a federal judge. Maybe next year.
 
 - id: partner-track
@@ -46,6 +48,7 @@
   text: "A state judicial nominating committee wants a word with {player.first_name}."
   outcomes:
     - weight: stat.smarts
+      label: "Judge appointed"
       text: They want you on the bench. The robe fits better than you expected.
       effects:
         - "start_occupation(grad-school/judge)"
@@ -55,6 +58,7 @@
         - "quality.work_effort = 0"
         - "journal(\"The governor appoints you a judge.\")"
     - weight: 100 - stat.smarts
+      label: "Never called back"
       text: The committee asks about your availability, then never calls back.
       effects:
         - "quality.grad_judge_offered = true"

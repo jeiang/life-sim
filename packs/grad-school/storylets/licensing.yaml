@@ -14,6 +14,7 @@
     - label: Sit it straight
       outcomes:
         - weight: "30 + stat.smarts / 2 + 8 * quality.grad_prep"
+          label: "Passed"
           text: The letter arrives in the spring. You passed, and you may now practice medicine under supervision.
           effects:
             - "quality.grad_licensed_medical = true"
@@ -21,6 +22,7 @@
             - stat.happiness += 4
             - "journal(\"Passed the medical boards.\")"
         - weight: "60 - stat.smarts / 4 - 4 * quality.grad_prep"
+          label: "Missed cut-off"
           text: You miss the cut-off by a handful of points. The letter is very polite about it.
           effects:
             - "quality.grad_prep = 0"
@@ -29,6 +31,7 @@
     - label: Cheat
       outcomes:
         - weight: "60 + stat.smarts / 2 + 10 * quality.grad_prep"
+          label: "Passed with notes"
           text: Nobody notices the notes tucked in your cuff, and the letter says you passed.
           effects:
             - "quality.grad_licensed_medical = true"
@@ -38,6 +41,7 @@
             - stat.happiness -= 2
             - "journal(\"Passed the medical boards with help you should not have had.\")"
         - weight: 30
+          label: "Caught with notes"
           text: A proctor spots the notes in your cuff. The exam is void, and the file goes on record.
           effects:
             - "quality.grad_cheated = true"
@@ -59,6 +63,7 @@
     - label: Sit it straight
       outcomes:
         - weight: "30 + stat.smarts / 2 + 8 * quality.grad_prep"
+          label: "Passed"
           text: The results post at midnight. You passed the bar and can take on clients.
           effects:
             - "quality.grad_licensed_law = true"
@@ -66,6 +71,7 @@
             - stat.happiness += 4
             - "journal(\"Passed the bar exam.\")"
         - weight: "60 - stat.smarts / 4 - 4 * quality.grad_prep"
+          label: "Failed essays"
           text: You fail the essay section by a few points. The next sitting is a year away.
           effects:
             - "quality.grad_prep = 0"
@@ -74,6 +80,7 @@
     - label: Cheat
       outcomes:
         - weight: "60 + stat.smarts / 2 + 10 * quality.grad_prep"
+          label: "Passed with classmate's plan"
           text: You lean on a classmate's essay plan, nobody catches it, and you are admitted to the bar.
           effects:
             - "quality.grad_licensed_law = true"
@@ -83,6 +90,7 @@
             - stat.happiness -= 2
             - "journal(\"Passed the bar exam with help you should not have had.\")"
         - weight: 30
+          label: "Caught with phone log"
           text: The proctor reads your phone log, and the exam is voided on the spot. The file goes on record.
           effects:
             - "quality.grad_cheated = true"

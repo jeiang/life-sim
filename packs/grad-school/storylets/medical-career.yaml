@@ -12,6 +12,7 @@
   text: Residency programs take new doctors every spring. You send applications across the country and wait by the phone.
   outcomes:
     - weight: "20 + stat.smarts / 2 + quality.grad_gpa / 4"
+      label: "Matched"
       text: "A program director calls with an offer. You start as a resident doctor, and your first shift is tomorrow. {c1.first_name} {c1.last_name} starts the same week and shows you where the good coffee is."
       effects:
         - "start_occupation(grad-school/resident-doctor)"
@@ -23,6 +24,7 @@
         - stat.happiness += 4
         - "journal(\"Matched into a residency at age {age}.\")"
     - weight: 60
+      label: "No program calls back"
       text: No program calls back this year. The rejection emails are polite and very short.
       effects:
         - stat.happiness -= 3
@@ -73,14 +75,17 @@
   text: The pager goes off at 3am, and the night shift has no end in sight.
   outcomes:
     - weight: 50
+      label: "Vending machine coffee"
       text: A run of thirty-hour shifts leaves you running on vending machine coffee and bad decisions.
       effects:
         - stat.happiness -= 3
     - weight: 35
+      label: "Handwritten card"
       text: A patient you pulled through sends a handwritten card, and the ward feels a little less grim for a week.
       effects:
         - stat.happiness += 3
     - weight: 15
+      label: "Death you could not prevent"
       text: The third night in a row ends with a death you could not prevent. The drive home is a blur.
       effects:
         - stat.happiness -= 6

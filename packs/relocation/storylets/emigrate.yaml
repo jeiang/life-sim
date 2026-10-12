@@ -104,12 +104,14 @@
   text: Your file lands on a desk in a grey office. A stranger reads it and decides where your next decade happens.
   outcomes:
     - weight: "clamp(40 + stat.smarts / 5 + ((quality.has_degree_business or quality.has_degree_engineering or quality.has_degree_nursing or quality.has_degree_arts) ? 10 : 0) + min(15, quality.years_worked) + min(10, money / 1000000) - 5 * min(quality.reloc_denials, 3), 5, 95)"
+      label: "Approved"
       text: The letter says approved. Start packing, and find out where the plane goes.
       effects:
         - "relocation.remember_home()"
         - "journal(\"Your emigration application is approved.\")"
       next: emigrate-job-fork
     - weight: "100 - clamp(40 + stat.smarts / 5 + ((quality.has_degree_business or quality.has_degree_engineering or quality.has_degree_nursing or quality.has_degree_arts) ? 10 : 0) + min(15, quality.years_worked) + min(10, money / 1000000) - 5 * min(quality.reloc_denials, 3), 5, 95)"
+      label: "Denied"
       text: The letter says denied. The fee is gone, and you can try again next year.
       effects:
         - "quality.reloc_denials += 1"
@@ -126,24 +128,28 @@
   text: You are approved. Before you pack, there is the matter of your job.
   outcomes:
     - weight: 1
+      label: "No job"
       when: "not in_group(\"full-time\") and not in_group(\"part-time\")"
       text: You have no job to leave behind. Pack the sweaters.
       effects:
         - "quality.reloc_job_fork = false"
       next: relocation-arrive
     - weight: 1
+      label: "Retired"
       when: "has_occupation(core-loop/retired)"
       text: Retirement follows you overseas. The pension keeps coming.
       effects:
         - "quality.reloc_job_fork = false"
       next: relocation-arrive
     - weight: "clamp(40 + stat.smarts / 5 + quality.work_effort * 6 + min(15, quality.years_worked), 5, 95)"
+      label: "Remote approved"
       when: "has_remote_job() and not has_occupation(core-loop/retired)"
       text: Your boss agrees you can keep working remotely from wherever you land.
       effects:
         - "quality.reloc_job_fork = false"
       next: relocation-arrive
     - weight: "100 - clamp(40 + stat.smarts / 5 + quality.work_effort * 6 + min(15, quality.years_worked), 5, 95)"
+      label: "Remote refused"
       when: "has_remote_job() and not has_occupation(core-loop/retired)"
       text: Your boss wants you in the office, so the job goes with the move.
       effects:
@@ -152,6 +158,7 @@
         - "end_group(\"part-time\")"
       next: relocation-arrive
     - weight: 1
+      label: "Gave notice"
       when: "(in_group(\"full-time\") or in_group(\"part-time\")) and not has_remote_job() and not has_occupation(core-loop/retired)"
       text: You hand in your notice. The team throws a small party and forgets to get you a card.
       effects:
@@ -169,6 +176,7 @@
   text: The plane lands, and the rest of your life starts in a new country.
   outcomes:
     - weight: 1
+      label: "Toronto"
       when: "quality.reloc_pending and quality.reloc_pending_dest == 0"
       text: Toronto. Cold mornings, polite lineups, and a surprising number of opinions about hockey. Your new life starts on Monday.
       effects:
@@ -181,6 +189,7 @@
         - "quality.reloc_lang_english = max(quality.reloc_lang_english, 20)"
         - "journal(\"You land in Toronto with two suitcases and a plan.\")"
     - weight: 1
+      label: "Montreal"
       when: "quality.reloc_pending and quality.reloc_pending_dest == 1"
       text: Montreal. The bagels are excellent, the French moves faster than your textbook, and the winters are a personality test.
       effects:
@@ -193,6 +202,7 @@
         - "quality.reloc_lang_french = max(quality.reloc_lang_french, 20)"
         - "journal(\"You land in Montreal and start learning French.\")"
     - weight: 1
+      label: "London"
       when: "quality.reloc_pending and quality.reloc_pending_dest == 2"
       text: London. The rent is outrageous, the rain never quite stops, and the tea is worth every penny.
       effects:
@@ -205,6 +215,7 @@
         - "quality.reloc_lang_english = max(quality.reloc_lang_english, 20)"
         - "journal(\"You land in London and find out what rent really costs.\")"
     - weight: 1
+      label: "Manchester"
       when: "quality.reloc_pending and quality.reloc_pending_dest == 3"
       text: Manchester. Cheaper than London, louder than most places, and the music never stops.
       effects:
@@ -217,6 +228,7 @@
         - "quality.reloc_lang_english = max(quality.reloc_lang_english, 20)"
         - "journal(\"You land in Manchester and the city feels like it has been waiting for you.\")"
     - weight: 1
+      label: "Tokyo"
       when: "quality.reloc_pending and quality.reloc_pending_dest == 4"
       text: Tokyo. The trains run on time, the lights never sleep, and you have to learn the subway map fast.
       effects:
@@ -229,6 +241,7 @@
         - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 20)"
         - "journal(\"You land in Tokyo and the trains are somehow more punctual than you hoped.\")"
     - weight: 1
+      label: "Osaka"
       when: "quality.reloc_pending and quality.reloc_pending_dest == 5"
       text: Osaka. Street food on every corner, and a city that will happily tell you how to eat it.
       effects:
@@ -241,6 +254,7 @@
         - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 20)"
         - "journal(\"You land in Osaka and go straight for the street food.\")"
     - weight: 1
+      label: "Mexico City"
       when: "quality.reloc_pending and quality.reloc_pending_dest == 6"
       text: Mexico City. Traffic, tacos, and a wall of noise that somehow becomes home fast.
       effects:
@@ -253,6 +267,7 @@
         - "quality.reloc_lang_spanish = max(quality.reloc_lang_spanish, 20)"
         - "journal(\"You land in Mexico City and the noise starts to feel like home.\")"
     - weight: 1
+      label: "Guadalajara"
       when: "quality.reloc_pending and quality.reloc_pending_dest == 7"
       text: Guadalajara. Mariachi on the corner, a warm sun, and a dry sense of humor you will never quite match.
       effects:

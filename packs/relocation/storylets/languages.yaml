@@ -19,21 +19,25 @@
       when: "quality.reloc_lang_spanish < 100"
       outcomes:
         - weight: 30
+          label: "Good session"
           text: Two weeks of verb conjugations, and ¡hola! finally sticks.
           effects:
             - "quality.reloc_lang_spanish += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_spanish) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_spanish) / 48) : 0))"
             - stat.smarts += 1
         - weight: 30
+          label: "Solid session"
           text: Flashcards and a telenovela do the work. Your Spanish gets a little braver.
           effects:
             - "quality.reloc_lang_spanish += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_spanish) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_spanish) / 48) : 0))"
             - stat.smarts += 1
         - weight: 20
+          label: "Rough session"
           text: The subjunctive defeats you again. A few words still stick.
           effects:
             - "quality.reloc_lang_spanish += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_spanish) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_spanish) / 96) : 0))"
             - stat.happiness -= 1
         - weight: 20
+          label: "Fell apart"
           text: You study in the car and forget half of it by the time you park.
           effects:
             - "quality.reloc_lang_spanish += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_spanish) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_spanish) / 96) : 0))"
@@ -42,21 +46,25 @@
       when: "quality.reloc_lang_french < 100"
       outcomes:
         - weight: 30
+          label: "Good session"
           text: The accent marks mostly make sense now. Your French gets sharper.
           effects:
             - "quality.reloc_lang_french += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_french) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_french) / 48) : 0))"
             - stat.smarts += 1
         - weight: 30
+          label: "Solid session"
           text: A patient tutor corrects your vowels until you can order a coffee without flinching.
           effects:
             - "quality.reloc_lang_french += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_french) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_french) / 48) : 0))"
             - stat.smarts += 1
         - weight: 20
+          label: "Rough session"
           text: You lose an hour to the gender of nouns. Some of it goes in.
           effects:
             - "quality.reloc_lang_french += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_french) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_french) / 96) : 0))"
             - stat.happiness -= 1
         - weight: 20
+          label: "Fell apart"
           text: Your audio course keeps getting stuck on the same sentence.
           effects:
             - "quality.reloc_lang_french += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_french) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_french) / 96) : 0))"
@@ -65,21 +73,25 @@
       when: "quality.reloc_lang_german < 100"
       outcomes:
         - weight: 30
+          label: "Good session"
           text: Three noun cases in one sitting. Somehow you come out understanding more.
           effects:
             - "quality.reloc_lang_german += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_german) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_german) / 48) : 0))"
             - stat.smarts += 1
         - weight: 30
+          label: "Solid session"
           text: You learn Schadenfreude and feel weirdly at home.
           effects:
             - "quality.reloc_lang_german += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_german) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_german) / 48) : 0))"
             - stat.smarts += 1
         - weight: 20
+          label: "Rough session"
           text: Der, die, das. You give up halfway and eat a pretzel.
           effects:
             - "quality.reloc_lang_german += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_german) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_german) / 96) : 0))"
             - stat.happiness -= 1
         - weight: 20
+          label: "Fell apart"
           text: The compound words keep getting longer. Your head hurts, but a few stick.
           effects:
             - "quality.reloc_lang_german += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_german) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_german) / 96) : 0))"
@@ -88,21 +100,25 @@
       when: "quality.reloc_lang_italian < 100"
       outcomes:
         - weight: 30
+          label: "Good session"
           text: Your hands help more than the grammar does, but the grammar helps too.
           effects:
             - "quality.reloc_lang_italian += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_italian) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_italian) / 48) : 0))"
             - stat.smarts += 1
         - weight: 30
+          label: "Solid session"
           text: An opera recording and a notebook of drills. The vowels finally start to sound right.
           effects:
             - "quality.reloc_lang_italian += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_italian) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_italian) / 48) : 0))"
             - stat.smarts += 1
         - weight: 20
+          label: "Rough session"
           text: You mix up two verbs for 'to be', and the cafe waiter laughs kindly.
           effects:
             - "quality.reloc_lang_italian += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_italian) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_italian) / 96) : 0))"
             - stat.happiness -= 1
         - weight: 20
+          label: "Fell apart"
           text: A slow afternoon with a grammar book. The pages stick less than you hoped.
           effects:
             - "quality.reloc_lang_italian += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_italian) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_italian) / 96) : 0))"
@@ -111,21 +127,25 @@
       when: "quality.reloc_lang_japanese < 100"
       outcomes:
         - weight: 30
+          label: "Good session"
           text: Hiragana stops looking like scribbles. A small victory.
           effects:
             - "quality.reloc_lang_japanese += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_japanese) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_japanese) / 48) : 0))"
             - stat.smarts += 1
         - weight: 30
+          label: "Solid session"
           text: Kanji flashcards at the kitchen table. Three more characters stick.
           effects:
             - "quality.reloc_lang_japanese += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_japanese) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_japanese) / 48) : 0))"
             - stat.smarts += 1
         - weight: 20
+          label: "Rough session"
           text: The particles blur together. You sleep on it and forget half by morning.
           effects:
             - "quality.reloc_lang_japanese += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_japanese) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_japanese) / 96) : 0))"
             - stat.happiness -= 1
         - weight: 20
+          label: "Fell apart"
           text: You give the stroke order your best try. The character still looks wrong.
           effects:
             - "quality.reloc_lang_japanese += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_japanese) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_japanese) / 96) : 0))"
@@ -134,21 +154,25 @@
       when: "quality.reloc_lang_mandarin < 100"
       outcomes:
         - weight: 30
+          label: "Good session"
           text: The tones are a nightmare, but your ear starts to catch them.
           effects:
             - "quality.reloc_lang_mandarin += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_mandarin) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_mandarin) / 48) : 0))"
             - stat.smarts += 1
         - weight: 30
+          label: "Solid session"
           text: A tutor makes you say ma, ma, ma, ma until the neighbors complain.
           effects:
             - "quality.reloc_lang_mandarin += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_mandarin) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_mandarin) / 48) : 0))"
             - stat.smarts += 1
         - weight: 20
+          label: "Rough session"
           text: You spend the hour on tones and still can't tell mother from horse.
           effects:
             - "quality.reloc_lang_mandarin += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_mandarin) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_mandarin) / 96) : 0))"
             - stat.happiness -= 1
         - weight: 20
+          label: "Fell apart"
           text: Character drills on the bus. You learn three and lose two.
           effects:
             - "quality.reloc_lang_mandarin += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_mandarin) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_mandarin) / 96) : 0))"
@@ -157,21 +181,25 @@
       when: "quality.reloc_lang_korean < 100"
       outcomes:
         - weight: 30
+          label: "Good session"
           text: Hangul clicks into place in one long evening. Everything else is still hard.
           effects:
             - "quality.reloc_lang_korean += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_korean) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_korean) / 48) : 0))"
             - stat.smarts += 1
         - weight: 30
+          label: "Solid session"
           text: A drama with the subtitles off for the last ten minutes. You catch a few words.
           effects:
             - "quality.reloc_lang_korean += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_korean) / 12) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_korean) / 48) : 0))"
             - stat.smarts += 1
         - weight: 20
+          label: "Rough session"
           text: The honorifics leave you tangled up. You give up for the day.
           effects:
             - "quality.reloc_lang_korean += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_korean) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_korean) / 96) : 0))"
             - stat.happiness -= 1
         - weight: 20
+          label: "Fell apart"
           text: You copy the alphabet from a poster until your hand hurts. Some of it stays.
           effects:
             - "quality.reloc_lang_korean += (uses_this_year <= 3 ? max(1, (100 - quality.reloc_lang_korean) / 24) : (uses_this_year <= 8 ? max(1, (100 - quality.reloc_lang_korean) / 96) : 0))"

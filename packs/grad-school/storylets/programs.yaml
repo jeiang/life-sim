@@ -9,16 +9,19 @@
   text: The year-end transcript lands in your mailbox. Time to see how you really did.
   outcomes:
     - weight: 10 + stat.smarts / 2
+      label: "Top marks"
       text: Your professors start learning your name. Top marks this year.
       effects:
         - "quality.grad_gpa += 5"
         - "schedule(grad-school/grad-year-review, after: 1-1 years)"
     - weight: 50
+      label: "Solid year"
       text: A solid year of B minuses. Nobody is writing letters for you yet.
       effects:
         - "quality.grad_gpa += 1"
         - "schedule(grad-school/grad-year-review, after: 1-1 years)"
     - weight: 60 - stat.smarts / 2
+      label: "Grades slide"
       text: Your transcript reads like a cry for help. Your grades slide badly.
       effects:
         - "quality.grad_gpa += 0 - 6"
@@ -130,10 +133,12 @@
   text: You settle in for another stretch of reading and problem sets.
   outcomes:
     - weight: 60
+      label: "Library all night"
       text: You live in the library until it closes, and the notes start to make sense.
       effects:
         - "quality.grad_gpa += 4"
     - weight: 40
+      label: "Cram and forget to eat"
       text: You cram all night and forget to eat. The grades go up, and so does the stress.
       effects:
         - "quality.grad_gpa += 3"

@@ -77,6 +77,8 @@ After a succession the dead player is readable, read-only, as `deceased.<field>`
 
 What one person is to another is derived by the Core from parent links up to great-grandparents ([ADR 0006](../../adr/0006-parent-links-derived-kinship.md)); a Pack declares nothing. The Core kinship ids, written bare in `is_kin` and `count_kin` (a bare word or a string; anything else is a build error that lists them): `parent`, `grandparent`, `great-grandparent`, `child`, `grandchild`, `great-grandchild`, `sibling`, `half-sibling`, `step-sibling`, `adopted-sibling`, `aunt-uncle`, `great-aunt-uncle`, `cousin`, `niece-nephew`, `step-parent`, `step-child`, `spouse`, `parent-in-law`, `sibling-in-law`, `child-in-law`. The `person` argument of `kin` and `is_kin` is `person` in a `scope: person` storylet, or a name bound by `spawn_person(...) as <name>`.
 
+`living_kin_of(person, id)`: the number of living people that `person` is kinship `id` to (the bare kinship id, as in `count_kin`), of any age, counted from that person's side rather than the subject's. Unlike `count_kin`, it works for a dead `person` (a `person_death` storylet binds one). A dead parent's living children include the player, so the count is at least 1 when the player is a child of that parent; `person_death` content divides a payout by it.
+
 ```
 when: is_kin(person, grandparent) and person.alive
 when: count_kin(parent, 20, 120) >= 2

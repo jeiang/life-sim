@@ -451,6 +451,14 @@ export function makeEnv(world: World, idx: PackIndex, scope: Scope): Env {
             kinshipOf(world, scope.subject, personRef(id)) ===
             (args[1] as string)
           );
+        case "living_kin_of":
+          return countKin(
+            world,
+            personRef(id),
+            args[1] as string,
+            0,
+            Number.MAX_SAFE_INTEGER,
+          );
         case "count_kin":
           return countKin(
             world,

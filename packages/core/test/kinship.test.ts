@@ -308,6 +308,16 @@ describe("expressions", () => {
     expect(countKin(dead, t.w.playerId, "parent", 0, 100)).toBe(1);
   });
 
+  test("living_kin_of: a dead parent still counts the player as a living child", () => {
+    const dead = updatePerson(t.w, t.ids.dad as number, (p) => ({
+      ...p,
+      alive: false,
+    }));
+    expect(
+      countKin(dead, t.ids.dad as number, "child", 0, Number.MAX_SAFE_INTEGER),
+    ).toBeGreaterThanOrEqual(1);
+  });
+
   test("storylets use kin functions; a spawned parent is kin", () => {
     const rows = (name: string) =>
       listActions(t.w, bundles, "relationships", t.ids[name]).map((r) => r.id);

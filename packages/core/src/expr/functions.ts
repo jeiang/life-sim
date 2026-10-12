@@ -58,6 +58,8 @@ export const FUNCTIONS = {
   is_kin: { params: ["person", "kinship"], returns: "bool" },
   /** Living people of this kinship id with age in `[min, max]`, inclusive. */
   count_kin: { params: ["kinship", "int", "int"], returns: "int" },
+  /** Living people `person` is `kinship` to (counted from that person's side), any age. */
+  living_kin_of: { params: ["person", "kinship"], returns: "int" },
   /** Market kinds. Price of one whole unit now, minor units. */
   price: { params: ["id"], returns: "int" },
   /** One-year price change, basis points. */

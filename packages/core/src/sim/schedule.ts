@@ -11,7 +11,7 @@ import {
   scheduledEntries,
   setScheduled,
 } from "../state/schedule.ts";
-import type { QueuedEvent, ScopeRef, World } from "../state/types.ts";
+import type { PersonId, QueuedEvent, ScopeRef, World } from "../state/types.ts";
 import { nextStream } from "../state/world.ts";
 import { makeEnv, type Scope } from "./env.ts";
 import { clockAge } from "./ops.ts";
@@ -77,10 +77,61 @@ export function unschedule(world: World, storyletId: string): World {
 }
 
 /**
+ * A person has just died: queue every `person_death` storylet for them
+ * (docs/spec/pack-format/storylets.md#person-death-storylets). Each entry opens once, when
+ * `takeDeath` drains it, with the dead person bound. No roll is made, so replay is unchanged.
+ * The player is never queued.
+ */
+export function queueDeath(
+  world: World,
+  idx: PackIndex,
+  person: PersonId,
+): World {
+  if (person === world.playerId) return world;
+  const deaths = [...idx.storylets.values()].filter(
+    (s) => s.trigger === "person_death",
+  );
+  if (deaths.length === 0) return world;
+  const queue = scheduledEntries(world);
+  const first = queue.reduce((n, e) => Math.max(n, e.seq), -1) + 1;
+  const fresh: ScheduledEntry[] = deaths.map((s, i) => ({
+    storyletId: s.id,
+    person,
+    wait: 0,
+    left: 1,
+    lineage: false,
+    seq: first + i,
+  }));
+  return setScheduled(world, [...queue, ...fresh]);
+}
+
+/** Take the earliest queued death out of the schedule, as the event that opens it. */
+export function takeDeath(
+  world: World,
+  idx: PackIndex,
+): [World, QueuedEvent | undefined] {
+  const queue = scheduledEntries(world);
+  const e = queue.find(
+    (x) =>
+      x.person !== undefined &&
+      idx.storylets.get(x.storyletId)?.trigger === "person_death",
+  );
+  if (!e || e.person === undefined) return [world, undefined];
+  return [
+    setScheduled(
+      world,
+      queue.filter((x) => x !== e),
+    ),
+    { storyletId: e.storyletId, scope: { kind: "person", id: e.person } },
+  ];
+}
+
+/**
  * One age-up of the schedule. An entry waits until its window opens; once open it rolls each
  * age-up with chance 1 / (age-ups left in the window), so the odds rise and the last age-up is
  * certain. The storylet's `when` (and `once`, `cooldown`, `max_per_life`) is checked first: if it
- * fails the entry waits, and the window running out drops it. A person who died drops it at once.
+ * fails the entry waits, and the window running out drops it. A person who died drops it at once,
+ * unless the storylet is `person_death`, whose entries wait for `takeDeath` instead.
  * Fired entries leave the queue and come back as events in the order they were queued (purpose
  * key `schedule/<storylet>[#<person id>]`, one roll per eligible entry).
  */
@@ -100,8 +151,13 @@ export function dueScheduled(
   const fire: QueuedEvent[] = [];
   for (const e of queue) {
     const s = idx.storylets.get(e.storyletId);
-    if (!s || (e.person !== undefined && !w.persons.get(e.person)?.alive))
+    if (!s) continue;
+    // A death entry is drained by `takeDeath` at once, never rolled or dropped here.
+    if (s.trigger === "person_death") {
+      keep.push(e);
       continue;
+    }
+    if (e.person !== undefined && !w.persons.get(e.person)?.alive) continue;
     if (e.wait > 0) {
       keep.push({ ...e, wait: e.wait - 1 });
       continue;

@@ -253,7 +253,11 @@ export interface Pending {
   readonly amount?: number;
   /** Repeat factor (basis points, below 10000) inherited through `next:` from a repeatable action. */
   readonly factorBp?: number;
-  readonly rest?: { readonly events: readonly QueuedEvent[] };
+  /** `npcDone`: the NPC pass for this age-up has already run (deaths it caused are drained). */
+  readonly rest?: {
+    readonly events: readonly QueuedEvent[];
+    readonly npcDone?: true;
+  };
 }
 
 /** How often a storylet (per scope binding) has fired, for `once`, `cooldown`, `max_per_life`. */

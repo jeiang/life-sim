@@ -671,6 +671,7 @@ export const StoryletSchema = obj(
       Type.Literal("action"),
       Type.Literal("milestone"),
       Type.Literal("succession"),
+      Type.Literal("person_death"),
     ]),
     milestone: Type.Optional(
       Type.String({

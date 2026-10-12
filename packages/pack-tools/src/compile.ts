@@ -2650,6 +2650,12 @@ class PackCompiler {
       for (const k of ["menu", "chance", "weight", "scope", "target"] as const)
         if (s[k] !== undefined)
           this.err([k], `'${k}' is not valid on succession storylets`);
+    } else if (s.trigger === "person_death") {
+      if (s.scope !== "person")
+        this.err(["scope"], "a person_death storylet needs 'scope: person'");
+      for (const k of ["menu", "chance", "weight", "milestone"] as const)
+        if (s[k] !== undefined)
+          this.err([k], `'${k}' is not valid on person_death storylets`);
     } else {
       if (s.menu === undefined)
         this.err([], "an action storylet needs a 'menu'");

@@ -26,7 +26,7 @@ import {
 } from "./living.ts";
 import { clockAge, evalBool, evalInt } from "./ops.ts";
 import { indexBundles, type PackIndex } from "./pack-index.ts";
-import { dueScheduled } from "./schedule.ts";
+import { dueScheduled, takeDeath } from "./schedule.ts";
 import { settle } from "./settle.ts";
 import {
   amountAllowed,
@@ -445,33 +445,46 @@ export function endLivingWithParents(world: World, idx: PackIndex): World {
   );
 }
 
-/** Open the queued events in order, stopping at the first that needs a choice. */
+/**
+ * Open the queued events in order, stopping at the first that needs a choice. Before each one the
+ * earliest queued `person_death` opens first (`takeDeath`), so a death from the step before gets its
+ * storylet at once. In a year the NPC pass follows the queue; `npcDone` says it has already run.
+ */
 function advance(
   world: World,
   idx: PackIndex,
   events: readonly QueuedEvent[],
   inYear: boolean,
+  npcDone = false,
 ): World {
   let w = world;
   let queue = events;
-  while (queue.length > 0 && !w.ended) {
-    const [head, ...rest] = queue as [QueuedEvent, ...QueuedEvent[]];
-    queue = rest;
-    const s = idx.storylets.get(head.storyletId);
-    if (!s || !isEligible(w, idx, s, head.scope)) continue;
-    w = open(w, idx, head);
+  for (;;) {
+    if (w.ended) return w;
+    const [drained, death] = takeDeath(w, idx);
+    w = drained;
+    const next = death ?? queue[0];
+    if (!next) break;
+    if (!death) queue = queue.slice(1);
+    const s = idx.storylets.get(next.storyletId);
+    if (!s || !isEligible(w, idx, s, next.scope)) continue;
+    w = open(w, idx, next);
     if (w.pending) {
       return {
         ...w,
         pending: {
           ...w.pending,
-          ...(inYear ? { rest: { events: queue } } : {}),
+          ...(inYear
+            ? { rest: { events: queue, ...(npcDone ? { npcDone } : {}) } }
+            : {}),
         },
       };
     }
   }
-  if (w.ended || !inYear) return w;
-  return npcPass(w, idx);
+  if (w.ended || !inYear || npcDone) return w;
+  const after = npcPass(w, idx);
+  if (after.pending || after.ended) return after;
+  return advance(after, idx, [], true, true);
 }
 
 /**
@@ -612,7 +625,13 @@ export function choose(
       pending: { ...w.pending, ...(p.rest ? { rest: p.rest } : {}) },
     });
   }
-  const done = advance(w, idx, p.rest?.events ?? [], p.rest !== undefined);
+  const done = advance(
+    w,
+    idx,
+    p.rest?.events ?? [],
+    p.rest !== undefined,
+    p.rest?.npcDone === true,
+  );
   return result(world, p.rest ? ensureYearEntry(done, idx) : done);
 }
 

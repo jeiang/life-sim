@@ -1,0 +1,4 @@
+- { id: deaths_seen, type: int, min: 0, max: 99, default: 0 }
+- { id: seen_age, type: int, min: 0, max: 200, default: 0 }
+- { id: mourned, type: int, min: 0, max: 99, default: 0 }
+- { id: passed, type: int, min: 0, max: 99, default: 0 }

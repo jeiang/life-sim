@@ -1,0 +1,18 @@
+- id: kill
+  trigger: action
+  menu: relationships
+  scope: person
+  outcomes:
+    - effects:
+        - die("illness")
+# An event killing a parent during the age-up, once per life.
+- id: passing
+  trigger: event
+  scope: person
+  target: [parent]
+  chance: 100%
+  once: true
+  outcomes:
+    - effects:
+        - quality.passed += 1
+        - die("natural causes")

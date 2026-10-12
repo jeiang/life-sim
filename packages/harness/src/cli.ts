@@ -63,7 +63,7 @@ const usage =
   --list-scripts  print the forced scripts the Packs declare, then exit
   --check-packs  validate every Pack's harness/metrics.yaml, harness/profiles.yaml and harness/force/*.yaml against the compiled Packs, then exit (0 valid, 2 not)
   --list-profiles  print the profiles the Packs declare (id, Pack, whether in \`all\`), then exit
-  --shard      run only shard i of n (\`2/4\`): lives whose index mod n is i-1, with the usual seeds; writes shard-i-of-n.json.gz to --out (required) for \`merge\`
+  --shard      run only shard i of n (\`2/4\`): an even mix of every profile, with the usual seeds; writes shard-i-of-n.json.gz to --out (required) for \`merge\`
   --fail-on    also exit 1 on: never-fired (content no life reached, listed per Pack); engine faults and never-matched forced entries always fail
   --life-seed  run one life with exactly this life seed (to replay a reported fault)
   merge <dir>  combine the shard-*.json.gz files found under <dir> (recursively) into one report.md/report.json (in --out, default <dir>), identical to an unsharded run. Several dirs, each a whole run (founder lives and \`--generations\` lives, say), give the first run's report where content is never fired only if no run fired it

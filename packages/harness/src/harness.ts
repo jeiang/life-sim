@@ -11,11 +11,20 @@ import { type ProfileSpec, selectProfiles } from "./profile-spec.ts";
 import { Aggregate, type Report } from "./report.ts";
 import { type LifeResult, type Lineage, runLife } from "./run.ts";
 
-/** Shard `index` (0-based) of `count`: lives `i` with `i % count === index`. */
+/** Shard `index` (0-based) of `count`; the lives it holds are those `shardOf` assigns to it. */
 export interface Shard {
   readonly index: number;
   readonly count: number;
 }
+
+/**
+ * The shard of life `i` when lives are dealt to `profiles` profiles in turn. Life `i` is in round
+ * `floor(i / profiles)` at slot `i % profiles`; its shard is round plus slot, mod `count`. So each
+ * shard gets one life of every profile in every `count` rounds, whatever `count` is. A plain
+ * `i % count` would starve profiles whenever the shard count shares a factor with the profile count.
+ */
+export const shardOf = (i: number, profiles: number, count: number): number =>
+  (Math.floor(i / profiles) + (i % profiles)) % count;
 
 export interface HarnessOptions {
   readonly bundles: readonly PackBundle[];
@@ -34,7 +43,7 @@ export interface HarnessOptions {
   readonly force?: ForceSet;
   /** Continue each life as an heir for up to `generations` (`--generations`, `--heir`); absent: one life. */
   readonly lineage?: Lineage;
-  /** Play only the lives whose index is `shard.index` modulo `shard.count`; seeds are unchanged. */
+  /** Play only the lives `shardOf` assigns to shard `shard.index`; seeds are unchanged. */
   readonly shard?: Shard;
 }
 
@@ -78,7 +87,11 @@ export function runLives(
   const profiles = selectProfiles(registry, opts.profiles);
   const out: LifeResult[] = [];
   for (let i = from; i < to; i++) {
-    if (opts.shard && i % opts.shard.count !== opts.shard.index) continue;
+    if (
+      opts.shard &&
+      shardOf(i, profiles.length, opts.shard.count) !== opts.shard.index
+    )
+      continue;
     const seed = opts.lifeSeed ?? lifeSeedFor(opts.seed, i);
     const profile = profiles[i % profiles.length] as ProfileSpec;
     const r = runLife(

@@ -267,6 +267,17 @@ function applyEffect(
         }
         case "move_out":
           return moveOut(w, idx, who);
+        case "children_live_apart": {
+          const h = idx.living?.household;
+          if (!h) return w;
+          return w.relationships.reduce(
+            (next, r) =>
+              r.from === w.playerId && r.role === h.dependentRole
+                ? putRelationship(next, { ...r, household: "apart" })
+                : next,
+            w,
+          );
+        }
         case "move_in":
         case "merge_money": {
           const pid = scope.person;

@@ -124,6 +124,9 @@ _Avoid_: Job simulation for parents, siblings, friends or coworkers (they are st
 **Joint money**:
 Once a partner's money is merged into the player's (`merge_money()`, marriage without a prenup), their pay goes to the player. With a prenup it stays in `person.money`.
 
+**Children apart**:
+The other parent keeps a dependent-role child: `children_live_apart()` marks the player's link `household: apart`, so the child drops out of the household cost. The Pack charges support instead.
+
 **City**:
 A Pack-defined place to live, with a cost index (cost of living relative to the baseline), a wage index (pay multiplier) and a birth weight. Every life has one. Countries come later with the Relocation pack.
 _Avoid_: Town, location, region

@@ -10,7 +10,7 @@
 > There is no role unset in the engine. An ended partnership or marriage moves to the pack role `dating/ex` (declared in `needs`), not a friend.
 > Closeness drops before the role changes: `setRole` keeps the highest closeness across the rows, so the drop must come first.
 > Divorce takes half of cash without a prenup and a tenth with one. `dating_prenup` is set by the wedding chain (chain 7) and is declared in `needs` below.
-> A divorce with a child under 18 (`count_kin(child, 0, 17) > 0`) offers custody. "Your ex keeps the kids" sets `quality.dating_pays_support` and schedules `dating/family-child-support-year` one year out (chain 12, DrDateMoney). "You keep the kids" schedules nothing. With no child under 18 the only choice is signing the papers, which schedules nothing.
+> A divorce with a child under 18 (`count_kin(child, 0, 17) > 0`) offers custody. "Your ex keeps the kids" sets `quality.dating_pays_support`, runs `children_live_apart()` (the child drops out of the household cost) and schedules `dating/family-child-support-year` one year out (chain 12, DrDateMoney). "You keep the kids" schedules nothing and the child stays in the household cost. With no child under 18 the only choice is signing the papers, which schedules nothing.
 > `divorce-forced` is the chain step DrDateAffairs reaches by `next` from affair-caught and partner-cheat-found when the partner is a spouse. It shares the custody choices, cash split and prenup branch with `divorce`.
 > Engine bug, filed as core: `setRole` keeps the `household: merged` flag after a role change.
 
@@ -118,6 +118,7 @@
   - effect: relationship(person).role = dating/ex
   - effect: stat.happiness -= 8
   - effect: quality.dating_pays_support = true
+  - effect: children_live_apart()
   - effect: schedule(dating/family-child-support-year, after: 1-1 years)
 - outcome: 1
   - when: not quality.dating_prenup
@@ -127,6 +128,7 @@
   - effect: relationship(person).role = dating/ex
   - effect: stat.happiness -= 10
   - effect: quality.dating_pays_support = true
+  - effect: children_live_apart()
   - effect: schedule(dating/family-child-support-year, after: 1-1 years)
 
 ### choice: Sign the papers
@@ -187,6 +189,7 @@
   - effect: relationship(person).role = dating/ex
   - effect: stat.happiness -= 8
   - effect: quality.dating_pays_support = true
+  - effect: children_live_apart()
   - effect: schedule(dating/family-child-support-year, after: 1-1 years)
 - outcome: 1
   - when: not quality.dating_prenup
@@ -196,6 +199,7 @@
   - effect: relationship(person).role = dating/ex
   - effect: stat.happiness -= 10
   - effect: quality.dating_pays_support = true
+  - effect: children_live_apart()
   - effect: schedule(dating/family-child-support-year, after: 1-1 years)
 
 ### choice: Sign the papers

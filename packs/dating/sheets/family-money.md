@@ -8,7 +8,7 @@
 > Chain 12 (child support) and chain 13 (merge money) of the dating outline, grilled in #239 and #240.
 > Household cost (the dependents term) stays in core-loop `living.household`. This sheet adds no cost.
 > The payment is capped at cash on hand (`min(max(0, money), ...)`), like other core-loop costs, so a broke player is never pushed further into debt by it.
-> Custody v1: support runs only when the divorce gives the kids to the ex. Chain 8 sets `quality.dating_pays_support`. It stops when no child under 18 remains.
+> Custody: support runs only when the divorce gives the kids to the ex. Chain 8 sets `quality.dating_pays_support` and runs `children_live_apart()`, so those children drop out of the core-loop dependents term: the player pays support for them and no household cost. It stops when no child under 18 remains.
 > Divorce (chain 8) queues `dating/family-child-support-year` with `schedule(..., after: 1-1 years)`. This sheet only re-queues itself yearly.
 > The wedding (chain 7) runs `merge_money()` before it sets the spouse role, then `next: family-merge-money`. The merge only matches the `partner` role, so this storylet is a text beat and has no merge effect. The wedding must be `scope: person` with the partner bound.
 

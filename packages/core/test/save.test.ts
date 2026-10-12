@@ -315,6 +315,16 @@ describe("import validation", () => {
     expect(validateImport(good()).ok).toBe(true);
   });
 
+  test("a v1 save with no household state still loads, and apart survives", () => {
+    const v1 = good();
+    for (const r of v1.lives[0].world.relationships) delete r.household;
+    expect(validateImport(v1, bundles).ok).toBe(true);
+    const apart = good();
+    apart.lives[0].world.relationships[0].household = "apart";
+    const back = parseSave(JSON.stringify(apart));
+    expect(back.lives[0]?.world.relationships[0]?.household).toBe("apart");
+  });
+
   test("rejects non-JSON, non-saves and damaged saves with a reason", () => {
     expect(err("{nope")).toMatch(/not valid JSON/);
     expect(err("[1,2]")).toMatch(/not a save/);

@@ -108,6 +108,8 @@ export const EFFECTS = {
   move_in: { params: [], returns: "bool" },
   /** In `scope: person`: that spouse's money merges into the player's; no separate share. */
   merge_money: { params: [], returns: "bool" },
+  /** The player's dependent-role children live apart (with the other parent): no household cost for them, and support is paid instead. */
+  children_live_apart: { params: [], returns: "bool" },
   /** Choose a standard of living (ignored while living with parents). */
   set_standard: { params: ["id"], returns: "bool" },
   /** Buy (positive) or sell (negative) that much cash worth of a market kind. */

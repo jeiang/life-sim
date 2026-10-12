@@ -90,19 +90,18 @@ Each chain lists Summary, Trigger, Entry, Effects, Frequency, Decisions covered,
 - Vocab status: market block, `trade`, `grant_asset`, `holding_value`, `cost_basis`, `holding_years`, `units`, `price`, `change`, `forecast` confirmed in `docs/spec/pack-format/content-kinds.md`. The shop-exclusion field does not exist (GAP 1).
 - Size: 4 storylets, 5 item kinds.
 
-### 6. NPC-parent inheritance (4 storylets)
-- Summary: a parent dies while the player is alive; the player inherits (cash, a home, an heirloom, or a contested share).
-- Trigger: a non-player parent death. BLOCKED: no hook or trigger fires on a non-player's death (GAP 5).
-- Entry conditions (once the trigger exists): `scope: person`, `target: [parent]`, `person.money` read for the parent's cash (`person.money` exists for NPCs).
-  1. `npc-parent/cash-left`: effect `money += person.money` (share by will kind).
-  2. `npc-parent/home-left`: `grant_asset(core-loop/<home>)` when the parent owned one (`person.quality.gen_home` written at spawn or by `set_will`).
-  3. `npc-parent/heirloom-left`: `grant_asset(gen-heirloom-<id>)`, one heirloom per generation (feeds Chain 5).
-  4. `npc-parent/contested`: `scope: person`, `target: [sibling]`; the will is contested (choice).
-- Frequency: once per parent death (the parent is one person, one death).
-- Decisions covered: NPC-parent inheritance (#242, 4 storylets).
-- Engine features: `scope: person`, `person.money`, `grant_asset`, `money +=`.
-- Vocab status: `person.money` and `grant_asset` confirmed; the death trigger is missing (GAP 5).
-- Size: 4 storylets, BLOCKED.
+### 6. NPC-parent inheritance (2 storylets)
+- Summary: a parent dies while the player is alive; the player inherits the parent's cash, or the will is contested.
+- Trigger: `person_death` (#341). It binds the dead parent for one storylet, once per death. Engine-side: no pack hook can read a dead person.
+- Entry conditions: `scope: person`, `target: [parent]`, `person.money` for the parent's cash.
+  1. `npc-parent-cash-left`: `when: person.money > 0`; effect `money += person.money`. Whole cash, not split by will kind (`count_kin` is player-relative).
+  2. `npc-parent-contested`: `when: person.money > 0 and age >= 16` (bare `age` is the player's age); choice. "Hear the family out" gives `stat.happiness += 1`; "Refuse to discuss the money" gives `stat.happiness -= 2`.
+- Dropped: `home-left` (`owns()` reads only the player's assets, env.ts:417) and `heirloom-left` (NPCs hold no heirlooms).
+- `contested` binds the parent, not the sibling: `person_death` binds the dead person, and a dead sibling cannot be bound under this trigger.
+- Frequency: once per parent death.
+- Engine features: `trigger: person_death`, `scope: person`, `person.money`, `money +=`, `stat.happiness`.
+- Vocab status: confirmed; the death trigger is in the engine (#341).
+- Size: 2 storylets.
 
 ### 7. Generation bookkeeping (`on_succession` hook, no storylets)
 - Summary: the hook writes the per-generation state that core does not clear.

@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../../../packages/pack-tools/schema/storylets.schema.json
+# NPC-parent inheritance: a parent of the player dies while the player is alive. Each storylet binds the dead parent (trigger person_death), once per death.
+
+- id: npc-parent-cash-left
+  icon: 🏦
+  trigger: person_death
+  scope: person
+  target: [parent]
+  when: person.money > 0
+  once: true
+  text: "{person.first_name} died with {person.money} in the bank. The money is yours now."
+  outcomes:
+    - weight: 1
+      text: "The bank pays out. The whole of {person.first_name}'s savings goes into your account, since nobody wrote a will for the split."
+      effects:
+        - money += person.money
+
+- id: npc-parent-contested
+  icon: ⚖️
+  trigger: person_death
+  scope: person
+  target: [parent]
+  when: person.money > 0 and age >= 16
+  once: true
+  text: "{person.first_name} left money behind, and the family has opinions about who should get it. Someone has to say something at the funeral."
+  choices:
+    - label: Hear the family out
+      outcomes:
+        - weight: 1
+          text: You sit with the relatives and let each of them say what they think. Nobody leaves the table happy, but nobody leaves angry either.
+          effects:
+            - stat.happiness += 1
+    - label: Refuse to discuss the money
+      outcomes:
+        - weight: 1
+          text: You tell them the money is not a topic for a funeral. The room goes quiet, and the calls stop for a while.
+          effects:
+            - stat.happiness -= 2

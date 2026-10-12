@@ -506,3 +506,65 @@ describe("determinism and saves across succession", () => {
     expect(gen(h)).toBe(1);
   });
 });
+
+/** A living parent of the player, aged 65, with the given cash. */
+function parentOf(w: World, money: number): [World, PersonId] {
+  let p: PersonId;
+  w = updatePerson(w, w.playerId, (x) => ({ ...x, age: 50 }));
+  [w, p] = addPerson(w, { givenName: "Pat", familyName: "Parent", age: 65 });
+  w = addParentLink(w, w.playerId, p);
+  w = putRelationship(w, {
+    from: w.playerId,
+    to: p,
+    role: "core-loop/parent",
+    closeness: 60,
+  });
+  w = updatePerson(w, p, (x) => ({ ...x, money }));
+  return [w, p];
+}
+
+/** core-loop's parent-death kills the parent; each decision it opens is answered with its first choice. */
+function killParent(
+  w: World,
+  parent: PersonId,
+): { world: World; opened: string[] } {
+  const opened: string[] = [];
+  let cur = startStorylet(w, bundles, "core-loop/parent-death", parent).world;
+  while (cur.pending) {
+    opened.push(cur.pending.storyletId);
+    cur = choose(cur, bundles, 0).world;
+  }
+  return { world: cur, opened };
+}
+
+describe("NPC-parent inheritance (person_death)", () => {
+  test("a dead parent's cash goes to the player and the family decision opens once", () => {
+    const [w0, parent] = parentOf(newLife(bundles, 1), 50000);
+    const before = getPerson(w0, w0.playerId).money;
+    const { world, opened } = killParent(w0, parent);
+    expect(getPerson(world, parent).alive).toBe(false);
+    expect(getPerson(world, world.playerId).money - before).toBe(50000);
+    expect(opened).toEqual([G("npc-parent-contested")]);
+  });
+
+  test("each parent's death pays out once", () => {
+    const [w1, a] = parentOf(newLife(bundles, 2), 50000);
+    const [w2, b] = parentOf(w1, 30000);
+    const before = getPerson(w2, w2.playerId).money;
+    const first = killParent(w2, a);
+    const second = killParent(first.world, b);
+    expect(getPerson(second.world, w2.playerId).money - before).toBe(80000);
+    expect([...first.opened, ...second.opened]).toEqual([
+      G("npc-parent-contested"),
+      G("npc-parent-contested"),
+    ]);
+  });
+
+  test("a parent with no cash pays nothing and opens no decision", () => {
+    const [w0, parent] = parentOf(newLife(bundles, 3), 0);
+    const before = getPerson(w0, w0.playerId).money;
+    const { world, opened } = killParent(w0, parent);
+    expect(getPerson(world, world.playerId).money - before).toBe(0);
+    expect(opened).toEqual([]);
+  });
+});

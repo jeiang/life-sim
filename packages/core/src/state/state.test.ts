@@ -1,7 +1,7 @@
 import fc from "fast-check";
 import { expect, test } from "vitest";
 import { worldHash } from "../hash.ts";
-import { setStreamOverride } from "../rng.ts";
+import { type PickName, setStreamOverride } from "../rng.ts";
 import {
   canonicalStringify,
   deserializeWorld,
@@ -158,6 +158,31 @@ test("a stream override forces chance, int and pick by purpose key without movin
   const [, again] = nextStream(w, 30, "chance:illness");
   expect(again.next32()).toBe(base.next32());
   expect(nextStream(w, 30, "flavour")[1].next32()).toBe(baseOther.next32());
+});
+
+test("a forced string pick matches an outcome by its label or its text", () => {
+  const w = sample();
+  const named: PickName[] = [
+    { label: "Win", text: "You win the day." },
+    { label: "Lose", text: "You lose the day." },
+  ];
+  const forcedPick = (pick: string): number => {
+    setStreamOverride(() => ({ pick }));
+    try {
+      const [, rng] = nextStream(w, 30, "outcome/x");
+      return rng.weightedPick([1, 1], named);
+    } finally {
+      setStreamOverride(null);
+    }
+  };
+  expect(forcedPick("Win")).toBe(0);
+  expect(forcedPick("You win the day.")).toBe(0);
+  expect(forcedPick("Lose")).toBe(1);
+  expect(forcedPick("You lose the day.")).toBe(1);
+  expect(() => forcedPick("you win the day.")).toThrow(RangeError);
+  expect(() => forcedPick("Draw")).toThrow(
+    'matches no label or text (Win (text "You win the day.") | Lose (text "You lose the day."))',
+  );
 });
 
 test("nextStream advances per-site counters only, and a save reload cannot reroll", () => {

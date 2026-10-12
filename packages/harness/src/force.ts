@@ -121,7 +121,7 @@ export const keyMatches = (entryKey: string, key: string): boolean =>
     ? key.startsWith(entryKey.slice(0, -1))
     : entryKey === key;
 
-/** `v` as rolls: `hit`/`miss`/true/false, a number (pick index), `int:N`, any other text (pick label), or a mapping. */
+/** `v` as rolls: `hit`/`miss`/true/false, a number (pick index), `int:N`, any other text (pick label or text), or a mapping. */
 export function parseRolls(v: unknown): ScriptedRolls | string {
   if (typeof v === "boolean") return { chance: v };
   if (typeof v === "number")

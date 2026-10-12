@@ -254,8 +254,11 @@ function pickOutcome(
   );
   if (!weights.some((x) => x > 0)) return [world, undefined];
   const [w, rng] = nextStream(world, clockAge(world), `outcome/${s.id}`);
-  const labels = live.map((o) => o.label ?? o.text ?? "");
-  const at = rng.weightedPick(weights, labels, {
+  const names = live.map((o) => ({
+    label: o.label ?? o.text ?? "",
+    text: o.text,
+  }));
+  const at = rng.weightedPick(weights, names, {
     cat: "outcome",
     label: s.label ?? s.text ?? s.id,
   });

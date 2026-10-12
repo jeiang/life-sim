@@ -67,35 +67,42 @@
     - label: Beach
       outcomes:
         - weight: "1500 + 500 * quality.vac_tier"
+          label: "Great trip"
           text: Sun, sand and a week you will talk about for years.
           effects:
             - "stat.happiness += 6 + 2 * quality.vac_tier"
             - stat.health += 2
             - "journal(\"Took a great trip to the beach at age {age}.\")"
         - weight: 4000
+          label: "Relaxing week"
           text: A relaxing week by the sea.
           effects:
             - "stat.happiness += 3 + quality.vac_tier"
         - weight: 1499
+          label: "Crowded beach"
           text: The beach is crowded and the hotel is average, but it is still a break.
           effects:
             - stat.happiness += 1
         - weight: "200 * (6 - quality.vac_tier)"
+          label: "Sunburn"
           text: You fall asleep in the sun and burn badly.
           effects:
             - stat.health -= 4
             - stat.happiness -= 2
         - weight: "150 * (6 - quality.vac_tier)"
+          label: "Rain all week"
           text: It rains all week and the beach stays empty.
           effects:
             - stat.happiness -= 5
         - weight: "150 * (6 - quality.vac_tier)"
+          label: "Bag stolen"
           text: A bag goes missing from the sand, along with some cash.
           effects:
             - "money -= min(money, quality.vac_tier * 50000 / 4)"
             - stat.happiness -= 2
             - "journal(\"Had a bag stolen at the beach at age {age}.\")"
         - weight: 1
+          label: "Rip current"
           text: A rip current drags you out too far, and the lifeguards reach you too late.
           effects:
             - "journal(\"Drowned on a beach holiday at age {age}.\")"
@@ -103,34 +110,41 @@
     - label: City break
       outcomes:
         - weight: "1500 + 500 * quality.vac_tier"
+          label: "Great trip"
           text: "Museums, markets and late dinners: a city break packed with memories."
           effects:
             - "stat.happiness += 6 + 2 * quality.vac_tier"
             - stat.smarts += 2
             - "journal(\"Took a great trip to the city at age {age}.\")"
         - weight: 4000
+          label: "Pleasant few days"
           text: A pleasant few days of sightseeing and good food.
           effects:
             - "stat.happiness += 3 + quality.vac_tier"
         - weight: 1499
+          label: "Long queues"
           text: Long queues and tired feet, but the city has its moments.
           effects:
             - stat.happiness += 1
         - weight: "250 * (6 - quality.vac_tier)"
+          label: "Pickpocket"
           text: A pickpocket lifts your wallet on a crowded street.
           effects:
             - "money -= min(money, quality.vac_tier * 50000 / 2)"
             - stat.happiness -= 3
             - "journal(\"Was pickpocketed on a city break at age {age}.\")"
         - weight: "150 * (6 - quality.vac_tier)"
+          label: "Noisy hotel"
           text: The hotel is noisy and the whole break is overpriced.
           effects:
             - stat.happiness -= 4
         - weight: "100 * (6 - quality.vac_tier)"
+          label: "Caught a cold"
           text: You walk yourself into the ground and catch a cold.
           effects:
             - stat.health -= 3
         - weight: 1
+          label: "Hit by a car"
           text: Crossing a busy junction in an unfamiliar city, you are hit by a car.
           effects:
             - "journal(\"Died in a road accident on a city break at age {age}.\")"
@@ -138,6 +152,7 @@
     - label: Mountains
       outcomes:
         - weight: "1500 + 500 * quality.vac_tier"
+          label: "Great trip"
           text: Clear air and wide views on a mountain trip.
           effects:
             - "stat.happiness += 6 + 2 * quality.vac_tier"
@@ -145,29 +160,35 @@
             - stat.looks += 1
             - "journal(\"Took a great trip to the mountains at age {age}.\")"
         - weight: 4000
+          label: "Good hiking"
           text: A good week of hiking and early nights.
           effects:
             - "stat.happiness += 3 + quality.vac_tier"
         - weight: 1499
+          label: "Muddy trails"
           text: The trails are muddy and the cabin is cold, but the air does you good.
           effects:
             - stat.happiness += 1
         - weight: "250 * (6 - quality.vac_tier)"
+          label: "Twisted ankle"
           text: You twist an ankle on a loose trail.
           effects:
             - stat.health -= 6
             - stat.happiness -= 2
             - "journal(\"Hurt an ankle on a mountain trip at age {age}.\")"
         - weight: "150 * (6 - quality.vac_tier)"
+          label: "Cloud cover"
           text: Cloud closes in and the views never appear.
           effects:
             - stat.happiness -= 5
         - weight: "100 * (6 - quality.vac_tier)"
+          label: "Broken gear"
           text: A hired gear set breaks and you pay for the repairs.
           effects:
             - "money -= min(money, quality.vac_tier * 50000 / 3)"
             - stat.happiness -= 1
         - weight: 1
+          label: "Fall on slope"
           text: A path gives way on a steep slope.
           effects:
             - "journal(\"Died in a fall on a mountain trip at age {age}.\")"
@@ -175,33 +196,40 @@
     - label: Theme park
       outcomes:
         - weight: "1500 + 500 * quality.vac_tier"
+          label: "Great trip"
           text: Rides, fireworks and a trip you wish would never end.
           effects:
             - "stat.happiness += 6 + 2 * quality.vac_tier"
             - "journal(\"Took a great trip to the theme park at age {age}.\")"
         - weight: 4000
+          label: "Fun few days"
           text: A fun few days of rides and sugary snacks.
           effects:
             - "stat.happiness += 3 + quality.vac_tier"
         - weight: 1499
+          label: "Long lines"
           text: The lines are long, but the roller coasters still make you scream.
           effects:
             - stat.happiness += 1
         - weight: "100 * (6 - quality.vac_tier)"
+          label: "Spinning ride"
           text: A spinning ride and a big lunch do not mix.
           effects:
             - stat.health -= 3
             - stat.happiness -= 1
         - weight: "200 * (6 - quality.vac_tier)"
+          label: "Queues all trip"
           text: You spend most of the trip standing in queues.
           effects:
             - stat.happiness -= 4
         - weight: "200 * (6 - quality.vac_tier)"
+          label: "Expensive day"
           text: Food, souvenirs and photo passes empty your wallet.
           effects:
             - "money -= min(money, quality.vac_tier * 50000 / 3)"
             - stat.happiness -= 1
         - weight: 1
+          label: "Ride malfunction"
           text: A ride malfunctions.
           effects:
             - "journal(\"Died in an accident at a theme park at age {age}.\")"
@@ -210,35 +238,42 @@
       when: age >= 18
       outcomes:
         - weight: "1500 + 500 * quality.vac_tier"
+          label: "Great trip"
           text: New language, new food and a trip abroad that changes how you see things.
           effects:
             - "stat.happiness += 6 + 2 * quality.vac_tier"
             - stat.smarts += 2
             - "journal(\"Took a great trip overseas at age {age}.\")"
         - weight: 4000
+          label: "Rewarding trip"
           text: A rewarding trip to somewhere you have never been.
           effects:
             - "stat.happiness += 3 + quality.vac_tier"
         - weight: 1499
+          label: "Jet lag"
           text: Jet lag and confusing signs, but you tick another country off the list.
           effects:
             - stat.happiness += 1
         - weight: "150 * (6 - quality.vac_tier)"
+          label: "Food poisoning"
           text: Something you ate does not agree with you.
           effects:
             - stat.health -= 5
             - "journal(\"Got ill while travelling abroad at age {age}.\")"
         - weight: "150 * (6 - quality.vac_tier)"
+          label: "Cancelled flights"
           text: Flights are cancelled and the luggage is lost.
           effects:
             - stat.happiness -= 5
         - weight: "200 * (6 - quality.vac_tier)"
+          label: "Tourist scam"
           text: A scam at a tourist spot costs you far more than it should.
           effects:
             - "money -= min(money, quality.vac_tier * 50000 / 2)"
             - stat.happiness -= 3
             - "journal(\"Was scammed while travelling abroad at age {age}.\")"
         - weight: 1
+          label: "Road accident"
           text: A road accident far from home.
           effects:
             - "journal(\"Died in an accident while travelling abroad at age {age}.\")"

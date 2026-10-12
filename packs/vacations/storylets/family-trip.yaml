@@ -12,34 +12,40 @@
     - label: Go along
       outcomes:
         - weight: 3500
+          label: "Great trip"
           text: "A great trip: games in the car, ice cream and plenty of laughs."
           effects:
             - "quality.vac_family_trip_age = age"
             - stat.happiness += 8
             - "journal(\"Went on a family trip at age {age}.\")"
         - weight: 4500
+          label: "Nice few days"
           text: A nice few days away together.
           effects:
             - "quality.vac_family_trip_age = age"
             - stat.happiness += 4
         - weight: 800
+          label: "Car sickness"
           text: Car sickness and a stomach bug ruin half the trip.
           effects:
             - "quality.vac_family_trip_age = age"
             - stat.health -= 3
             - stat.happiness -= 1
         - weight: 700
+          label: "Cranky arguments"
           text: Everyone is tired and cranky, and the trip ends in arguments.
           effects:
             - "quality.vac_family_trip_age = age"
             - stat.happiness -= 4
         - weight: 499
+          label: "Pocket money lost"
           text: A bag with your pocket money goes missing on the way.
           effects:
             - "quality.vac_family_trip_age = age"
             - money -= min(money, 3000)
             - stat.happiness -= 1
         - weight: 1
+          label: "Road accident"
           text: An accident on the road ends the trip.
           effects:
             - "journal(\"Died in a road accident on a family trip at age {age}.\")"

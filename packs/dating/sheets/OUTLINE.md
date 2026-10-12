@@ -85,7 +85,7 @@ Each chain lists Summary, Trigger, Entry conditions, Effects, Frequency, Grilled
 - Summary: a wedding plan turns a partner into a spouse. A prenup keeps money separate.
 - Trigger: `propose` accepted (chain 4); the wedding plan is a person-scoped decision.
 - Entry conditions: partner; 18+; not already married.
-- Effects: `relationship(p).role = core-loop/spouse`; `reach_milestone married` (once per life); elope/small/big cost money (`person.money -=`); prenup choice sets `dating_prenup` on the player.
+- Effects: `relationship(p).role = core-loop/spouse`; `reach_milestone married` (once per life); elope costs cash (`money -=`) when the player has $800, otherwise `Elope on credit` borrows $800 (`take_loan(core-loop/student-loan, 80000)`) and spends it (`money -=`); small/big cost money (`money -=`); prenup choice sets `dating_prenup` on the player.
 - Without prenup: `merge_money` (savings merged; spouse income added yearly).
 - With prenup: money stays separate; the prenup is shown on the profile (quality `format: money` for amounts).
 - Frequency: marriage 0 to 1 per life (target share from harness).

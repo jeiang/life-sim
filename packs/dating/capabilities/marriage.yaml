@@ -9,3 +9,4 @@ requires:
   - dating/romance
   - core-loop/family
   - core-loop/singletons
+  - core-loop/education

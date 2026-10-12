@@ -18,7 +18,7 @@ The role of a former partner or spouse. A role cannot be unset, so a break-up, a
 `propose` asks each partner at most once; an accepted proposal sets both. `plan-wedding` needs `dating_engaged`, and once per life through the Core `married` milestone.
 
 **Wedding chain**:
-`plan-wedding` (elope $800, small $12,000, big $40,000) hands on with `next` to `wedding-prenup`. A prenup ($1,500, `dating_prenup`) keeps money apart; skipping it runs `merge_money()` (before the role change, which fires `married`) and a text beat, `family-merge-money`.
+`plan-wedding` (elope $800 in cash, or on a student loan when broke; small $12,000, big $40,000) hands on with `next` to `wedding-prenup`. A prenup ($1,500, `dating_prenup`) keeps money apart; skipping it runs `merge_money()` (before the role change, which fires `married`) and a text beat, `family-merge-money`.
 
 **Divorce split**:
 `money -= max(0, money) / 2` without a prenup, `/ 10` with one. A child under 18 offers custody: you keep the kids, or your ex keeps them and `dating_pays_support` queues `family-child-support-year` (a yearly $3,000 per child under 18, capped at cash, re-queued until none is left).

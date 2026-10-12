@@ -5,6 +5,7 @@ import { compilePacks } from "../../pack-tools/src/index.ts";
 import {
   ageUp,
   choose,
+  describePending,
   deserializeWorld,
   getPerson,
   hasTargetRole,
@@ -15,6 +16,7 @@ import {
   runAction,
   serializeWorld,
   spawnPerson,
+  startStorylet,
   updatePerson,
   type World,
   worldHash,
@@ -151,5 +153,98 @@ describe("pets as persons", () => {
     const back = deserializeWorld(serializeWorld(hidden));
     expect(getPerson(back, dog).listed).toBe(false);
     expect(worldHash(back)).toBe(worldHash(hidden));
+  });
+});
+
+describe("the living-pet cap", () => {
+  /** Adds `n` listed dogs to the player's household, returning their ids. */
+  const withPets = (w: World, n: number): [World, number[]] => {
+    const ids: number[] = [];
+    let r = w;
+    for (let i = 0; i < n; i++) {
+      const [next, id] = withDog(r);
+      r = next;
+      ids.push(id);
+    }
+    return [r, ids];
+  };
+  const choiceIndex = (w: World, label: string): number | undefined =>
+    describePending(w, bundles)?.choices.find((c) => c.label === label)?.index;
+  const choiceEnabled = (w: World, label: string): boolean | undefined =>
+    describePending(w, bundles)?.choices.find((c) => c.label === label)
+      ?.enabled;
+
+  test("below the cap, stray and found-cat can open", () => {
+    const [w] = withPets(adult(20), 2);
+    expect(
+      startStorylet(w, bundles, `${CL}/stray-dog`).world.pending?.storyletId,
+    ).toBe(`${CL}/stray-dog`);
+    expect(
+      startStorylet(w, bundles, `${CL}/found-cat`).world.pending?.storyletId,
+    ).toBe(`${CL}/found-cat`);
+  });
+
+  test("at the cap, stray and found-cat never open", () => {
+    const [w] = withPets(adult(21), 3);
+    expect(
+      startStorylet(w, bundles, `${CL}/stray-dog`).world.pending,
+    ).toBeNull();
+    expect(
+      startStorylet(w, bundles, `${CL}/found-cat`).world.pending,
+    ).toBeNull();
+  });
+
+  test("at the cap, adopt-a-pet opens but its adopt choice is greyed out", () => {
+    const [under] = withPets(adult(22), 2);
+    const underOpen = startStorylet(under, bundles, `${CL}/adopt-a-pet`).world;
+    expect(choiceEnabled(underOpen, "Take them home")).toBe(true);
+
+    const [full] = withPets(adult(22), 3);
+    const fullOpen = startStorylet(full, bundles, `${CL}/adopt-a-pet`).world;
+    expect(fullOpen.pending?.storyletId).toBe(`${CL}/adopt-a-pet`);
+    expect(choiceEnabled(fullOpen, "Take them home")).toBe(false);
+    expect(choiceEnabled(fullOpen, "Not right now")).toBe(true);
+    const adopt = choiceIndex(fullOpen, "Take them home") ?? -1;
+    expect(() => choose(fullOpen, bundles, adopt)).toThrow(/not available/);
+  });
+
+  test("at the cap, the senior adoption's adopt choice is greyed out", () => {
+    const [under] = withPets(
+      updatePerson(adult(23), 0, (p) => ({ ...p, age: 65 })),
+      2,
+    );
+    const underOpen = startStorylet(
+      under,
+      bundles,
+      `${CL}/pet-adoption-senior`,
+    ).world;
+    expect(choiceEnabled(underOpen, "Adopt the dog")).toBe(true);
+
+    const [full] = withPets(
+      updatePerson(adult(23), 0, (p) => ({ ...p, age: 65 })),
+      3,
+    );
+    const fullOpen = startStorylet(
+      full,
+      bundles,
+      `${CL}/pet-adoption-senior`,
+    ).world;
+    expect(fullOpen.pending?.storyletId).toBe(`${CL}/pet-adoption-senior`);
+    expect(choiceEnabled(fullOpen, "Adopt the dog")).toBe(false);
+    expect(choiceEnabled(fullOpen, "Visit now and then")).toBe(true);
+  });
+
+  test("unlisting one pet at the cap reopens the stray storylet", () => {
+    const [w, ids] = withPets(adult(24), 3);
+    const first = ids[0];
+    if (first === undefined) throw new Error("no pet spawned");
+    const freed = updatePerson(w, first, (p) => ({
+      ...p,
+      listed: false as const,
+    }));
+    expect(
+      startStorylet(freed, bundles, `${CL}/stray-dog`).world.pending
+        ?.storyletId,
+    ).toBe(`${CL}/stray-dog`);
   });
 });

@@ -328,6 +328,7 @@
   text: "A rescue centre has a quiet, older dog that needs a home."
   choices:
     - label: "Adopt the dog"
+      when: not pet_cap_reached
       outcomes:
         - weight: 80
           text: "{pet.first_name} is a loyal friend and two daily walks."

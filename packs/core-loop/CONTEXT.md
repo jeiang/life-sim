@@ -15,5 +15,5 @@ The hidden int quality `kickout_pct` (min 0, default 100): a percent multiplier 
 A leaf capability (`core-loop/fame`): the quality `fame` (0-100) with `fame_age`, the age it was last set. Fame fades 5 points a year since `fame_age`; Packs read the readable `fame_value` (never `quality.fame`) and change it with `core_loop.add_fame(points)`.
 
 **Pet**:
-A person the player holds the animal role `dog` or `cat` toward (`people/pets.yaml`). The pet events spawn one when the player takes an animal in. It has a first name and no surname, ages and dies (`pet-mortality`), and can run off or be rehomed (`unlist`). Human storylets never bind it.
+A person the player holds the animal role `dog` or `cat` toward (`people/pets.yaml`). The pet events spawn one when the player takes an animal in. A save holds at most 3 living pets (`pet_cap_reached`, readable in `readables/pets.yaml`). It has a first name and no surname, ages and dies (`pet-mortality`), and can run off or be rehomed (`unlist`). Human storylets never bind it.
 _Avoid_: Animal companion

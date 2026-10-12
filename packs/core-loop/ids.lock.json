@@ -338,6 +338,8 @@
     "quality.years_worked",
     "readable.fame_value",
     "readable.hiring_blocked",
+    "readable.living_pets",
+    "readable.pet_cap_reached",
     "stat.happiness",
     "stat.health",
     "stat.looks",

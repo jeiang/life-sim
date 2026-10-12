@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { chainLines, chooseOption, pending } from "../game/store.ts";
 import { EmojiText, PackIcon } from "./Emoji.tsx";
 import { Modal } from "./Modal.tsx";
@@ -10,9 +10,11 @@ import { Modal } from "./Modal.tsx";
 export function ChoiceDialog() {
   const view = pending.value;
   const list = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
   const step = view?.storyletId;
   // Each chain step moves focus to its first enabled choice.
   useEffect(() => {
+    setError(null);
     if (step === undefined) return;
     list.current?.querySelector<HTMLElement>("button:not([disabled])")?.focus();
   }, [step]);
@@ -40,13 +42,18 @@ export function ChoiceDialog() {
             key={`${view.storyletId}:${c.index}`}
             type="button"
             disabled={!c.enabled}
-            onClick={() => chooseOption(c.index)}
+            onClick={() => setError(chooseOption(c.index))}
             class="min-h-11 w-full rounded-xl bg-primary px-3 py-2.5 font-semibold text-on-primary disabled:opacity-50"
           >
             {c.label}
           </button>
         ))}
       </div>
+      {error && (
+        <p role="alert" class="mt-3 text-center text-sm text-danger">
+          {error}
+        </p>
+      )}
     </Modal>
   );
 }

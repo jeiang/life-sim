@@ -1,3 +1,4 @@
+import type { GodCategory } from "@life/core";
 import { signal } from "@preact/signals";
 import bcrypt from "bcryptjs";
 
@@ -9,6 +10,17 @@ const UNLOCKED = "life-sim:hidden-unlocked";
 // Same key the old god-mode unlock used: "1" there meant unlocked and on.
 const GOD = "life-sim:god-mode";
 const MATURE = "life-sim:mature-mode";
+// Draw categories god mode asks about: a comma list; a missing key means the default.
+const ASK = "life-sim:god-ask";
+
+/** Every category god mode can ask about, in the order Settings lists them. */
+export const GOD_CATEGORIES: readonly GodCategory[] = [
+  "outcome",
+  "event",
+  "person",
+  "npc",
+];
+const DEFAULT_ASK: readonly GodCategory[] = ["outcome", "person"];
 
 type Store = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
@@ -16,6 +28,13 @@ export interface HiddenState {
   readonly unlocked: boolean;
   readonly god: boolean;
   readonly mature: boolean;
+  readonly ask: readonly GodCategory[];
+}
+
+function parseAsk(raw: string | null): readonly GodCategory[] {
+  if (raw === null) return DEFAULT_ASK;
+  const named = raw.split(",");
+  return GOD_CATEGORIES.filter((c) => named.includes(c));
 }
 
 /**
@@ -31,9 +50,10 @@ export function loadHidden(store: Store | null): HiddenState {
       unlocked: god || store.getItem(UNLOCKED) === "1",
       god,
       mature: store.getItem(MATURE) === "1",
+      ask: parseAsk(store.getItem(ASK)),
     };
   } catch {
-    return { unlocked: false, god: false, mature: false };
+    return { unlocked: false, god: false, mature: false, ask: DEFAULT_ASK };
   }
 }
 
@@ -63,6 +83,7 @@ const initial = loadHidden(storage());
 /** True once the code was entered on this install (or migrated from the old unlock). */
 export const unlocked = signal(initial.unlocked);
 export const godMode = signal(initial.god);
+export const godAsk = signal<readonly GodCategory[]>(initial.ask);
 /** 18+ mode: read when a life begins and recorded in it; changing it never affects a life already started (docs/spec/pack-format/expressions.md). */
 export const matureMode = signal(initial.mature);
 
@@ -94,4 +115,14 @@ export function setGodMode(on: boolean): void {
 export function setMatureMode(on: boolean): void {
   matureMode.value = on;
   persist(MATURE, on);
+}
+
+/** Which draw categories god mode asks about; an empty list turns the asking off. */
+export function setGodAsk(cats: readonly GodCategory[]): void {
+  godAsk.value = GOD_CATEGORIES.filter((c) => cats.includes(c));
+  try {
+    localStorage.setItem(ASK, godAsk.value.join(","));
+  } catch {
+    // storage blocked: the choice lasts for this session only
+  }
 }

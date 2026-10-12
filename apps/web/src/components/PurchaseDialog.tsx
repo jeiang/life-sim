@@ -1,4 +1,5 @@
 import { loanPayment } from "@life/core";
+import { useEffect, useState } from "preact/hooks";
 import { money } from "../game/format.ts";
 import {
   closePurchase,
@@ -6,12 +7,18 @@ import {
   packIndex,
   player,
   purchaseRow,
+  purchasing,
 } from "../game/store.ts";
 import { PackIcon } from "./Emoji.tsx";
 import { Modal } from "./Modal.tsx";
 
 /** Buy an item kind: Pay cash, Take loan (terms shown), or Cancel. */
 export function PurchaseDialog() {
+  const [error, setError] = useState<string | null>(null);
+  const openId = purchasing.value;
+  useEffect(() => {
+    setError(null);
+  }, [openId]);
   const row = purchaseRow.value;
   if (!row) return null;
   const loan = row.loanKind ? packIndex.loans.get(row.loanKind) : undefined;
@@ -37,6 +44,11 @@ export function PurchaseDialog() {
       {row.locked && row.reason && (
         <p class="mb-3 text-center text-sm text-danger">{row.reason}</p>
       )}
+      {error && (
+        <p role="alert" class="mb-3 text-center text-sm text-danger">
+          {error}
+        </p>
+      )}
       {loan && (
         <dl class="mb-3 grid grid-cols-2 gap-x-2 gap-y-1 rounded-xl bg-surface p-3 text-sm">
           <dt class="text-text-muted">Down payment</dt>
@@ -56,7 +68,7 @@ export function PurchaseDialog() {
           type="button"
           data-autofocus={row.canCash ? "" : undefined}
           disabled={!row.canCash}
-          onClick={() => confirmPurchase("cash")}
+          onClick={() => setError(confirmPurchase("cash"))}
           class={`${btn} bg-primary text-on-primary`}
         >
           Pay cash
@@ -64,7 +76,7 @@ export function PurchaseDialog() {
         <button
           type="button"
           disabled={!row.canLoan}
-          onClick={() => confirmPurchase("loan")}
+          onClick={() => setError(confirmPurchase("loan"))}
           class={`${btn} bg-primary text-on-primary`}
         >
           Take loan

@@ -11,10 +11,12 @@ import {
 } from "@life/core";
 import { PackIcon } from "../components/Emoji.tsx";
 import { GodBadge } from "../components/GodFields.tsx";
+import { GodPersonEdit } from "../components/GodPersonEdit.tsx";
 import { MenuList } from "../components/MenuList.tsx";
 import { PageFrame } from "../components/PageFrame.tsx";
 import { StatBars } from "../components/StatPanel.tsx";
 import { kinLabelOf, money } from "../game/format.ts";
+import { godMode } from "../game/hidden.ts";
 import { packIndex, runMenuAction, world } from "../game/store.ts";
 import { openPage, profileTarget } from "../nav.ts";
 
@@ -219,6 +221,12 @@ export function Profile() {
           <StatBars stats={p.stats} />
         </div>
       </Section>
+
+      {godMode.value && p.alive && w.ended === null && (
+        <Section title="God mode">
+          <GodPersonEdit id={id} person={p} />
+        </Section>
+      )}
 
       {!isPlayer && (
         <Section title="Interactions">

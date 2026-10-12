@@ -2,12 +2,15 @@ import { bundles } from "virtual:packs";
 import { listMarket, type MarketRow, marketSeries } from "@life/core";
 import { useState } from "preact/hooks";
 import { Chart } from "../components/Chart.tsx";
+import { inputClass } from "../components/GodFields.tsx";
 import { MenuList } from "../components/MenuList.tsx";
 import { money } from "../game/format.ts";
+import { godMode } from "../game/hidden.ts";
 import {
   packIndex,
   player,
   requestAmount,
+  setMarket,
   tradeKind,
   world,
 } from "../game/store.ts";
@@ -19,6 +22,74 @@ const pct = (bp: number): string =>
   `${bp > 0 ? "+" : ""}${(bp / 100).toFixed(1)}%`;
 const unitsText = (units: number): string =>
   (units / 10000).toFixed(4).replace(/\.?0+$/, "");
+
+const button =
+  "min-h-11 rounded-xl bg-action px-4 font-semibold text-on-action disabled:opacity-50";
+
+const EVENT_BUTTONS: {
+  label: string;
+  event: "none" | "delisted" | "default";
+}[] = [
+  { label: "Force no event", event: "none" },
+  { label: "Force delisting", event: "delisted" },
+  { label: "Force default", event: "default" },
+];
+
+/** God mode controls for one market kind: the next price, or a forced next event. */
+function GodMarketControls(props: { kind: string }) {
+  const [price, setPrice] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const unit = 10 ** packIndex.currency.digits;
+
+  function setNext(): void {
+    const minor = Math.round(Number(price) * unit);
+    if (!(minor > 0)) {
+      setError("Enter a price above zero.");
+      return;
+    }
+    setError(setMarket(props.kind, { next: minor }));
+  }
+
+  return (
+    <section
+      aria-label="God mode"
+      class="space-y-2 rounded-xl bg-surface-raised p-3"
+    >
+      <h3 class="font-bold">God mode</h3>
+      <div class="flex flex-wrap gap-2">
+        <input
+          type="number"
+          min="0"
+          step="any"
+          aria-label="Next price"
+          class={inputClass}
+          value={price}
+          onInput={(e) => setPrice(e.currentTarget.value)}
+        />
+        <button type="button" class={button} onClick={setNext}>
+          Set next price
+        </button>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        {EVENT_BUTTONS.map((b) => (
+          <button
+            key={b.event}
+            type="button"
+            class={button}
+            onClick={() => setError(setMarket(props.kind, { event: b.event }))}
+          >
+            {b.label}
+          </button>
+        ))}
+      </div>
+      {error && (
+        <p role="alert" class="text-sm text-danger">
+          {error}
+        </p>
+      )}
+    </section>
+  );
+}
 
 /** The market screen (`assets/investments`): a row per market kind; a row opens its chart and Buy/Sell. */
 export function MarketScreen() {
@@ -66,8 +137,6 @@ export function MarketScreen() {
     x: p.year,
     y: p.price,
   }));
-  const button =
-    "min-h-11 rounded-xl bg-action px-4 font-semibold text-on-action disabled:opacity-50";
   return (
     <section aria-label={row.label} class="flex flex-col gap-3">
       <div role="alert" class={error ? "text-danger" : "hidden"}>
@@ -128,6 +197,7 @@ export function MarketScreen() {
           All investments
         </button>
       </div>
+      {godMode.value && <GodMarketControls key={row.id} kind={row.id} />}
       {row.locked && row.reason ? (
         <p class="text-sm text-text-muted">{row.reason}</p>
       ) : null}

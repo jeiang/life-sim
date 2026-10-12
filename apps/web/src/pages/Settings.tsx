@@ -1,11 +1,15 @@
 import { bundles } from "virtual:packs";
+import type { GodCategory } from "@life/core";
 import { useRef, useState } from "preact/hooks";
 import { ExportPanel } from "../components/ExportPanel.tsx";
 import { PageShell } from "../components/PageShell.tsx";
 import {
+  GOD_CATEGORIES,
+  godAsk,
   godMode,
   hasCodeField,
   matureMode,
+  setGodAsk,
   setGodMode,
   setMatureMode,
   tryUnlock,
@@ -183,12 +187,39 @@ function Switch({
   );
 }
 
+const GOD_ASK_LABELS: Record<GodCategory, string> = {
+  outcome: "Outcomes",
+  event: "Events",
+  person: "People",
+  npc: "NPCs",
+};
+
+function GodAskCategories() {
+  const asked = godAsk.value;
+  return (
+    <fieldset class="space-y-1">
+      <legend class="text-sm text-text-muted">Ask before these rolls</legend>
+      {GOD_CATEGORIES.map((cat) => (
+        <Switch
+          key={cat}
+          label={GOD_ASK_LABELS[cat]}
+          on={asked.includes(cat)}
+          onToggle={(on) =>
+            setGodAsk(on ? [...asked, cat] : asked.filter((c) => c !== cat))
+          }
+        />
+      ))}
+    </fieldset>
+  );
+}
+
 function HiddenOptions() {
   if (!unlocked.value) return null;
   return (
     <section class="space-y-2 rounded-xl bg-surface-raised p-4">
       <h2 class="font-bold">Hidden options</h2>
       <Switch label="God mode" on={godMode.value} onToggle={setGodMode} />
+      {godMode.value && <GodAskCategories />}
       {godMode.value && currentLifeId.value !== null && !world.value.ended && (
         <button type="button" class={linkClass} onClick={() => openPage("god")}>
           Edit this life

@@ -17,10 +17,12 @@
     - label: Push back on the new rules
       outcomes:
         - weight: 70
+          label: "Gave on curfew"
           text: The guardian gives a little on curfew, and so do you.
           effects:
             - stat.happiness += 1
         - weight: 30
+          label: "Dinner lectures"
           text: Every dinner turns into a lecture about your future.
           effects:
             - stat.happiness -= 4
@@ -45,10 +47,12 @@
     - label: Tell them to back off
       outcomes:
         - weight: 60
+          label: "Backed off"
           text: They back off, grumbling about the state of young people.
           effects:
             - relationship(person).closeness += -2
         - weight: 40
+          label: "Colder house"
           text: They don't back off, and the house gets colder.
           effects:
             - relationship(person).closeness += -4
@@ -65,11 +69,13 @@
     - label: Look for a first job
       outcomes:
         - weight: 60
+          label: "Weekend diner job"
           text: A diner takes you on for weekend shifts, paid in cash.
           effects:
             - money += 12000
             - stat.happiness -= 1
         - weight: 40
+          label: "Turned away"
           text: Nobody hires a kid with no reference. You try three more places.
           effects:
             - stat.happiness -= 3
@@ -90,11 +96,13 @@
   text: Eighteen. The money your family held for you is all yours to manage now.
   outcomes:
     - weight: 60
+      label: "Made a money plan"
       text: You sit down with the statements and make a plan for the money.
       effects:
         - stat.smarts += 1
         - "quality.gen_minor_heir = 0"
     - weight: 40
+      label: "Car and a trip"
       text: You treat yourself to a car and a trip, and most of it is gone by summer.
       effects:
         - stat.happiness += 4

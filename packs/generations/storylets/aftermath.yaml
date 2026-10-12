@@ -9,16 +9,19 @@
   text: "{deceased.first_name} {deceased.last_name} died at {deceased.age}. The house still smells like them, and you keep waiting for the door."
   outcomes:
     - weight: 60
+      label: "Worst weeks"
       text: The first weeks are the worst. You go through the motions and cry where nobody can see.
       effects:
         - stat.happiness -= 8
         - "schedule(generations/aftermath-anniversary, after: 1-1 years)"
     - weight: 25
+      label: "Talks it out"
       text: "You talk about {deceased.first_name} with anyone who will listen. It helps more than you expected."
       effects:
         - stat.happiness -= 3
         - "schedule(generations/aftermath-anniversary, after: 1-1 years)"
     - weight: 15
+      label: "Brave face"
       text: You put on a brave face for everyone, and it costs you more than you admit.
       effects:
         - stat.happiness -= 12
@@ -59,10 +62,12 @@
     - label: Settle it at the kitchen table
       outcomes:
         - weight: 70
+          label: "Settled amicably"
           text: "You sit down and work it out between you. {person.first_name} is not thrilled, but the matter is closed."
           effects:
             - relationship(person).closeness += 2
         - weight: 30
+          label: "Door slams"
           text: They want more than the will gave them. The talk ends with a door closing hard.
           effects:
             - relationship(person).closeness += -4
@@ -88,10 +93,12 @@
   text: "{person.first_name} sits you down. The estate is settled, and they want you to know how it was split."
   outcomes:
     - weight: 60
+      label: "Share is theirs"
       text: "{person.first_name} says their share is theirs now and they are grateful it is over. They ask how you are holding up."
       effects:
         - relationship(person).closeness += 2
     - weight: 40
+      label: "Split was harder"
       text: "{person.first_name} says the split was harder than it should have been. You can hear the grief under the paperwork."
       effects:
         - relationship(person).closeness += 1
@@ -105,10 +112,12 @@
   text: The family house is yours now. Every room has a memory in it, and some of them are not comfortable.
   outcomes:
     - weight: 60
+      label: "Moved back in"
       text: You move your things into the room you grew up in. It feels like home again, even with the empty chair.
       effects:
         - stat.happiness += 3
     - weight: 40
+      label: "Bills and stairs"
       text: The house is yours, and so are the bills, the leaking roof and the stairs that creak at night.
       effects:
         - stat.happiness -= 2
@@ -120,14 +129,17 @@
   text: "One year since {deceased.first_name} died. The day comes around without warning."
   outcomes:
     - weight: 50
+      label: "Visited the spot"
       text: "You walk to the place {deceased.first_name} used to sit. It helps more than you thought it would."
       effects:
         - stat.happiness += 4
     - weight: 30
+      label: "Missed the visit"
       text: You meant to visit and didn't. The guilt sits with you all day.
       effects:
         - stat.happiness -= 3
     - weight: 20
+      label: "Small ritual"
       text: You make a small ritual of it, and the day gets a little lighter each year.
       effects:
         - stat.happiness += 2

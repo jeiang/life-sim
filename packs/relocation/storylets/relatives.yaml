@@ -11,14 +11,17 @@
   text: "Back home, {person.first_name} is getting on with life, and the news from you has dried up."
   outcomes:
     - weight: 50
+      label: "Messages stop"
       text: Another month goes by and the messages stop coming.
       effects:
         - relationship(person).closeness += -6
     - weight: 30
+      label: "Cousin brings news"
       text: "{person.first_name} hears about your news from a cousin, and it stings."
       effects:
         - relationship(person).closeness += -6
     - weight: 20
+      label: "Late birthday card"
       text: "A birthday card arrives a week late, with a short note that says only \"Hope you're well.\""
       effects:
         - relationship(person).closeness += -6
@@ -35,11 +38,13 @@
   text: "You dial {person.first_name}'s number and wait through the long international ring."
   outcomes:
     - weight: 80
+      label: "Hour-long call"
       text: You talk for an hour and catch up on everything you have missed.
       effects:
         - relationship(person).closeness += 4
         - stat.happiness += 2
     - weight: 20
+      label: "Ten-minute call"
       text: The time difference is against you, and you hang up after ten minutes.
       effects:
         - relationship(person).closeness += 1
@@ -57,12 +62,14 @@
   text: The flight and the hotel cost a fair bit, but you book it anyway.
   outcomes:
     - weight: 80
+      label: "Long weekend"
       text: "You spend a long weekend together and it feels like old times with {person.first_name}."
       effects:
         - money -= 120000
         - relationship(person).closeness += 8
         - stat.happiness += 2
     - weight: 20
+      label: "Stilted visit"
       text: The visit is polite but stilted, and you both leave a little relieved.
       effects:
         - money -= 120000

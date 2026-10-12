@@ -10,6 +10,7 @@
   text: Your parents sit you down at the kitchen table. The family is moving, and the boxes are already in the hall.
   outcomes:
     - weight: 1
+      label: "Dustwater"
       when: city.id != core-loop/dustwater and (city.id == core-loop/harborview or city.id == core-loop/maple-falls or city.id == core-loop/riverton or city.id == core-loop/lakeshore or city.id == core-loop/goldcrest)
       text: The moving truck smells of diesel. Welcome to Dustwater, where the sky is always a little brown.
       effects:
@@ -19,6 +20,7 @@
         - "quality.reloc_child_move_age = age"
         - "journal(\"The family moved when you were {age}.\")"
     - weight: 1
+      label: "Harborview"
       when: city.id != core-loop/harborview and (city.id == core-loop/dustwater or city.id == core-loop/maple-falls or city.id == core-loop/riverton or city.id == core-loop/lakeshore or city.id == core-loop/goldcrest)
       text: Harborview has a ferry, three cousins and a school with a mascot you have to pretend to like.
       effects:
@@ -28,6 +30,7 @@
         - "quality.reloc_child_move_age = age"
         - "journal(\"The family moved when you were {age}.\")"
     - weight: 1
+      label: "Maple Falls"
       when: city.id != core-loop/maple-falls and (city.id == core-loop/dustwater or city.id == core-loop/harborview or city.id == core-loop/riverton or city.id == core-loop/lakeshore or city.id == core-loop/goldcrest)
       text: Maple Falls has one stoplight and a principal who already knows your name.
       effects:
@@ -37,6 +40,7 @@
         - "quality.reloc_child_move_age = age"
         - "journal(\"The family moved when you were {age}.\")"
     - weight: 1
+      label: "Riverton"
       when: city.id != core-loop/riverton and (city.id == core-loop/dustwater or city.id == core-loop/harborview or city.id == core-loop/maple-falls or city.id == core-loop/lakeshore or city.id == core-loop/goldcrest)
       text: Riverton promises a fresh start. Your new classmates have already heard about you.
       effects:
@@ -46,6 +50,7 @@
         - "quality.reloc_child_move_age = age"
         - "journal(\"The family moved when you were {age}.\")"
     - weight: 1
+      label: "Lakeshore"
       when: city.id != core-loop/lakeshore and (city.id == core-loop/dustwater or city.id == core-loop/harborview or city.id == core-loop/maple-falls or city.id == core-loop/riverton or city.id == core-loop/goldcrest)
       text: Lakeshore has cold water, cold mornings and a school bus that comes when it feels like it.
       effects:
@@ -55,6 +60,7 @@
         - "quality.reloc_child_move_age = age"
         - "journal(\"The family moved when you were {age}.\")"
     - weight: 1
+      label: "Goldcrest"
       when: city.id != core-loop/goldcrest and (city.id == core-loop/dustwater or city.id == core-loop/harborview or city.id == core-loop/maple-falls or city.id == core-loop/riverton or city.id == core-loop/lakeshore)
       text: Goldcrest has nicer houses, meaner kids and a lot of rules about where you can skateboard.
       effects:
@@ -64,6 +70,7 @@
         - "quality.reloc_child_move_age = age"
         - "journal(\"The family moved when you were {age}.\")"
     - weight: 1
+      label: "Toronto"
       when: city.id == relocation/montreal
       text: Toronto is a bigger school with a lot of rules. You learn the subway map before you learn the teachers.
       effects:
@@ -73,6 +80,7 @@
         - "quality.reloc_child_move_age = age"
         - "journal(\"The family moved when you were {age}.\")"
     - weight: 1
+      label: "Montreal"
       when: city.id == relocation/toronto
       text: Montreal. Every sign is in French, and so is the principal. Your parents say you will pick it up fast.
       effects:
@@ -83,6 +91,7 @@
         - "quality.reloc_lang_french = max(quality.reloc_lang_french, 40)"
         - "journal(\"The family moved when you were {age}.\")"
     - weight: 1
+      label: "London"
       when: city.id == relocation/manchester
       text: London means a uniform, a lot of rain and a teacher who calls you by your surname.
       effects:
@@ -92,6 +101,7 @@
         - "quality.reloc_child_move_age = age"
         - "journal(\"The family moved when you were {age}.\")"
     - weight: 1
+      label: "Manchester"
       when: city.id == relocation/london
       text: Manchester has the same rain with louder music and a school that will not let you sit still.
       effects:
@@ -101,6 +111,7 @@
         - "quality.reloc_child_move_age = age"
         - "journal(\"The family moved when you were {age}.\")"
     - weight: 1
+      label: "Tokyo"
       when: city.id == relocation/osaka
       text: Tokyo means a train to school at six, a lot of bowing and a teacher who writes everything on the board.
       effects:
@@ -111,6 +122,7 @@
         - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 40)"
         - "journal(\"The family moved when you were {age}.\")"
     - weight: 1
+      label: "Osaka"
       when: city.id == relocation/tokyo
       text: Osaka is louder, cheaper and more fun, and the kids keep asking you to make them laugh.
       effects:
@@ -121,6 +133,7 @@
         - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 40)"
         - "journal(\"The family moved when you were {age}.\")"
     - weight: 1
+      label: "Mexico City"
       when: city.id == relocation/guadalajara
       text: Mexico City means smog, a huge school and a new word for everything.
       effects:
@@ -131,6 +144,7 @@
         - "quality.reloc_lang_spanish = max(quality.reloc_lang_spanish, 40)"
         - "journal(\"The family moved when you were {age}.\")"
     - weight: 1
+      label: "Guadalajara"
       when: city.id == relocation/mexico-city
       text: Guadalajara means jacaranda trees, a new soccer team and a school that makes you learn the anthem.
       effects:
@@ -150,6 +164,7 @@
   text: Your parents come home with a job offer and a look you know too well. The passport office is next.
   outcomes:
     - weight: 1
+      label: "Toronto"
       text: Your parents take a job in Toronto. Maple syrup is not a joke here.
       effects:
         - "relocation.remember_home()"
@@ -160,6 +175,7 @@
         - "quality.reloc_abroad = true"
         - "journal(\"The family moved abroad when you were {age}.\")"
     - weight: 1
+      label: "Montreal"
       text: Your parents take a job in Montreal. Every sign is in French, and so is the principal.
       effects:
         - "relocation.remember_home()"
@@ -171,6 +187,7 @@
         - "quality.reloc_lang_french = max(quality.reloc_lang_french, 40)"
         - "journal(\"The family moved abroad when you were {age}.\")"
     - weight: 1
+      label: "London"
       text: Your parents take a job in London. You learn the difference between a lift and an elevator the hard way.
       effects:
         - "relocation.remember_home()"
@@ -181,6 +198,7 @@
         - "quality.reloc_abroad = true"
         - "journal(\"The family moved abroad when you were {age}.\")"
     - weight: 1
+      label: "Manchester"
       text: Your parents take a job in Manchester. The rain has a reputation, and it earned it.
       effects:
         - "relocation.remember_home()"
@@ -191,6 +209,7 @@
         - "quality.reloc_abroad = true"
         - "journal(\"The family moved abroad when you were {age}.\")"
     - weight: 1
+      label: "Tokyo"
       text: Your parents take a job in Tokyo. You learn to bow before you learn where the bathroom is.
       effects:
         - "relocation.remember_home()"
@@ -202,6 +221,7 @@
         - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 40)"
         - "journal(\"The family moved abroad when you were {age}.\")"
     - weight: 1
+      label: "Osaka"
       text: Your parents take a job in Osaka. The food is better than anything you have eaten, and so is the teasing.
       effects:
         - "relocation.remember_home()"
@@ -213,6 +233,7 @@
         - "quality.reloc_lang_japanese = max(quality.reloc_lang_japanese, 40)"
         - "journal(\"The family moved abroad when you were {age}.\")"
     - weight: 1
+      label: "Mexico City"
       text: Your parents take a job in Mexico City. It is huge, the taco stand is close, and the school is a mystery.
       effects:
         - "relocation.remember_home()"
@@ -224,6 +245,7 @@
         - "quality.reloc_lang_spanish = max(quality.reloc_lang_spanish, 40)"
         - "journal(\"The family moved abroad when you were {age}.\")"
     - weight: 1
+      label: "Guadalajara"
       text: Your parents take a job in Guadalajara. The jacarandas are purple, the Spanish is fast, and you are the new kid.
       effects:
         - "relocation.remember_home()"

@@ -10,3 +10,4 @@ requires:
   - core-loop/family
   - core-loop/singletons
   - core-loop/education
+  - core-loop/economy

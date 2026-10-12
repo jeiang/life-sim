@@ -20,3 +20,10 @@
   term_years: 30
   down_payment: 20%
   secured: true
+- id: personal-loan
+  label: Personal loan
+  icon: 💳
+  rate: 7%
+  term_years: 5
+  down_payment: 0%
+  secured: false

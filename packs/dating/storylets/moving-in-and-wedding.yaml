@@ -42,9 +42,9 @@
       when: money < 80000
       outcomes:
         - weight: 1
-          text: You slip off to the courthouse with two strangers as witnesses and a ring from the gas station, paid for on a student loan you will be repaying for years.
+          text: You slip off to the courthouse with two strangers as witnesses and a ring from the gas station, paid for on a personal loan you will be repaying for years.
           effects:
-            - "take_loan(core-loop/student-loan, 80000)"
+            - "take_loan(core-loop/personal-loan, 80000)"
             - money -= 80000
           next: wedding-prenup
     - label: Small wedding

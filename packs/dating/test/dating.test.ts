@@ -512,7 +512,7 @@ describe("moving in and the wedding", () => {
     expect(me(wb.world).money).toBe(20_000);
   });
 
-  test("broke, Elope on credit is the only enabled Elope; a student loan pays for it and cash stays at zero", () => {
+  test("broke, Elope on credit is the only enabled Elope; a personal loan pays for it and cash stays at zero", () => {
     const [skint, sid] = engaged(0);
     const view = describePending(
       startStorylet(skint, bundles, D("plan-wedding"), sid).world,
@@ -529,12 +529,12 @@ describe("moving in and the wedding", () => {
     expect(me(r.world).money).toBe(0);
     expect(me(r.world).loans).toHaveLength(1);
     expect(me(r.world).loans[0]).toMatchObject({
-      kindId: "core-loop/student-loan",
+      kindId: "core-loop/personal-loan",
       principal: 80_000,
     });
   });
 
-  test("broke elopement stays valid through the next age-up: cash never goes negative and the student loan is settled", () => {
+  test("broke elopement stays valid through the next age-up: cash never goes negative and the personal loan is settled", () => {
     const [skint, sid] = engaged(0);
     const married = play(skint, D("plan-wedding"), sid, 1, 1).world;
     const r = ageUp(married, bundles);

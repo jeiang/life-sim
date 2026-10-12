@@ -10,7 +10,7 @@
 > `move_in()` and `merge_money()` both need the partner row to hold the household `partner_role` (`core-loop/partner`). So `merge_money()` MUST run before `relationship(person).role = core-loop/spouse`, or it does nothing.
 > Gaining the spouse role fires the Core `married` milestone, so this sheet does not declare its own marriage milestone. `plan-wedding` is once per life through `not milestone_reached(married)`.
 > `plan-wedding` requires an accepted proposal: `person.quality.dating_engaged`, set by the propose accept in the finding chain.
-> Costs come from the player's cash (`money -=`), except an elope on credit, which opens a student loan for $800 instead. Amounts are minor units: elope $800, small wedding $12,000, big wedding $40,000, prenup $1,500.
+> Costs come from the player's cash (`money -=`), except an elope on credit, which opens a personal loan for $800 instead. Amounts are minor units: elope $800, small wedding $12,000, big wedding $40,000, prenup $1,500.
 > `once: true` on an action with `scope: person` counts per bound partner, so a declined move-in is final for that partner.
 
 > Tweak (focused sim): wedding and prenup bands are the `romantic` profile (about half of its lives marry); random lives plan 0.05 a life.
@@ -49,7 +49,7 @@
 - opens: 0.2..0.6 per life
 - needs: quality dating_engaged: flag, default false, scope person: the partner accepted a proposal; set by the propose accept in the finding chain
 
-> The action is offered only to an engaged partner, and the elopement is open to anyone. With $800 in cash, Elope pays it in cash. Without it, Elope on credit borrows $800 on a student loan (`core-loop/student-loan`) and spends it on the wedding, so cash stays at zero and the debt starts. Cash never goes negative. The small and big weddings need the cash. Each choice hands on to `wedding-prenup` with `next`; the person carries over because both storylets have `scope: person`.
+> The action is offered only to an engaged partner, and the elopement is open to anyone. With $800 in cash, Elope pays it in cash. Without it, Elope on credit borrows $800 on a personal loan (`core-loop/personal-loan`, unsecured, 7% over 5 years) and spends it on the wedding, so cash stays at zero and the debt starts. Cash never goes negative. The small and big weddings need the cash. Each choice hands on to `wedding-prenup` with `next`; the person carries over because both storylets have `scope: person`.
 
 ### choice: Elope
 - when: money >= 80000
@@ -62,8 +62,8 @@
 ### choice: Elope on credit
 - when: money < 80000
 - outcome: 1
-  - text: You slip off to the courthouse with two strangers as witnesses and a ring from the gas station, paid for on a student loan you will be repaying for years.
-  - effect: take_loan(core-loop/student-loan, 80000); money -= 80000
+  - text: You slip off to the courthouse with two strangers as witnesses and a ring from the gas station, paid for on a personal loan you will be repaying for years.
+  - effect: take_loan(core-loop/personal-loan, 80000); money -= 80000
   - next: wedding-prenup
   - rate: 100..100%
 

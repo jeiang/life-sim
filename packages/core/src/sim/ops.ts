@@ -268,6 +268,13 @@ export function pickFirstName(
     : fallback;
 }
 
+/** A generator's name for god mode's question: its pack label, else its id's last part in words. */
+function generatorTitle(gen: CompiledGenerator, id: string): string {
+  if (gen.label !== undefined) return gen.label;
+  const last = id.slice(id.lastIndexOf("/") + 1).replace(/-/g, " ");
+  return last.charAt(0).toUpperCase() + last.slice(1);
+}
+
 /** Create a person from a generator and link them from `from` with the role. */
 export function spawnPerson(
   world: World,
@@ -298,6 +305,7 @@ export function spawnPerson(
   const nameRoll = rng.int(NAME_ROLL_RANGE, {
     cat: "person",
     label: "First name",
+    names: gen.firstNames,
   });
   const lastNames = gen.lastNames;
   const drawn = lastNames.length
@@ -360,7 +368,8 @@ export function spawnPerson(
     ? [family, []]
     : rollSpawnQualities(family, idx, id);
   const draws = [...rng.pendingDraws(), ...spawned[1]];
-  if (draws.length > 0) throw new GodAsk(gen.label ?? generatorId, draws, true);
+  if (draws.length > 0)
+    throw new GodAsk(generatorTitle(gen, generatorId), draws, true);
   return [spawned[0], id];
 }
 

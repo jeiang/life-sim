@@ -57,20 +57,43 @@ test("god mode asks a child's sex; the reload keeps the same child", async ({
   const sex = page.getByRole("combobox", { name: "Sex", exact: true });
   await expect(sex).toBeVisible();
 
-  // Sex = female is staged alone; the rest come back, then roll the rest.
+  // The title is the generator's label, not its raw id.
+  await expect(page.locator("#god-ask-title")).not.toContainText("/");
+
+  // Every field starts at its natural value: nothing is blank, no raw number roll,
+  // and a name is chosen from the pool. Reset stays off until a field changes.
+  await expect(sex).not.toHaveValue("");
+  const firstName = page.getByRole("combobox", {
+    name: "First name",
+    exact: true,
+  });
+  await expect(firstName).not.toHaveValue("");
+  await expect(
+    page.getByRole("spinbutton", { name: "First name" }),
+  ).toHaveCount(0);
+  await expect(page.getByText("Family name", { exact: true })).toHaveCount(1);
+  await expect(
+    page.getByRole("button", { name: "Reset" }).first(),
+  ).toBeDisabled();
+
+  // Sex = female is staged alone; the rest come back, then leave the rest to chance.
   const female = await sex
     .locator("option", { hasText: /^female/ })
     .getAttribute("value");
   expect(female, "the sex row offers female").not.toBeNull();
   await sex.selectOption(female ?? "");
+  await page.getByRole("button", { name: "Confirm answers" }).click();
   for (let i = 0; i < 5; i++) {
-    const roll = page.getByRole("button", { name: "Roll the rest" });
-    if ((await roll.count()) === 0) break;
-    await roll.click();
+    const leave = page.getByRole("button", {
+      name: "Leave to chance",
+      exact: true,
+    });
+    if ((await leave.count()) === 0) break;
+    await leave.click();
   }
-  await expect(page.getByRole("button", { name: "Roll the rest" })).toHaveCount(
-    0,
-  );
+  await expect(
+    page.getByRole("button", { name: "Leave to chance", exact: true }),
+  ).toHaveCount(0);
 
   const child = await page.evaluate(() => window.__life.lastChild());
   expect(child).not.toBeNull();

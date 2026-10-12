@@ -9,7 +9,11 @@ import {
   describePending,
   deserializeWorld,
   evaluate,
+  finishGodStep,
+  GodAsk,
+  type GodDraw,
   getPerson,
+  godPickRoll,
   indexBundles,
   listActions,
   makeEnv,
@@ -25,6 +29,7 @@ import {
   startStorylet,
   updatePerson,
   type World,
+  withGodAsk,
   worldHash,
 } from "../../../packages/core/src/index.ts";
 import { forceRolls } from "../../../packages/harness/src/index.ts";
@@ -954,7 +959,10 @@ describe("pregnancy", () => {
       "male",
     );
     const preg = setQ(w, "dating_pregnant", 1);
-    force({ "outcome/dating/pregnancy-end": 1 });
+    force({
+      "outcome/dating/pregnancy-end": 1,
+      "outcome/dating/pregnancy-outcome": 0,
+    });
     const r = startStorylet(preg, bundles, D("pregnancy-end"));
     expect(pending(r.world)).toBe(D("pregnancy-outcome"));
     const kept = choose(r.world, bundles, 0);
@@ -984,7 +992,10 @@ describe("pregnancy", () => {
       "female",
     );
     const pp = setPQ(w, pid, "dating_pregnant", 1);
-    force({ "outcome/dating/partner-pregnancy-end": 1 });
+    force({
+      "outcome/dating/partner-pregnancy-end": 1,
+      "outcome/dating/partner-pregnancy-outcome": 0,
+    });
     const r = startStorylet(pp, bundles, D("partner-pregnancy-end"), pid);
     expect(pending(r.world)).toBe(D("partner-pregnancy-outcome"));
     const kept = choose(r.world, bundles, 0);
@@ -997,6 +1008,87 @@ describe("pregnancy", () => {
         .sort(),
     ).toEqual([kept.world.playerId, pid].sort());
     expect(pq(kept.world, pid, "dating_pregnant")).toBe(0);
+  });
+
+  test("twins: the 3% outcome spawns two children at once, each born to both birth parents", () => {
+    const [w, pid] = add(
+      adult(24, 28, "male"),
+      "spouse",
+      "coworker-gen",
+      28,
+      80,
+      "male",
+    );
+    const preg = setQ(w, "dating_pregnant", 1);
+    force({
+      "outcome/dating/pregnancy-end": 1,
+      "outcome/dating/pregnancy-outcome": 1,
+    });
+    const r = startStorylet(preg, bundles, D("pregnancy-end"));
+    expect(pending(r.world)).toBe(D("pregnancy-outcome"));
+    const kept = choose(r.world, bundles, 0);
+    expect(q(kept.world, "dating_pregnant")).toBe(0);
+    expect(q(kept.world, "dating_children")).toBe(2);
+    expect(q(kept.world, "dating_first_child_age")).toBe(28);
+    expect(countKin(kept.world, kept.world.playerId, "child", 0, 0)).toBe(2);
+    const babies = [...kept.world.persons.values()].filter(
+      (p) => !w.persons.has(p.id),
+    );
+    expect(babies).toHaveLength(2);
+    for (const b of babies) {
+      expect(b.age).toBe(0);
+      expect(roleOf(kept.world, b.id)).toBe(`${CL}/child`);
+      expect(
+        parentLinks(kept.world, b.id)
+          .map((l) => l.id)
+          .sort(),
+      ).toEqual([kept.world.playerId, pid].sort());
+    }
+  });
+
+  test("god: a Twins pick at the keep-the-baby draw spawns two children in the same life", () => {
+    const [w, pid] = add(
+      adult(24, 28, "male"),
+      "spouse",
+      "coworker-gen",
+      28,
+      80,
+      "male",
+    );
+    const preg = setQ(w, "dating_pregnant", 1);
+    force({ "outcome/dating/pregnancy-end": 1 });
+    const r = startStorylet(preg, bundles, D("pregnancy-end"));
+    force({});
+    let draw: GodDraw | undefined;
+    try {
+      choose(withGodAsk(r.world, ["outcome"]), bundles, 0);
+    } catch (e) {
+      if (!(e instanceof GodAsk)) throw e;
+      draw = e.draws.find((d) => d.key === "outcome/dating/pregnancy-outcome");
+    }
+    if (!draw) throw new Error("keep the baby asked no outcome draw");
+    const picked = godPickRoll(r.world, {
+      age: draw.age,
+      key: draw.key,
+      n: draw.n,
+      d: draw.d,
+      v: 1,
+    });
+    const done = finishGodStep(
+      choose(withGodAsk(picked, ["outcome"]), bundles, 0).world,
+    );
+    expect(q(done, "dating_children")).toBe(2);
+    const babies = [...done.persons.values()].filter(
+      (p) => !w.persons.has(p.id),
+    );
+    expect(babies).toHaveLength(2);
+    for (const b of babies) {
+      expect(
+        parentLinks(done, b.id)
+          .map((l) => l.id)
+          .sort(),
+      ).toEqual([done.playerId, pid].sort());
+    }
   });
 
   test("placing the baby for adoption or ending the pregnancy clears the flag and spawns nobody", () => {

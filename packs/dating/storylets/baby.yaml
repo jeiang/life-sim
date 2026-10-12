@@ -80,13 +80,23 @@
   choices:
     - label: Keep the baby
       outcomes:
-        - weight: 1
+        - weight: 97
+          label: One baby
           text: You bring your baby home. Life is about to get a lot busier.
           effects:
             - "quality.dating_pregnant = 0"
             - "spawn_person(core-loop/child, dating/baby-gen) as baby"
             - "quality.dating_children += 1"
             - "journal(\"Your baby is born.\")"
+        - weight: 3
+          label: Twins
+          text: Two of them. Life is about to get a great deal busier.
+          effects:
+            - "quality.dating_pregnant = 0"
+            - "spawn_person(core-loop/child, dating/baby-gen) as first"
+            - "spawn_person(core-loop/child, dating/baby-gen) as second"
+            - "quality.dating_children += 2"
+            - "journal(\"Your twins are born.\")"
     - label: Place the baby for adoption
       outcomes:
         - weight: 1
@@ -130,13 +140,23 @@
   choices:
     - label: Keep the baby
       outcomes:
-        - weight: 1
+        - weight: 97
+          label: One baby
           text: You bring your baby home. Life is about to get a lot busier.
           effects:
             - "person.quality.dating_pregnant = 0"
             - "spawn_person(core-loop/child, dating/baby-gen, parent: person) as baby"
             - "quality.dating_children += 1"
             - "journal(\"Your baby is born.\")"
+        - weight: 3
+          label: Twins
+          text: Two of them. Life is about to get a great deal busier.
+          effects:
+            - "person.quality.dating_pregnant = 0"
+            - "spawn_person(core-loop/child, dating/baby-gen, parent: person) as first"
+            - "spawn_person(core-loop/child, dating/baby-gen, parent: person) as second"
+            - "quality.dating_children += 2"
+            - "journal(\"Your twins are born.\")"
     - label: Place the baby for adoption
       outcomes:
         - weight: 1

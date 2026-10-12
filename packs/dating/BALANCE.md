@@ -71,7 +71,7 @@ Report: artemis `~/Projects/life-sim/reports/dating-marriage-1-15c5766-20261011T
 
 Changes (data only, no decision weights, so the ask-out share fell instead of rising):
 
-- `plan-wedding` and its Elope choice no longer need cash. A broke couple puts the $800 on a card and the cash goes negative; Small and Big weddings still need the money.
+- `plan-wedding` and its Elope choice no longer need cash. A broke couple elopes on credit (#396): `Elope on credit` opens an $800 student loan through `take_loan` and leaves cash alone, so cash never goes negative. Small and Big weddings still need the money.
 - New event `growing-closer` (80% a year, partner not yet asked, closeness under 80): +10 closeness. A partner no longer needs date nights to reach the 60 that proposing and the wedding ask for.
 - `ask-out` success adds +20 closeness.
 - `find-a-date` (18 to 30): a quarter of each attracted outcome is now someone you are already seeing (partner, closeness +20) instead of a friend you may ask out later. The no-spark weight keeps its share (60 to 240 with the other weights times four).

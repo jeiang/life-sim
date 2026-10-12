@@ -3,8 +3,10 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, test } from "vitest";
 import {
   ageUp,
+  checkWorldState,
   choose,
   countKin,
+  describePending,
   deserializeWorld,
   evaluate,
   getPerson,
@@ -467,7 +469,7 @@ describe("moving in and the wedding", () => {
     return [w, pid] as const;
   };
 
-  test("plan a wedding needs an accepted proposal and no marriage yet, not cash (elopement goes on a card)", () => {
+  test("plan a wedding needs an accepted proposal and no marriage yet, not cash (broke couples elope on credit)", () => {
     const [w, pid] = engaged();
     expect(locked(w, "plan-wedding", pid)).toBe(false);
     const [poor, poorId] = engaged(0);
@@ -486,18 +488,19 @@ describe("moving in and the wedding", () => {
     );
   });
 
-  test("choices: elope $800 (no cash needed), small $12,000, big $40,000 (gated by cash)", () => {
+  test("choices: elope $800 with cash, elope on credit when broke, small $12,000, big $40,000 (gated by cash)", () => {
     const s = idx.storylets.get(D("plan-wedding"));
     expect(s?.choices.map((c) => c.label)).toEqual([
       "Elope",
+      "Elope on credit",
       "Small wedding",
       "Big wedding",
     ]);
     const [w, pid] = engaged(5_000_000);
     const costs: [number, number][] = [
       [0, 80_000],
-      [1, 1_200_000],
-      [2, 4_000_000],
+      [2, 1_200_000],
+      [3, 4_000_000],
     ];
     for (const [choice, cost] of costs) {
       const r = play(w, D("plan-wedding"), pid, choice);
@@ -507,9 +510,38 @@ describe("moving in and the wedding", () => {
     const [broke, bid] = engaged(100_000);
     const wb = play(broke, D("plan-wedding"), bid, 0);
     expect(me(wb.world).money).toBe(20_000);
+  });
+
+  test("broke, Elope on credit is the only enabled Elope; a student loan pays for it and cash stays at zero", () => {
     const [skint, sid] = engaged(0);
-    const ws = play(skint, D("plan-wedding"), sid, 0);
-    expect(me(ws.world).money).toBe(-80_000);
+    const view = describePending(
+      startStorylet(skint, bundles, D("plan-wedding"), sid).world,
+      bundles,
+    );
+    expect(view?.choices.map((c) => c.enabled)).toEqual([
+      false,
+      true,
+      false,
+      false,
+    ]);
+    const r = play(skint, D("plan-wedding"), sid, 1);
+    expect(pending(r.world)).toBe(D("wedding-prenup"));
+    expect(me(r.world).money).toBe(0);
+    expect(me(r.world).loans).toHaveLength(1);
+    expect(me(r.world).loans[0]).toMatchObject({
+      kindId: "core-loop/student-loan",
+      principal: 80_000,
+    });
+  });
+
+  test("broke elopement stays valid through the next age-up: cash never goes negative and the student loan is settled", () => {
+    const [skint, sid] = engaged(0);
+    const married = play(skint, D("plan-wedding"), sid, 1, 1).world;
+    const r = ageUp(married, bundles);
+    expect(me(r.world).money).toBeGreaterThanOrEqual(0);
+    expect(checkWorldState(r.world, idx.state)).toEqual([]);
+    expect(me(r.world).loans).toHaveLength(1);
+    expect(me(r.world).loans[0]?.balance).not.toBe(80_000);
   });
 
   test("no prenup: savings merge, the partner becomes a spouse, married fires and the age is recorded", () => {

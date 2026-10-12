@@ -429,4 +429,94 @@ profiles:
     expect(messages).toContain("`by` needs `pick: max` or `pick: min`");
     expect(messages).toContain("stat.nope");
   });
+
+  // A `late` profile whose own rule never fires (age 200, the schema maximum), so anything it plays comes from an add.
+  const withLate = (name: string, add: string) => {
+    const copy = mkdtempSync(join(tmpdir(), `harness-${name}-`));
+    cpSync(dir, copy, { recursive: true });
+    writeFileSync(
+      join(copy, "core-loop/harness/profiles.yaml"),
+      `profiles:
+  random:
+    description: Uniform random choices; one random eligible action a year
+    moves: 1
+    rules:
+      - {}
+  late:
+    description: Takes an action only at age 200, so its own rule never fires
+    default: false
+    moves: 1
+    rules:
+      - when: { age_at_least: 200 }
+        ids: ["base/rest"]
+`,
+    );
+    const file = join(copy, "shady/harness/profiles.yaml");
+    writeFileSync(file, `${readFileSync(file, "utf8")}\n${add}`);
+    return copy;
+  };
+
+  test("a Pack adds rules to another Pack's profile, after the profile's own rules", () => {
+    const copy = withLate(
+      "add",
+      `add:
+  - pack: core-loop
+    profile: late
+    rules:
+      - ids: ["shady/mug"]
+`,
+    );
+    const loaded = loadProfiles(copy, bundlesOf(copy));
+    expect(loaded.diagnostics).toEqual([]);
+    expect(loaded.profiles.find((p) => p.id === "late")?.rules.length).toBe(2);
+    const fired = runHarness({
+      bundles: bundlesOf(copy),
+      profileSpecs: loaded.profiles,
+      lives: 12,
+      profiles: ["late"],
+      seed: 5,
+    }).report.storylets.fired;
+    expect(fired["shady/mug"]).toBeGreaterThan(0);
+    expect(fired["base/rest"] ?? 0).toBe(0);
+  });
+
+  test("an add whose target Pack is not loaded contributes nothing", () => {
+    const copy = withLate(
+      "absent",
+      `add:
+  - pack: ghost
+    profile: random
+    rules:
+      - ids: ["shady/mug"]
+`,
+    );
+    const loaded = loadProfiles(copy, bundlesOf(copy));
+    expect(loaded.diagnostics).toEqual([]);
+    expect(loaded.profiles.find((p) => p.id === "random")?.rules.length).toBe(
+      1,
+    );
+  });
+
+  test("a bad add entry is reported with its path", () => {
+    const copy = withLate(
+      "bad-add",
+      `add:
+  - pack: core-loop
+    profile: nobody
+    rules:
+      - ids: ["shady/mug"]
+  - pack: core-loop
+    profile: random
+    rules:
+      - ids: ["*/no-such-action"]
+`,
+    );
+    const messages = loadProfiles(copy, bundlesOf(copy))
+      .diagnostics.map((d) => `${d.path}: ${d.message}`)
+      .join("\n");
+    expect(messages).toContain(
+      "add[0].profile: profile 'nobody' is not declared by Pack 'core-loop'",
+    );
+    expect(messages).toContain("matches no action");
+  });
 });

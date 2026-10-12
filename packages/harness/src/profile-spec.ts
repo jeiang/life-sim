@@ -318,6 +318,18 @@ interface AdjustDecl extends WeightAdjust {
   readonly at: (message: string) => Diagnostic;
 }
 
+/** `add: {pack, profile, rules}` (docs/spec/harness.md#adding-rules-to-another-packs-profile). */
+interface AddDecl {
+  /** The Pack that declares the profile; the entry is skipped when that Pack is not loaded. */
+  readonly target: string;
+  /** A profile id that `target` declares. */
+  readonly profile: string;
+  /** Appended after the profile's own rules, so they run only when none of those has a candidate. */
+  readonly rules: readonly RuleSpec[];
+  /** A diagnostic for a problem with the entry's `profile`. */
+  readonly at: (message: string) => Diagnostic;
+}
+
 /** Parse and check the profiles of one `profiles.yaml`; every problem is a diagnostic. */
 export function compileProfiles(
   pack: string,
@@ -326,6 +338,7 @@ export function compileProfiles(
 ): {
   profiles: ProfileSpec[];
   adjusts: AdjustDecl[];
+  adds: AddDecl[];
   diagnostics: Diagnostic[];
 } {
   const l = new Loader(src);
@@ -389,10 +402,11 @@ export function compileProfiles(
       b.storylets.filter((s) => s.trigger === "action").flatMap((s) => s.tags),
     ),
   );
-  const root = l.obj([], src.value, ["profiles", "adjust"]);
+  const root = l.obj([], src.value, ["profiles", "adjust", "add"]);
   const profiles: ProfileSpec[] = [];
   const adjusts: AdjustDecl[] = [];
-  if (root === null) return { profiles, adjusts, diagnostics: l.diags };
+  const adds: AddDecl[] = [];
+  if (root === null) return { profiles, adjusts, adds, diagnostics: l.diags };
   if (root.adjust !== undefined) {
     if (!Array.isArray(root.adjust)) l.err(["adjust"], "expected a list");
     else
@@ -455,6 +469,50 @@ export function compileProfiles(
           tags: tagList,
           ids,
           weight,
+          at: (message) => {
+            const at = [...path, "profile"];
+            const loc = src.locate(at);
+            return {
+              file: src.file,
+              path: formatPath(at),
+              message,
+              ...(loc ? { line: loc.line, column: loc.column } : {}),
+            };
+          },
+        });
+      });
+  }
+  if (root.add !== undefined) {
+    if (!Array.isArray(root.add)) l.err(["add"], "expected a list");
+    else
+      root.add.forEach((a, i) => {
+        const path: Path = ["add", i];
+        const o = l.obj(path, a, ["pack", "profile", "rules"]);
+        if (o === null) return;
+        const target = l.str([...path, "pack"], o.pack, "a pack id");
+        const profile = l.str([...path, "profile"], o.profile, "a profile id");
+        const rules: RuleSpec[] = [];
+        if (!Array.isArray(o.rules) || o.rules.length === 0)
+          l.err([...path, "rules"], "expected a non-empty list of rules");
+        else
+          o.rules.forEach((r, j) => {
+            const rule = compileRule(
+              l,
+              [...path, "rules", j],
+              r,
+              false,
+              actionIds,
+              itemIds,
+              menus,
+              expr,
+            );
+            if (rule) rules.push(rule);
+          });
+        if (target === null || profile === null) return;
+        adds.push({
+          target,
+          profile,
+          rules,
           at: (message) => {
             const at = [...path, "profile"];
             const loc = src.locate(at);
@@ -597,7 +655,7 @@ export function compileProfiles(
       weights: [],
     });
   }
-  return { profiles, adjusts, diagnostics: l.diags };
+  return { profiles, adjusts, adds, diagnostics: l.diags };
 }
 
 /**
@@ -610,6 +668,7 @@ export function loadProfiles(
 ): { profiles: ProfileSpec[]; diagnostics: Diagnostic[] } {
   const profiles: ProfileSpec[] = [];
   const adjusts: AdjustDecl[] = [];
+  const adds: AddDecl[] = [];
   const diagnostics: Diagnostic[] = [];
   const owner = new Map<string, string>();
   for (const b of bundles) {
@@ -621,6 +680,7 @@ export function loadProfiles(
     const c = compileProfiles(b.id, src, bundles);
     diagnostics.push(...c.diagnostics);
     adjusts.push(...c.adjusts);
+    adds.push(...c.adds);
     for (const p of c.profiles) {
       const prior = owner.get(p.id);
       if (prior !== undefined) {
@@ -662,6 +722,21 @@ export function loadProfiles(
     }
     if (a.except.includes(p.id)) continue;
     profiles[i] = { ...p, weights: [...p.weights, entry] };
+  }
+  // An `add` appends rules to a profile its target Pack declares. A target Pack that is not loaded contributes nothing.
+  for (const a of adds) {
+    if (!bundles.some((b) => b.id === a.target)) continue;
+    const i = profiles.findIndex(
+      (p) => p.id === a.profile && owner.get(p.id) === a.target,
+    );
+    const p = profiles[i];
+    if (p === undefined) {
+      diagnostics.push(
+        a.at(`profile '${a.profile}' is not declared by Pack '${a.target}'`),
+      );
+      continue;
+    }
+    profiles[i] = { ...p, rules: [...p.rules, ...a.rules] };
   }
   return { profiles, diagnostics };
 }

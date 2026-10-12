@@ -122,11 +122,24 @@ adjust:
 | Profile | Pack | Behaviour |
 |---|---|---|
 | `random` | core-loop | Uniform random choices; 0-2 random eligible actions per year, repeatable ones included (and repeated) |
-| `studious` | core-loop | Prefers study actions and university; accepts job offers |
+| `studious` | core-loop | Prefers study actions and university; accepts job offers; sits the licensing exams when grad-school is loaded (its `add` entry) |
 | `spender` | core-loop | Buys whenever affordable, takes loans when offered |
 | `idle` | core-loop | Takes no voluntary actions; answers events at random |
 | `grinder` | core-loop | 12 random repeatable actions a year, to stress diminishing returns; opt-in (`--profile grinder`), not part of `all` |
 | `gambler` | gambling | Bets all year at the casinos and the lottery; tries to quit once addicted |
+
+### Adding rules to another Pack's profile
+
+A Pack may also add rules to a profile another Pack declares, with a top-level `add` list in its own `harness/profiles.yaml`. Each entry names the `pack` and exact `profile` id, and gives a `rules` list in the same shape as a profile's own rules. The added rules are appended after that profile's own rules, so they make a move only when none of the profile's own rules finds a candidate. An entry whose `pack` is not loaded contributes nothing and is not an error, so content from one Pack can be offered to a profile of another only when both are loaded. An entry that names a profile its target Pack does not declare is a diagnostic at the entry. `ids` globs and `menu` names are validated against the loaded Packs whether or not the target is loaded, like a profile's own rules.
+
+```yaml
+add:
+  - pack: core-loop
+    profile: studious
+    rules:
+      - ids: ["grad-school/grad-exam-prep"]
+      - ids: ["grad-school/sit-medical-boards", "grad-school/sit-bar-exam"]
+```
 
 ## Forced outcomes
 

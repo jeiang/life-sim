@@ -12,30 +12,36 @@
   text: Medical school wants transcripts, a personal statement and three references. Send an application?
   outcomes:
     - weight: 1
+      label: "Long shot, accepted"
       when: stat.smarts < 40
       text: A surprise envelope. The committee took a long shot on you.
       next: admit-medical-school
     - weight: 99
+      label: "Rejected, short letter"
       when: stat.smarts < 40
       text: A short letter arrives. Not this year. You can apply again next year.
       effects:
         - stat.happiness -= 2
         - "quality.grad_rejections += 1"
     - weight: 5
+      label: "Accepted"
       when: stat.smarts >= 40 and stat.smarts < 70
       text: A thick envelope with a crest on the front. You are in.
       next: admit-medical-school
     - weight: 95
+      label: "Waitlisted, rejected"
       when: stat.smarts >= 40 and stat.smarts < 70
       text: Waitlisted, then rejected. You can apply again next year.
       effects:
         - stat.happiness -= 3
         - "quality.grad_rejections += 1"
     - weight: 11
+      label: "Accepted after interview"
       when: stat.smarts >= 70
       text: Your interview goes brilliantly and the offer follows that week.
       next: admit-medical-school
     - weight: 89
+      label: "Rejected, strong field"
       when: stat.smarts >= 70
       text: The committee has too many strong candidates. You are not one of them this year.
       effects:
@@ -78,30 +84,36 @@
   text: Law school wants a personal statement, an admissions test score and a letter from a professor. Send an application?
   outcomes:
     - weight: 2
+      label: "Long shot, accepted"
       when: stat.smarts < 40
       text: The admissions panel has a soft spot for long shots, and so do you.
       next: admit-law-school
     - weight: 98
+      label: "Form letter, rejected"
       when: stat.smarts < 40
       text: A form letter arrives with one kind line at the bottom. You can apply again next year.
       effects:
         - stat.happiness -= 2
         - "quality.grad_rejections += 1"
     - weight: 6
+      label: "Accepted"
       when: stat.smarts >= 40 and stat.smarts < 70
       text: A letter with a law school crest. You are in.
       next: admit-law-school
     - weight: 94
+      label: "Rejected, legal experience"
       when: stat.smarts >= 40 and stat.smarts < 70
       text: Your application is rejected. The panel wants more legal experience than you have. You can apply again next year.
       effects:
         - stat.happiness -= 3
         - "quality.grad_rejections += 1"
     - weight: 13
+      label: "Accepted, essay"
       when: stat.smarts >= 70
       text: The panel loves your essay. An offer comes back by return post.
       next: admit-law-school
     - weight: 87
+      label: "Rejected, competitive"
       when: stat.smarts >= 70
       text: Rejected, despite a good file. The competition was ferocious. Try again next year.
       effects:
@@ -144,30 +156,36 @@
   text: The MBA program wants test scores, an essay and two references. Send an application?
   outcomes:
     - weight: 2
+      label: "Long shot, accepted"
       when: stat.smarts < 40
       text: An offer, and a note that they like your ambition more than your spreadsheet.
       next: admit-mba
     - weight: 98
+      label: "Rejected, test scores"
       when: stat.smarts < 40
       text: Rejected. Your test scores were not quite enough. You can apply again next year.
       effects:
         - stat.happiness -= 2
         - "quality.grad_rejections += 1"
     - weight: 7
+      label: "Accepted, midnight email"
       when: stat.smarts >= 40 and stat.smarts < 70
       text: An acceptance email lands in your inbox at midnight. You are in.
       next: admit-mba
     - weight: 93
+      label: "Rejected after wait"
       when: stat.smarts >= 40 and stat.smarts < 70
       text: Rejected after a long wait. Round two is next year.
       effects:
         - stat.happiness -= 3
         - "quality.grad_rejections += 1"
     - weight: 14
+      label: "Admitted, case study"
       when: stat.smarts >= 70
       text: The committee loved your case study. Admitted.
       next: admit-mba
     - weight: 86
+      label: "Rejected, strong interview"
       when: stat.smarts >= 70
       text: Rejected despite a strong interview. Reapply next year.
       effects:
@@ -210,30 +228,36 @@
   text: A PhD program wants a research statement, a writing sample and a professor willing to vouch for you. Send an application?
   outcomes:
     - weight: 2
+      label: "Long shot, accepted"
       when: stat.smarts < 40
       text: A lab with an empty desk and a bigger budget than you expected says yes.
       next: admit-phd
     - weight: 98
+      label: "Rejected, research statement"
       when: stat.smarts < 40
       text: The rejection says your research statement needed more research. You can apply again next year.
       effects:
         - stat.happiness -= 2
         - "quality.grad_rejections += 1"
     - weight: 6
+      label: "Admitted, stipend"
       when: stat.smarts >= 40 and stat.smarts < 70
       text: The department admits you to the PhD program. The stipend is small, but it is a stipend.
       next: admit-phd
     - weight: 94
+      label: "Rejected, research question"
       when: stat.smarts >= 40 and stat.smarts < 70
       text: Rejected. The department wants a clearer research question.
       effects:
         - stat.happiness -= 3
         - "quality.grad_rejections += 1"
     - weight: 13
+      label: "Admitted with stipend"
       when: stat.smarts >= 70
       text: Your writing sample gets passed around the department. Admitted, with a stipend.
       next: admit-phd
     - weight: 87
+      label: "Rejected, one department"
       when: stat.smarts >= 70
       text: Rejected by the one department you wanted. Try again next year.
       effects:

@@ -24,11 +24,13 @@
     - label: Walk them through the model you built
       outcomes:
         - weight: 60
+          label: "Clean model walkthrough"
           text: You explain the model cleanly. They nod, and they write something down.
           effects:
             - "quality.interview_score += 2"
           next: business-manager-result
         - weight: 40
+          label: "Skipped the near-miss"
           text: You explain it, but you skip the part where it nearly failed. They notice.
           effects:
             - "quality.interview_score += 1"
@@ -36,11 +38,13 @@
     - label: Admit you have never run a team
       outcomes:
         - weight: 50
+          label: "Honest about no team"
           text: You say so plainly. They respect the honesty, and they write something down.
           effects:
             - "quality.interview_score += 1"
           next: business-manager-result
         - weight: 50
+          label: "Rambled"
           text: You ramble. The silence after your answer is very long.
           next: business-manager-result
 
@@ -50,6 +54,7 @@
   text: A week later your phone rings.
   outcomes:
     - weight: "30 + quality.interview_score * 15 + stat.smarts / 4"
+      label: "Job offer"
       text: "They want you. The title has \"Manager\" in it, and the salary has a comma."
       effects:
         - "start_occupation(grad-school/business-manager)"
@@ -60,6 +65,7 @@
         - stat.happiness += 4
         - "journal(\"You got the business manager job.\")"
     - weight: "50 - quality.interview_score * 10"
+      label: "Cold rejection"
       text: They thank you for your time. It is the coldest email you have ever read.
       effects:
         - stat.happiness -= 2

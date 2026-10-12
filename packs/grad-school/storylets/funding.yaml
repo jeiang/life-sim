@@ -70,17 +70,20 @@
   text: Your parents have opinions about your education, and most of them are about money.
   outcomes:
     - weight: "role_closeness(core-loop/parent) * quality.family_wealth / 20"
+      label: "Parents pay all"
       text: They will pay the rest of the bill. You can stop thinking about tuition for now.
       effects:
         - "quality.grad_parents = 100"
         - "journal(\"Your parents agreed to pay the rest of the tuition.\")"
     - weight: "role_closeness(core-loop/parent) * quality.family_wealth / 10"
+      label: "Parents cover half"
       when: "quality.grad_parents == 0"
       text: They will cover half. The rest is still yours to find.
       effects:
         - "quality.grad_parents = 50"
         - "journal(\"Your parents agreed to cover half the tuition.\")"
     - weight: "100 - role_closeness(core-loop/parent) * quality.family_wealth / 5"
+      label: "Parents cannot help"
       text: They are sorry, but they cannot help this time.
 
 - id: grad-funding-gap
@@ -112,13 +115,16 @@
       when: "quality.grad_parents < 100"
       outcomes:
         - weight: "role_closeness(core-loop/parent) * quality.family_wealth / 20"
+          label: "Parents take the rest"
           text: They agree to take the rest of your tuition from now on.
           effects:
             - "quality.grad_parents = 100"
         - weight: "role_closeness(core-loop/parent) * quality.family_wealth / 10"
+          label: "Parents cover half"
           when: "quality.grad_parents == 0"
           text: They agree to cover half of your tuition from now on.
           effects:
             - "quality.grad_parents = 50"
         - weight: "100 - role_closeness(core-loop/parent) * quality.family_wealth / 5"
+          label: "Parents short this year"
           text: They are short this year. The gap is still yours to cover.

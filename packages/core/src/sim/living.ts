@@ -84,7 +84,7 @@ export function riskBpOf(p: Person, idx: PackIndex): number {
     : (standardOf(p, idx)?.riskBp ?? 10000);
 }
 
-/** Living people the person supports at home: the Pack's dependent role while they live with their parents. */
+/** Living people the person supports at home: the Pack's dependent role while they live with their parents and not apart from the player (see `children_live_apart()`). */
 export function dependentsOf(world: World, idx: PackIndex, p: Person): number {
   const h = idx.living?.household;
   if (!h) return 0;
@@ -94,6 +94,7 @@ export function dependentsOf(world: World, idx: PackIndex, p: Person): number {
       r.from === p.id &&
       r.role === h.dependentRole &&
       child?.alive &&
+      r.household !== "apart" &&
       livesWithParents(child)
     );
   }).length;

@@ -214,9 +214,11 @@ export interface Relationship {
   /**
    * Set on the player's link to a partner: `together` when they live together (the partner
    * pays a share of the living cost), `merged` when their money was merged into the player's
-   * (no separate share). Absent: they live apart.
+   * (no separate share). Absent on a partner link: they live apart. On the player's link to a
+   * dependent-role child: `apart` when the child lives with the other parent (`children_live_apart()`),
+   * which drops the child from the household cost; absent means the child lives with the player.
    */
-  readonly household?: "together" | "merged";
+  readonly household?: "together" | "merged" | "apart";
 }
 
 export interface JournalEntry {

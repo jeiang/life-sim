@@ -105,6 +105,7 @@ Effect calls. Assign targets (a bound person's name works like `person`): `stat 
 - `move_out() -> bool`
 - `move_in() -> bool`
 - `merge_money() -> bool`
+- `children_live_apart() -> bool`
 - `set_standard(id) -> bool`
 - `trade(id, int) -> bool`
 - `reach_milestone(milestone) -> bool`

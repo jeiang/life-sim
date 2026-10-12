@@ -651,6 +651,26 @@ describe("break up and divorce", () => {
     expect(me(poor).money).toBeGreaterThanOrEqual(0);
   });
 
+  test("one charge per child: the ex keeps the kids, so the player pays support and no dependent cost", () => {
+    const dependents = (world: World): number =>
+      Number(
+        evaluate(
+          ["v", "living.dependents"],
+          makeEnv(world, idx, { subject: world.playerId }),
+        ),
+      );
+    const [keep] = married(10_000_000, false, 2, 16);
+    expect(dependents(keep)).toBe(2);
+    const [w, pid] = married(10_000_000, true, 2, 16);
+    const r = play(w, D("divorce"), pid, 1);
+    expect(dependents(r.world)).toBe(0);
+    expect(q(r.world, "dating_pays_support")).toBe(true);
+    // Two kids under 18 each cost $3,000 a year in support, and nothing in dependent cost.
+    const y1 = ageUp(r.world, bundles);
+    expect(y1.lines.join(" ")).toContain("child support");
+    expect(dependents(y1.world)).toBe(0);
+  });
+
   test("divorce is once per life and the forced divorce shares the same split", () => {
     expect(idx.storylets.get(D("divorce"))?.maxPerLife).toBe(1);
     expect(idx.storylets.get(D("divorce-forced"))?.maxPerLife).toBe(1);

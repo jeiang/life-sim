@@ -21,7 +21,7 @@ The role of a former partner or spouse. A role cannot be unset, so a break-up, a
 `plan-wedding` (elope $800, small $12,000, big $40,000) hands on with `next` to `wedding-prenup`. A prenup ($1,500, `dating_prenup`) keeps money apart; skipping it runs `merge_money()` (before the role change, which fires `married`) and a text beat, `family-merge-money`.
 
 **Divorce split**:
-`money -= max(0, money) / 2` without a prenup, `/ 10` with one. A child under 18 offers custody: you keep the kids, or your ex keeps them and `dating_pays_support` queues `family-child-support-year` (a yearly $3,000 per child under 18, capped at cash, re-queued until none is left).
+`money -= max(0, money) / 2` without a prenup, `/ 10` with one. A child under 18 offers custody: you keep the kids (you pay the household cost for them), or your ex keeps them: `children_live_apart()` drops them from your household cost, and `dating_pays_support` queues `family-child-support-year` (a yearly $3,000 per child under 18, capped at cash, re-queued until none is left). Each child costs you one or the other, never both.
 
 **Affair**:
 `affair-cheat` (player, at most 3 per life) either is caught at once or schedules `affair-found-out` (25% caught). A caught affair ends a partnership (ex) or opens `divorce-forced` for a spouse. `partner-cheats` marks the partner (`dating_cheated`); `partner-cheat-found` lets the player forgive or walk away.

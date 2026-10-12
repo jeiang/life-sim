@@ -450,7 +450,8 @@ export function deserializeWorld(text: string): World {
       if (
         household !== undefined &&
         household !== "together" &&
-        household !== "merged"
+        household !== "merged" &&
+        household !== "apart"
       )
         throw new RangeError(`$.relationships[${i}].household: bad value`);
       return {

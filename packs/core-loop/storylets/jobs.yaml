@@ -148,26 +148,31 @@
     - label: Talk about your skills
       outcomes:
         - weight: 30 + stat.smarts / 2
+          label: "Sharp answer"
           text: "Your answer is sharp and well prepared."
           effects:
             - quality.interview_score += 2
           next: interview-question-2
         - weight: 50
+          label: "Fine, a bit rehearsed"
           text: "Your answer is fine, if a little rehearsed."
           effects:
             - quality.interview_score += 1
           next: interview-question-2
         - weight: 20
+          label: "Rambling"
           text: "You ramble and lose the thread."
           next: interview-question-2
     - label: Be honest about needing the money
       outcomes:
         - weight: 40
+          label: "Candid, appreciated"
           text: "They appreciate the candour."
           effects:
             - quality.interview_score += 1
           next: interview-question-2
         - weight: 60
+          label: "Comes across as desperate"
           text: "It lands as a little desperate."
           next: interview-question-2
 
@@ -180,31 +185,37 @@
     - label: Stay calm and logical
       outcomes:
         - weight: 20 + stat.smarts / 2
+          label: "Clear, composed story"
           text: "A clear, composed story."
           effects:
             - quality.interview_score += 2
           next: interview-result
         - weight: 40
+          label: "Okay story"
           text: "Your story is okay."
           effects:
             - quality.interview_score += 1
           next: interview-result
         - weight: 20
+          label: "Blanked halfway"
           text: "You blank halfway through."
           next: interview-result
     - label: Lean on your charm
       outcomes:
         - weight: 15 + stat.looks / 2
+          label: "Room smiling"
           text: "You have the room smiling."
           effects:
             - quality.interview_score += 2
           next: interview-result
         - weight: 40
+          label: "Short on substance"
           text: "Pleasant, but short on substance."
           effects:
             - quality.interview_score += 1
           next: interview-result
         - weight: 25
+          label: "Comes across as glib"
           text: "The charm comes across as glib."
           next: interview-result
 
@@ -215,6 +226,7 @@
   text: "The interviewer thanks you and says they will be in touch."
   outcomes:
     - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      label: "Offer: cashier"
       when: quality.applying_for == 1
       text: "You got the job! You start as a cashier, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
       effects:
@@ -233,6 +245,7 @@
       effects:
         - stat.happiness -= 2
     - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      label: "Offer: barista"
       when: quality.applying_for == 2
       text: "You got the job! You start as a barista, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
       effects:
@@ -251,6 +264,7 @@
       effects:
         - stat.happiness -= 2
     - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      label: "Offer: server"
       when: quality.applying_for == 3
       text: "You got the job! You start as a server, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
       effects:
@@ -269,6 +283,7 @@
       effects:
         - stat.happiness -= 2
     - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      label: "Offer: electrician's apprentice"
       when: quality.applying_for == 4
       text: "You got the job! You start as a electrician's apprentice, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
       effects:
@@ -287,6 +302,7 @@
       effects:
         - stat.happiness -= 2
     - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      label: "Offer: junior analyst"
       when: quality.applying_for == 5
       text: "You got the job! You start as a junior analyst, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
       effects:
@@ -305,6 +321,7 @@
       effects:
         - stat.happiness -= 2
     - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      label: "Offer: junior engineer"
       when: quality.applying_for == 6
       text: "You got the job! You start as a junior engineer, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
       effects:
@@ -323,6 +340,7 @@
       effects:
         - stat.happiness -= 2
     - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      label: "Offer: staff nurse"
       when: quality.applying_for == 7
       text: "You got the job! You start as a staff nurse, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
       effects:
@@ -341,6 +359,7 @@
       effects:
         - stat.happiness -= 2
     - weight: 20 + quality.interview_score * 15 + stat.smarts / 4
+      label: "Offer: studio assistant"
       when: quality.applying_for == 8
       text: "You got the job! You start as a studio assistant, and {c1.first_name} {c1.last_name} and {c2.first_name} {c2.last_name} show you around."
       effects:

@@ -16,26 +16,31 @@
   text: "{player.first_name}'s health fails."
   outcomes:
     - weight: 3
+      label: "Sudden illness"
       when: age < 65
       text: "{player.first_name} dies suddenly, far too young."
       effects:
         - die("sudden illness")
     - weight: 2
+      label: "Cancer"
       when: age < 65
       text: "{player.first_name} loses a long fight with cancer."
       effects:
         - die("cancer")
     - weight: 2
+      label: "Heart failure"
       when: age >= 45
       text: "{player.first_name}'s heart gives out."
       effects:
         - die("heart failure")
     - weight: 1
+      label: "Stroke"
       when: age >= 45
       text: "A stroke ends {player.first_name}'s life."
       effects:
         - die("stroke")
     - weight: 5
+      label: "Old age"
       when: age >= 65
       text: "{player.first_name} dies peacefully in sleep, at age {age}."
       effects:

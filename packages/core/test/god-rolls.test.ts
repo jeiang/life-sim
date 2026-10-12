@@ -149,6 +149,22 @@ describe("god rolls: live steps", () => {
       expect(["number", "boolean"]).toContain(typeof d.natural);
   });
 
+  test("the first-name ask carries the generator's pool for each gender, and a readable title", () => {
+    const w0 = withGodAsk(newLife(bundles, 11), ALL);
+    let caught: GodAsk | undefined;
+    try {
+      runAction(w0, bundles, "life/meet");
+    } catch (e) {
+      if (!(e instanceof GodAsk)) throw e;
+      caught = e;
+    }
+    const first = caught?.draws.find((d) => d.label === "First name");
+    expect(first?.names?.male.length).toBeGreaterThan(0);
+    expect(first?.names?.female.length).toBeGreaterThan(0);
+    expect(caught?.title).toBeTruthy();
+    expect(caught?.title).not.toContain("/");
+  });
+
   test("answering every ask with its natural value leaves the life as an unasked life, and it replays", () => {
     const w0 = newLife(bundles, 11);
     const plain = runAction(w0, bundles, "life/meet").world;

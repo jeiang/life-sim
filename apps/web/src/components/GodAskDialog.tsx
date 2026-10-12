@@ -7,14 +7,8 @@ import {
   type GodPending,
   godPending,
 } from "../game/store.ts";
-import { Field, inputClass } from "./GodFields.tsx";
+import { inputClass } from "./GodFields.tsx";
 import { Modal } from "./Modal.tsx";
-
-/** One row's answer: `value` is the chosen value (empty when none); `skip` leaves it to chance. */
-interface Row {
-  readonly value: string;
-  readonly skip: boolean;
-}
 
 /** The first-name draw: an int over a raw roll, resolved from the pool of the person's sex. */
 const isNames = (d: GodDraw): boolean =>
@@ -23,21 +17,19 @@ const isSex = (d: GodDraw): boolean => d.kind === "pick" && d.label === "Sex";
 const NAME_RANGE = 2 ** 32;
 
 /**
- * The sex the step will use for its names: the Sex row's pick, its natural value when it is
- * left to chance, or the sex already settled by an earlier round. Undefined while unknown.
+ * The sex the step will use for its names: the Sex row's pick, or the sex already settled by an
+ * earlier round when there is no Sex row. Undefined while unknown.
  */
 function sexOf(
   draws: readonly GodDraw[],
-  rows: readonly Row[],
+  values: readonly string[],
   fallback: string | undefined,
 ): string | undefined {
   const i = draws.findIndex(isSex);
   if (i < 0) return fallback;
-  const d = draws[i] as GodDraw;
-  const row = rows[i] as Row;
-  if (row.skip) return d.options?.[Number(d.natural)]?.label;
-  if (row.value === "") return undefined;
-  return d.options?.[Number(row.value)]?.label;
+  const value = values[i] ?? "";
+  if (value === "") return undefined;
+  return (draws[i] as GodDraw).options?.[Number(value)]?.label;
 }
 
 function namesOf(d: GodDraw, sex: string | undefined): readonly string[] {
@@ -57,20 +49,36 @@ function nameIndex(roll: number, count: number, range: number): number {
   return Math.floor((roll * count) / range);
 }
 
-/** Value passed to `answerGod` for one answered row. */
-function answerValue(
-  d: GodDraw,
-  row: Row,
-  sex: string | undefined,
-): number | boolean {
-  if (d.kind === "chance") return row.value === "hit";
+/**
+ * The value a row holds when its draw is left to dice: the natural value, in the row's own
+ * encoding (`hit`/`miss`, a select's choice index, a raw number, or a name's index).
+ */
+function naturalValue(d: GodDraw, sex: string | undefined): string {
+  if (d.kind === "chance") return d.natural ? "hit" : "miss";
   if (isNames(d)) {
     const count = namesOf(d, sex).length;
-    return nameRoll(Number(row.value), count, d.range ?? NAME_RANGE);
+    if (count === 0) return "";
+    return String(nameIndex(Number(d.natural), count, d.range ?? NAME_RANGE));
   }
   if (d.kind === "int" && d.options === undefined)
-    return Number(row.value) - (d.offset ?? 0);
-  return Number(row.value);
+    return String((d.offset ?? 0) + Number(d.natural));
+  return String(d.natural);
+}
+
+/** Value passed to `answerGod` for one edited row. */
+function answerValue(
+  d: GodDraw,
+  value: string,
+  sex: string | undefined,
+): number | boolean {
+  if (d.kind === "chance") return value === "hit";
+  if (isNames(d)) {
+    const count = namesOf(d, sex).length;
+    return nameRoll(Number(value), count, d.range ?? NAME_RANGE);
+  }
+  if (d.kind === "int" && d.options === undefined)
+    return Number(value) - (d.offset ?? 0);
+  return Number(value);
 }
 
 /** Text of the value the draw would have had without god mode. */
@@ -112,44 +120,51 @@ function choicesOf(
 }
 
 /**
- * Turn the rows into an answer. A row left empty must be covered by `rest` (rolled by dice).
- * A names row with no known sex is left to chance. Returns an error message when a row is
- * undecided and the player did not choose "Roll the rest".
+ * Turn the rows into an answer. Only edited rows become picks. A row still at its natural value,
+ * emptied, or a names row with no known sex is left to chance: it is skipped, so the dice decide
+ * it and it is not asked again.
  */
-function gather(
-  p: GodPending,
-  rows: readonly Row[],
-  rest: boolean,
-): GodAnswer | string {
-  const sex = sexOf(p.ask.draws, rows, p.sex);
+function gather(p: GodPending, values: readonly string[]): GodAnswer {
+  const draws = p.ask.draws;
+  const sex = sexOf(draws, values, p.sex);
   const picks: GodAnswer["picks"][number][] = [];
   const skip: GodDraw[] = [];
-  for (const [i, d] of p.ask.draws.entries()) {
-    const row = rows[i] as Row;
-    if (row.skip || (row.value === "" && isNames(d) && sex === undefined)) {
-      skip.push(d);
-    } else if (row.value !== "") {
-      picks.push({ draw: d, v: answerValue(d, row, sex) });
-    } else if (!rest) {
-      return "Answer each question, or leave it to chance.";
-    }
+  for (const [i, d] of draws.entries()) {
+    const value = values[i] ?? "";
+    if (value === "" || value === naturalValue(d, sex)) skip.push(d);
+    else picks.push({ draw: d, v: answerValue(d, value, sex) });
   }
-  return { picks, skip, restToChance: rest };
+  return { picks, skip, restToChance: false };
+}
+
+/** Every row's starting value: each draw at its natural value, names resolved for the natural sex. */
+function naturalRows(
+  draws: readonly GodDraw[],
+  fallback: string | undefined,
+): string[] {
+  const sex = sexOf(
+    draws,
+    draws.map((d) => naturalValue(d, undefined)),
+    fallback,
+  );
+  return draws.map((d) => naturalValue(d, sex));
 }
 
 /** The sex row is changed from its natural value (applied alone, see `answerGod`). */
-function sexChanged(draws: readonly GodDraw[], rows: readonly Row[]): boolean {
+function sexChanged(
+  draws: readonly GodDraw[],
+  values: readonly string[],
+): boolean {
   const i = draws.findIndex(isSex);
   if (i < 0) return false;
-  const row = rows[i] as Row;
-  return (
-    !row.skip && row.value !== "" && Number(row.value) !== draws[i]?.natural
-  );
+  const value = values[i] ?? "";
+  return value !== "" && value !== naturalValue(draws[i] as GodDraw, undefined);
 }
 
 /**
- * God mode's question dialog for a parked step (`godPending`). Each draw is picked, left to
- * chance, or covered by "Roll the rest". The form re-mounts each round (keyed by `rounds`).
+ * God mode's question dialog for a parked step (`godPending`). Every draw starts at its natural
+ * value: edit any of them, reset one, or leave the whole form to chance. The form re-mounts each
+ * round (keyed by `rounds`).
  */
 export function GodAskDialog() {
   const p = godPending.value;
@@ -160,20 +175,19 @@ export function GodAskDialog() {
 function GodAskForm(props: { pending: GodPending }) {
   const { pending } = props;
   const draws = pending.ask.draws;
-  const [rows, setRows] = useState<Row[]>(() =>
-    draws.map(() => ({ value: "", skip: false })),
+  const [values, setValues] = useState<string[]>(() =>
+    naturalRows(draws, pending.sex),
   );
   const [error, setError] = useState<string | null>(null);
-  const sex = sexOf(draws, rows, pending.sex);
-
-  function update(i: number, patch: Partial<Row>): void {
-    setRows(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
-  }
-
-  function submit(rest: boolean): void {
-    const answer = gather(pending, rows, rest);
-    setError(typeof answer === "string" ? answer : answerGod(answer));
-  }
+  const sex = sexOf(draws, values, pending.sex);
+  // The Sex question leads the form. The engine's draw order is unchanged.
+  const order = draws
+    .map((_, i) => i)
+    .sort(
+      (a, b) =>
+        Number(!isSex(draws[a] as GodDraw)) -
+        Number(!isSex(draws[b] as GodDraw)),
+    );
 
   return (
     <Modal labelledBy="god-ask-title">
@@ -184,17 +198,24 @@ function GodAskForm(props: { pending: GodPending }) {
         God mode: choose each outcome, or leave it to chance.
       </p>
       <div class="space-y-3">
-        {draws.map((d, i) => (
-          <GodRow
-            key={rollId(d, d.d)}
-            draw={d}
-            row={rows[i] as Row}
-            sex={sex}
-            onChange={(patch) => update(i, patch)}
-          />
-        ))}
+        {order.map((i) => {
+          const d = draws[i] as GodDraw;
+          return (
+            <GodRow
+              key={rollId(d, d.d)}
+              draw={d}
+              value={values[i] ?? ""}
+              natural={naturalValue(d, sex)}
+              naturalLabel={naturalText(d, sex)}
+              sex={sex}
+              onChange={(value) =>
+                setValues(values.map((v, j) => (j === i ? value : v)))
+              }
+            />
+          );
+        })}
       </div>
-      {sexChanged(draws, rows) && (
+      {sexChanged(draws, values) && (
         <p class="mt-3 text-sm text-text-muted">
           Changing the sex applies first. The other answers come back with the
           new choices.
@@ -208,17 +229,19 @@ function GodAskForm(props: { pending: GodPending }) {
       <div class="mt-4 flex flex-wrap gap-2">
         <button
           type="button"
-          onClick={() => submit(false)}
+          onClick={() => setError(answerGod(gather(pending, values)))}
           class="min-h-11 flex-1 rounded-xl bg-primary px-3 py-2.5 font-semibold text-on-primary"
         >
           Confirm answers
         </button>
         <button
           type="button"
-          onClick={() => submit(true)}
+          onClick={() =>
+            setError(answerGod({ picks: [], skip: [], restToChance: true }))
+          }
           class="min-h-11 flex-1 rounded-xl border border-text-muted/50 px-3 py-2.5 font-semibold"
         >
-          Roll the rest
+          Leave to chance
         </button>
         <button
           type="button"
@@ -234,39 +257,41 @@ function GodAskForm(props: { pending: GodPending }) {
 
 function GodRow(props: {
   draw: GodDraw;
-  row: Row;
+  value: string;
+  natural: string;
+  naturalLabel: string;
   sex: string | undefined;
-  onChange: (patch: Partial<Row>) => void;
+  onChange: (value: string) => void;
 }) {
-  const { draw: d, row, sex, onChange } = props;
+  const { draw: d, value, natural, naturalLabel, sex, onChange } = props;
   const blocked = isNames(d) && sex === undefined;
-  const disabled = row.skip || blocked;
+  const raw = d.kind === "int" && d.options === undefined && !isNames(d);
   const choices = choicesOf(d, sex);
-  const raw = d.kind === "int" && d.options === undefined;
   return (
     <div class="rounded-xl border border-text-muted/30 p-3">
       <div class="mb-1 flex items-baseline justify-between gap-2 text-sm">
         <span class="font-semibold">{d.label}</span>
-        <span class="text-text-muted">natural: {naturalText(d, sex)}</span>
+        <span class="text-text-muted">natural: {naturalLabel}</span>
       </div>
-      {raw ? (
-        <input
-          type="number"
-          class={inputClass}
-          aria-label={d.label}
-          min={d.offset ?? 0}
-          max={(d.offset ?? 0) + (d.range ?? 1) - 1}
-          value={row.value}
-          disabled={disabled}
-          onInput={(e) => onChange({ value: e.currentTarget.value })}
-        />
-      ) : (
-        <Field label={d.label}>
+      <div class="flex items-center gap-2">
+        {raw ? (
+          <input
+            type="number"
+            class={`${inputClass} min-w-0 flex-1`}
+            aria-label={d.label}
+            min={d.offset ?? 0}
+            max={(d.offset ?? 0) + (d.range ?? 1) - 1}
+            value={value}
+            disabled={blocked}
+            onInput={(e) => onChange(e.currentTarget.value)}
+          />
+        ) : (
           <select
-            class={inputClass}
-            value={row.value}
-            disabled={disabled || choices.length === 0}
-            onChange={(e) => onChange({ value: e.currentTarget.value })}
+            class={`${inputClass} min-w-0 flex-1`}
+            aria-label={d.label}
+            value={value}
+            disabled={blocked || choices.length === 0}
+            onChange={(e) => onChange(e.currentTarget.value)}
           >
             <option value="">
               {blocked ? "Set the sex first" : "Choose…"}
@@ -277,19 +302,16 @@ function GodRow(props: {
               </option>
             ))}
           </select>
-        </Field>
-      )}
-      <label class="mt-2 flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={row.skip}
-          disabled={blocked}
-          onChange={(e) =>
-            onChange({ skip: e.currentTarget.checked, value: "" })
-          }
-        />
-        Leave to chance
-      </label>
+        )}
+        <button
+          type="button"
+          disabled={blocked || value === natural}
+          onClick={() => onChange(natural)}
+          class="min-h-11 shrink-0 rounded-xl border border-text-muted/50 px-3 text-sm font-semibold disabled:opacity-40"
+        >
+          Reset
+        </button>
+      </div>
     </div>
   );
 }

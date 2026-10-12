@@ -9,6 +9,7 @@ import {
   netWorth,
   standardOf,
 } from "@life/core";
+import { useState } from "preact/hooks";
 import { PackIcon } from "../components/Emoji.tsx";
 import { GodBadge } from "../components/GodFields.tsx";
 import { GodPersonEdit } from "../components/GodPersonEdit.tsx";
@@ -41,6 +42,7 @@ const Row = (props: { label: string; value: string; testid?: string }) => (
 
 /** Profile of the player or another person (docs/spec/screens.md). */
 export function Profile() {
+  const [error, setError] = useState<string | null>(null);
   const w = world.value;
   const id = profileTarget.value ?? w.playerId;
   const isPlayer = id === w.playerId;
@@ -240,13 +242,18 @@ export function Profile() {
                   label: a.label,
                   locked: a.locked,
                   reason: a.reason,
-                  onSelect: () => runMenuAction(a.id, id),
+                  onSelect: () => setError(runMenuAction(a.id, id)),
                 }))}
               />
             ) : (
               <p class="text-text-muted">No interactions available</p>
             );
           })()}
+          {error && (
+            <p role="alert" class="mt-2 text-sm text-danger">
+              {error}
+            </p>
+          )}
         </Section>
       )}
     </PageFrame>

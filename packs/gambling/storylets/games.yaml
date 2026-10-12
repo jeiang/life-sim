@@ -18,6 +18,7 @@
     - label: "Red or black (pays 1 to 1)"
       outcomes:
         - weight: 4750
+          label: "Your colour wins"
           text: "The ball settles on your colour."
           effects:
             - money += amount
@@ -26,6 +27,7 @@
             - quality.gambling_streak += 1
             - stat.happiness += 2
         - weight: 5250
+          label: "Other colour wins"
           text: "The ball lands on the other colour."
           effects:
             - money -= amount
@@ -37,6 +39,7 @@
     - label: "A dozen (pays 2 to 1)"
       outcomes:
         - weight: 3167
+          label: "Your dozen wins"
           text: "Your dozen comes in."
           effects:
             - money += amount * 2
@@ -45,6 +48,7 @@
             - quality.gambling_streak += 1
             - stat.happiness += 2
         - weight: 6833
+          label: "Your dozen misses"
           text: "The ball skips your dozen."
           effects:
             - money -= amount
@@ -56,6 +60,7 @@
     - label: "A single number (pays 35 to 1)"
       outcomes:
         - weight: 264
+          label: "Your number hits"
           text: "Your number! The table erupts."
           effects:
             - money += amount * 35
@@ -64,6 +69,7 @@
             - quality.gambling_streak += 1
             - stat.happiness += 2
         - weight: 9736
+          label: "Your number misses"
           text: "The ball drops into a different pocket."
           effects:
             - money -= amount
@@ -88,6 +94,7 @@
   text: "Rows of flashing machines. Slots: minimum $1, table limit $100 ($1,000 in the VIP room)."
   outcomes:
     - weight: 10
+      label: "Jackpot (pays 99 to 1)"
       text: "JACKPOT! The machine flashes, rings and pours out coins."
       effects:
         - money += amount * 99
@@ -97,6 +104,7 @@
         - stat.happiness += 3
         - "journal(\"Hit the slots jackpot at age {age}.\")"
     - weight: 100
+      label: "Three of a kind (pays 19 to 1)"
       text: "Three of a kind. A rush of coins."
       effects:
         - money += amount * 19
@@ -105,6 +113,7 @@
         - quality.gambling_streak += 1
         - stat.happiness += 3
     - weight: 400
+      label: "Good line (pays 4 to 1)"
       text: "A good line pays out."
       effects:
         - money += amount * 4
@@ -113,6 +122,7 @@
         - quality.gambling_streak += 1
         - stat.happiness += 3
     - weight: 1200
+      label: "Small payout (pays 1 to 1)"
       text: "Two matching symbols and a small payout."
       effects:
         - money += amount * 1
@@ -121,12 +131,14 @@
         - quality.gambling_streak += 1
         - stat.happiness += 3
     - weight: 1600
+      label: "Stake returned"
       text: "The reels line up and give you your money back."
       effects:
         - quality.gambling_bets_year += 1
         - quality.gambling_wagered += amount
         - stat.happiness += 1
     - weight: 6690
+      label: "Loss"
       text: "The reels stop on nothing in particular."
       effects:
         - money -= amount
@@ -153,6 +165,7 @@
     - label: "The favourite, Steady Hand (2 to 1)"
       outcomes:
         - weight: 3100
+          label: "Steady Hand wins"
           text: "Steady Hand takes it by a length."
           effects:
             - money += amount * 2
@@ -161,6 +174,7 @@
             - quality.gambling_streak += 1
             - stat.happiness += 2
         - weight: 6900
+          label: "Steady Hand fades"
           text: "Steady Hand fades in the straight."
           effects:
             - money -= amount
@@ -172,6 +186,7 @@
     - label: "A contender, Copper Lane (5 to 1)"
       outcomes:
         - weight: 1550
+          label: "Copper Lane wins"
           text: "Copper Lane surges late and wins."
           effects:
             - money += amount * 5
@@ -180,6 +195,7 @@
             - quality.gambling_streak += 1
             - stat.happiness += 2
         - weight: 8450
+          label: "Copper Lane finishes in the pack"
           text: "Copper Lane finishes in the pack."
           effects:
             - money -= amount
@@ -191,6 +207,7 @@
     - label: "The longshot, Moonwalk (20 to 1)"
       outcomes:
         - weight: 443
+          label: "Moonwalk wins"
           text: "Moonwalk wins and nobody saw it coming."
           effects:
             - money += amount * 20
@@ -199,6 +216,7 @@
             - quality.gambling_streak += 1
             - stat.happiness += 2
         - weight: 9557
+          label: "Moonwalk finishes last"
           text: "Moonwalk is last out of the gate and stays there."
           effects:
             - money -= amount
@@ -225,6 +243,7 @@
     - label: "The field (pays 1 to 1, 2 to 1 on a 2 or 12)"
       outcomes:
         - weight: 14
+          label: "Field wins"
           text: "The dice land in the field."
           effects:
             - money += amount
@@ -233,6 +252,7 @@
             - quality.gambling_streak += 1
             - stat.happiness += 2
         - weight: 2
+          label: "Field wins double (2 or 12)"
           text: "Snake eyes or boxcars. The field pays double."
           effects:
             - money += amount * 2
@@ -241,6 +261,7 @@
             - quality.gambling_streak += 1
             - stat.happiness += 2
         - weight: 20
+          label: "Field loses"
           text: "The dice land outside the field."
           effects:
             - money -= amount
@@ -252,6 +273,7 @@
     - label: "Any seven (pays 4 to 1)"
       outcomes:
         - weight: 6
+          label: "Seven rolled"
           text: "Seven! The table shouts."
           effects:
             - money += amount * 4
@@ -260,6 +282,7 @@
             - quality.gambling_streak += 1
             - stat.happiness += 2
         - weight: 30
+          label: "No seven"
           text: "No seven this time."
           effects:
             - money -= amount
@@ -286,6 +309,7 @@
     - label: "Banker (pays 0.95 to 1)"
       outcomes:
         - weight: 4586
+          label: "Banker wins, your bet wins"
           text: "The banker hand wins."
           effects:
             - money += amount * 95 / 100
@@ -294,12 +318,14 @@
             - quality.gambling_streak += 1
             - stat.happiness += 2
         - weight: 953
+          label: "Tie, bet returned"
           text: "A tie. Your bet is returned."
           effects:
             - quality.gambling_bets_year += 1
             - quality.gambling_wagered += amount
             - stat.happiness += 1
         - weight: 4461
+          label: "Player wins, your bet loses"
           text: "The player hand beats the banker."
           effects:
             - money -= amount
@@ -311,6 +337,7 @@
     - label: "Player (pays 1 to 1)"
       outcomes:
         - weight: 4462
+          label: "Player wins, your bet wins"
           text: "The player hand wins."
           effects:
             - money += amount
@@ -319,12 +346,14 @@
             - quality.gambling_streak += 1
             - stat.happiness += 2
         - weight: 953
+          label: "Tie, bet returned"
           text: "A tie. Your bet is returned."
           effects:
             - quality.gambling_bets_year += 1
             - quality.gambling_wagered += amount
             - stat.happiness += 1
         - weight: 4585
+          label: "Banker wins, your bet loses"
           text: "The banker hand wins."
           effects:
             - money -= amount
@@ -336,6 +365,7 @@
     - label: "Tie (pays 8 to 1)"
       outcomes:
         - weight: 953
+          label: "Tie, your bet wins"
           text: "A tie! The dealer pushes a tall stack across."
           effects:
             - money += amount * 8
@@ -344,6 +374,7 @@
             - quality.gambling_streak += 1
             - stat.happiness += 2
         - weight: 9047
+          label: "No tie, your bet loses"
           text: "Not a tie."
           effects:
             - money -= amount
@@ -364,6 +395,7 @@
   text: "A ticket costs $2. The top prize is $5,000,000."
   outcomes:
     - weight: 1
+      label: "Jackpot ($5,000,000)"
       text: "THE JACKPOT. {player.first_name} checks the numbers a dozen times. Every one matches."
       effects:
         - money += 499999800
@@ -372,6 +404,7 @@
         - stat.happiness += 10
         - "journal(\"Won a big lottery prize at age {age}.\")"
     - weight: 10
+      label: "Five numbers ($100,000)"
       text: "Five numbers. A life-changing prize."
       effects:
         - money += 9999800
@@ -380,6 +413,7 @@
         - stat.happiness += 10
         - "journal(\"Won a big lottery prize at age {age}.\")"
     - weight: 1000
+      label: "Four numbers ($1,000)"
       text: "Four numbers and a very nice bonus."
       effects:
         - money += 99800
@@ -387,6 +421,7 @@
         - quality.gambling_streak += 1
         - stat.happiness += 2
     - weight: 20000
+      label: "Three numbers ($50)"
       text: "Three numbers and a decent prize."
       effects:
         - money += 4800
@@ -394,6 +429,7 @@
         - quality.gambling_streak += 1
         - stat.happiness += 2
     - weight: 500000
+      label: "Two numbers ($4)"
       text: "A two-number win, enough for a couple more tickets."
       effects:
         - money += 200
@@ -401,6 +437,7 @@
         - quality.gambling_streak += 1
         - stat.happiness += 2
     - weight: 9478989
+      label: "No win"
       text: "Not a winner, but the dream was nice for a day."
       effects:
         - money -= 200
@@ -422,6 +459,7 @@
   text: "A blackjack table with a dealer in a waistcoat. Blackjack: minimum $10, table limit $500 ($5,000 in the VIP room)."
   outcomes:
     - weight: 473
+      label: "Blackjack (pays 3 to 2)"
       text: "Blackjack! The dealer pays three to two."
       effects:
         - money += amount * 3 / 2
@@ -430,6 +468,7 @@
         - quality.gambling_streak += 1
         - stat.happiness += 3
     - weight: 1148
+      label: "Dealt 12"
       text: "You are dealt 12. The dealer's hole card is down. Hit or stand?"
       next: blackjack-play
       effects:
@@ -440,6 +479,7 @@
         - quality.gambling_wagered += amount
         - stat.happiness += 1
     - weight: 1099
+      label: "Dealt 13"
       text: "You are dealt 13. The dealer's hole card is down. Hit or stand?"
       next: blackjack-play
       effects:
@@ -450,6 +490,7 @@
         - quality.gambling_wagered += amount
         - stat.happiness += 1
     - weight: 1046
+      label: "Dealt 14"
       text: "You are dealt 14. The dealer's hole card is down. Hit or stand?"
       next: blackjack-play
       effects:
@@ -460,6 +501,7 @@
         - quality.gambling_wagered += amount
         - stat.happiness += 1
     - weight: 989
+      label: "Dealt 15"
       text: "You are dealt 15. The dealer's hole card is down. Hit or stand?"
       next: blackjack-play
       effects:
@@ -470,6 +512,7 @@
         - quality.gambling_wagered += amount
         - stat.happiness += 1
     - weight: 928
+      label: "Dealt 16"
       text: "You are dealt 16. The dealer's hole card is down. Hit or stand?"
       next: blackjack-play
       effects:
@@ -480,6 +523,7 @@
         - quality.gambling_wagered += amount
         - stat.happiness += 1
     - weight: 862
+      label: "Dealt 17"
       text: "You are dealt 17. The dealer's hole card is down. Hit or stand?"
       next: blackjack-play
       effects:
@@ -490,6 +534,7 @@
         - quality.gambling_wagered += amount
         - stat.happiness += 1
     - weight: 944
+      label: "Dealt 18"
       text: "You are dealt 18. The dealer's hole card is down. Hit or stand?"
       next: blackjack-play
       effects:
@@ -500,6 +545,7 @@
         - quality.gambling_wagered += amount
         - stat.happiness += 1
     - weight: 884
+      label: "Dealt 19"
       text: "You are dealt 19. The dealer's hole card is down. Hit or stand?"
       next: blackjack-play
       effects:
@@ -510,6 +556,7 @@
         - quality.gambling_wagered += amount
         - stat.happiness += 1
     - weight: 1350
+      label: "Dealt 20"
       text: "You are dealt 20. The dealer's hole card is down. Hit or stand?"
       next: blackjack-play
       effects:
@@ -520,6 +567,7 @@
         - quality.gambling_wagered += amount
         - stat.happiness += 1
     - weight: 277
+      label: "Dealt 21 in three cards"
       text: "You are dealt twenty-one in three cards. You stand."
       next: blackjack-play
       effects:
@@ -540,15 +588,18 @@
     - label: "Stand"
       outcomes:
         - weight: "quality.gambling_hand == 12 ? 2816 : quality.gambling_hand == 13 ? 2816 : quality.gambling_hand == 14 ? 2816 : quality.gambling_hand == 15 ? 2816 : quality.gambling_hand == 16 ? 2816 : quality.gambling_hand == 17 ? 2816 : quality.gambling_hand == 18 ? 4267 : quality.gambling_hand == 19 ? 5662 : quality.gambling_hand == 20 ? 6997 : 8799"
+          label: "Dealer falls short or busts, you win"
           text: "The dealer's hand falls short or busts. You win."
           effects:
             - money += quality.gambling_pot * 2
             - quality.gambling_streak += 1
         - weight: "quality.gambling_hand == 12 ? 0 : quality.gambling_hand == 13 ? 0 : quality.gambling_hand == 14 ? 0 : quality.gambling_hand == 15 ? 0 : quality.gambling_hand == 16 ? 0 : quality.gambling_hand == 17 ? 1451 : quality.gambling_hand == 18 ? 1395 : quality.gambling_hand == 19 ? 1335 : quality.gambling_hand == 20 ? 1803 : 1201"
+          label: "Push, stake returned"
           text: "A push. Your stake is returned."
           effects:
             - money += quality.gambling_pot
         - weight: "quality.gambling_hand == 12 ? 7184 : quality.gambling_hand == 13 ? 7184 : quality.gambling_hand == 14 ? 7184 : quality.gambling_hand == 15 ? 7184 : quality.gambling_hand == 16 ? 7184 : quality.gambling_hand == 17 ? 5733 : quality.gambling_hand == 18 ? 4338 : quality.gambling_hand == 19 ? 3003 : quality.gambling_hand == 20 ? 1200 : 0"
+          label: "Dealer beats you"
           text: "The dealer turns over a better hand."
           effects:
             - quality.gambling_streak = 0
@@ -558,15 +609,18 @@
       when: quality.gambling_hand < 21
       outcomes:
         - weight: "quality.gambling_hand == 12 ? 3062 : quality.gambling_hand == 13 ? 2845 : quality.gambling_hand == 14 ? 2629 : quality.gambling_hand == 15 ? 2412 : quality.gambling_hand == 16 ? 2195 : quality.gambling_hand == 17 ? 1979 : quality.gambling_hand == 18 ? 1651 : quality.gambling_hand == 19 ? 1215 : quality.gambling_hand == 20 ? 677 : 0"
+          label: "Good card, you win"
           text: "A good card, and the dealer cannot match it. You win."
           effects:
             - money += quality.gambling_pot * 2
             - quality.gambling_streak += 1
         - weight: "quality.gambling_hand == 12 ? 553 : quality.gambling_hand == 13 ? 553 : quality.gambling_hand == 14 ? 553 : quality.gambling_hand == 15 ? 553 : quality.gambling_hand == 16 ? 553 : quality.gambling_hand == 17 ? 441 : quality.gambling_hand == 18 ? 334 : quality.gambling_hand == 19 ? 231 : quality.gambling_hand == 20 ? 92 : 0"
+          label: "Push, stake returned"
           text: "A push. Your stake is returned."
           effects:
             - money += quality.gambling_pot
         - weight: "quality.gambling_hand == 12 ? 6385 : quality.gambling_hand == 13 ? 6602 : quality.gambling_hand == 14 ? 6818 : quality.gambling_hand == 15 ? 7035 : quality.gambling_hand == 16 ? 7252 : quality.gambling_hand == 17 ? 7580 : quality.gambling_hand == 18 ? 8015 : quality.gambling_hand == 19 ? 8554 : quality.gambling_hand == 20 ? 9231 : 10000"
+          label: "Bust, or dealer beats you"
           text: "You bust or the dealer beats you."
           effects:
             - quality.gambling_streak = 0
@@ -588,6 +642,7 @@
   text: "A friendly cash game, buy-in on the table. Poker: minimum $50, table limit $1,000 ($10,000 in the VIP room). Your buy-in goes in the pot."
   outcomes:
     - weight: 4000
+      label: "Ace high"
       text: "You are dealt ace-high and nothing else. Fold, call or raise?"
       next: poker-play
       effects:
@@ -598,6 +653,7 @@
         - quality.gambling_wagered += amount
         - stat.happiness += 1
     - weight: 4000
+      label: "Pair of nines"
       text: "You are dealt a pair of nines. Fold, call or raise?"
       next: poker-play
       effects:
@@ -608,6 +664,7 @@
         - quality.gambling_wagered += amount
         - stat.happiness += 1
     - weight: 2000
+      label: "Three queens"
       text: "You are dealt three queens. Fold, call or raise?"
       next: poker-play
       effects:
@@ -636,11 +693,13 @@
     - label: "Call"
       outcomes:
         - weight: "(quality.gambling_hand == 1 ? 3000 : quality.gambling_hand == 2 ? 5000 : 6800) + stat.smarts * 5"
+          label: "Hand holds up, you win the pot"
           text: "Your hand holds up and you rake in the pot."
           effects:
             - money += quality.gambling_pot * 19 / 10
             - quality.gambling_streak += 1
         - weight: "10000 - ((quality.gambling_hand == 1 ? 3000 : quality.gambling_hand == 2 ? 5000 : 6800) + stat.smarts * 5)"
+          label: "Hand does not hold up"
           text: "Your hand does not hold up."
           effects:
             - quality.gambling_streak = 0
@@ -650,11 +709,13 @@
       when: money >= quality.gambling_pot / 2
       outcomes:
         - weight: "(quality.gambling_hand == 1 ? 3000 : quality.gambling_hand == 2 ? 5000 : 6800) + stat.smarts * 5"
+          label: "Table folds or loses to you, you win"
           text: "The table folds or loses to you. A big pot is yours."
           effects:
             - money += quality.gambling_pot * 14 / 5 - quality.gambling_pot / 2
             - quality.gambling_streak += 1
         - weight: "10000 - ((quality.gambling_hand == 1 ? 3000 : quality.gambling_hand == 2 ? 5000 : 6800) + stat.smarts * 5)"
+          label: "They call and beat you"
           text: "They call and show a better hand."
           effects:
             - money -= quality.gambling_pot / 2

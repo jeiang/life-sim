@@ -103,6 +103,7 @@
   text: "Security has been watching {player.first_name}'s streak. A manager takes you aside: nobody wins that often unless something is going on."
   outcomes:
     - weight: 3
+      label: "Banned for 3 years"
       text: "You are escorted out and banned from the casinos for three years."
       effects:
         - quality.gambling_banned_until = age + 3
@@ -110,6 +111,7 @@
         - stat.happiness -= 4
         - journal("Banned from the casinos for suspected cheating at age {age}.")
     - weight: 5
+      label: "Banned for 5 years"
       text: "You are escorted out and banned from the casinos for five years."
       effects:
         - quality.gambling_banned_until = age + 5
@@ -117,6 +119,7 @@
         - stat.happiness -= 5
         - journal("Banned from the casinos for suspected cheating at age {age}.")
     - weight: 2
+      label: "Banned for 10 years"
       text: "You are escorted out and banned from the casinos for ten years."
       effects:
         - quality.gambling_banned_until = age + 10
@@ -151,6 +154,7 @@
     - label: "Go along (stake about 5% of your cash)"
       outcomes:
         - weight: 4750
+          label: "Lucky night, cash out ahead"
           text: "You have a lucky night and cash out ahead."
           effects:
             - quality.gambling_bets_year += 1
@@ -159,6 +163,7 @@
             - stat.happiness += 3
             - money += min(money / 20, 200000)
         - weight: 5250
+          label: "Cold night, stake lost"
           text: "The cards run cold. It is still a fun night out."
           effects:
             - quality.gambling_bets_year += 1
@@ -184,6 +189,7 @@
     - label: "Join the pool (stake about 10% of your cash)"
       outcomes:
         - weight: 10
+          label: "Your pick wins the pot"
           text: "Your pick comes in and you take the pot."
           effects:
             - quality.gambling_wagered += min(money / 10, 100000)
@@ -191,6 +197,7 @@
             - stat.happiness += 4
             - money += min(money / 10, 100000) * 8
         - weight: 90
+          label: "Your pick loses, stake gone"
           text: "Your pick loses and the stake is gone."
           effects:
             - quality.gambling_wagered += min(money / 10, 100000)
@@ -215,6 +222,7 @@
     - label: "Back the tip (stake about 10% of your cash)"
       outcomes:
         - weight: 25
+          label: "Tip wins"
           text: "The horse romps home and the guy at the bar looks very smug."
           effects:
             - quality.gambling_wagered += min(money / 10, 100000)
@@ -222,6 +230,7 @@
             - stat.happiness += 3
             - money += min(money / 10, 100000) * 27 / 10
         - weight: 75
+          label: "Tip loses, stake gone"
           text: "It was never a sure thing."
           effects:
             - quality.gambling_wagered += min(money / 10, 100000)

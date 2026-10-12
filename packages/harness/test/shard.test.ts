@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { compilePacks } from "@life/pack-tools";
 import { describe, expect, test } from "vitest";
-import { runHarness } from "../src/harness.ts";
+import { runHarness, shardOf } from "../src/harness.ts";
 import { loadMetrics } from "../src/metrics.ts";
 import { loadProfiles } from "../src/profile-spec.ts";
 import { renderMarkdown } from "../src/report.ts";
@@ -18,6 +18,7 @@ import {
   parseShard,
   ShardWriter,
   shardRunOf,
+  shardSize,
   unionRuns,
 } from "../src/shard.ts";
 
@@ -43,6 +44,18 @@ describe("--shard / merge", () => {
     expect(parseShard("2/4")).toEqual({ index: 1, count: 4 });
     for (const bad of ["0/4", "5/4", "1", "a/b", "1/0", ""])
       expect(parseShard(bad)).toBeNull();
+  });
+
+  test("8 shards over 8 profiles each hold every profile, one life each", () => {
+    const profiles = 8;
+    const lives = 64;
+    for (let index = 0; index < profiles; index++) {
+      const held = Array.from({ length: lives }, (_, i) => i)
+        .filter((i) => shardOf(i, profiles, profiles) === index)
+        .map((i) => i % profiles);
+      expect([...held].sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+      expect(shardSize(lives, { index, count: profiles }, profiles)).toBe(8);
+    }
   });
 
   test("merged shards equal the unsharded run, byte for byte", async () => {

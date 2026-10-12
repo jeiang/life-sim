@@ -36,10 +36,10 @@ permissions:
   contents: read
 
 env:
-  # Tag runs: 20 shards x 5,000 lives. Forced scripts: 1,000 lives each. Life i plays
-  # profile i mod (profile count) on shard i mod (shard count), so a shard count that is a
-  # multiple of the 8 default profiles would give each shard one profile; 20 mixes 2 per shard,
-  # which keeps the slowest (romantic) shard well inside the job timeout.
+  # Tag runs: 20 shards x 5,000 lives. Forced scripts: 1,000 lives each. Life i is round
+  # floor(i / profile count) at slot i mod (profile count); its shard is round plus slot, mod
+  # (shard count), so every shard mixes every profile whatever the counts (docs/spec/ci.md).
+  # The slowest profile (romantic) therefore costs every shard about the same.
   TAG_LIVES: "100000"
   TAG_SHARDS: "20"
   SCRIPT_LIVES: "1000"

@@ -15,7 +15,7 @@ import {
   type ForceEntry,
   type ForceSet,
 } from "./force.ts";
-import { lifeCount, type Shard } from "./harness.ts";
+import { lifeCount, type Shard, shardOf } from "./harness.ts";
 import type { PackMetrics } from "./metrics.ts";
 import { Aggregate, type Report } from "./report.ts";
 import type { LifeResult, Lineage } from "./run.ts";
@@ -37,12 +37,12 @@ export interface ShardRun {
 
 /**
  * The header line of a shard file. The file is gzipped NDJSON: this header, then one
- * `LifeResult` per line in life-index order (life `shard.index + j * shard.count` is line
- * `j + 1`). One line per life keeps every string far below the engine's string limit, so
- * shards of any size can be written and merged.
+ * `LifeResult` per line, in life-index order (the lives `shardOf` assigns to this shard). One line
+ * per life keeps every string far below the engine's string limit, so shards of any size can be
+ * written and merged.
  */
 export interface ShardFile {
-  readonly version: 2;
+  readonly version: 3;
   readonly run: ShardRun;
   readonly shard: Shard;
   readonly lives: number;
@@ -82,9 +82,22 @@ export function parseShard(arg: string): Shard | null {
 /** Lives per gzip member; the file is a valid concatenation of members. */
 const LIVES_PER_CHUNK = 256;
 
-/** How many lives shard `shard` of a `total`-life run holds. */
-export const shardSize = (total: number, shard: Shard): number =>
-  Math.max(0, Math.ceil((total - shard.index) / shard.count));
+/**
+ * How many lives shard `shard` of a `total`-life run dealt to `profiles` profiles holds, counted
+ * from `shardOf`, the one rule for which shard holds which life.
+ */
+export function shardSize(
+  total: number,
+  shard: Shard,
+  profiles: number,
+): number {
+  if (profiles < 1) throw new Error("a shard run needs at least one profile");
+  let n = 0;
+  for (let i = 0; i < total; i++) {
+    if (shardOf(i, profiles, shard.count) === shard.index) n++;
+  }
+  return n;
+}
 
 /**
  * Writes one shard's lives to `dir` as they are played, so a shard never holds its lives
@@ -99,8 +112,8 @@ export class ShardWriter {
   constructor(dir: string, run: ShardRun, shard: Shard) {
     mkdirSync(dir, { recursive: true });
     this.file = join(dir, `shard-${shard.index + 1}-of-${shard.count}.json.gz`);
-    this.expected = shardSize(run.lives, shard);
-    const header: ShardFile = { version: 2, run, shard, lives: this.expected };
+    this.expected = shardSize(run.lives, shard, run.profiles.length);
+    const header: ShardFile = { version: 3, run, shard, lives: this.expected };
     writeFileSync(this.file, gzipSync(`${JSON.stringify(header)}\n`));
   }
 
@@ -170,7 +183,7 @@ export async function mergeShards(
       } catch {
         s = undefined;
       }
-      if (s?.version !== 2) throw new Error(`${f}: not a shard file`);
+      if (s?.version !== 3) throw new Error(`${f}: not a version 3 shard file`);
       return { file: f, lines, ...s };
     }),
   );
@@ -198,6 +211,7 @@ export async function mergeShards(
     );
 
   const total = lifeCount({ lives: first.run.lives });
+  const profileCount = first.run.profiles.length;
   const agg = new Aggregate(bundles, metrics);
   const force = first.run.force;
   const tally = force
@@ -208,14 +222,15 @@ export async function mergeShards(
       })
     : undefined;
   for (const s of byIndex) {
-    const expected = shardSize(total, s.shard);
+    const expected = shardSize(total, s.shard, profileCount);
     if (s.lives !== expected)
       throw new Error(
         `${s.file}: ${s.lives} lives, expected ${expected} for shard ${s.shard.index + 1}/${count} of ${total} lives`,
       );
   }
   for (let i = 0; i < total; i++) {
-    const s = byIndex[i % count] as (typeof shards)[number];
+    const owner = shardOf(i, profileCount, count);
+    const s = byIndex[owner] as (typeof shards)[number];
     const line = await s.lines.next();
     if (line.done)
       throw new Error(`${s.file}: ends before its ${s.lives} lives`);

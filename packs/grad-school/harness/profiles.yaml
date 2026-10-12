@@ -23,3 +23,11 @@ profiles:
 adjust:
   - { profile: studious, ids: ["grad-school/apply-medical-school", "grad-school/apply-law-school", "grad-school/apply-mba", "grad-school/apply-phd"], weight: 0.05 }
   - { profile: random, ids: ["grad-school/drop-out-grad"], weight: 5 }
+# Licensing exams for the core-loop studious profile. Its own rules never name grad-school content, so the rules
+# are appended here (docs/spec/harness.md#adding-rules-to-another-packs-profile).
+add:
+  - pack: core-loop
+    profile: studious
+    rules:
+      - ids: ["grad-school/grad-exam-prep"]
+      - ids: ["grad-school/sit-medical-boards", "grad-school/sit-bar-exam"]

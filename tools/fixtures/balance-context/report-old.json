@@ -1,0 +1,31 @@
+{
+  "lives": 3,
+  "faults": { "total": 0 },
+  "death": {
+    "age": { "p10": 50, "p50": 70, "p90": 85 },
+    "unfinished": 0
+  },
+  "netWorth": {
+    "40": { "p10": 50000, "p50": 100000, "p90": 200000 },
+    "65": { "p10": 200000, "p50": 500000, "p90": 900000 }
+  },
+  "rates": { "employment": 70 },
+  "decisions": {
+    "years": 300,
+    "atLeast1": 90,
+    "atLeast2": 50,
+    "atLeast3": 30
+  },
+  "eventsPerYear": { "years": 300 },
+  "capDrops": {},
+  "storylets": {
+    "total": 3,
+    "fired": { "core-loop/a": 5, "core-loop/b": 1 },
+    "top10": [
+      { "id": "core-loop/a", "count": 5 },
+      { "id": "core-loop/b", "count": 1 }
+    ],
+    "neverFired": ["core-loop/c"]
+  },
+  "packMetrics": {}
+}

@@ -9,6 +9,12 @@ import { runTool, toolNames } from "./run.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIXTURE = join(HERE, "fixtures", "balance-context", "report.json");
+const OLD_FIXTURE = join(
+  HERE,
+  "fixtures",
+  "balance-context",
+  "report-old.json",
+);
 const report = JSON.parse(readFileSync(FIXTURE, "utf8")) as Report;
 
 function capture(args: string[]): {
@@ -103,6 +109,30 @@ describe("balance-context", () => {
         "  return: gambling/bet-on-horse-races 98.6%, gambling/buy-lottery-ticket 47.4%, gambling/play-baccarat 91.3%, gambling/play-blackjack 71.4% (+4 more)",
       ]
     `);
+  });
+
+  it("old reports without decisions.byStorylet print n/a instead of crashing", () => {
+    const old = JSON.parse(readFileSync(OLD_FIXTURE, "utf8")) as Report;
+    expect(old.decisions).not.toHaveProperty("byStorylet");
+    expect(balanceContext(old)).toEqual([
+      "3 lives, no engine faults",
+      "death age: median 70, p10 50, p90 85 (0 unfinished)",
+      "net worth, median (major units): at 40 1000, at 65 5000",
+      "employment share (ages 25-64): 70%",
+      "decision slots, years with >=1 / >=2 / >=3: 90% / 50% / 30% (target 90 / 50 / 30)",
+      "decision share by storylet: n/a (report predates decisions.byStorylet)",
+      "yearly cap hits: 0 chance hits dropped (0% of years)",
+      "top storylet: core-loop/a, 83.3% of 6 fires",
+      "storylets never fired: 1 of 3",
+    ]);
+  });
+
+  it("run: an old report exits 0 and prints the n/a line", () => {
+    const res = capture([OLD_FIXTURE]);
+    expect(res.status).toBe(0);
+    expect(res.stdout).toContain(
+      "decision share by storylet: n/a (report predates decisions.byStorylet)",
+    );
   });
 
   it("run: exit codes", () => {

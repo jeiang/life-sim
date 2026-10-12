@@ -14,36 +14,42 @@
     - weight: min(20, max(0, (forecast(investing/total-market) - 2000) / 100))
       when: forecast(investing/total-market) > 2000
       text: The total market fund is about to rip. Put what you can spare into it, and don't ask how I know.
+      label: Total Market Index Fund
       effects:
         - "person.quality.invest_tip_age = age"
       next: insider-total-market
     - weight: min(20, max(0, (forecast(investing/world-index) - 2000) / 100))
       when: forecast(investing/world-index) > 2000
       text: The world index fund is due a big year. Quietly, mind you.
+      label: World Index Fund
       effects:
         - "person.quality.invest_tip_age = age"
       next: insider-world-index
     - weight: min(20, max(0, (forecast(investing/acme-robotics) - 2000) / 100))
       when: forecast(investing/acme-robotics) > 2000
       text: Acme Robotics is about to take off. Someone in their finance office owes me a favor, so trust me on this.
+      label: Acme Robotics
       effects:
         - "person.quality.invest_tip_age = age"
       next: insider-acme-robotics
     - weight: min(20, max(0, (forecast(investing/northwind-foods) - 2000) / 100))
       when: forecast(investing/northwind-foods) > 2000
       text: Northwind Foods has a contract coming through. It is going to be big, and it is going to be soon.
+      label: Northwind Foods
       effects:
         - "person.quality.invest_tip_age = age"
       next: insider-northwind-foods
     - weight: min(20, max(0, (forecast(investing/lumen-energy) - 2000) / 100))
       when: forecast(investing/lumen-energy) > 2000
       text: Lumen Energy is about to jump. The board is not telling anyone yet, so you did not hear it from me.
+      label: Lumen Energy
       effects:
         - "person.quality.invest_tip_age = age"
       next: insider-lumen-energy
     - weight: min(20, max(0, (forecast(investing/quark-coin) - 2000) / 100))
       when: forecast(investing/quark-coin) > 2000
       text: Quark Coin is about to go parabolic. Get in before the news does.
+      label: Quark Coin
       effects:
         - "person.quality.invest_tip_age = age"
       next: insider-quark-coin

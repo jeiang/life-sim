@@ -242,7 +242,7 @@ describe("arrest and court", () => {
   test("cooperate, public defender, guilty plea, a prison sentence", () => {
     force({
       "outcome/crime/court-plea": 1,
-      [SENT]: "Two years inside. The lawyer's paperwork could not change that.",
+      [SENT]: "2 years",
     });
     const w0 = person(6, { age: 30, q: { crime_pending_charge: 2 } });
     const w = year(w0);
@@ -259,7 +259,7 @@ describe("arrest and court", () => {
 
   test("custody ends jobs, school and retirement; one cellmate per sentence", () => {
     force({
-      [SENT]: 'Five years. The judge does not like the word "accident."',
+      [SENT]: "5 years",
     });
     let w0 = person(7, {
       age: 40,
@@ -278,7 +278,7 @@ describe("arrest and court", () => {
   test("a juvenile is sent to juvenile detention, release by 18", () => {
     force({
       [SENT.replace("court-sentencing", "court-sentencing-juvenile")]:
-        "Four years in juvenile detention, or until you turn 18, whichever comes first.",
+        "4 years",
     });
     const w = year(person(8, { age: 14, q: { crime_pending_charge: 2 } }));
     expect(held(w)).toContain("crime/juvenile_detention");
@@ -352,8 +352,7 @@ describe("arrest and court", () => {
   test("the death sentence exists for murder only, then the execution is scheduled", () => {
     force({
       "outcome/crime/court-plea": 1,
-      [SENT]:
-        "The death sentence. Your appeals will take years, and then the date gets set.",
+      [SENT]: "Death sentence",
     });
     const w = year(
       person(13, {
@@ -443,8 +442,7 @@ describe("record clearing", () => {
 function jailed(seed: number, age = 30): World {
   force({
     "outcome/crime/court-plea": 1,
-    "outcome/crime/court-sentencing":
-      "Eight years. The gate closes with a sound you will remember.",
+    "outcome/crime/court-sentencing": "8 years",
   });
   const w = year(person(seed, { age, q: { crime_pending_charge: 3 } }));
   forced?.clear();
@@ -606,8 +604,7 @@ describe("juvenile detention", () => {
   const jailedKid = (seed: number, age: number) => {
     force({
       "outcome/crime/court-plea": 1,
-      "outcome/crime/court-sentencing-juvenile":
-        "Four years in juvenile detention, or until you turn 18, whichever comes first.",
+      "outcome/crime/court-sentencing-juvenile": "4 years",
     });
     const w = year(person(seed, { age, q: { crime_pending_charge: 2 } }));
     forced?.clear();

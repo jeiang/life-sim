@@ -3,6 +3,7 @@
 - { kind: role, id: inmate, label: Cellmate }
 - kind: generator
   id: inmate-gen
+  label: Your cellmate
   age: [19, 55]
   stats:
     happiness: [30, 70]
@@ -15,6 +16,7 @@
   last_names: [Smith, Johnson, Williams, Brown, Jones, Garcia, Miller, Davis, Rodriguez, Martinez, Hernandez, Lopez, Gonzalez, Wilson, Anderson, Thomas, Taylor, Moore, Jackson, Martin, Lee, Perez, Thompson, White, Harris, Sanchez, Clark, Ramirez, Lewis, Robinson, Walker, Young, Allen, King, Wright, Scott, Torres, Nguyen, Hill, Flores, Green, Adams, Nelson, Baker, Hall, Rivera, Campbell, Mitchell, Carter, Roberts, Gomez, Phillips, Evans, Turner, Diaz, Parker, Cruz, Edwards, Collins, Reyes]
 - kind: generator
   id: inmate-gen-juvenile
+  label: Your cellmate
   age: [13, 17]
   stats:
     happiness: [30, 70]

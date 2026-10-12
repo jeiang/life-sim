@@ -30,12 +30,14 @@
   text: The appeals court takes another look at your file.
   outcomes:
     - weight: "40 - 4 * min(quality.crime_convictions, 5)"
+      label: Overturned
       text: The appeal is upheld and the conviction is thrown out. Your file is clean.
       effects:
         - "quality.crime_record = false"
         - stat.happiness += 5
         - "journal(\"An appeal overturned your conviction at age {age}.\")"
     - weight: "60 + 4 * min(quality.crime_convictions, 5)"
+      label: Denied
       text: The appeal is denied. The conviction stands, and the lawyer's invoice arrives anyway.
       effects:
         - stat.happiness -= 3
@@ -70,12 +72,14 @@
   text: The judge reads the petition and the old file.
   outcomes:
     - weight: "90 - 10 * min(quality.crime_convictions, 5)"
+      label: Sealed
       text: The judge seals the record. The old conviction is gone from the file.
       effects:
         - "quality.crime_record = false"
         - stat.happiness += 4
         - "journal(\"A judge sealed your record at age {age}.\")"
     - weight: "10 * min(quality.crime_convictions, 5)"
+      label: Refused
       text: The judge refuses. Your history is too long to forget.
       effects:
         - stat.happiness -= 2

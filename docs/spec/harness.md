@@ -145,7 +145,7 @@ add:
 
 Rare branches are exercised by forcing them (decision 7), through Core's `setStreamOverride(override)` seam, which takes a callback returning the `ScriptedRolls` for a site or `undefined`. `apps/web` has no harness code; the e2e production-bundle guard fails if the bundle contains `playFixedLives`, `e2e-chain`, `setStreamOverride`, `forceRolls` or `FORCED RUN`.
 
-A forced roll is keyed by purpose key: a chance storylet's id (`gambling/play-slots`; `id@scope:id` for a scoped one), `outcome/<storylet id>` for the weighted outcome pick of any storylet, or `pack/<id>/<hook>/<n>` for a hook spawn, or a core key (`birth/`, `year/`, `career/`, `decision-slot/`, `guardian/none/<personId>`; a core key ending in `*` matches every key it starts: `guardian/none/*`). The age is the player's age when the roll is made (a year's events roll at the age reached). Values: `hit` / `miss` (chance), a pick index, a pick label (an outcome's `label`, or its `text` when it has none, exact), `int:N`, or a mapping `{ chance, int, pick }`; a pick must name an outcome whose weight is positive at that moment (else the life faults with the engine's message). Counters advance as without forcing, so every unforced roll of the life is unchanged. Forced rolls are not logged: a forced life is not replayable from its choice log (its `--life-seed` still is, with the same `--force`/`--script`). A god pick is a different thing: it is logged (see [saves](pack-format/saves.md)) and is not a harness override.
+A forced roll is keyed by purpose key: a chance storylet's id (`gambling/play-slots`; `id@scope:id` for a scoped one), `outcome/<storylet id>` for the weighted outcome pick of any storylet, or `pack/<id>/<hook>/<n>` for a hook spawn, or a core key (`birth/`, `year/`, `career/`, `decision-slot/`, `guardian/none/<personId>`; a core key ending in `*` matches every key it starts: `guardian/none/*`). The age is the player's age when the roll is made (a year's events roll at the age reached). Values: `hit` / `miss` (chance), a pick index, a pick label or text (an outcome matches its exact `label` first, else its exact `text`), `int:N`, or a mapping `{ chance, int, pick }`; a pick must name an outcome whose weight is positive at that moment (else the life faults with the engine's message). Counters advance as without forcing, so every unforced roll of the life is unchanged. Forced rolls are not logged: a forced life is not replayable from its choice log (its `--life-seed` still is, with the same `--force`/`--script`). A god pick is a different thing: it is logged (see [saves](pack-format/saves.md)) and is not a harness override.
 
 - `--force [age:]key=value[,...]`: for the whole run, on any profile. `30:outcome/x=2` limits an entry to age 30. A text value cannot contain a comma here.
 - `--script <pack>/<name>` (or a file path): runs `packs/<pack>/harness/force/<name>.yaml` as the profile the script names, or as the built-in `scripted` profile, which makes no voluntary move of its own. `--script` and `--profile` exclude each other; `--force` entries are added to the script's. With `--generations N` (or a script's own `generations`) forcing applies to every generation, and an entry's count sums over them. `--list-scripts` prints the scripts, and `--check-packs` validates them.
@@ -172,7 +172,7 @@ In vitest, `forceRolls({ "outcome/x": "hit", "30:y": 1 })` (from `@life/harness`
 
 ## CI check `harness`
 
-A hermetic flake check runs 1,000 fixed seeds split across the profiles, with `--jobs` set to the cores the sandbox grants (`NIX_BUILD_CORES`).
+A hermetic flake check runs 1,000 fixed seeds split across the profiles, with `--jobs` set to the cores the sandbox grants (`NIX_BUILD_CORES`). Then it runs every forced script (`--list-scripts`) on its own for 20 lives with `--jobs 2`, each report under `scripts/<pack>_<name>/` in the check output.
 
 It **fails** on engine faults:
 
@@ -180,6 +180,7 @@ It **fails** on engine faults:
 - an expression runtime assertion (division by zero, overflow);
 - a stuck state: an open event with no selectable choice, or a life that can no longer age up;
 - a save round-trip mismatch: at random ages the world is serialized, loaded, and compared, and it must be identical.
+- a forced script (see [Forced outcomes](#forced-outcomes)) whose lives fault, or whose forced entries never fire in its 20 lives;
 
 It **reports** without failing, in `report.md` and `report.json` in the check output:
 

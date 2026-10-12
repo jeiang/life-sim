@@ -76,13 +76,47 @@ export interface GodContext {
   readonly used: Set<string>;
 }
 
+/**
+ * A weighted pick's option name: a plain string, or an outcome's `{ label, text }`.
+ * `label` is shown in god mode and matched first by a forced string; `text`, when
+ * set, is matched next (exact).
+ */
+export type PickName =
+  | string
+  | { readonly label: string; readonly text?: string | undefined };
+
+const nameOf = (n: PickName): string => (typeof n === "string" ? n : n.label);
+
+/** An option's name in the forced-pick error: its label, and its text when it has one. */
+const describeName = (n: PickName): string =>
+  typeof n === "string" || n.text === undefined
+    ? nameOf(n)
+    : `${n.label} (text "${n.text}")`;
+
+/** Index of the option a forced string names: its label first, then its text; -1 when neither matches. */
+function indexOfName(
+  names: readonly PickName[] | undefined,
+  p: string,
+): number {
+  if (!names) return -1;
+  const byLabel = names.findIndex((n) => nameOf(n) === p);
+  if (byLabel >= 0) return byLabel;
+  return names.findIndex((n) => typeof n !== "string" && n.text === p);
+}
+
+/** God-mode label of option `i`; its index as text when unnamed. */
+function labelAt(names: readonly PickName[] | undefined, i: number): string {
+  const n = names?.[i];
+  return n === undefined ? String(i) : nameOf(n);
+}
+
 /** Values a forced stream returns in place of random draws; unset kinds fall back to the real stream. */
 export interface ScriptedRolls {
   /** Result of `chanceBp` (hit or miss), whatever the probability. */
   readonly chance?: boolean;
   /** Result of `int(n)`; must lie in `[0, n)`. */
   readonly int?: number;
-  /** Result of `weightedPick`: an index with positive weight, or a label matched exactly against the caller's labels (outcomes: their label, else text). */
+  /** Result of `weightedPick`: an index with positive weight, or a string naming an option: its label, else its text (exact). */
   readonly pick?: number | string;
 }
 
@@ -130,10 +164,10 @@ export class Rng {
   /** Index chosen with probability weights[i] / sum(weights). Weights are non-negative integers with a positive sum; zero weights are never chosen. */
   weightedPick(
     weights: readonly number[],
-    labels?: readonly string[],
+    names?: readonly PickName[],
     info?: DrawInfo,
   ): number {
-    void labels;
+    void names;
     void info;
     return this.rawPick(weights);
   }
@@ -278,7 +312,7 @@ export class GodRng extends Rng {
 
   override weightedPick(
     weights: readonly number[],
-    labels?: readonly string[],
+    names?: readonly PickName[],
     info?: DrawInfo,
   ): number {
     const natural = this.rawPick(weights);
@@ -287,10 +321,10 @@ export class GodRng extends Rng {
     const trivial = positive === 1;
     const p = this.forced?.pick;
     if (p !== undefined) {
-      const i = typeof p === "string" ? (labels?.indexOf(p) ?? -1) : p;
+      const i = typeof p === "string" ? indexOfName(names, p) : p;
       if (typeof p === "string" && i < 0)
         throw new RangeError(
-          `forced pick "${p}" matches no label (${labels?.join(" | ") ?? "none given"})`,
+          `forced pick "${p}" matches no label or text (${names?.map(describeName).join(" | ") ?? "none given"})`,
         );
       if (!Number.isInteger(i) || !((weights[i] ?? 0) > 0))
         throw new RangeError(`forced pick ${i} is not a drawable index`);
@@ -311,7 +345,7 @@ export class GodRng extends Rng {
         natural,
         {
           options: weights.map((weight, i) => ({
-            label: labels?.[i] ?? String(i),
+            label: labelAt(names, i),
             weight,
           })),
         },

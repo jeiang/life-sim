@@ -22,7 +22,7 @@ All checks are hermetic `checks.<system>.*` flake outputs, so `nix flake check` 
 | `packs` | Compiles and validates all Packs (see [Pack format](pack-format/build-checks.md#build-checks)) |
 | `versions` | Fails when npm pins for `@playwright/test` (and `@biomejs/biome`, if kept) differ from the nixpkgs versions |
 | `e2e` | Playwright on Chromium and WebKit against the built app; axe-core on every screen kind in light and dark themes ([visual](visual.md#accessibility-wcag-22-aa)); and the in-run determinism comparison of 20 seeded lives across Node, Chromium, and WebKit ([harness](harness.md#determinism-check-in-e2e)) |
-| `harness` | 1,000 seeded lives across player profiles. Fails on engine faults, and writes a balance report ([harness](harness.md)) |
+| `harness` | 1,000 seeded lives across player profiles, then each forced script for 20 lives. Fails on engine faults and on forced entries that never fire, and writes a balance report ([harness](harness.md)) |
 
 - The full 10,000-life run is not a flake check. It runs on GitHub Actions (below).
 - Tool versions (Node, pnpm, Biome, Playwright browsers) come from `flake.lock`. Bumping nixpkgs is deliberate and fails `versions` until the npm pins match.

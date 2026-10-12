@@ -270,6 +270,10 @@
                       }
                     ]
                   },
+                  "label": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
                   "when": {
                     "description": "Expression in the Pack expression language (ADR 0004)",
                     "anyOf": [
@@ -327,6 +331,10 @@
                   "type": "boolean"
                 }
               ]
+            },
+            "label": {
+              "minLength": 1,
+              "type": "string"
             },
             "when": {
               "description": "Expression in the Pack expression language (ADR 0004)",

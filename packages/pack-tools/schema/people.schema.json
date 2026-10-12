@@ -44,6 +44,10 @@
             "description": "Content id",
             "type": "string"
           },
+          "label": {
+            "minLength": 1,
+            "type": "string"
+          },
           "first_names": {
             "description": "A list for every gender, or `{ male, female }` pools (non-binary people draw from both)",
             "anyOf": [

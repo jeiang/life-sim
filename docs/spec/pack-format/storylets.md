@@ -43,7 +43,7 @@ Storylets, repeatable actions and the yearly event draw. Part of the [Pack forma
 | `amount` | Actions only: `{ min, max, step }`, integer expressions over the player (`step` defaults to 1, below 1 counts as 1), evaluated when the menu lists the action. The player picks an amount (money, minor units) from the shared picker before the action runs. `amount` is then bound in choice and outcome `when`, `weight`, effects and text (`{amount}` renders as money), and in no other field, including the storylet's own `when`, `text` and the range expressions. An action whose `min` exceeds the player's money is disabled. `next` does not carry the amount, so the compiler rejects a `next` that targets a storylet with an `amount`. See ADR 0005. |
 | `text` | Inline English, with `{placeholders}`. |
 | `choices` | Zero or more. Each has `label`, optional `when`, and `outcomes`. With no choices, the storylet has a single `outcomes` list. |
-| `outcomes` | Weighted list. Each has `weight`, optional `when`, `text`, `effects`, and optional `next`. |
+| `outcomes` | Weighted list. Each has `weight`, optional `when`, `text`, `effects`, optional `next`, and optional `label`. `label` names the outcome for god mode (a god pick is matched by it, and the picker shows it); the player never sees it. Without one, the outcome is named by its `text`. |
 | `next` | Storylet id opened immediately after this outcome, for multi-step scenes. |
 
 ## Repeatable actions

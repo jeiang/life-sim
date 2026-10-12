@@ -1,7 +1,7 @@
 import fc from "fast-check";
 import { expect, test } from "vitest";
 import { worldHash } from "../hash.ts";
-import { ScriptedRng, setStreamOverride } from "../rng.ts";
+import { setStreamOverride } from "../rng.ts";
 import {
   canonicalStringify,
   deserializeWorld,
@@ -139,7 +139,7 @@ test("a stream override forces chance, int and pick by purpose key without movin
   const [wf, forced] = (() => {
     setStreamOverride((age, key, counter) =>
       key === "chance:illness" && age === 30 && counter === 0
-        ? new ScriptedRng({ chance: true, int: 3, pick: "b" })
+        ? { chance: true, int: 3, pick: "b" }
         : undefined,
     );
     try {

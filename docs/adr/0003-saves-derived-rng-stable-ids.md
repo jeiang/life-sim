@@ -26,8 +26,8 @@ Age-up order becomes: age every person, the NPC career pass, settlement, events,
 
 ## Amendment 2026-10-10: forced-outcome seam (#197)
 
-- `setStreamOverride((age, purposeKey, counter) => Rng | undefined)` (`rng.ts`, exported from `@life/core`) is consulted in `nextStream` after the counter is read and advanced, so counters move exactly as without it and unforced rolls (and their world hashes) are unchanged. A returned `ScriptedRng({ chance?, int?, pick? })` forces `chanceBp` (hit or miss), `int` (value) and `weightedPick` (index, or a label: outcomes are matched by their `text`) for that roll site; purpose keys are the ones above, e.g. `gambling/play-slots` (chance storylets) and `outcome/gambling/play-slots`.
-- Forced rolls are not logged: a forced life is not replayable from its choice log. The seam is module-level state for vitest and the harness; `apps/web` never imports it and the e2e production-bundle guard (`e2e/check-prod-bundle.ts`) fails if `setStreamOverride` or `ScriptedRng` appears in `dist`.
+- `setStreamOverride((age, purposeKey, counter) => ScriptedRolls | undefined)` (`rng.ts`, exported from `@life/core`) is consulted in `nextStream` after the counter is read and advanced, so counters move exactly as without it. A returned `ScriptedRolls({ chance?, int?, pick? })` forces `chanceBp` (hit or miss), `int` (value) and `weightedPick` (index, or a label: an outcome matches by its `label`, or by its `text` when it has none) for that roll site; purpose keys are the ones above, e.g. `gambling/play-slots` (chance storylets) and `outcome/gambling/play-slots`. Behaviour change: unforced draws at a forced site now come from the life's own stream, not a zero-seeded one, so only the forced value differs from an unforced life. The natural draw still consumes its words first, so later rolls are unchanged.
+- Forced rolls are not logged: a forced life is not replayable from its choice log. The seam is module-level state for vitest and the harness; `apps/web` never imports it and the e2e production-bundle guard (`e2e/check-prod-bundle.ts`) fails if `playFixedLives`, `e2e-chain`, `setStreamOverride`, `forceRolls` or `FORCED RUN` appears in `dist`.
 
 ## Amendment 2026-10-10: lifecycle hooks (#189)
 
@@ -69,3 +69,10 @@ This replaces the `succeed` bullet of the 2026-10-06 amendment. `succeed(world, 
 ## Amendment 2026-10-10: minor heirs and genetics (#221)
 
 `succeed` gained two steps after seating the heir and before `on_succession`. **Genetics:** a stat declared with `inherit` is re-drawn as a share of a random blend of the heir's parents plus a fresh draw from its start range; the draws use the purpose keys `succession/genetics/<stat>` at the heir's generation (`n + 1`), consumed once per inheriting stat in declaration order, so adding an `inherit` moves no other stream. **Trust:** a minor heir with no living parent goes to a guardian through the existing living-with-guardian state at once, and the existing age-up check releases it at 18. Neither step stores anything new: stats and the guardian flag are already in the save, so the save schema stays 6 and replay needs no new choice entry. Details: [core-loop](../spec/core-loop.md#genetics).
+
+## Amendment: god mode roll picks (#401)
+
+- A god life's draws are picked, not drawn. `GodContext` (`World.god`) holds the picks for the life, keyed by the draw's identity `age|key|n|d` (`rollId`), where `n` is the draw's counter and `d` its ordinal within the step. A pick is logged before its step as a `god-roll` entry (`{age, key, n, d, v}`); market and person edits are logged as `god-market` and `god-person`. `Series.nextEvent` is an optional additive field. The save schema stays 6, and `world.god` is never serialized.
+- Precedence: a forced roll, then a god pick, then the natural value. The natural draw always runs first, so the stream position does not depend on god mode. A non-god life draws exactly as before: `nextStream` returns a bare `Rng` when `world.god` is absent and no override is installed.
+- Asks: a draw in a god life that the player may choose records a `GodDraw` and throws `GodAsk` instead of drawing. Replay never asks: `replay` finishes each step with `finishGodStep`, which throws if a pick was never drawn.
+- Deviation from the design: `ScriptedRng` is removed; `ScriptedRolls` is kept as the data type of `setStreamOverride`.

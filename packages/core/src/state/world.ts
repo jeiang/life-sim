@@ -1,4 +1,4 @@
-import { forcedStream, type Rng, streamFor } from "../rng.ts";
+import { forcedRolls, GodRng, Rng, streamWords } from "../rng.ts";
 import {
   type Asset,
   type Holding,
@@ -214,18 +214,32 @@ export function addJournalLine(world: World, age: number, line: string): World {
 /**
  * Open the next stream for a roll site: reads this site's counter from the
  * world, derives the stream, and returns the world with the counter advanced.
- * Distinct purpose keys (or ages) have independent counters.
+ * Distinct purpose keys (or ages) have independent counters. A plain world with
+ * no forced rolls gets a bare {@link Rng}; a god-mode or forced site gets a
+ * {@link GodRng}. `mode: "form"` collects asked draws instead of throwing them
+ * (see {@link GodRng}).
  */
 export function nextStream(
   world: World,
   age: number,
   purposeKey: string,
+  mode?: "form",
 ): [World, Rng] {
   const key = `${age}/${purposeKey}`;
   const counter = world.rngCounters[key] ?? 0;
-  return [
-    { ...world, rngCounters: { ...world.rngCounters, [key]: counter + 1 } },
-    forcedStream(age, purposeKey, counter) ??
-      streamFor(world.seed, age, purposeKey, counter, world.generation),
-  ];
+  const next = {
+    ...world,
+    rngCounters: { ...world.rngCounters, [key]: counter + 1 },
+  };
+  const words = streamWords(
+    world.seed,
+    age,
+    purposeKey,
+    counter,
+    world.generation,
+  );
+  const forced = forcedRolls(age, purposeKey, counter);
+  if (!world.god && forced === undefined) return [next, new Rng(...words)];
+  const site = { age, key: purposeKey, n: counter };
+  return [next, new GodRng(words, site, world.god, forced, mode === "form")];
 }

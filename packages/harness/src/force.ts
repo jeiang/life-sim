@@ -2,7 +2,6 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import {
   type PackBundle,
-  ScriptedRng,
   type ScriptedRolls,
   setStreamOverride,
 } from "@life/core";
@@ -451,7 +450,7 @@ export function installRollOverride(
     ][])
       if (keyMatches(e.key, key) && (e.age === undefined || e.age === age)) {
         fired[i] = (fired[i] ?? 0) + 1;
-        return new ScriptedRng(e.rolls);
+        return e.rolls;
       }
     return undefined;
   });

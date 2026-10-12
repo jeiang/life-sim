@@ -509,6 +509,10 @@
                   "minimum": 1,
                   "type": "integer"
                 },
+                "label": {
+                  "minLength": 1,
+                  "type": "string"
+                },
                 "gender": {
                   "minItems": 1,
                   "uniqueItems": true,

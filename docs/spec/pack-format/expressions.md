@@ -49,6 +49,8 @@ A `kind: generator` item in `people/` sets `first_names` (a list used for every 
 
 A generator may also set `qualities: { <id>: <value> }` for `scope: person` qualities visible to its Pack: a fixed integer or flag, or an inclusive `[min, max]` range drawn at spawn (so every person carries, say, a culture from their birth country; the player's generator sets the player's own values). Ranges draw after every older draw of the spawn, in quality id order, so adding `qualities` moves no other draw of that stream. The stored body flag `can_carry` is set at spawn: from the gender (female yes, male no; a nonbinary person draws it, one bit, last) or fixed by the generator's `can_carry: true | false`. It is the body, separate from gender identity: `set_gender` never changes it. Expressions read it as the boolean `player.can_carry`, `person.can_carry` and `<name>.can_carry`; it is never shown as "sex". A Pack can also give every generated person a weighted quality draw with `spawn_qualities` ([manifest](manifest.md)).
 
+A generator may set `label`, a short name the god-mode picker shows for its draws (for example `label: Baby`). It is optional and never shown to the player; without one, the picker shows the generator's id.
+
 A Pack may also name a sequence of these statements and call it as `<pack>.<macro>(args)`; see [Effect macros](effects.md). A macro call is expanded at build time into the closed effects above.
 
 `reach_milestone(id)` fires a Pack-declared [milestone](hooks.md#milestones) now, once per life; `milestone_reached(id)` is the boolean the life has reached it (usable in any `when`). Both take a bare milestone id (or a string), checked at build time against Core and `provides: milestones` ids.

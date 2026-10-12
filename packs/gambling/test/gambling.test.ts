@@ -7,7 +7,6 @@ import {
   listActions,
   newLife,
   runAction,
-  ScriptedRng,
   setQuality,
   setStreamOverride,
   updatePerson,
@@ -642,7 +641,7 @@ describe("forced outcomes (setStreamOverride)", () => {
     const free = runAction(w, bundles, G("play-slots"), undefined, 100).world;
     setStreamOverride((_age, key) =>
       key === `outcome/${G("play-slots")}`
-        ? new ScriptedRng({ pick: jackpot.text as string })
+        ? { pick: jackpot.text as string }
         : undefined,
     );
     try {
@@ -674,9 +673,7 @@ describe("forced outcomes (setStreamOverride)", () => {
   test("a forced pick by index and by an unknown label", () => {
     const w = life(10000);
     setStreamOverride((_a, key) =>
-      key === `outcome/${G("play-slots")}`
-        ? new ScriptedRng({ pick: 0 })
-        : undefined,
+      key === `outcome/${G("play-slots")}` ? { pick: 0 } : undefined,
     );
     try {
       const forced = runAction(
@@ -687,7 +684,7 @@ describe("forced outcomes (setStreamOverride)", () => {
         100,
       ).world;
       expect(me(forced).money).toBe(10000 + 100 * 99);
-      setStreamOverride(() => new ScriptedRng({ pick: "no such text" }));
+      setStreamOverride(() => ({ pick: "no such text" }));
       expect(() =>
         runAction(w, bundles, G("play-slots"), undefined, 100),
       ).toThrow(/matches no label/);

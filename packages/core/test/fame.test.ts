@@ -13,7 +13,6 @@ import {
   newLife,
   type PackBundle,
   runAction,
-  ScriptedRng,
   setStreamOverride,
   updatePerson,
   type World,
@@ -144,9 +143,7 @@ describe("looks-decline event", () => {
     }));
     const year = (hit: boolean) => {
       setStreamOverride((_a, key) =>
-        key === "core-loop/looks-decline"
-          ? new ScriptedRng({ chance: hit })
-          : undefined,
+        key === "core-loop/looks-decline" ? { chance: hit } : undefined,
       );
       try {
         const w = ageUp(w0, real.bundles).world;

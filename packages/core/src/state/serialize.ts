@@ -54,6 +54,7 @@ export function canonicalStringify(value: unknown): string {
 export function serializeWorld(world: World): string {
   return canonicalStringify({
     ...world,
+    god: undefined,
     persons: [...world.persons.values()].sort((a, b) => a.id - b.id),
   });
 }
@@ -138,11 +139,21 @@ function holding(v: unknown, p: string): Holding {
   };
 }
 
+function marketEvent(
+  v: unknown,
+  p: string,
+): "delisted" | "default" | "none" | undefined {
+  if (v === undefined) return undefined;
+  if (v === "delisted" || v === "default" || v === "none") return v;
+  return fail(p, "delisted, default or none");
+}
+
 function market(v: unknown, p: string): Record<string, Series> {
   const out: Record<string, Series> = {};
   for (const [k, x] of Object.entries(obj(v, p))) {
     const o = obj(x, `${p}.${k}`);
     const face = optInt(o.face, `${p}.${k}.face`);
+    const nextEvent = marketEvent(o.nextEvent, `${p}.${k}.nextEvent`);
     out[k] = {
       from: int(o.from, `${p}.${k}.from`),
       prices: arr(o.prices, `${p}.${k}.prices`).map((n, i) =>
@@ -150,6 +161,7 @@ function market(v: unknown, p: string): Record<string, Series> {
       ),
       next: int(o.next, `${p}.${k}.next`),
       ...(face === undefined ? {} : { face }),
+      ...(nextEvent === undefined ? {} : { nextEvent }),
     };
   }
   return out;
@@ -412,10 +424,51 @@ function choiceLog(v: unknown, p: string): ChoiceEntry[] {
         };
       case "god-money":
         return { t, value: int(o.value, `${q}.value`) };
+      case "god-roll":
+        return {
+          t,
+          age: int(o.age, `${q}.age`),
+          key: str(o.key, `${q}.key`),
+          n: int(o.n, `${q}.n`),
+          d: int(o.d, `${q}.d`),
+          v: typeof o.v === "boolean" ? o.v : int(o.v, `${q}.v`),
+        };
+      case "god-market": {
+        const next = optInt(o.next, `${q}.next`);
+        const event = marketEvent(o.event, `${q}.event`);
+        return {
+          t,
+          kind: str(o.kind, `${q}.kind`),
+          ...(next === undefined ? {} : { next }),
+          ...(event === undefined ? {} : { event }),
+        };
+      }
+      case "god-person": {
+        const givenName =
+          o.givenName === undefined
+            ? undefined
+            : str(o.givenName, `${q}.givenName`);
+        const familyName =
+          o.familyName === undefined
+            ? undefined
+            : str(o.familyName, `${q}.familyName`);
+        const g =
+          o.gender === undefined ? undefined : gender(o.gender, `${q}.gender`);
+        const stats =
+          o.stats === undefined ? undefined : intRecord(o.stats, `${q}.stats`);
+        return {
+          t,
+          id: int(o.id, `${q}.id`),
+          ...(givenName === undefined ? {} : { givenName }),
+          ...(familyName === undefined ? {} : { familyName }),
+          ...(g === undefined ? {} : { gender: g }),
+          ...(stats === undefined ? {} : { stats }),
+        };
+      }
       default:
         return fail(
           `${q}.t`,
-          "age, choose, action, buy, sell, trade, mature, start, god-stat or god-money",
+          "age, choose, action, buy, sell, trade, mature, start, god-stat, god-money, god-roll, god-market or god-person",
         );
     }
   });

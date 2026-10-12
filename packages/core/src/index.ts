@@ -4,8 +4,14 @@ export * from "./expr/index.ts";
 export { cyrb128, hash64, worldHash } from "./hash.ts";
 export * from "./pack.ts";
 export {
+  type DrawInfo,
+  GodAsk,
+  type GodCategory,
+  type GodContext,
+  type GodDraw,
+  GodRng,
   Rng,
-  ScriptedRng,
+  rollId,
   type ScriptedRolls,
   setStreamOverride,
   streamFor,

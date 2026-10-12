@@ -7,7 +7,6 @@ const FORBIDDEN = [
   "playFixedLives",
   "e2e-chain",
   "setStreamOverride",
-  "ScriptedRng",
   "forceRolls",
   "FORCED RUN",
 ];

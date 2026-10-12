@@ -22,10 +22,10 @@ export const MAX_HISTORY = 100;
 /** Largest price of one whole unit, minor units: keeps every product below 2^53. */
 const MAX_PRICE = 10_000_000_000;
 /** Range of a yearly return, basis points. */
-const MIN_RETURN = -10000;
+export const MIN_RETURN = -10000;
 /** Lowest return of a kind that cannot delist: its price never reaches the floor in one move. */
 const MIN_RETURN_LISTED = -9900;
-const MAX_RETURN = 500000;
+export const MAX_RETURN = 500000;
 
 /** Cash value of `units` (x10^4) at `price` per whole unit, rounded down, without overflow. */
 export function unitsValue(units: number, price: number): number {
@@ -172,10 +172,22 @@ function step(
       }
     }
     const rng = streamFor(world.seed, year, `market/${kindId}/event`, 0);
-    if (price > 0 && m.delistBp !== undefined && rng.chanceBp(m.delistBp)) {
+    // God mode: a forced event replaces its roll; the roll has its own stream, so nothing else moves.
+    const forced = s.nextEvent;
+    if (
+      price > 0 &&
+      m.delistBp !== undefined &&
+      (forced === undefined ? rng.chanceBp(m.delistBp) : forced === "delisted")
+    ) {
       price = 0;
       events.push({ kindId, what: "delisted" });
-    } else if (price > 0 && m.bond && rng.chanceBp(m.bond.defaultBp)) {
+    } else if (
+      price > 0 &&
+      m.bond &&
+      (forced === undefined
+        ? rng.chanceBp(m.bond.defaultBp)
+        : forced === "default")
+    ) {
       const left = Math.trunc(
         ((face ?? 10000) * (10000 - m.bond.lossBp)) / 10000,
       );

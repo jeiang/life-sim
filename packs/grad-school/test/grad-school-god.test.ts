@@ -14,8 +14,8 @@ import {
   type PackBundle,
   runAction,
   updatePerson,
-  withGodAsk,
   type World,
+  withGodAsk,
 } from "../../../packages/core/src/index.ts";
 import { compilePacks } from "../../../packages/pack-tools/src/index.ts";
 

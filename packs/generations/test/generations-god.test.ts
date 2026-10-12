@@ -16,8 +16,8 @@ import {
   type PackBundle,
   replay,
   type TableDecl,
-  withGodAsk,
   type World,
+  withGodAsk,
   worldHash,
 } from "../../../packages/core/src/index.ts";
 import { compilePacks } from "../../../packages/pack-tools/src/index.ts";
@@ -81,7 +81,9 @@ test("a labeled attic find picked in god mode applies, and the life replays", ()
   }
   let picked = w;
   for (let round = 0; round < 60 && !picked.ended; round++) {
-    if (cellValue(getPerson(picked, picked.playerId), table, "quilt_held") === 1)
+    if (
+      cellValue(getPerson(picked, picked.playerId), table, "quilt_held") === 1
+    )
       break;
     picked = stepWith(
       picked,

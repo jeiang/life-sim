@@ -11,8 +11,8 @@ import {
   newLife,
   replay,
   runAction,
-  withGodAsk,
   type World,
+  withGodAsk,
   worldHash,
 } from "../../../packages/core/src/index.ts";
 import { bundles, qn } from "./helpers.ts";
